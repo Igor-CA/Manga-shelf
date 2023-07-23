@@ -4,10 +4,10 @@ const Schema = mongoose.Schema;
 const VolumeSchema = new Schema({
     serie: {type: Schema.Types.ObjectId, ref: "Series"},
     number: {type: Number, required: true},
-    publisher: {type: String},
     pagesNumber: {type: Number},
-    date: {type: Date},
-    summary: [{type: String}]//Separated by paragraphs
+    date: {type: String},
+    summary: [{type: String}], //Separated by paragraphs
+    defaultPrice: {type: String}
 });
 
 VolumeSchema.virtual("firsVolumeImage").get(function () {
