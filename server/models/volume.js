@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const series = require("../models/Series")
 const Schema = mongoose.Schema;
 
 const VolumeSchema = new Schema({
@@ -10,11 +11,7 @@ const VolumeSchema = new Schema({
     defaultPrice: {type: String}
 });
 
-VolumeSchema.virtual("firsVolumeImage").get(function () {
-    const seriesTitle = this.serie.title
-    const sanitizedTitle = seriesTitle.replaceAll(/[?:/–\s]+/g, '-').replaceAll(/-+/g, '-');
-    const fileName = `cover-${sanitizedTitle}-${this.number}.jpg`
-    return `images/${fileName}`;
-});
+VolumeSchema.set('toObject', { virtuals: true });
+VolumeSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model("Volume", VolumeSchema);

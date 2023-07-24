@@ -5,7 +5,7 @@ const SeriesSchema = new Schema({
     title: {type: String, required: true},
     authors: [{type: String}],
     publisher: { type: String, required: true },
-    volumes: [{type: Schema.Types.ObjectId, ref: "Volumes", required:true}]
+    volumes: [{type: Schema.Types.ObjectId, ref: "Volume", required:true}]
 });
 
 SeriesSchema.virtual("firsVolumeImage").get(function () {
