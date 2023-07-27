@@ -3,10 +3,16 @@ const volumes = require("../models/volume")
 const asyncHandler = require("express-async-handler");
 
 exports.all = asyncHandler(async(req, res, next) => {
-    const page = (req.query.p)?+req.query.p:0
-    const step = 10
-    const values = await series.find({}, "title").populate("volumes", "number").skip(step*page).limit(step).exec()
-    res.send(values)
+    const page = (req.query.p)?+req.query.p:1
+    const step = 24
+    const values = await series.find({}, "title").skip(step*(page-1)).limit(step).exec()
+    const returnedValues = values.map(serie => {
+        const sanitizedTitle = serie.title.replaceAll(/[?:/–\s]+/g, '-').replaceAll(/-+/g, '-');
+        const nameURL = encodeURIComponent(sanitizedTitle)
+        const imageURL = `http://localhost:3001/images/cover-${nameURL}-1.jpg`;
+        return {...serie["_doc"], image: imageURL}
+    })
+    res.send(returnedValues)
 })
 
 exports.getSeriesDetails = asyncHandler(async(req, res, next) => {
@@ -19,12 +25,13 @@ exports.getSeriesDetails = asyncHandler(async(req, res, next) => {
         seriesCover: desiredSerie.firsVolumeImage,
         volumes: desiredSerie.volumes.map(volume => {
             const sanitizedTitle = desiredSerie.title.replaceAll(/[?:/–\s]+/g, '-').replaceAll(/-+/g, '-');
-            const fileName = `cover-${sanitizedTitle}-${volume.number}.jpg`;
+            const nameURL = encodeURIComponent(sanitizedTitle)
+            const fileName = `cover-${nameURL}-${volume.number}.jpg`;
             return(
                 {
                     volumeId: volume._id,
                     volumeNumber: volume.number,
-                    image: `images/${fileName}`
+                    image: `http://localhost:3001/images/${fileName}`
                 }
             )  
         })
