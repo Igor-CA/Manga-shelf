@@ -1,0 +1,42 @@
+.series-card{
+    position: relative;
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 30%;
+    overflow: hidden;
+    aspect-ratio: auto 465 / 695;
+}
+.series-card__title{
+    color: white;
+    text-align: center;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.473);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+}
+.series-card__overlay{
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+}
+.series-card__overlay > *{
+    opacity: 0;
+}
+.series-card__overlay:hover{
+    background-color: #d14131df;
+    transition: 500ms;
+}
+.series-card__overlay:hover > *{
+    opacity: 1;
+    transition: 500ms;
+}
+.series-card__img{
+    position: absolute;
+    left: 50%;
+    z-index: 0;
+    translate: -50%;
+    width: auto;
+    height: 100%;
+}

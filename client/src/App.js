@@ -1,23 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProfilePage from './pages/ProfilePage/ProfilePage';
+import SeriesPage from './pages/SeriesPage/SeriesPage';
+import "./app.css"
 
 function App() {
+  const [userData, setUserData] = useState([])
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/admin');
+                const data = await response.json();
+                setUserData(data);
+            } catch (error) {
+                console.error('Error fetching user Data:', error);
+            }
+        };
+
+        fetchUserData();
+  }, []);
+  
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={
+            <ProfilePage userData={userData}/>}>
+          </Route>
+          <Route path='/series/:id'element = {<SeriesPage/>}></Route>
+        </Routes>
+      </BrowserRouter>
+    
     </div>
   );
 }
