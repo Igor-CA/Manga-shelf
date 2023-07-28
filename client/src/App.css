@@ -6,7 +6,8 @@
 }
 
 .collection-container{
-    margin: 10px 0px;
+    background-color: #edf1f5;
+    padding: 10px 0px;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;

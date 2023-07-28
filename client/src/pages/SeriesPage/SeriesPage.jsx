@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import "./SeriesPage.css"
 
 export default function SeriesPage(){
     const {id} = useParams()
@@ -7,6 +8,7 @@ export default function SeriesPage(){
         title: '',
         publisher: '',
         authors: '',
+        seriesCover: '',
         volumes: []
     })
     
@@ -26,17 +28,25 @@ export default function SeriesPage(){
   }, []);
 
   return(
-    <div>
-        <h1>{data.title}</h1>
-        <strong>Publisher: {data.publisher}</strong>
-        <strong>Authors: {data.authors}</strong>
-        <img src={data.SeriesCover} alt="" />
-        <ol>
+    <div className="series">
+        <div className="series__info-container">
+            <img src={data.seriesCover} alt={`cover volume ${data.title}`} className="series__cover" />
+            <div className="series_details-container">
+                <h1 className="series__details">{data.title}</h1>
+                <strong className="series__details">Publisher: {data.publisher}</strong>
+                <strong className="series__details">Authors: {data.authors}</strong>
+            </div>
+        </div>
+        <ol className="series__volumes-container">
             {data.volumes.map(volume => {
                 return(
-                    <li key={volume.volumeId}>
-                        <strong>Volume {volume.volumeNumber}</strong>
-                        <img src={volume.image} alt="" />
+                    <li key={volume.volumeId} className="series__volume-item">
+                        <img src={volume.image} alt={`cover volume ${volume.volumeNumber}`} className="series__volume__image" />
+                        <Link className="series__volume__number"><strong>Volume {volume.volumeNumber}</strong></Link>
+                        <div>
+                            <label htmlFor="have-volume-check-mark" className="checkmark-label">Tem:</label>
+                            <input type="checkbox" name="have-volume-check-mark" className="checkmark"/>
+                        </div>                
                     </li>
                 )
             })}
