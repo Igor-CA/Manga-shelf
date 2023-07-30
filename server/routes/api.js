@@ -11,6 +11,7 @@ router.get('/user/:id/missing', function(){});
 
 //Collection page api
 router.get('/series/:id',  seriesController.getSeriesDetails);
+router.get('/search', seriesController.searchSeries)
 
 //Volumes api
 router.get('/volume/:id',  volumesController.getVolumeDetails);

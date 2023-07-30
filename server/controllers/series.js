@@ -15,6 +15,45 @@ exports.all = asyncHandler(async(req, res, next) => {
     res.send(returnedValues)
 })
 
+exports.searchSeries = asyncHandler(async(req, res, next) => {
+    const query = req.query.q
+    const values = await series.aggregate([{
+        $search: {
+          index: "SeriesSearchIndex",
+          compound: {
+            "should": [{
+              "text": {
+                "query": query,
+                "path": "authors",
+                "fuzzy":{}
+              },
+            },
+            {
+              "text": {
+                "query": query,
+                "path": "title",
+                "fuzzy":{},
+                "score": { "boost": { "value": 2 } }
+              }
+            }]
+          },
+        },
+      },
+      {
+        $project: {
+            title: 1, // Include only the "title" field in the output
+        }
+      }
+    ]).limit(12).exec()
+    const returnedValues = values.map(serie => {
+        const sanitizedTitle = serie.title.replaceAll(/[?:/–\s]+/g, '-').replaceAll(/-+/g, '-');
+        const nameURL = encodeURIComponent(sanitizedTitle)
+        const imageURL = `http://${process.env.HOST_ORIGIN}:3001/images/cover-${nameURL}-1.jpg`;
+        return {...serie, image: imageURL}
+    })
+    res.send(returnedValues)
+})
+
 exports.getSeriesDetails = asyncHandler(async(req, res, next) => {
     const desiredSerie = await series.findById(req.params.id).populate("volumes").exec()
     const jsonResponse = {

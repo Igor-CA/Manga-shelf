@@ -33,6 +33,15 @@ async function addData(jsonObj){
     publisher: jsonObj.publisher
   })
   if(existingSerie){
+    const serieDetail = {
+      _id: existingSerie._id,
+      title: existingSerie.title,
+      authors: (Array.isArray(jsonObj.authors) && jsonObj.authors.length > 0)? [...jsonObj.authors]: [...existingSerie.authors],
+      publisher: existingSerie.publisher,
+      volumes: [...existingSerie.volumes]
+    }
+    await Series.findByIdAndUpdate(existingSerie._id, serieDetail, {})
+    console.log(`Serie already exist if needed got updated`)
     const existingVolume =  await Volume.findOne({
       serie: existingSerie._id,
       number: +jsonObj.volume
@@ -42,9 +51,9 @@ async function addData(jsonObj){
         _id: existingVolume._id,
         serie: existingVolume.serie,
         number: existingVolume.number,
-        pagesNumber: (jsonObj.pagesNumber)? jsonObj.pagesNumber: existingVolume.pagesNumber,
+        pagesNumber: (jsonObj.pages)? jsonObj.pages: existingVolume.pagesNumber,
         date: (jsonObj.date)? jsonObj.date: existingVolume.date,
-        summary: (jsonObj.summary)? jsonObj.summary: existingVolume.summary,
+        summary: (Array.isArray(jsonObj.summary) && jsonObj.summary.length > 0)? [...jsonObj.summary]: [...existingVolume.summary],
         defaultPrice: (jsonObj.preço)? jsonObj.preço: existingVolume.defaultPrice
       }
       await Volume.findByIdAndUpdate(existingVolume._id, volumeDetail, {})
