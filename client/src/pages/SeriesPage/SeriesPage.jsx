@@ -7,7 +7,7 @@ export default function SeriesPage(){
     const [data, setData] = useState({
         title: '',
         publisher: '',
-        authors: '',
+        authors: [],
         seriesCover: '',
         volumes: []
     })
@@ -15,9 +15,10 @@ export default function SeriesPage(){
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch(`http://localhost:3001/api/series/${id}`);
+                const response = await fetch(`http://192.168.1.10:3001/api/series/${id}`);
                 console.log(response)
                 const responseData = await response.json();
+                console.log(responseData.authors)
                 setData(responseData);
             } catch (error) {
                 console.error('Error fetching Series Data:', error);
@@ -33,8 +34,13 @@ export default function SeriesPage(){
             <img src={data.seriesCover} alt={`cover volume ${data.title}`} className="series__cover" />
             <div className="series_details-container">
                 <h1 className="series__details">{data.title}</h1>
-                <strong className="series__details">Publisher: {data.publisher}</strong>
-                <strong className="series__details">Authors: {data.authors}</strong>
+                <p  className="series__details"><strong>Editora:</strong> {data.publisher}</p>
+                <p className="series__details"><strong>Autores:</strong> {data.authors.map((author, index) => {
+                    console.log(data.authors.length, index)
+                    if(data.authors.length === (index+1)) return `${author}`
+                    else if(data.authors.length-1 === (index+1)) return `${author} e `
+                    return `${author}, `
+                })}</p>
             </div>
         </div>
         <ol className="series__volumes-container">
@@ -42,7 +48,7 @@ export default function SeriesPage(){
                 return(
                     <li key={volume.volumeId} className="series__volume-item">
                         <img src={volume.image} alt={`cover volume ${volume.volumeNumber}`} className="series__volume__image" />
-                        <Link className="series__volume__number"><strong>Volume {volume.volumeNumber}</strong></Link>
+                        <Link to={`../volume/${volume.volumeId}`} className="series__volume__number"><strong>Volume {volume.volumeNumber}</strong></Link>
                         <div>
                             <label htmlFor="have-volume-check-mark" className="checkmark-label">Tem:</label>
                             <input type="checkbox" name="have-volume-check-mark" className="checkmark"/>

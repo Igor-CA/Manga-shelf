@@ -1,6 +1,5 @@
 .series{
     background-color: #edf1f5;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 ::-webkit-scrollbar{
     display: none;
@@ -9,11 +8,11 @@
     position: relative;
     display: flex;
     background-color: white;
-    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.371);
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.35);
     z-index: 1;
 }
 .series_details-container{
-    padding: 10px;
+    font-size: 0.8em;
     display: flex;
     flex-direction: column;
 }
@@ -21,16 +20,17 @@
     padding: 5px 10px;
 }
 .series__cover{
-    height: 20vh;
+    box-shadow: 3px 0px 3px rgba(0, 0, 0, 0.35);
+    height: 25vh;
 }
 .series__volumes-container{
     z-index: 0;
-    height: 80vh;
+    height: 75vh;
     overflow: scroll;
 }
 .series__volume-item{
     background-color: white;
-    margin: 20px;
+    margin: 10px;
     list-style: none;
     border-radius: 15px;
     overflow: hidden;
@@ -45,7 +45,7 @@
     width: auto;
 }
 .series__volume__number{
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     align-self: stretch;
     flex-grow: 1;
     display: flex;
@@ -59,8 +59,8 @@
     display: none;
 }
 .checkmark{
-    width: 2rem;
-    height: 2rem;
+    width: 2.1rem;
+    height: 2.1rem;
     margin-right: 1rem;
     color: green;
     vertical-align: middle;
