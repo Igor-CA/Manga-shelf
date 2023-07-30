@@ -1,0 +1,24 @@
+.browse-collection-page{
+    background-color: #edf1f5;
+    min-height: 100vh;
+}
+.form{
+    width: 100%;
+    padding: 10px;
+    padding-bottom: 0px;
+}
+.form__input{
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+}
+.form__label{
+    display: none;
+}
+.collection-container{
+    padding: 10px 0px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 10px;
+}
