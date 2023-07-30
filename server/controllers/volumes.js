@@ -14,6 +14,6 @@ exports.getVolumeDetails = asyncHandler(async(req, res, next) => {
     const desiredVolume = await volume.findById(req.params.id).populate("serie", "title").exec()
     const sanitizedTitle = desiredVolume.serie.title.replaceAll(/[?:/–\s]+/g, '-').replaceAll(/-+/g, '-');
     const nameURL = encodeURIComponent(sanitizedTitle)
-    const imageURL = `http://localhost:3001/images/cover-${nameURL}-${desiredVolume.number}.jpg`;
+    const imageURL = `http://${process.env.HOST_ORIGIN}:3001/images/cover-${nameURL}-${desiredVolume.number}.jpg`;
     res.send({...desiredVolume["_doc"], image: imageURL})
 })

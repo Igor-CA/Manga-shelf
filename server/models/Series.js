@@ -1,3 +1,4 @@
+require('dotenv').config()
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -12,7 +13,7 @@ SeriesSchema.virtual("firsVolumeImage").get(function () {
     const sanitizedTitle = this.title.replaceAll(/[?:/–\s]+/g, '-').replaceAll(/-+/g, '-');
     const nameURL = encodeURIComponent(sanitizedTitle)
     const fileName = `cover-${nameURL}-1.jpg`
-    return `http://localhost:3001/images/${fileName}`;
+    return `http://${process.env.HOST_ORIGIN}:3001/images/${fileName}`;
 });
 
 module.exports = mongoose.model("Series", SeriesSchema);

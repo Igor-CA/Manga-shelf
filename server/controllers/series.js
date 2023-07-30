@@ -9,7 +9,7 @@ exports.all = asyncHandler(async(req, res, next) => {
     const returnedValues = values.map(serie => {
         const sanitizedTitle = serie.title.replaceAll(/[?:/–\s]+/g, '-').replaceAll(/-+/g, '-');
         const nameURL = encodeURIComponent(sanitizedTitle)
-        const imageURL = `http://localhost:3001/images/cover-${nameURL}-1.jpg`;
+        const imageURL = `http://${process.env.HOST_ORIGIN}:3001/images/cover-${nameURL}-1.jpg`;
         return {...serie["_doc"], image: imageURL}
     })
     res.send(returnedValues)
@@ -31,7 +31,7 @@ exports.getSeriesDetails = asyncHandler(async(req, res, next) => {
                 {
                     volumeId: volume._id,
                     volumeNumber: volume.number,
-                    image: `http://localhost:3001/images/${fileName}`
+                    image: `http://${process.env.HOST_ORIGIN}:3001/images/${fileName}`
                 }
             )  
         })
