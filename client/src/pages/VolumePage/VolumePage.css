@@ -1,0 +1,31 @@
+.volume{
+    min-height: 100vh;
+    background-color: #edf1f5;
+}
+::-webkit-scrollbar{
+    display: none;
+}
+.volume__main-container{
+    font-size: 0.8em;
+    position: relative;
+    display: flex;
+    background-color: white;
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.35);
+    z-index: 1;
+}
+.volume_details-container{
+    display: flex;
+    flex-direction: column;
+}
+.volume__details{
+    padding: 5px 10px;
+}
+.volume__cover{
+    width: 50vw;
+    box-shadow: 3px 0px 3px rgba(0, 0, 0, 0.35);
+}
+.volume__summary{
+    text-indent: 2rem;
+    text-align: justify;
+    line-height: 2em;
+}
