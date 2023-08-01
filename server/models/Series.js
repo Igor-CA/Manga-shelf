@@ -10,10 +10,12 @@ const SeriesSchema = new Schema({
 });
 
 SeriesSchema.virtual("firsVolumeImage").get(function () {
-    const sanitizedTitle = this.title.replaceAll(/[?:/–\s]+/g, '-').replaceAll(/-+/g, '-');
+    const sanitizedTitle = this.title.replace(/[?:/–\s]+/g, '-').replace(/-+/g, '-');
     const nameURL = encodeURIComponent(sanitizedTitle)
-    const fileName = `cover-${nameURL}-1.jpg`
-    return `http://${process.env.HOST_ORIGIN}:3001/images/${fileName}`;
+    return `http://${process.env.HOST_ORIGIN}:3001/images/cover-${nameURL}-1.jpg`;
 });
+
+SeriesSchema.set('toObject', { virtuals: true });
+SeriesSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model("Series", SeriesSchema);

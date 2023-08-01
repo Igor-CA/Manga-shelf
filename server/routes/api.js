@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
 const seriesController = require("../controllers/series");
-const volumesController = require("../controllers/volumes")
+const volumesController = require("../controllers/volumes");
 
 //User page api
 router.get('/user/:id', function(){});
@@ -16,4 +16,4 @@ router.get('/search', seriesController.searchSeries)
 //Volumes api
 router.get('/volume/:id',  volumesController.getVolumeDetails);
 
-module.exports = router;
+module.exports = router; 

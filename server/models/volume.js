@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const series = require("../models/Series")
 const Schema = mongoose.Schema;
 
 const VolumeSchema = new Schema({
@@ -11,7 +10,5 @@ const VolumeSchema = new Schema({
     defaultPrice: {type: String}
 });
 
-VolumeSchema.set('toObject', { virtuals: true });
-VolumeSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model("Volume", VolumeSchema);
