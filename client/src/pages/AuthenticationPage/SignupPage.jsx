@@ -9,9 +9,10 @@ export default function SignupPage(){
     }
     
     const handleSubmit = async(e) =>{
+        const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
         e.preventDefault()
         try {
-            const response = await fetch(`http://192.168.1.10:3001/user/signup`,{
+            const response = await fetch(`${hostOrigin}/user/signup`,{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

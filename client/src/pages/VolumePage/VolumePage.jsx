@@ -17,9 +17,10 @@ export default function VolumePage(){
     })
     
     useEffect(() => {
+        const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
         const fetchUserData = async () => {
             try {
-                const response = await fetch(`http://192.168.1.10:3001/api/volume/${id}`);
+                const response = await fetch(`${hostOrigin}/api/volume/${id}`);
                 const responseData = await response.json();
                 console.log(responseData)
                 setData(responseData);
@@ -31,21 +32,23 @@ export default function VolumePage(){
         fetchUserData();
   }, []);
 
+  const { image, serie, number, date, pagesNumber, summary } = data;
+
   return(
     <div className="volume">
         <div className="volume__main-container">
-            <img src={data.image} alt={`cover volume ${data.serie.title}`} className="volume__cover" />
+            <img src={image} alt={`cover volume ${serie.title}`} className="volume__cover" />
             <div className="volume_details-container">
-                <h1 className="volume__details">{data.serie.title}  Volume {data.number}</h1>
-                <p className="volume__details"><strong>Data de publicação:</strong> {data.date}</p>
-                <p className="volume__details"><strong>Páginas:</strong> {data.pagesNumber}</p>
+                <h1 className="volume__details">{serie.title}  Volume {number}</h1>
+                <p className="volume__details"><strong>Data de publicação:</strong> {date}</p>
+                <p className="volume__details"><strong>Páginas:</strong> {pagesNumber}</p>
             </div>
         </div>
         <div className="volume__details">
                 <strong>Sinopse:</strong>
-                {data.summary.map(paragraph => {
+                { summary.map((paragraph, index) => {
                     return(
-                        <p className="volume__summary">{paragraph}</p>
+                        <p className="volume__summary" key={index}>{paragraph}</p>
                     )
                 })}
         </div>

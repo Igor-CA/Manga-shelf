@@ -81,4 +81,4 @@ exports.getSeriesDetails = asyncHandler(async(req, res, next) => {
     })
   }
     res.send(jsonResponse)
-})
+})    

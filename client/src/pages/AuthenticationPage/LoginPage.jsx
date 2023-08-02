@@ -12,8 +12,9 @@ export default function LoginPage(){
     
     const handleSubmit = async(e) =>{
         e.preventDefault()
+        const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
         try {
-            const response = await fetch(`http://192.168.1.10:3001/user/login`,{
+            const response = await fetch(`${hostOrigin}/user/login`,{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

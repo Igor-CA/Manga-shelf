@@ -4,22 +4,23 @@ import "./SeriesPage.css"
 
 export default function SeriesPage(){
     const {id} = useParams()
-    const [data, setData] = useState({
+    const [series, setSeries] = useState({
         title: '',
         publisher: '',
-        authors: [],
         seriesCover: '',
+        authors: [],
         volumes: []
     })
     
     useEffect(() => {
         const fetchUserData = async () => {
+            const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
             try {
-                const response = await fetch(`http://192.168.1.10:3001/api/series/${id}`);
+                const response = await fetch(`${hostOrigin}/api/series/${id}`);
                 console.log(response)
                 const responseData = await response.json();
                 console.log(responseData.authors)
-                setData(responseData);
+                setSeries(responseData);
             } catch (error) {
                 console.error('Error fetching Series Data:', error);
             }
@@ -28,23 +29,29 @@ export default function SeriesPage(){
         fetchUserData();
   }, []);
 
+    const getAuthorsString = (authors) => {
+        const authorsList = authors.map((author, index) => {
+            if(authors.length === (index+1)) return `${author}`
+            else if(authors.length-1 === (index+1)) return `${author} e `
+            return `${author}, `
+        })
+        return authorsList
+    }
+
+  const {seriesCover, title, publisher, authors, volumes, } = series
+
   return(
     <div className="series">
         <div className="series__info-container">
-            <img src={data.seriesCover} alt={`cover volume ${data.title}`} className="series__cover" />
+            <img src={seriesCover} alt={`cover volume ${title}`} className="series__cover" />
             <div className="series_details-container">
-                <h1 className="series__details">{data.title}</h1>
-                <p  className="series__details"><strong>Editora:</strong> {data.publisher}</p>
-                <p className="series__details"><strong>Autores:</strong> {data.authors.map((author, index) => {
-                    console.log(data.authors.length, index)
-                    if(data.authors.length === (index+1)) return `${author}`
-                    else if(data.authors.length-1 === (index+1)) return `${author} e `
-                    return `${author}, `
-                })}</p>
+                <h1 className="series__details">{title}</h1>
+                <p  className="series__details"><strong>Editora:</strong> {publisher}</p>
+                <p className="series__details"><strong>Autores:</strong> {getAuthorsString(authors)}</p>
             </div>
         </div>
         <ol className="series__volumes-container">
-            {data.volumes.map(volume => {
+            {volumes.map(volume => {
                 return(
                     <li key={volume.volumeId} className="series__volume-item">
                         <img src={volume.image} alt={`cover volume ${volume.volumeNumber}`} className="series__volume__image" />

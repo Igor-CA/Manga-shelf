@@ -4,50 +4,71 @@ import "./AdminPage.css"
 import debaunce from '../../utils/debaunce';
 
 export default function AdminPage(){
-  const [search, setSearch] = useState('')
-  const [seriesData, setSeriesData] = useState([])
+  const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
+  const [seriesList, setSeriesList] = useState([])
   
-  const fetchSeriesData = async () => {
-    setLoading(true)
+  const fetchSeriesList = async () => {
     try {
-        const response = await fetch(`http://192.168.1.10:3001/admin?p=${page}`);
-        const data = await response.json();
-        if(data.length > 0){
-          setSeriesData([...seriesData, ...data]);
-          setLoading(false);
-          setPage(page + 1);
-        }
+      const response = await fetch(`${hostOrigin}/admin?p=${page}`);
+      const resultList = await response.json();
+      return resultList
     } catch (error) {
-        console.error('Error fetching user Data:', error);
+      console.error('Error fetching series list:', error);
     }
   };
-
-  const fetchSearch = async(querry) => {
+  
+  const updatePage = async () => {
     setLoading(true)
-    try {
-        let response
-        if(querry !== ''){
-          response = await fetch(`http://192.168.1.10:3001/api/search?q=${querry}`);
-        }
-        else{
-          setSeriesData([])
-          setPage(1)
-          response = await fetch(`http://192.168.1.10:3001/admin?p=${page}`)
-        }
-        console.log(`Fetched querry data ${querry}`)
-        const data = await response.json();
-        if(data.length > 0){
-          setSeriesData([ ...data]);
-          setLoading(false);
-        }
-    } catch (error) {
-        console.error('Error fetching user Data:', error);
+    try{
+      const resultList = await fetchSeriesList()
+      console.log(resultList)
+      if(resultList.length > 0){
+        setSeriesList((prevList) =>
+          page === 1 ? [...resultList] : [...prevList, ...resultList]
+        );
+        setPage(page + 1)
+      }
+    }catch (error) {
+      console.error('Error fetching user Data:', error);
+    }finally{
+      setLoading(false)
     }
   }
 
-  const debaunceSearch = useCallback(debaunce((search) => {fetchSearch(search)}, 250), [])
+  
+  const handleChange = (e) => {
+    const inputValue = e.target.value
+    setSearch(inputValue)
+    if(inputValue.trim() !== ''){
+      debaunceSearch(inputValue)
+    }else{
+      updatePage() 
+    }
+  }
+  const fetchSearch = async(querry) => {
+    if(querry.length > 1){
+      setLoading(true)
+      try {
+          const response = await fetch(`${hostOrigin}/api/search?q=${querry}`);
+          const data = await response.json();
+          console.log(querry)
+          if(data.length > 0){
+            setSeriesList(data);
+            setLoading(false);
+            setPage(1)
+          }
+      } catch (error) {
+          console.error('Error fetching user Data:', error);
+      }finally{
+          setLoading(false);
+      }
+    }
+  }
+
+  const debaunceSearch = useCallback(debaunce((search) => {fetchSearch(search)}, 500), [])
 
   const handleScroll = () => {
 
@@ -58,25 +79,18 @@ export default function AdminPage(){
     const bottomOffset = contentHeight - (scrollY + windowHeight);
     const loadMoreThreshold = 200; // Adjust this value as needed
 
-    if (bottomOffset < loadMoreThreshold && !loading && search === '') {
-      fetchSeriesData();
+    if (bottomOffset < loadMoreThreshold && !loading && search.trim() === '') {
+      updatePage();
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log(search)
-    fetchSearch()
   }
 
-  const handleChange = (e) => {
-    const inputValue = e.target.value
-    setSearch(inputValue)
-    debaunceSearch(inputValue)
-  }
 
   useEffect(() => {
-    fetchSeriesData();
+    updatePage();
   }, []);
 
   useEffect(() => {
@@ -84,27 +98,29 @@ export default function AdminPage(){
     return () => window.removeEventListener('scroll', handleScroll);
   },[loading])
 
-    return(
-      <div className='browse-collection-page'>
-        <form className='form' onSubmit={(e) => handleSubmit(e)}>
-          <label htmlFor="search-bar" className='form__label'>Pesquisa</label>
-          <input 
-            type="text" 
-            name="search-bar" 
-            className='form__input'
-            onChange={(e) => {handleChange(e)}}
-            value={search}
-          />
-        </form>
-        {loading && <p>Carregando...</p>}
-        <div className='collection-container'>
-          {seriesData.map(series => {
-            //console.log(series._id)
-            return(
-              <SeriesCard key={series._id} seriesDetails={{title:series.title, image:series.image, id:series._id}} ></SeriesCard>
-            )
-          })}
-        </div>
+
+
+  return(
+    <div className='browse-collection-page'>
+      <form className='form' onSubmit={(e) => handleSubmit(e)}>
+        <label htmlFor="search-bar" className='form__label'>Pesquisa</label>
+        <input 
+          type="text" 
+          name="search-bar" 
+          className='form__input'
+          onChange={(e) => {handleChange(e)}}
+          value={search}
+        />
+      </form>
+      {loading && <p>Carregando...</p>}
+      <div className='collection-container'>
+        {seriesList.map(series => {
+          const {_id, title, image} = series
+          return(
+            <SeriesCard key={_id} seriesDetails={{title, image, _id}} ></SeriesCard>
+          )
+        })}
       </div>
-    )
+    </div>
+  )
 }

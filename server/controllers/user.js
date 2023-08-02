@@ -1,10 +1,9 @@
 const User = require("../models/User")
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
-const passport = require('passport');
 
 exports.signup = [
-
+  
     body("username")
         .trim()
         .notEmpty()
