@@ -1,44 +1,58 @@
 require('dotenv').config()
 const path = require('path');
 
-const express = require('express');
 const mongoose = require("mongoose");
-const cors = require('cors'); 
+const express = require("express");
+const cors = require("cors"); 
 
-const logger = require('morgan');
-const session = require('express-session');
+const passport = require("passport")
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const bodyParser = require("body-parser");
 const createError = require('http-errors');
-const cookieParser = require('cookie-parser');
-const passport = require('./passport-config');
 
-const adminRouter = require('./routes/admin');
-const apiRouter = require('./routes/api');
-const userRouter = require('./routes/user');
+
+const adminRouter = require("./routes/admin");
+const apiRouter = require("./routes/api");
+const userRouter = require("./routes/user");
 
 const app = express(); 
+
 const mongoDB = process.env.MONGODB_URI;
-mongoose.set("strictQuery", false);
-
-main().catch((err) => console.log(err));
-
-async function main() {
-  await mongoose.connect(mongoDB);
-}
+mongoose.connect(
+  mongoDB,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+).then(() => {
+  console.log("mongoose is conncected")
+}).catch((err) => console.log(err));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-app.use(cors());
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.resolve(__dirname, 'public')));
-
-app.use(session({ secret: process.env.SECRET_KEY, resave: false, saveUninitialized: true }));
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(
+  cors({
+    origin: process.env.CLIENT_HOST_ORIGIN, 
+    credentials: true,
+  })
+);
+app.use(
+  session({ 
+    secret: process.env.SECRET_KEY, 
+    resave: true, 
+    saveUninitialized: true 
+  })
+);
+app.use(cookieParser(process.env.SECRET_KEY));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.urlencoded({ extended: false }));
+require("./passport-config")(passport);
+
+app.use(express.static(path.resolve(__dirname, 'public')));
 
 app.use('/user', userRouter);
 app.use('/admin', adminRouter);

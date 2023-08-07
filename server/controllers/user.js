@@ -1,5 +1,6 @@
 const User = require("../models/User")
 const asyncHandler = require("express-async-handler");
+const bcrypt = require("bcrypt");
 const { body, validationResult } = require("express-validator");
 
 exports.signup = [
@@ -21,47 +22,55 @@ exports.signup = [
         .escape(),
 
     asyncHandler(async (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            res.status(400).json({ errors: errors.array() });
-            return;
-        }
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
         
-        const {username, password , email} = req.body
+      const {username, password , email} = req.body
 
-        const ExistingUser = await User.find().or([{username}, {email}]).limit(1)
+      const [ExistingUser] = await User.find().or([{username}, {email}]).limit(1)
         
-        if(ExistingUser.length === 0){
-            const newUser = new User({username, password, email})
-            await newUser.save();
-            res.status(201).json({ message: 'User created successfully' });
-        }else{
-            res.status(409).json({ message: 'Email or username is already in use' });
-        }
-    })
+      if(!ExistingUser){
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const newUser = new User({
+          username, 
+          password: hashedPassword, 
+          email
+        })
+        await newUser.save();
+        res.status(201).json({ message: 'User created successfully' });
+      }else{
+        res.status(409).json({ message: 'Email or username is already in use' });
+      }
+  })
 ]
 
-const passport = require('passport');
-
-exports.login = (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
-
-    if (!user) {
-      // Authentication failed, send error response
-      return res.status(401).json({ message: 'Authentication failed' });
-    }
-
-    // Successful authentication, log in the user
-    req.logIn(user, (err) => {
-      if (err) {
-        return next(err);
+exports.login = async (req, res, next) => {
+  try {
+      const user = await User.findOne({ username: req.body.username });
+      if (!user) {
+          res.send({msg:"No user exists"});
+          return;
       }
 
-      // Send a success response
-      return res.status(200).json({ message: 'Authentication successful', user: user });
-    });
-  })(req, res, next);
+      const compareResult = await bcrypt.compare(req.body.password, user.password);
+      if (compareResult) {
+          req.logIn(user, err => {
+              if (err) throw err;
+              res.send({msg:"Successfully authenticated"});
+          });
+      } else {
+          res.send({msg: "Incorrect password"});
+      }
+  } catch (err) {
+      console.log(err);
+      res.status(500).send({msg:"Internal Server Error"});
+  }
 };
+
+exports.test = (req, res) => {
+  console.log(req.user) 
+  res.send(req.user)
+}

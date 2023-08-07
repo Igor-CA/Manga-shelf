@@ -26,7 +26,7 @@ exports.getVolumeDetails = asyncHandler(async(req, res, next) => {
     const sanitizedTitle = serie.title.replace(/[?:/–\s]+/g, '-').replace(/-+/g, '-');
     const nameURL = encodeURIComponent(sanitizedTitle)
     
-    const imageURL = `http://${process.env.HOST_ORIGIN}:3001/images/cover-${nameURL}-${number}.jpg`;
+    const imageURL = `${process.env.HOST_ORIGIN}/images/cover-${nameURL}-${number}.jpg`;
     
     res.send({...desiredVolume._doc, image: imageURL})
 })

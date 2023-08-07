@@ -52,7 +52,7 @@ exports.searchSeries = asyncHandler(async(req, res, next) => {
   const searchResults = values.map(serie => {
     const sanitizedTitle = serie.title.replace(/[?:/–\s]+/g, '-').replace(/-+/g, '-');
     const nameURL = encodeURIComponent(sanitizedTitle)
-    const imageURL = `http://${process.env.HOST_ORIGIN}:3001/images/cover-${nameURL}-1.jpg`;
+    const imageURL = `${process.env.HOST_ORIGIN}/images/cover-${nameURL}-1.jpg`;
     return {...serie, image: imageURL}
   })
   res.send(searchResults)
@@ -75,7 +75,7 @@ exports.getSeriesDetails = asyncHandler(async(req, res, next) => {
         {
             volumeId: volume._id,
             volumeNumber: volume.number,
-            image: `http://${process.env.HOST_ORIGIN}:3001/images/${fileName}`
+            image: `${process.env.HOST_ORIGIN}/images/${fileName}`
         }
       )  
     })

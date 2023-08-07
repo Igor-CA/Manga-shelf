@@ -1,4 +1,5 @@
 import { useState } from "react"
+import axios from "axios"
 
 export default function SignupPage(){
     const [formData, setFormData] = useState({username:'', password:'', email:''})
@@ -12,15 +13,13 @@ export default function SignupPage(){
         const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
         e.preventDefault()
         try {
-            const response = await fetch(`${hostOrigin}/user/signup`,{
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
+            const response = await axios({
+                method: "POST",
+                data: formData,
+                withCredentials: true,
+                url: `${hostOrigin}/user/signup`
             })
-            const data = await response.json();
-            console.log(data)
+            console.log(response)
         } catch (error) {
             console.error('Error fetching user Data:', error);
         }

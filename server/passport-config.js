@@ -1,31 +1,86 @@
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const asyncHandler = require("express-async-handler");
 const User = require("./models/User")
+const bcrypt = require("bcrypt")
+const localStrategy = require("passport-local").Strategy
+const asyncHandler = require("express-async-handler")
 
-passport.use(
-    new LocalStrategy(asyncHandler(async (username, password, done) => {
-        const user = await User.findOne({ username: username });
-        if (!user) {
-            return done(null, false, { message: "Incorrect username" });
-        };
-        if (user.password !== password) {
-            return done(null, false, { message: "Incorrect password" });
-        };
-        return done(null, user);
-    }))
-);
+module.exports = function(passport){
+  passport.use(
+    new localStrategy(async (username, password, done) => {
+        try{
+            const user = await User.findOne({username:username})
+            if(!user)return done(null, false)
+            
+            bcrypt.compare(password, user.password, (err, res) => {
+                if (res) {
+                  return done(null, user)
+                } else {
+                  return done(null, false, { message: "Incorrect password" })
+                }
+            })
+            
+        }catch(err){
+            console.log(err)
+        }
+      })
+  )
 
-passport.serializeUser(function(user, done) {
+  passport.serializeUser(function(user, done) {
+    console.log("Serialize")
     done(null, user.id);
-});
-passport.deserializeUser(async function(id, done) {
-    try {
+  });
+    
+  passport.deserializeUser(async function(id, done) {
+    console.log("Deserialize")
+      try {
         const user = await User.findById(id);
-        done(null, user);
-    } catch(err) {
+        const userInfo = {
+          username: user.username
+        }
+        done(null, userInfo);
+      } catch(err) {
         done(err);
-    };
-});
+      };
+  });
+  /*
+    passport.use(
+        new localStrategy(async (username, password, done) => {
+            try{
+                const user = await User.findOne({username:username})
+                if (!user) {
+                    return done(null, false, { message: "Incorrect username" });
+                };
+                
+                bcrypt.compare(password, user.password, (err, res) => {
+                    if (res) {
+                      return done(null, user)
+                    } else {
+                        return done(null, false, { message: "Incorrect password" });
+                    }
+                })
+                
+            }catch(err){
+                console.log(err)
+            }
+        })
+    )
 
-module.exports = passport;
+    passport.serializeUser(function(user, done) {
+      console.log("Serialize")
+      done(null, user.id);
+    });
+      
+    passport.deserializeUser(async function(id, done) {
+      console.log("Deserialize")
+        try {
+          const user = await User.findById(id);
+          const userInfo = {
+            username: user.username
+          }
+          done(null, userInfo);
+        } catch(err) {
+          done(err);
+        };
+    });
+    */
+}
+
