@@ -29,7 +29,8 @@ module.exports = function(passport){
     const user = await User.findById(id);
     const userInfo = {
       _id: user._id,
-      username: user.username
+      username: user.username,
+      userList: user.userList
     }
     done(null, userInfo);
   }));

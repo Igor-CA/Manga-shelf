@@ -1,4 +1,5 @@
 const User = require("../models/User")
+const Series = require("../models/Series")
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const { body, validationResult } = require("express-validator");
@@ -79,7 +80,43 @@ exports.login = [
   })
 ]
 
+exports.addSeries = asyncHandler(async(req, res, next) => {
+  if(req.isAuthenticated()){
+    const user = await User.findById(req.user._id)
+    
+    if(user){
+      const addedSeries = {
+        Series: req.body.id
+      }
+
+      user.userList.push(addedSeries)
+      user.save()
+      res.send({msg: "Series successfully added"})
+    }else{
+      res.send({msg: "User not found"})
+    }
+    
+  }
+})
+
+exports.removeSeries = asyncHandler(async(req, res, next) => {
+  if(req.isAuthenticated()){
+    const user = await User.findById(req.user._id)
+    
+    if(user){
+      const newList = user.userList.filter(seriesObject => {return seriesObject.Series.toString() !== req.body.id})
+      user.userList = newList
+      user.save()
+      res.send({msg: "Series successfully removed"})
+    }else{
+      res.send({msg: "User not found"})
+    }
+    
+  }
+})
+
+
 exports.test = (req, res) => {
-  console.log(req.user) 
+  //console.log(req.user) 
   res.send(req.user)
 }

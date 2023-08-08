@@ -7,7 +7,7 @@ const UserSchema = new Schema({
     password: {type: String, required: true},
     userList: [
         {
-            SeriesId: { type: mongoose.Schema.Types.ObjectId, ref: 'Series', required: true },
+            Series: { type: mongoose.Schema.Types.ObjectId, ref: 'Series', required: true },
             completionPercentage: { type: Number, default: 0 },
         }
     ],

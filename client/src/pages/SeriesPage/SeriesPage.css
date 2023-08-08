@@ -15,9 +15,23 @@
     font-size: 0.8em;
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
+    align-items: flex-start;
+    padding: 10px;
+    
 }
 .series__details{
-    padding: 5px 10px;
+    padding: 5px 0px;
+}
+.add-button{
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.452);
+    background-color: #3db4f2;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
 }
 .series__cover{
     box-shadow: 3px 0px 3px rgba(0, 0, 0, 0.35);
