@@ -11,7 +11,7 @@ exports.all = asyncHandler(async(req, res, next) => {
     .exec()
   
   const seriesPage = values.map(serie => {
-    const imageURL = serie.firsVolumeImage;
+    const imageURL = serie.firstVolumeImage;
     return {...serie._doc, image: imageURL}
   })
   res.send(seriesPage)
@@ -66,7 +66,7 @@ exports.getSeriesDetails = asyncHandler(async(req, res, next) => {
     title: desiredSeries.title,
     authors: desiredSeries.authors,
     publisher: desiredSeries.publisher,
-    seriesCover: desiredSeries.firsVolumeImage,
+    seriesCover: desiredSeries.firstVolumeImage,
     volumes: desiredSeries.volumes.map(volume => {
       const sanitizedTitle = desiredSeries.title.replace(/[?:/–\s]+/g, '-').replace(/-+/g, '-');
       const nameURL = encodeURIComponent(sanitizedTitle)

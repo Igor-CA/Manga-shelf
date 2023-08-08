@@ -9,7 +9,7 @@ const SeriesSchema = new Schema({
     volumes: [{type: Schema.Types.ObjectId, ref: "Volume", required:true}]
 });
 
-SeriesSchema.virtual("firsVolumeImage").get(function () {
+SeriesSchema.virtual("firstVolumeImage").get(function () {
     const sanitizedTitle = this.title.replace(/[?:/–\s]+/g, '-').replace(/-+/g, '-');
     const nameURL = encodeURIComponent(sanitizedTitle)
     return `${process.env.HOST_ORIGIN}/images/cover-${nameURL}-1.jpg`;
