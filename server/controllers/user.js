@@ -115,8 +115,25 @@ exports.removeSeries = asyncHandler(async(req, res, next) => {
   }
 })
 
-
-exports.test = (req, res) => {
-  //console.log(req.user) 
-  res.send(req.user)
-}
+exports.getProfilePage = asyncHandler(async (req, res, next) => {
+  if(req.user){
+    const user = await User.findById(req.user._id)  
+      .populate({
+        path: "userList.Series",
+        select: "title"
+      })
+      .exec()
+    if(user){
+      const userInfo = {
+        _id: user._id,
+        username: user.username,
+        userList: user.userList
+      }
+      res.send(userInfo)
+    }else{ 
+      res.send({msg:"User not found"})
+    }
+  }else{
+    res.send()
+  }
+})

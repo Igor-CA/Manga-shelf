@@ -5,6 +5,7 @@ import VolumePage from './pages/VolumePage/VolumePage';
 import AdminPage from './pages/AdminPage/AdminPage';
 import SignupPage from './pages/AuthenticationPage/SignupPage';
 import LoginPage from './pages/AuthenticationPage/LoginPage';
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import axios from "axios"
 import { UserContext } from "./components/userProvider";
 import { useContext, useEffect } from "react";
@@ -17,9 +18,9 @@ function App() {
       const res = await axios({
         method: "GET",
         withCredentials: true,
-        url: "http://localhost:3001/user/data"
+        url: "http://localhost:3001/user/profile"
       })
-      console.log('querryed')
+      console.log(res.data)
       setUser(res.data)
     }
     if(!user){
@@ -30,7 +31,7 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<AdminPage/>}></Route>
+          <Route path='/' element={<ProfilePage/>}></Route>
           <Route path='/signup' element = {<SignupPage/>}></Route>
           <Route path='/login' element = {<LoginPage/>}></Route>
           <Route path='/series/:id' element = {<SeriesPage/>}></Route>

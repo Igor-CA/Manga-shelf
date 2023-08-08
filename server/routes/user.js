@@ -7,6 +7,5 @@ router.post('/signup', userController.signup);
 router.post('/login', userController.login);
 router.post('/add', userController.addSeries);
 router.post('/remove', userController.removeSeries);
-router.get('/data', userController.test);
-
+router.get('/profile', userController.getProfilePage);
 module.exports = router; 
