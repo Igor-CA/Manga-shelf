@@ -47,28 +47,37 @@ exports.signup = [
   })
 ]
 
-exports.login = async (req, res, next) => {
-  try {
-      const user = await User.findOne({ username: req.body.username });
-      if (!user) {
-          res.send({msg:"No user exists"});
-          return;
-      }
+exports.login = [
 
-      const compareResult = await bcrypt.compare(req.body.password, user.password);
-      if (compareResult) {
-          req.logIn(user, err => {
-              if (err) throw err;
-              res.send({msg:"Successfully authenticated"});
-          });
-      } else {
-          res.send({msg: "Incorrect password"});
-      }
-  } catch (err) {
-      console.log(err);
-      res.status(500).send({msg:"Internal Server Error"});
-  }
-};
+  body("login")
+        .trim()
+        .notEmpty()
+        .withMessage('User name or e-mail must be specified.')
+        .escape(),
+  body("password")
+      .trim()
+      .notEmpty()
+      .withMessage('Password must be specified.')
+      .escape(),
+
+  asyncHandler(async (req, res, next) => {
+    const [user] = await User.find().or([{ username:req.body.login }, { email:req.body.login }]).limit(1)
+    if (!user) {
+      res.send({msg:"No user exists"});
+      return;
+    }
+
+    const compareResult = await bcrypt.compare(req.body.password, user.password);
+    if (compareResult) {
+      req.logIn(user, err => {
+        if (err) throw err;
+        res.send({msg:"Successfully authenticated"});
+      });
+    } else { 
+      res.send({msg: "Incorrect password"});
+    }
+  })
+]
 
 exports.test = (req, res) => {
   console.log(req.user) 
