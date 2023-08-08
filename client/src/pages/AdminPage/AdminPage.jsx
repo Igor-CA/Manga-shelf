@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { SeriesCard } from "../../components/SeriesCard"
+import {UserContext} from '../../components/userProvider';
 import "./AdminPage.css"
 import debaunce from '../../utils/debaunce';
+
 
 export default function AdminPage(){
   const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
@@ -9,6 +11,7 @@ export default function AdminPage(){
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [seriesList, setSeriesList] = useState([])
+  const [user, setUser] = useContext(UserContext)
   
   const fetchSeriesList = async () => {
     try {
@@ -102,6 +105,7 @@ export default function AdminPage(){
 
   return(
     <div className='browse-collection-page'>
+      {user?<h1>Welcome {user.username}</h1>:""}
       <form className='form' onSubmit={(e) => handleSubmit(e)}>
         <label htmlFor="search-bar" className='form__label'>Pesquisa</label>
         <input 
@@ -112,6 +116,7 @@ export default function AdminPage(){
           value={search}
         />
       </form>
+      
       {loading && <p>Carregando...</p>}
       <div className='collection-container'>
         {seriesList.map(series => {
