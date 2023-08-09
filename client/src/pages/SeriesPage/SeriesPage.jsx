@@ -70,11 +70,57 @@ export default function SeriesPage(){
     }
 
     const renderButton = () => {
-        const inList = user.userList.find(series => series.Series === id )
-        console.log(inList)
+        const inList = user.userList.find(series => series.Series.id === id )
         return (!inList)?
             <button className="add-button" onClick={handleAddShow}>Add Series</button>:
             <button className="add-button" onClick={handleRemoveShow}>Remove Series</button>
+    }
+
+    const checkOwnedVolumes = (id) => {
+        if(user){
+            const inList = user.ownedVolumes.includes(id)
+            return inList
+        }else{
+            return false
+        }
+    }
+
+    const handleChange = (e, id) => {
+        console.log(!e.target.checked);
+        const previousValue = !(e.target.checked);
+        (previousValue)?removeVolume(id):addVolume(id);
+    }
+
+    const addVolume = async(volumeId) => {
+        console.log("Added", volumeId)
+        try{
+            const response = await axios({
+                method: "POST",
+                data: {_id: volumeId},
+                withCredentials: true,
+                url: "http://localhost:3001/user/add-volume"
+            })
+            setUser()
+            console.log(response)
+        }catch(err){
+            console.log(err)
+        }
+    }
+
+    const removeVolume = async(volumeId) => {
+        console.log("Removed", volumeId)
+        try{
+            const response = await axios({
+                method: "POST",
+                data: {_id: volumeId},
+                withCredentials: true,
+                url: "http://localhost:3001/user/remove-volume"
+            })
+            setUser()
+            console.log(response)
+        }catch(err){
+            console.log(err)
+        }
     }
 
     const {seriesCover, title, publisher, authors, volumes, } = series
@@ -92,13 +138,21 @@ export default function SeriesPage(){
             </div>
             <ol className="series__volumes-container">
                 {volumes.map(volume => {
+                    const {volumeId, image, volumeNumber} = volume
+                    const ownsVolume = checkOwnedVolumes(volumeId)
                     return(
-                        <li key={volume.volumeId} className="series__volume-item">
-                            <img src={volume.image} alt={`cover volume ${volume.volumeNumber}`} className="series__volume__image" />
-                            <Link to={`../volume/${volume.volumeId}`} className="series__volume__number"><strong>Volume {volume.volumeNumber}</strong></Link>
+                        <li key={volumeId} className="series__volume-item">
+                            <img src={image} alt={`cover volume ${volumeNumber}`} className="series__volume__image" />
+                            <Link to={`../volume/${volumeId}`} className="series__volume__number"><strong>Volume {volumeNumber}</strong></Link>
                             <div>
                                 <label htmlFor="have-volume-check-mark" className="checkmark-label">Tem:</label>
-                                <input type="checkbox" name="have-volume-check-mark" className="checkmark"/>
+                                <input 
+                                    type="checkbox" 
+                                    name="have-volume-check-mark" 
+                                    className="checkmark"
+                                    checked={ownsVolume}
+                                    onChange={(e) => {handleChange(e, volumeId)}}
+                                />
                             </div>                
                         </li>
                     )

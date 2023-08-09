@@ -12,7 +12,7 @@ export default function ProfilePage(){
         {user.userList.map(seriesObj => {
           const {title, _id, firstVolumeImage} = seriesObj.Series
           return(
-            <SeriesCard key={_id} seriesDetails={{title:title, image:firstVolumeImage, id:_id}} ></SeriesCard>
+            <SeriesCard key={_id} seriesDetails={{title, _id, image:firstVolumeImage}} ></SeriesCard>
           )
         })}
         

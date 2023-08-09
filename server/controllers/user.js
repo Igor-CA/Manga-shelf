@@ -127,7 +127,8 @@ exports.getProfilePage = asyncHandler(async (req, res, next) => {
       const userInfo = {
         _id: user._id,
         username: user.username,
-        userList: user.userList
+        userList: user.userList,
+        ownedVolumes: user.ownedVolumes
       }
       res.send(userInfo)
     }else{ 
@@ -135,5 +136,39 @@ exports.getProfilePage = asyncHandler(async (req, res, next) => {
     }
   }else{
     res.send()
+  }
+})
+
+exports.addVolume = asyncHandler(async(req, res, next) => {
+  if(req.isAuthenticated()){
+    const user = await User.findById(req.user._id)
+    
+    if(user){
+      user.ownedVolumes.push(req.body._id)
+      user.save()
+      res.send({msg: "Volume successfully added"})
+    }else{
+      res.send({msg: "User not found"})
+    }
+    
+  }
+})
+
+exports.removeVolume = asyncHandler(async(req, res, next) => {
+  if(req.isAuthenticated()){
+    const user = await User.findById(req.user._id)
+    
+    if(user){
+      console.log("Previous List", user.ownedVolumes)
+      console.log("Removed Id", req.body._id)
+      const newList = user.ownedVolumes.filter(volumeId => {return volumeId.toString() !== req.body._id})
+      user.ownedVolumes = newList
+      console.log("NewList", newList)
+      user.save()
+      res.send({msg: "Volume successfully removed"})
+    }else{
+      res.send({msg: "User not found"})
+    }
+    
   }
 })
