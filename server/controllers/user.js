@@ -141,10 +141,17 @@ exports.getProfilePage = asyncHandler(async (req, res, next) => {
 
 exports.addVolume = asyncHandler(async(req, res, next) => {
   if(req.isAuthenticated()){
-    const user = await User.findById(req.user._id)
-    
+      const user = await User.findOne(
+        { _id: req.user._id },
+        { 
+          ownedVolumes: 1,
+          userList: { $elemMatch: { Series: req.body.seriesId } },
+        }
+      ).populate('userList.Series')
     if(user){
       user.ownedVolumes.push(req.body._id)
+      user.userList[0].completionPercentage = req.body.completePorcentage
+      console.log(user)
       user.save()
       res.send({msg: "Volume successfully added"})
     }else{
@@ -156,14 +163,20 @@ exports.addVolume = asyncHandler(async(req, res, next) => {
 
 exports.removeVolume = asyncHandler(async(req, res, next) => {
   if(req.isAuthenticated()){
-    const user = await User.findById(req.user._id)
-    
+    const user = await User.findOne(
+      { _id: req.user._id },
+      {
+        ownedVolumes: 1,
+        userList: { $elemMatch: { Series: req.body.seriesId } },
+      }
+    ).populate('userList.Series')
+    console.log(user.ownedVolumes)
     if(user){
       console.log("Previous List", user.ownedVolumes)
       console.log("Removed Id", req.body._id)
       const newList = user.ownedVolumes.filter(volumeId => {return volumeId.toString() !== req.body._id})
       user.ownedVolumes = newList
-      console.log("NewList", newList)
+      user.userList[0].completionPercentage = req.body.completePorcentage
       user.save()
       res.send({msg: "Volume successfully removed"})
     }else{

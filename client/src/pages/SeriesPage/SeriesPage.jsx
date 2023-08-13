@@ -76,9 +76,16 @@ export default function SeriesPage(){
             <button className="add-button" onClick={handleRemoveShow}>Remove Series</button>
     }
 
+    const calculateCompletePorcentage = (newVolume) => {
+        const correctionValue = (newVolume)? -1 : 1
+        const total = series.volumes.length
+        const ownedVolumes = series.volumes.filter((volume) => checkOwnedVolumes(volume.volumeId)).length + correctionValue
+        return (ownedVolumes/total)
+    }
+
     const checkOwnedVolumes = (id) => {
         if(user){
-            const inList = user.ownedVolumes.includes(id)
+            const inList = user.ownedVolumes.includes(id);
             return inList
         }else{
             return false
@@ -86,17 +93,16 @@ export default function SeriesPage(){
     }
 
     const handleChange = (e, id) => {
-        console.log(!e.target.checked);
         const previousValue = !(e.target.checked);
-        (previousValue)?removeVolume(id):addVolume(id);
+        const completePorcentage = calculateCompletePorcentage(previousValue);
+        (previousValue)?removeVolume(id, completePorcentage):addVolume(id, completePorcentage);
     }
 
-    const addVolume = async(volumeId) => {
-        console.log("Added", volumeId)
+    const addVolume = async(volumeId, completePorcentage) => {
         try{
             const response = await axios({
                 method: "POST",
-                data: {_id: volumeId},
+                data: {_id: volumeId, completePorcentage, seriesId: id},
                 withCredentials: true,
                 url: "http://localhost:3001/user/add-volume"
             })
@@ -107,12 +113,11 @@ export default function SeriesPage(){
         }
     }
 
-    const removeVolume = async(volumeId) => {
-        console.log("Removed", volumeId)
+    const removeVolume = async(volumeId, completePorcentage) => {
         try{
             const response = await axios({
                 method: "POST",
-                data: {_id: volumeId},
+                data: {_id: volumeId, completePorcentage, seriesId: id},
                 withCredentials: true,
                 url: "http://localhost:3001/user/remove-volume"
             })
@@ -122,6 +127,8 @@ export default function SeriesPage(){
             console.log(err)
         }
     }
+
+
 
     const {seriesCover, title, publisher, authors, volumes, } = series
 

@@ -11,8 +11,10 @@ export default function ProfilePage(){
     <div className='collection-container'>
         {user.userList.map(seriesObj => {
           const {title, _id, firstVolumeImage} = seriesObj.Series
+          const completionPercentage = seriesObj.completionPercentage
+          console.log(seriesObj.completionPercentage)
           return(
-            <SeriesCard key={_id} seriesDetails={{title, _id, image:firstVolumeImage}} ></SeriesCard>
+            <SeriesCard key={_id} seriesDetails={{title, _id, image:firstVolumeImage, completionPercentage}} ></SeriesCard>
           )
         })}
         
