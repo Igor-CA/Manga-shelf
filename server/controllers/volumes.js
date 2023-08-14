@@ -1,32 +1,24 @@
-const series = require("../models/Series")
-const volume = require("../models/volume")
+const Volume = require("../models/volume");
+const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
+const ITEMS_PER_PAGE = 10;
+exports.all = asyncHandler(async (req, res, next) => {
+	const page = req.query.p ? Number(req.query.p) : 0;
+	const skip = (ITEMS_PER_PAGE * page)
+	const volumes = await Volume.find({}, "number")
+		.populate("serie", "title")
+		.skip(skip)
+		.limit(ITEMS_PER_PAGE)
+		.exec();
 
-exports.all = asyncHandler(async(req, res, next) => {
-    const page = req.query.p ? Number(req.query.p) : 0;
-    const step = 10
-    
-    const volumes = await volume.find({}, "number")
-        .populate("serie", "title")
-        .skip(step*page)
-        .limit(step)
-        .exec();
+	res.send(volumes);
+});
 
-    res.send(volumes);
-})
+exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
+	const desiredVolume = await Volume.findById(req.params.id)
+		.populate("serie", "title")
+		.exec();
 
-
-exports.getVolumeDetails = asyncHandler(async(req, res, next) => {
-    const desiredVolume = await volume.findById(req.params.id)
-        .populate("serie", "title")
-        .exec();
-
-    const { serie, number } = desiredVolume;
-
-    const sanitizedTitle = serie.title.replace(/[?:/–\s]+/g, '-').replace(/-+/g, '-');
-    const nameURL = encodeURIComponent(sanitizedTitle)
-    
-    const imageURL = `${process.env.HOST_ORIGIN}/images/cover-${nameURL}-${number}.jpg`;
-    
-    res.send({...desiredVolume._doc, image: imageURL})
-})
+	const { serie, number } = desiredVolume;
+	res.send({ ...desiredVolume._doc, image: getVolumeCoverURL(serie, number) });
+});
