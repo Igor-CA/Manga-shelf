@@ -94,7 +94,7 @@ async function fetchUser(req) {
 }
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
-	const user = fetchUser(req);
+	const user = await fetchUser(req);
 
 	if (user) {
 		const addedSeries = { Series: req.body.id };
@@ -107,7 +107,7 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeSeries = asyncHandler(async (req, res, next) => {
-	const user = fetchUser(req);
+	const user = await fetchUser(req); 
 
 	if (user) {
 		const newList = user.userList.filter((seriesObject) => {
