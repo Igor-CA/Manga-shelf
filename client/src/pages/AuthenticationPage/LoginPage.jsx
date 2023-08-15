@@ -1,10 +1,12 @@
 import { useContext, useState } from "react";
 import axios from "axios";
 import { UserContext } from "../../components/userProvider";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
 	//const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
-	const [formData, setFormData] = useState({ username: "", password: "" });
+    const navigate = useNavigate();
+	const [formData, setFormData] = useState({ login: "", password: "" });
 	const [user, setUser] = useContext(UserContext);
 
 	const handleChange = (e) => {
@@ -21,7 +23,7 @@ export default function LoginPage() {
 			url: "http://localhost:3001/user/login",
 		});
 		console.log(response);
-		setUser(); //Update state and the parent will handle the querry
+		navigate("../");
 	};
 
 	return (
