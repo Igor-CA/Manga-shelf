@@ -144,7 +144,9 @@ export default function SeriesPage() {
 	const renderVolumeItem = (volume) => {
 		const { volumeId, image, volumeNumber } = volume;
 		const index = volumeNumber - 1;
-        const ownsVolume = (localVolumeState)?localVolumeState[index].ownsVolume:false
+        const ownsVolume = (localVolumeState)
+			?localVolumeState.find(element => element.volumeId === volumeId).ownsVolume
+			:false
 		return (
 			<li key={volumeId} className="series__volume-item">
 				<img
