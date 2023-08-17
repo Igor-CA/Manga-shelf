@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
-import { SeriesCard } from "../../components/SeriesCard";
-import "./AdminPage.css";
-import debaunce from "../../utils/debaunce";
+import React, { useState, useEffect, useCallback } from "react";
+import { SeriesCard } from "./SeriesCard";
+import "./BrowseDisplay.css";
+import debaunce from "../utils/debaunce";
 
-export default function AdminPage() {
+export default function BrowseDisplay() {
 	const hostOrigin = process.env.REACT_APP_HOST_ORIGIN;
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");

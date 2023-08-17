@@ -22,7 +22,14 @@ export default function LoginPage() {
 			withCredentials: true,
 			url: "http://localhost:3001/user/login",
 		});
+		const userFetch = await axios({
+			method: "GET",
+			withCredentials: true,
+			url: "http://localhost:3001/user/profile",
+		});
+		setUser(userFetch.data);
 		console.log(response);
+		console.log(userFetch.data);
 		navigate("../");
 	};
 

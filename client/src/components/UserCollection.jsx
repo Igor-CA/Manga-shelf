@@ -1,14 +1,13 @@
 import { useContext, useEffect } from "react";
-import { SeriesCard } from "../../components/SeriesCard";
-import { UserContext } from "../../components/userProvider";
+import { SeriesCard } from "./SeriesCard";
+import { UserContext } from "./userProvider";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-export default function ProfilePage() {
+export default function UserCollection() {
 	const [user, setUser] = useContext(UserContext);
 
-  useEffect(() => {
-    console.log("Accessed profilePAeg")
+	useEffect(() => {
 		const querryUser = async () => {
 			const res = await axios({
 				method: "GET",
@@ -18,10 +17,10 @@ export default function ProfilePage() {
 			console.log(res.data);
 			setUser(res.data);
 		};
-    querryUser();
+		querryUser();
 	}, []);
 
-	const renderProfile = () => {
+	const renderUserCollection = () => {
 		return (
 			<div className="collection-container">
 				{user.userList.map((seriesObj) => {
@@ -42,20 +41,8 @@ export default function ProfilePage() {
 			</div>
 		);
 	};
-	const renderLoginRedirect = () => {
-		return (
-			<div className="redirect-page">
-				<h1>User not connected</h1>
-				<h2>Please login or Signup</h2>
-				<Link to={"/login"}>Login</Link>
-				<Link to={"/signup"}>Signup</Link>
-			</div>
-		);
-	};
 
 	return (
-		<div className="ProfilePage">
-			{user ? renderProfile() : renderLoginRedirect()}
-		</div>
+		<div className="user-collection">{user && renderUserCollection()}</div>
 	);
 }

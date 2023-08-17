@@ -15,6 +15,7 @@ export default function SeriesPage() {
 		volumes: [],
 	});
 	const [localVolumeState, setLocalVolumeState] = useState();
+	const [localUserListState, setLocalUserListState] = useState([]);
 
 	useEffect(() => {
 		const fetchSeriesData = async () => {
@@ -33,14 +34,15 @@ export default function SeriesPage() {
 	}, []);
 
 	useEffect(() => {
-        if(series.title !== ""){
-            const newLocalVolumeState = series.volumes.map((volume) => {
-                const { volumeId } = volume;
-                const ownsVolume = checkOwnedVolumes(volumeId);
-                return {volumeId, ownsVolume};
-            });
-            setLocalVolumeState(newLocalVolumeState);
-        }
+		if (series.title !== "") {
+			const newLocalVolumeState = series.volumes.map((volume) => {
+				const { volumeId } = volume;
+				const ownsVolume = checkOwnedVolumes(volumeId);
+				return { volumeId, ownsVolume };
+			});
+			setLocalVolumeState(newLocalVolumeState);
+			setLocalUserListState([...user.userList]);
+		}
 	}, [series]);
 
 	const getAuthorsString = (authors) => {
@@ -60,8 +62,8 @@ export default function SeriesPage() {
 		const correctionValue = newVolume ? -1 : 1;
 		const total = localVolumeState.length;
 		const ownedVolumes =
-            localVolumeState.filter((volume) => volume.ownsVolume)
-				.length + correctionValue;
+			localVolumeState.filter((volume) => volume.ownsVolume).length +
+			correctionValue;
 		return ownedVolumes / total;
 	};
 
@@ -84,6 +86,16 @@ export default function SeriesPage() {
 				withCredentials: true,
 				url: url,
 			});
+			if (isAdding) {
+				console.log("Adding?")
+				const newUserList = [...localUserListState]
+				newUserList.push({ Series: {id} });
+				setLocalUserListState([...newUserList]);
+			}else{
+				console.log("Rmoving")
+				const newUserList = localUserListState.filter((series) => series.Series.id !== id);
+				setLocalUserListState([...newUserList]);
+			}
 			console.log(response);
 		} catch (err) {
 			console.log(err);
@@ -99,14 +111,14 @@ export default function SeriesPage() {
 			: addOrRemoveVolume(true, id, completePorcentage);
 
 		//update the state of checklist
-        const newList = localVolumeState.map((checkbox) => {
-            const {volumeId, ownsVolume} = checkbox
-            if (volumeId === id){
-               return {...checkbox, ownsVolume:!ownsVolume}
-            }
-            return checkbox
-        })
-        setLocalVolumeState(newList)
+		const newList = localVolumeState.map((checkbox) => {
+			const { volumeId, ownsVolume } = checkbox;
+			if (volumeId === id) {
+				return { ...checkbox, ownsVolume: !ownsVolume };
+			}
+			return checkbox;
+		});
+		setLocalVolumeState(newList);
 	};
 
 	const addOrRemoveVolume = async (isAdding, volumeId, completePorcentage) => {
@@ -128,7 +140,8 @@ export default function SeriesPage() {
 	};
 
 	const renderAddRemoveButton = () => {
-		const inList = user.userList.find((series) => series.Series.id === id);
+		console.log(localUserListState)
+		const inList = localUserListState.find((series) => series.Series.id === id);
 		return (
 			<button
 				className="add-button"
@@ -144,9 +157,10 @@ export default function SeriesPage() {
 	const renderVolumeItem = (volume) => {
 		const { volumeId, image, volumeNumber } = volume;
 		const index = volumeNumber - 1;
-        const ownsVolume = (localVolumeState)
-			?localVolumeState.find(element => element.volumeId === volumeId).ownsVolume
-			:false
+		const ownsVolume = localVolumeState
+			? localVolumeState.find((element) => element.volumeId === volumeId)
+					.ownsVolume
+			: false;
 		return (
 			<li key={volumeId} className="series__volume-item">
 				<img
