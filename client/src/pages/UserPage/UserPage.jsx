@@ -2,9 +2,9 @@ import { useContext, useState, useEffect } from "react"
 import { Link } from "react-router-dom";
 import { UserContext } from "../../components/userProvider";
 import UserCollection from "../../components/UserCollection";
-import BrowseDisplay from "../../components/BrowseDisplay";
 import "./UserPage.css"
 import axios from "axios";
+import BrowsePage from "../BrowsePage/BrowsePage";
 
 export default function UserPage(){
     const [currentPage, setCurrentPage] = useState("Collection")
@@ -23,19 +23,6 @@ export default function UserPage(){
 		querryUser();
 	}, []);
 
-    const renderPage = () => {
-        if(currentPage === "Collection"){
-            return <UserCollection></UserCollection>
-        }else if( currentPage === "Missing"){
-            return(
-                <h1>You are in the missing volumes page</h1>
-            )
-        }else if (currentPage === "Search"){
-            return(
-                <BrowseDisplay></BrowseDisplay>
-            )
-        }
-    }
 
     const renderLoginRedirect = () => {
 		return (
@@ -50,21 +37,8 @@ export default function UserPage(){
 
     return(
         <div>
-            {user?renderPage():renderLoginRedirect()}
-            <nav className="navbar">
-                <button 
-                    onClick={() => {setCurrentPage("Missing")}}
-                    className="navbar__button"
-                >Missing volumes</button>
-                <button 
-                    onClick={() => {setCurrentPage("Search")}}
-                    className="navbar__button"
-                >Search</button>
-                <button 
-                    onClick={() => {setCurrentPage("Collection")}}
-                    className="navbar__button"
-                >Profile</button>
-            </nav>
+            {user?<UserCollection></UserCollection>:renderLoginRedirect()}
+            
         </div>
             //Header -> Profile info
             //body

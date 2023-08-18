@@ -7,7 +7,7 @@ export function SeriesCard({ seriesDetails }) {
 		? seriesDetails.completionPercentage
 		: null;
 	return (
-		<Link to={`series/${_id}`} className="series-card">
+		<Link to={`../series/${_id}`} className="series-card">
 			<div className="series-card__overlay">
 				<strong className="series-card__title">{title}</strong>
 			</div>

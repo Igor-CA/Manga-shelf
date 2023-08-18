@@ -41,7 +41,8 @@ export default function SeriesPage() {
 				return { volumeId, ownsVolume };
 			});
 			setLocalVolumeState(newLocalVolumeState);
-			setLocalUserListState([...user.userList]);
+			if(user)
+				setLocalUserListState([...user.userList]);
 		}
 	}, [series]);
 

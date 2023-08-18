@@ -15,6 +15,11 @@ exports.signup = [
 		.notEmpty()
 		.withMessage("Password must be specified.")
 		.escape(),
+	body("confirm-password")
+		.trim()
+		.notEmpty()
+		.withMessage("Password must be specified.")
+		.escape(),
 	body("email")
 		.trim()
 		.notEmpty()
@@ -24,30 +29,34 @@ exports.signup = [
 	asyncHandler(async (req, res, next) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
-			res.status(400).json({ errors: errors.array() });
-			return;
+			return res.status(400).json({ errors: errors.array() });
 		}
 
-		const { username, password, email } = req.body;
+		const { username, password, email, ['confirm-password']: confirmPassword } = req.body;
 
-		const [ExistingUser] = await User.find()
+		if (password !== confirmPassword) {
+			return res.status(409).json({ message: "Passwords don't match properly" });
+		} 
+
+		const [existingUser] = await User.find()
 			.or([{ username }, { email }])
 			.limit(1);
-
-		if (!ExistingUser) {
-			const hashedPassword = await bcrypt.hash(password, 10);
-			const newUser = new User({
-				username,
-				password: hashedPassword,
-				email,
-			});
-			await newUser.save();
-			res.status(201).json({ message: "User created successfully" });
-		} else {
-			res.status(409).json({ message: "Email or username is already in use" });
+		
+		if (existingUser) {
+			return res.status(409).json({ message: "Email or username is already in use" });
 		}
+
+		const hashedPassword = await bcrypt.hash(password, 10);
+		const newUser = new User({
+			username,
+			password: hashedPassword,
+			email,
+		});
+		await newUser.save();
+		res.status(201).json({ message: "User created successfully" });
+	
 	}),
-];
+]; 
 
 exports.login = [
 	body("login")
