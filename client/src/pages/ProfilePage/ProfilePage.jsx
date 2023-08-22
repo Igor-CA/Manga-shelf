@@ -7,17 +7,17 @@ import axios from "axios";
 export default function ProfilePage() {
 	const [user, setUser] = useContext(UserContext);
 
-  useEffect(() => {
+	useEffect(() => {
 		const querryUser = async () => {
 			const res = await axios({
 				method: "GET",
 				withCredentials: true,
-				url: "http://localhost:3001/user/profile",
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
 			});
 			console.log(res.data);
 			setUser(res.data);
 		};
-    querryUser();
+		querryUser();
 	}, []);
 
 	const renderProfile = () => {
@@ -42,10 +42,5 @@ export default function ProfilePage() {
 		);
 	};
 
-
-	return (
-		<div className="ProfilePage">
-			{user && renderProfile()}
-		</div>
-	);
+	return <div className="ProfilePage">{user && renderProfile()}</div>;
 }

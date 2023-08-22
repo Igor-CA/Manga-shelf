@@ -15,14 +15,13 @@ export default function SignupPage() {
 	};
 
 	const handleSubmit = async (e) => {
-		const hostOrigin = process.env.REACT_APP_HOST_ORIGIN;
 		e.preventDefault();
 		try {
 			const response = await axios({
 				method: "POST",
 				data: formData,
 				withCredentials: true,
-				url: `${hostOrigin}/user/signup`,
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/signup`,
 			});
 			console.log(response.data);
 		} catch (error) {

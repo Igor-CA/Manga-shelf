@@ -17,10 +17,9 @@ export default function VolumePage() {
 	});
 
 	useEffect(() => {
-		const hostOrigin = process.env.REACT_APP_HOST_ORIGIN;
 		const fetchVolumeData = async () => {
 			try {
-				const response = await axios.get(`${hostOrigin}/api/volume/${id}`);
+				const response = await axios.get(`${process.env.REACT_APP_HOST_ORIGIN}/api/volume/${id}`);
 				const responseData = response.data;
 				console.log(responseData);
 				setVolumeData(responseData);

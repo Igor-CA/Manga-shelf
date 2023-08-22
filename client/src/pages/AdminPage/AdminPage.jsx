@@ -4,7 +4,6 @@ import "./AdminPage.css";
 import debaunce from "../../utils/debaunce";
 
 export default function AdminPage() {
-	const hostOrigin = process.env.REACT_APP_HOST_ORIGIN;
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -12,7 +11,7 @@ export default function AdminPage() {
 
 	const fetchSeriesList = async () => {
 		try {
-			const response = await fetch(`${hostOrigin}/admin?p=${page}`);
+			const response = await fetch(`${process.env.REACT_APP_HOST_ORIGIN}/admin?p=${page}`);
 			const resultList = await response.json();
 			return resultList;
 		} catch (error) {
@@ -51,7 +50,7 @@ export default function AdminPage() {
 		if (querry.length > 1) {
 			setLoading(true);
 			try {
-				const response = await fetch(`${hostOrigin}/api/search?q=${querry}`);
+				const response = await fetch(`${process.env.REACT_APP_HOST_ORIGIN}/api/search?q=${querry}`);
 				const data = await response.json();
 				console.log(querry);
 				if (data.length > 0) {

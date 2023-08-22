@@ -1,21 +1,21 @@
-import { useContext, useState, useEffect } from "react"
+import { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { UserContext } from "../../components/userProvider";
 import UserCollection from "../../components/UserCollection";
-import "./UserPage.css"
+import "./UserPage.css";
 import axios from "axios";
 import BrowsePage from "../BrowsePage/BrowsePage";
 
-export default function UserPage(){
-    const [currentPage, setCurrentPage] = useState("Collection")
-    const [user, setUser] = useContext(UserContext)
+export default function UserPage() {
+	const [currentPage, setCurrentPage] = useState("Collection");
+	const [user, setUser] = useContext(UserContext);
 
-    useEffect(() => {
+	useEffect(() => {
 		const querryUser = async () => {
 			const res = await axios({
 				method: "GET",
 				withCredentials: true,
-				url: "http://localhost:3001/user/profile",
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
 			});
 			console.log(res.data);
 			setUser(res.data);
@@ -23,8 +23,7 @@ export default function UserPage(){
 		querryUser();
 	}, []);
 
-
-    const renderLoginRedirect = () => {
+	const renderLoginRedirect = () => {
 		return (
 			<div className="redirect-page">
 				<h1>User not connected</h1>
@@ -35,16 +34,15 @@ export default function UserPage(){
 		);
 	};
 
-    return(
-        <div>
-            {user?<UserCollection></UserCollection>:renderLoginRedirect()}
-            
-        </div>
-            //Header -> Profile info
-            //body
-                //Collection
-                //Search
-                //Missing volumes
-            //Footer / navbar
-    )
+	return (
+		<div>
+			{user ? <UserCollection></UserCollection> : renderLoginRedirect()}
+		</div>
+		//Header -> Profile info
+		//body
+		//Collection
+		//Search
+		//Missing volumes
+		//Footer / navbar
+	);
 }

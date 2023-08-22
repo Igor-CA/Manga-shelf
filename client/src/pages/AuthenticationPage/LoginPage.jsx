@@ -2,11 +2,10 @@ import { useContext, useState } from "react";
 import axios from "axios";
 import { UserContext } from "../../components/userProvider";
 import { useNavigate } from "react-router-dom";
-import "./Authentication.css"
+import "./Authentication.css";
 
 export default function LoginPage() {
-	//const hostOrigin = process.env.REACT_APP_HOST_ORIGIN
-    const navigate = useNavigate();
+	const navigate = useNavigate();
 	const [formData, setFormData] = useState({ login: "", password: "" });
 	const [user, setUser] = useContext(UserContext);
 
@@ -21,12 +20,12 @@ export default function LoginPage() {
 			method: "POST",
 			data: formData,
 			withCredentials: true,
-			url: "http://localhost:3001/user/login",
+			url: `${process.env.REACT_APP_HOST_ORIGIN}/user/login`,
 		});
 		const userFetch = await axios({
 			method: "GET",
 			withCredentials: true,
-			url: "http://localhost:3001/user/profile",
+			url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
 		});
 		setUser(userFetch.data);
 		console.log(response);
@@ -45,30 +44,34 @@ export default function LoginPage() {
 					handleSubmit(e);
 				}}
 			>
-				<label htmlFor="login" className="autentication-form__label"> Nome de usuário:</label>
-					<input
-						type="text"
-						name="login"
-						id="login"
-						placeholder="Email or Username"
-						className="autentication-form__input"
-						value={formData.login}
-						onChange={(e) => {
-							handleChange(e);
-						}}
-					/>
-				<label htmlFor="password" className="autentication-form__label">Senha:</label>
-					<input
-						type="password"
-						name="password"
-						id="password"
-						placeholder="Password"
-						className="autentication-form__input"
-						value={formData.password}
-						onChange={(e) => {
-							handleChange(e);
-						}}
-					/>
+				<label htmlFor="login" className="autentication-form__label">
+					Nome de usuário:
+				</label>
+				<input
+					type="text"
+					name="login"
+					id="login"
+					placeholder="Email or Username"
+					className="autentication-form__input"
+					value={formData.login}
+					onChange={(e) => {
+						handleChange(e);
+					}}
+				/>
+				<label htmlFor="password" className="autentication-form__label">
+					Senha:
+				</label>
+				<input
+					type="password"
+					name="password"
+					id="password"
+					placeholder="Password"
+					className="autentication-form__input"
+					value={formData.password}
+					onChange={(e) => {
+						handleChange(e);
+					}}
+				/>
 				<button className="autentication-form__button">Log in</button>
 			</form>
 		</div>

@@ -12,7 +12,7 @@ export default function UserCollection() {
 			const res = await axios({
 				method: "GET",
 				withCredentials: true,
-				url: "http://localhost:3001/user/profile",
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
 			});
 			console.log(res.data);
 			setUser(res.data);

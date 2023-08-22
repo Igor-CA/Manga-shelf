@@ -19,9 +19,10 @@ export default function SeriesPage() {
 
 	useEffect(() => {
 		const fetchSeriesData = async () => {
-			const hostOrigin = process.env.REACT_APP_HOST_ORIGIN;
 			try {
-				const response = await axios.get(`${hostOrigin}/api/series/${id}`);
+				const response = await axios.get(
+					`${process.env.REACT_APP_HOST_ORIGIN}/api/series/${id}`
+				);
 				console.log(response);
 				const responseData = response.data;
 				setSeries(responseData);
@@ -41,8 +42,7 @@ export default function SeriesPage() {
 				return { volumeId, ownsVolume };
 			});
 			setLocalVolumeState(newLocalVolumeState);
-			if(user)
-				setLocalUserListState([...user.userList]);
+			if (user) setLocalUserListState([...user.userList]);
 		}
 	}, [series]);
 
@@ -78,8 +78,8 @@ export default function SeriesPage() {
 	const addOrRemoveSeries = async (isAdding) => {
 		try {
 			const url = isAdding
-				? "http://localhost:3001/user/add-series"
-				: "http://localhost:3001/user/remove-series";
+				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-series`
+				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-series`;
 
 			const response = await axios({
 				method: "POST",
@@ -88,13 +88,15 @@ export default function SeriesPage() {
 				url: url,
 			});
 			if (isAdding) {
-				console.log("Adding?")
-				const newUserList = [...localUserListState]
-				newUserList.push({ Series: {id} });
+				console.log("Adding?");
+				const newUserList = [...localUserListState];
+				newUserList.push({ Series: { id } });
 				setLocalUserListState([...newUserList]);
-			}else{
-				console.log("Rmoving")
-				const newUserList = localUserListState.filter((series) => series.Series.id !== id);
+			} else {
+				console.log("Rmoving");
+				const newUserList = localUserListState.filter(
+					(series) => series.Series.id !== id
+				);
 				setLocalUserListState([...newUserList]);
 			}
 			console.log(response);
@@ -125,8 +127,8 @@ export default function SeriesPage() {
 	const addOrRemoveVolume = async (isAdding, volumeId, completePorcentage) => {
 		try {
 			const url = isAdding
-				? "http://localhost:3001/user/add-volume"
-				: "http://localhost:3001/user/remove-volume";
+				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-volume`
+				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-volume`;
 
 			const response = await axios({
 				method: "POST",
@@ -141,7 +143,7 @@ export default function SeriesPage() {
 	};
 
 	const renderAddRemoveButton = () => {
-		console.log(localUserListState)
+		console.log(localUserListState);
 		const inList = localUserListState.find((series) => series.Series.id === id);
 		return (
 			<button
