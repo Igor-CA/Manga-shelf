@@ -6,6 +6,7 @@ import AdminPage from "./pages/AdminPage/AdminPage";
 import SignupPage from "./pages/AuthenticationPage/SignupPage";
 import LoginPage from "./pages/AuthenticationPage/LoginPage";
 import UserPage from "./pages/UserPage/UserPage";
+import NavBar from "./components/NavBar";
 import BrowsePage from "./pages/BrowsePage/BrowsePage";
 function App() {
 
@@ -21,11 +22,7 @@ function App() {
 					<Route path="/series/:id" element={<SeriesPage />}></Route>
 					<Route path="/volume/:id" element={<VolumePage />}></Route>
 				</Routes>
-				<nav className="navbar">
-					<Link to={"/info"} className="navbar__button" >About</Link>
-					<Link to={"/browse"} className="navbar__button" >Browse</Link>
-					<Link to={"/profile"} className="navbar__button" >Profile</Link>
-				</nav>
+				<NavBar></NavBar>
 			</BrowserRouter>
 		</div>
 	);

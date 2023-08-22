@@ -4,12 +4,3 @@
 	font-family: Arial, Helvetica, sans-serif;
 	box-sizing: border-box;
 }
-.navbar__button{
-	text-align: center;
-    background-color: black;
-    color: white;
-    font-size: 1.2em;
-    font-weight: bold;
-    padding: 15px;
-    flex-grow: 1;
-}
