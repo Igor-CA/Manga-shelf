@@ -125,7 +125,7 @@ export default function NavBar() {
 				</Link>
 
 				<Link
-					to={"/misiing"}
+					to={"/missing"}
 					className="navbar__button"
 					onClick={() => {
 						setMenuVisibility(false);

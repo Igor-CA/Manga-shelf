@@ -8,6 +8,7 @@ import LoginPage from "./pages/AuthenticationPage/LoginPage";
 import UserPage from "./pages/UserPage/UserPage";
 import NavBar from "./components/NavBar";
 import BrowsePage from "./pages/BrowsePage/BrowsePage";
+import MissingVolumesPage from "./pages/MissingVolumesPage/MissingVolumesPage";
 function App() {
 
 	return (
@@ -19,6 +20,7 @@ function App() {
 					<Route path="/browse" element={<BrowsePage />}></Route>
 					<Route path="/signup" element={<SignupPage />}></Route>
 					<Route path="/login" element={<LoginPage />}></Route>
+					<Route path="/missing" element={<MissingVolumesPage />}></Route>
 					<Route path="/series/:id" element={<SeriesPage />}></Route>
 					<Route path="/volume/:id" element={<VolumePage />}></Route>
 				</Routes>

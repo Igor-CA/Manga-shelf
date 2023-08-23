@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Series = require("../models/Series");
+const {getVolumeCoverURL} = require("../Utils/getCoverFunctions")
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const { body, validationResult } = require("express-validator");
@@ -139,7 +140,6 @@ exports.getProfilePage = asyncHandler(async (req, res, next) => {
 			})
 			.exec();
 		if (user) {
-			console.log(user.userList);
 			const userInfo = {
 				_id: user._id,
 				username: user.username,
@@ -147,6 +147,37 @@ exports.getProfilePage = asyncHandler(async (req, res, next) => {
 				ownedVolumes: user.ownedVolumes,
 			};
 			res.send(userInfo);
+		} else {
+			res.send({ msg: "User not found" });
+		}
+	} else {
+		res.send();
+	}
+});
+
+exports.getMissingPage = asyncHandler(async (req, res, next) => {
+	if (req.user) {
+		const user = await User.findById(req.user._id)
+			.populate({
+				path: "userList.Series",
+				select: "title volumes",
+				populate:{
+					path: "volumes",
+					select: "number"
+				}
+			})
+			.exec();
+		if (user) {
+			const mangaList = user.userList.flatMap((seriesObj) => {
+				const volumesWithImages = seriesObj.Series.volumes.map((volume) => ({
+					series: seriesObj.Series.title,
+					volumeId: volume._id,
+					volumeNumber: volume.number,
+					image: getVolumeCoverURL(seriesObj.Series, volume.number),
+				}));
+				return volumesWithImages
+			})
+			res.send(mangaList);
 		} else {
 			res.send({ msg: "User not found" });
 		}

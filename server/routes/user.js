@@ -10,4 +10,5 @@ router.post("/add-volume", userController.addVolume);
 router.post("/remove-series", userController.removeSeries);
 router.post("/remove-volume", userController.removeVolume);
 router.get("/profile", userController.getProfilePage);
+router.get("/missing", userController.getMissingPage);
 module.exports = router;
