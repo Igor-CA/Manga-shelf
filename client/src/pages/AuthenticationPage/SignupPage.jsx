@@ -55,11 +55,11 @@ export default function SignupPage() {
 				customErrorMessage = `Both passwords are not coinciding.`
 			}
 		}
-		/*
+		
 		setTimeout(() => {
 			setErrors([]);
 		}, 3000);
-		*/
+		
 		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
 	}
 
