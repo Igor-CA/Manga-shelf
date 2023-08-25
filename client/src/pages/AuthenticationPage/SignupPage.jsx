@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+	faCircleXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import "./Authentication.css"
 
 export default function SignupPage() {
+	const [errors, setErrors] = useState([])
 	const [formData, setFormData] = useState({
 		username: "",
 		password: "",
@@ -28,6 +33,53 @@ export default function SignupPage() {
 			console.error("Error fetching user Data:", error);
 		}
 	};
+	const handleInvalid = (e) => {
+		e.preventDefault()
+		const inputName = e.target.name;
+		let customErrorMessage = '';
+		if(e.target.value === ''){
+			customErrorMessage = `The ${inputName} field is required.`
+		}else{
+			if(inputName === "email"){
+				customErrorMessage = `The email must be a valid email address.`
+			}
+			if(inputName === "username"){
+				customErrorMessage = `The username must be at least 3 characters long.`
+			}
+			if(inputName === "password"){
+				customErrorMessage =(e.target.value.length > 8)
+					?`The password must contain at least one letter one number and a special character.`
+					:`The password must be at least 8 characters long`
+			}
+			if(inputName === "confirm-password"){
+				customErrorMessage = `Both passwords are not coinciding.`
+			}
+		}
+		/*
+		setTimeout(() => {
+			setErrors([]);
+		}, 3000);
+		*/
+		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
+	}
+
+	const renderErrorsMessage = () => {
+		return(
+			<div className="errors-container">
+				<FontAwesomeIcon icon={faCircleXmark} size="l"/>
+				<p>
+					{errors.map((erro, index) => {
+						return(
+							<>
+								{erro}
+								<br />
+							</>
+						)
+					})}
+				</p>
+			</div>
+		)
+	}
 
 	return (
 		<div className="form-container">
@@ -35,9 +87,7 @@ export default function SignupPage() {
 			<form
 				method="post"
 				className="autentication-form"
-				onSubmit={(e) => {
-					handleSubmit(e);
-				}}
+				onSubmit={(e) => { handleSubmit(e);}}
 			>
 				<label htmlFor="email" className="autentication-form__label">Email:</label>
 				<input
@@ -46,9 +96,9 @@ export default function SignupPage() {
 					placeholder="Email"
 					id="email"
 					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
+					onChange={(e) => { handleChange(e); }}
+					onInvalid={(e) => {handleInvalid(e)}}
+					required
 				/>
 				<label htmlFor="username" className="autentication-form__label">User name: </label>
 				<input
@@ -57,9 +107,10 @@ export default function SignupPage() {
 					placeholder="Username"
 					id="username"
 					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
+					onChange={(e) => { handleChange(e); }}
+					onInvalid={(e) => {handleInvalid(e)}}
+					required
+					pattern= "^[A-Za-z0-9]{3,16}$"
 				/>
 				<label htmlFor="password" className="autentication-form__label">Password:</label>
 				<input
@@ -68,9 +119,10 @@ export default function SignupPage() {
 					placeholder="Password"
 					id="password"
 					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
+					onChange={(e) => { handleChange(e); }}
+					onInvalid={(e) => {handleInvalid(e)}}
+					required
+					pattern= "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
 				/>
 				<label htmlFor="confirm-password" className="autentication-form__label">Confirm password:</label>
 				<input
@@ -79,12 +131,14 @@ export default function SignupPage() {
 					placeholder="Confirm password"
 					id="confirm-password"
 					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
+					onChange={(e) => { handleChange(e); }}
+					onInvalid={(e) => {handleInvalid(e)}}
+					required
+					pattern= {formData.password}
 				/>
 				<button className="autentication-form__button">Sign up</button>
 			</form>
+			{errors.length > 0 && renderErrorsMessage()}
 		</div>
 	);
 }
