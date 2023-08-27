@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const VolumeSchema = new Schema({
 	serie: { type: Schema.Types.ObjectId, ref: "Series" },
 	number: { type: Number, required: true },
-	pagesNumber: { type: Number },
+	ISBN: {type:String},
+	pagesNumber: { type: Number },	
 	date: { type: String },
 	summary: [{ type: String }], //Separated by paragraphs
 	defaultPrice: { type: String },
