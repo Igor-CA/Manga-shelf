@@ -13,6 +13,7 @@ exports.all = asyncHandler(async (req, res, next) => {
 	const currentPage = req.query.p ? Number(req.query.p) : 1;
 	const skip = ITEMS_PER_PAGE * (currentPage - 1);
 	const seriesList = await Series.find({}, "title")
+		.sort({ title: 1 })
 		.skip(skip)
 		.limit(ITEMS_PER_PAGE)
 		.exec();
@@ -68,7 +69,10 @@ exports.searchSeries = asyncHandler(async (req, res, next) => {
 
 exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	const desiredSeries = await Series.findById(req.params.id)
-		.populate("volumes")
+		.populate({
+			path: "volumes",
+			options: { sort: { number: 1 } } // Sort populated volumes by their number field
+		})
 		.exec();
 
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({

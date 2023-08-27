@@ -8,32 +8,39 @@ export default function BrowsePage() {
 	const [search, setSearch] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [seriesList, setSeriesList] = useState([]);
+	const [reachedEnd, setReachedEnd] = useState(false);
 
 	const fetchSeriesList = async () => {
 		try {
-			const response = await fetch(`${process.env.REACT_APP_HOST_ORIGIN}/admin?p=${page}`);
+			const response = await fetch(
+				`${process.env.REACT_APP_HOST_ORIGIN}/admin?p=${page}`
+			);
 			const resultList = await response.json();
 			return resultList;
 		} catch (error) {
 			console.error("Error fetching series list:", error);
 		}
 	};
-
+	
 	const updatePage = async () => {
-		setLoading(true);
-		try {
-			const resultList = await fetchSeriesList();
-			console.log(resultList);
-			if (resultList.length > 0) {
-				setSeriesList((prevList) =>
-					page === 1 ? [...resultList] : [...prevList, ...resultList]
-				);
-				setPage(page + 1);
+		if (!loading && !reachedEnd) {
+			setLoading(true);
+			try {
+				const resultList = await fetchSeriesList();
+				console.log(resultList);
+				if (resultList.length > 0) {
+					setSeriesList((prevList) =>
+						page === 1 ? [...resultList] : [...prevList, ...resultList]
+					);
+					setPage(page + 1);
+				}else{
+					setReachedEnd(true)
+				}
+			} catch (error) {
+				console.error("Error fetching user Data:", error);
+			} finally {
+				setLoading(false);
 			}
-		} catch (error) {
-			console.error("Error fetching user Data:", error);
-		} finally {
-			setLoading(false);
 		}
 	};
 
@@ -44,13 +51,16 @@ export default function BrowsePage() {
 			debaunceSearch(inputValue);
 		} else {
 			updatePage();
+			setReachedEnd(false);
 		}
 	};
 	const fetchSearch = async (querry) => {
 		if (querry.length > 1) {
 			setLoading(true);
 			try {
-				const response = await fetch(`${process.env.REACT_APP_HOST_ORIGIN}/api/search?q=${querry}`);
+				const response = await fetch(
+					`${process.env.REACT_APP_HOST_ORIGIN}/api/search?q=${querry}`
+				);
 				const data = await response.json();
 				console.log(querry);
 				if (data.length > 0) {
@@ -77,14 +87,18 @@ export default function BrowsePage() {
 		const scrollY = window.scrollY;
 		const windowHeight = window.innerHeight;
 		const contentHeight = document.documentElement.offsetHeight;
-
+		
 		const bottomOffset = contentHeight - (scrollY + windowHeight);
-		const loadMoreThreshold = 200; // Adjust this value as needed
-
+		const loadMoreThreshold = 600; // Adjust this value as needed
 		if (bottomOffset < loadMoreThreshold && !loading && search.trim() === "") {
 			updatePage();
 		}
 	};
+	
+	const debouncedHandleScroll  = useCallback(
+		debaunce(handleScroll, 100),
+		[page, reachedEnd]
+	);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -95,8 +109,8 @@ export default function BrowsePage() {
 	}, []);
 
 	useEffect(() => {
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
+		window.addEventListener("scroll", debouncedHandleScroll);
+		return () => window.removeEventListener("scroll", debouncedHandleScroll);
 	}, [loading]);
 
 	return (
