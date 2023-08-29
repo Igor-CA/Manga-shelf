@@ -10,21 +10,29 @@ exports.signup = [
 		.trim()
 		.notEmpty()
 		.withMessage("User name must be specified.")
+		.matches(/^[A-Za-z0-9]{3,16}$/)
+		.withMessage("The username must be alphanumeric and between 3 and 16 characters.")
 		.escape(),
 	body("password")
 		.trim()
 		.notEmpty()
 		.withMessage("Password must be specified.")
+		.matches(/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/)
+		.withMessage("The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters.")
 		.escape(),
 	body("confirm-password")
 		.trim()
 		.notEmpty()
 		.withMessage("Password must be specified.")
+		.matches(/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/)
+		.withMessage("The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters.")
 		.escape(),
 	body("email")
 		.trim()
 		.notEmpty()
 		.withMessage("Email must be specified.")
+		.isEmail()
+		.withMessage("Invalid email format.")
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
@@ -76,7 +84,7 @@ exports.login = [
 			.or([{ username: req.body.login }, { email: req.body.login }])
 			.limit(1);
 		if (!user) {
-			res.send({ msg: "No user exists" });
+			res.status(401).json({ message: "User or password are incorrect try again" });
 			return;
 		}
 
@@ -90,7 +98,7 @@ exports.login = [
 				res.send({ msg: "Successfully authenticated" });
 			});
 		} else {
-			res.send({ msg: "Incorrect password" });
+			res.status(401).json({ message: "User or password are incorrect try again" });
 		}
 	}),
 ];

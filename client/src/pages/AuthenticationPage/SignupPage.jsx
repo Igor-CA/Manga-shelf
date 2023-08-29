@@ -29,7 +29,12 @@ export default function SignupPage() {
 			});
 			console.log(response.data);
 		} catch (error) {
-			console.error("Error fetching user Data:", error);
+			const customErrorMessage = error.response.data.message;
+			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
+
+			setTimeout(() => {
+				setErrors([]);
+			}, 5000);
 		}
 	};
 	const handleInvalid = (e) => {
@@ -39,53 +44,55 @@ export default function SignupPage() {
 
 		const validationMessages = {
 			email: {
+				valueMissing: "The email field is required",
 				typeMismatch: "The email must be a valid email address.",
 			},
 			username: {
-				patternMismatch: "The username must be at least 3 characters long.",
+				valueMissing: "The username field is required",
+				patternMismatch: "The username can't contain special characters and between 3 and 16 characters.",
 			},
 			password: {
+				valueMissing: "The password field is required",
 				patternMismatch:
 					"The password must contain at least one letter, one number, and a special character.",
 				tooShort: "The password must be at least 8 characters long.",
 			},
 			"confirm-password": {
+				valueMissing: "The confirm password field is required",
 				patternMismatch: "Both passwords are not coinciding.",
 			},
 		};
 
-		let validationType = input.validationMessage;
-		if (input.validity.tooShort) {
-			validationType = "tooShort";
-		} else if (input.validity.patternMismatch) {
-			validationType = "patternMismatch";
-		} else if (input.validity.typeMismatch) {
-			validationType = "typeMismatch";
-		}
+		const validationTypes = [
+			"tooShort",
+			"patternMismatch",
+			"typeMismatch",
+			"valueMissing",
+		];
+		const inputValidity = validationTypes.find((type) => input.validity[type]);
 
-		const customErrorMessage = validationMessages[inputName][validationType];
+		const customErrorMessage = validationMessages[inputName][inputValidity];
+
+		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
 
 		setTimeout(() => {
 			setErrors([]);
 		}, 5000);
-
-		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
 	};
 
 	const renderErrorsMessage = () => {
 		return (
-			<div className="errors-container">
+			<div className="errors-message">
 				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
-				<p>
+				<div>
 					{errors.map((erro, index) => {
 						return (
-							<>
+							<p key={index} className="errors-message__error">
 								{erro}
-								<br />
-							</>
+							</p>
 						);
 					})}
-				</p>
+				</div>
 			</div>
 		);
 	};
@@ -134,6 +141,7 @@ export default function SignupPage() {
 					}}
 					required
 					pattern="^[A-Za-z0-9]{3,16}$"
+					maxLength="16"
 				/>
 				<label htmlFor="password" className="autentication-form__label">
 					Password:

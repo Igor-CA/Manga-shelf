@@ -2,12 +2,15 @@ import { useContext, useState } from "react";
 import axios from "axios";
 import { UserContext } from "../../components/userProvider";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import "./Authentication.css";
 
 export default function LoginPage() {
 	const navigate = useNavigate();
 	const [formData, setFormData] = useState({ login: "", password: "" });
 	const [user, setUser] = useContext(UserContext);
+	const [errors, setErrors] = useState([]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -16,21 +19,67 @@ export default function LoginPage() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		const response = await axios({
-			method: "POST",
-			data: formData,
-			withCredentials: true,
-			url: `${process.env.REACT_APP_HOST_ORIGIN}/user/login`,
-		});
-		const userFetch = await axios({
-			method: "GET",
-			withCredentials: true,
-			url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
-		});
-		setUser(userFetch.data);
-		console.log(response);
-		console.log(userFetch.data);
-		navigate("../profile");
+		try {
+			const response = await axios({
+				method: "POST",
+				data: formData,
+				withCredentials: true,
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/login`,
+			});
+			const userFetch = await axios({
+				method: "GET",
+				withCredentials: true,
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
+			});
+			setUser(userFetch.data);
+			console.log(response);
+			console.log(userFetch.data);
+			navigate("../profile");
+		} catch (error) {
+			const customErrorMessage = error.response.data.message;
+			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
+
+			setTimeout(() => {
+				setErrors([]);
+			}, 5000);
+		}
+	};
+
+	const handleInvalid = (e) => {
+		e.preventDefault();
+		const inputName = e.target.name;
+		const input = e.target;
+
+		let customErrorMessage = "";
+
+		if (input.validity.valueMissing) {
+			customErrorMessage = `${inputName} field is required.`;
+		}else if(input.validity.patternMismatch){
+			customErrorMessage = `${inputName} is invalid.`;
+		}
+
+		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
+
+		setTimeout(() => {
+			setErrors([]);
+		}, 5000);
+	};
+
+	const renderErrorsMessage = () => {
+		return (
+			<div className="errors-message">
+				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
+				<div>
+					{errors.map((erro, index) => {
+						return (
+							<p key={index} className="errors-message__error">
+								{erro}
+							</p>
+						);
+					})}
+				</div>
+			</div>
+		);
 	};
 
 	return (
@@ -57,6 +106,11 @@ export default function LoginPage() {
 					onChange={(e) => {
 						handleChange(e);
 					}}
+					onInvalid={(e) => {
+						handleInvalid(e);
+					}}
+					pattern="^[A-Za-z0-9]{3,16}$"
+					required
 				/>
 				<label htmlFor="password" className="autentication-form__label">
 					Senha:
@@ -71,9 +125,14 @@ export default function LoginPage() {
 					onChange={(e) => {
 						handleChange(e);
 					}}
+					onInvalid={(e) => {
+						handleInvalid(e);
+					}}
+					required
 				/>
 				<button className="autentication-form__button">Log in</button>
 			</form>
+			{errors.length > 0 && renderErrorsMessage()}
 		</div>
 	);
 }

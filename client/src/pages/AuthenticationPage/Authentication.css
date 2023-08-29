@@ -36,7 +36,7 @@
     border: none;
     border-radius: 3px;
 }
-.errors-container{
+.errors-message{
 	font-weight: bold;
 	display: flex;
 	position: absolute;
@@ -53,4 +53,7 @@
 	translate: -50%;
 	width: 420px;
 	max-width: 80vw;
+}
+.errors-message__error{
+	margin: 0.5rem;
 }
