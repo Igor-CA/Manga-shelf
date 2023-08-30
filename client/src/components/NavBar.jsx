@@ -16,7 +16,7 @@ import "./NavBar.css";
 import { useContext, useState } from "react";
 import { UserContext } from "./userProvider";
 export default function NavBar() {
-	const [user] = useContext(UserContext);
+	const {user} = useContext(UserContext);
 	const [menuVisibility, setMenuVisibility] = useState(false);
 
 	const renderVisitorNavbar = () => {
@@ -114,7 +114,7 @@ export default function NavBar() {
 				</Link>
 
 				<Link
-					to={"/profile"}
+					to={`/user/${user.username}`}
 					className="navbar__button"
 					onClick={() => {
 						setMenuVisibility(false);
@@ -125,7 +125,7 @@ export default function NavBar() {
 				</Link>
 
 				<Link
-					to={"/missing"}
+					to={`/user/${user.username}/missing`}
 					className="navbar__button"
 					onClick={() => {
 						setMenuVisibility(false);

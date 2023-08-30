@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { UserContext } from "../../components/userProvider";
 import UserCollection from "../../components/UserCollection";
 import "./UserPage.css";
@@ -7,22 +7,27 @@ import axios from "axios";
 import BrowsePage from "../BrowsePage/BrowsePage";
 
 export default function UserPage() {
-	const [currentPage, setCurrentPage] = useState("Collection");
-	const [user, setUser] = useContext(UserContext);
-
+	const { username } = useParams();
+	const [user, setUser] = useState();
 	useEffect(() => {
 		const querryUser = async () => {
-			const res = await axios({
-				method: "GET",
-				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
-			});
-			console.log(res.data);
-			setUser(res.data);
+			try {
+				const res = await axios({
+					method: "GET",
+					withCredentials: true,
+					url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}`,
+				});
+				console.log(res.data);
+				setUser(res.data);
+
+			} catch (error) {
+				console.log(error);
+			}
 		};
 		querryUser();
 	}, []);
 
+	//TODO change to loading page login redirect not needed anymore
 	const renderLoginRedirect = () => {
 		return (
 			<div className="redirect-page">
@@ -36,7 +41,11 @@ export default function UserPage() {
 
 	return (
 		<div>
-			{user ? <UserCollection></UserCollection> : renderLoginRedirect()}
+			{user ? (
+				<UserCollection user={user}></UserCollection>
+			) : (
+				renderLoginRedirect()
+			)}
 		</div>
 		//Header -> Profile info
 		//body

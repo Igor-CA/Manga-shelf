@@ -6,7 +6,7 @@ import axios from "axios";
 
 export default function SeriesPage() {
 	const { id } = useParams();
-	const [user, setUser] = useContext(UserContext);
+	const {user, setOutdated} = useContext(UserContext);
 	const [series, setSeries] = useState({
 		title: "",
 		publisher: "",
@@ -69,6 +69,7 @@ export default function SeriesPage() {
 	};
 
 	const checkOwnedVolumes = (id) => {
+		console.log(user)
 		if (user) {
 			return user.ownedVolumes.includes(id);
 		}
@@ -88,17 +89,16 @@ export default function SeriesPage() {
 				url: url,
 			});
 			if (isAdding) {
-				console.log("Adding?");
 				const newUserList = [...localUserListState];
 				newUserList.push({ Series: { id } });
 				setLocalUserListState([...newUserList]);
 			} else {
-				console.log("Rmoving");
 				const newUserList = localUserListState.filter(
 					(series) => series.Series.id !== id
 				);
 				setLocalUserListState([...newUserList]);
 			}
+			//setOutdated(false)
 			console.log(response);
 		} catch (err) {
 			console.log(err);
@@ -136,7 +136,8 @@ export default function SeriesPage() {
 				withCredentials: true,
 				url: url,
 			});
-			console.log(response);
+			setOutdated(true)
+			console.log("RESPONSE:", response);
 		} catch (err) {
 			console.log(err);
 		}
@@ -181,6 +182,7 @@ export default function SeriesPage() {
 						type="checkbox"
 						name="have-volume-check-mark"
 						className="checkmark"
+						disabled={user ? false : true}
 						checked={ownsVolume}
 						onChange={(e) => {
 							handleChange(e, volumeId);

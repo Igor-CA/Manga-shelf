@@ -3,11 +3,12 @@ const router = express.Router();
 
 const seriesController = require("../controllers/series");
 const volumesController = require("../controllers/volumes");
+const userController = require("../controllers/user")
 
 //User page api
-router.get("/user/:id", function () {});
-router.get("/user/:id/collection", function () {});
-router.get("/user/:id/missing", function () {});
+router.get("/user/logged-user", userController.getLoggedUser);
+router.get("/user/:username", userController.getUserCollection);
+router.get("/user/:username/missing", userController.getMissingPage);
 
 //Collection page api
 router.get("/series/:id", seriesController.getSeriesDetails);

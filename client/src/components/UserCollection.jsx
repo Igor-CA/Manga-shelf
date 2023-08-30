@@ -1,24 +1,7 @@
-import { useContext, useEffect } from "react";
+
 import { SeriesCard } from "./SeriesCard";
-import { UserContext } from "./userProvider";
-import { Link } from "react-router-dom";
-import axios from "axios";
 
-export default function UserCollection() {
-	const [user, setUser] = useContext(UserContext);
-
-	useEffect(() => {
-		const querryUser = async () => {
-			const res = await axios({
-				method: "GET",
-				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
-			});
-			console.log(res.data);
-			setUser(res.data);
-		};
-		querryUser();
-	}, []);
+export default function UserCollection({user}) {
 
 	const renderUserCollection = () => {
 		return (

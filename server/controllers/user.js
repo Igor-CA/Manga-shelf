@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const Series = require("../models/Series");
-const {getVolumeCoverURL} = require("../Utils/getCoverFunctions")
+const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const { body, validationResult } = require("express-validator");
@@ -11,21 +11,31 @@ exports.signup = [
 		.notEmpty()
 		.withMessage("User name must be specified.")
 		.matches(/^[A-Za-z0-9]{3,16}$/)
-		.withMessage("The username must be alphanumeric and between 3 and 16 characters.")
+		.withMessage(
+			"The username must be alphanumeric and between 3 and 16 characters."
+		)
 		.escape(),
 	body("password")
 		.trim()
 		.notEmpty()
 		.withMessage("Password must be specified.")
-		.matches(/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/)
-		.withMessage("The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters.")
+		.matches(
+			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
+		)
+		.withMessage(
+			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
+		)
 		.escape(),
 	body("confirm-password")
 		.trim()
 		.notEmpty()
 		.withMessage("Password must be specified.")
-		.matches(/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/)
-		.withMessage("The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters.")
+		.matches(
+			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
+		)
+		.withMessage(
+			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
+		)
 		.escape(),
 	body("email")
 		.trim()
@@ -41,18 +51,27 @@ exports.signup = [
 			return res.status(400).json({ errors: errors.array() });
 		}
 
-		const { username, password, email, ['confirm-password']: confirmPassword } = req.body;
+		const {
+			username,
+			password,
+			email,
+			["confirm-password"]: confirmPassword,
+		} = req.body;
 
 		if (password !== confirmPassword) {
-			return res.status(409).json({ message: "Passwords don't match properly" });
-		} 
+			return res
+				.status(409)
+				.json({ message: "Passwords don't match properly" });
+		}
 
 		const [existingUser] = await User.find()
 			.or([{ username }, { email }])
 			.limit(1);
-		
+
 		if (existingUser) {
-			return res.status(409).json({ message: "Email or username is already in use" });
+			return res
+				.status(409)
+				.json({ message: "Email or username is already in use" });
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
@@ -63,9 +82,8 @@ exports.signup = [
 		});
 		await newUser.save();
 		res.status(201).json({ message: "User created successfully" });
-	
 	}),
-]; 
+];
 
 exports.login = [
 	body("login")
@@ -84,7 +102,9 @@ exports.login = [
 			.or([{ username: req.body.login }, { email: req.body.login }])
 			.limit(1);
 		if (!user) {
-			res.status(401).json({ message: "User or password are incorrect try again" });
+			res
+				.status(401)
+				.json({ message: "User or password are incorrect try again" });
 			return;
 		}
 
@@ -98,7 +118,9 @@ exports.login = [
 				res.send({ msg: "Successfully authenticated" });
 			});
 		} else {
-			res.status(401).json({ message: "User or password are incorrect try again" });
+			res
+				.status(401)
+				.json({ message: "User or password are incorrect try again" });
 		}
 	}),
 ];
@@ -125,7 +147,7 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeSeries = asyncHandler(async (req, res, next) => {
-	const user = await fetchUser(req); 
+	const user = await fetchUser(req);
 
 	if (user) {
 		const newList = user.userList.filter((seriesObject) => {
@@ -139,7 +161,7 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 	}
 });
 
-exports.getProfilePage = asyncHandler(async (req, res, next) => {
+exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 	if (req.user) {
 		const user = await User.findById(req.user._id)
 			.populate({
@@ -163,16 +185,42 @@ exports.getProfilePage = asyncHandler(async (req, res, next) => {
 	}
 });
 
+exports.getUserCollection = asyncHandler(async (req, res, next) => {
+	const targetUser = req.params.username 
+	if (targetUser) {
+		const user = await User.findOne({ username: targetUser })
+			.populate({
+				path: "userList.Series",
+				select: "title",
+			})
+			.exec();
+		if (user) {  
+			const userInfo = {
+				_id: user._id,
+				username: user.username,
+				userList: user.userList,
+				ownedVolumes: user.ownedVolumes,
+			};
+			res.send(userInfo);
+		} else {
+			res.send({ msg: "User not found" });
+		}
+	} else {
+		res.send();
+	}
+}); 
+
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
-	if (req.user) {
-		const user = await User.findById(req.user._id)
+	const targetUser = req.params.username 
+	if (targetUser) {
+		const user = await User.findOne({ username: targetUser })
 			.populate({
 				path: "userList.Series",
 				select: "title volumes",
-				populate:{
+				populate: {
 					path: "volumes",
-					select: "number"
-				}
+					select: "number",
+				},
 			})
 			.exec();
 		if (user) {
@@ -183,8 +231,8 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 					volumeNumber: volume.number,
 					image: getVolumeCoverURL(seriesObj.Series, volume.number),
 				}));
-				return volumesWithImages
-			})
+				return volumesWithImages;
+			});
 			res.send(mangaList);
 		} else {
 			res.send({ msg: "User not found" });
@@ -207,7 +255,7 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 			user.ownedVolumes.push(req.body._id);
 			user.userList[0].completionPercentage = req.body.completePorcentage;
 			user.save();
-			res.send({ msg: "Volume successfully added", user: req.user });
+			res.send({ msg: "Volume successfully added"});
 		} else {
 			res.send({ msg: "User not found" });
 		}

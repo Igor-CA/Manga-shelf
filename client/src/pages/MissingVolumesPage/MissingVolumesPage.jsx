@@ -1,11 +1,12 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { UserContext } from "../../components/userProvider";
 export default function MissingVolumesPage(){
+    const {username} = useParams()
     const [seriesVolumesList, setSeriesVolumesList] = useState([])
     const [missingList, setMissingList] = useState([])
-    const [user, setUser] = useContext(UserContext)
+    const [user, setUser] = useState();
 
     useEffect(()=>{
         const fetchVolumesData = async () => {
@@ -13,7 +14,7 @@ export default function MissingVolumesPage(){
 				const response = await axios({
                     method: "GET",
                     withCredentials: true,
-                    url: `${process.env.REACT_APP_HOST_ORIGIN}/user/missing`,
+                    url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}/missing`,
                 });
 				console.log(response.data);
 				const responseData = response.data;
@@ -22,12 +23,28 @@ export default function MissingVolumesPage(){
 				console.error("Error fetching Series Data:", error);
 			}
 		};
+        const querryUser = async () => {
+			try {
+				const res = await axios({
+					method: "GET",
+					withCredentials: true,
+					url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}`,
+				});
+				console.log(res.data);
+				setUser(res.data);
 
+			} catch (error) {
+				console.log(error);
+			}
+		};
+        
+		querryUser();
 		fetchVolumesData();
     }, [])
 
     useEffect(() => {
-        if(seriesVolumesList.length > 0){
+        if(seriesVolumesList.length > 0 && user){
+            console.log({user,seriesVolumesList})
             const missingVolumesList = seriesVolumesList.filter((volume) => {
                 return !user.ownedVolumes.includes(volume.volumeId)
             })

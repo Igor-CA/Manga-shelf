@@ -9,7 +9,7 @@ import "./Authentication.css";
 export default function LoginPage() {
 	const navigate = useNavigate();
 	const [formData, setFormData] = useState({ login: "", password: "" });
-	const [user, setUser] = useContext(UserContext);
+	const {user, setUser} = useContext(UserContext);
 	const [errors, setErrors] = useState([]);
 
 	const handleChange = (e) => {
@@ -29,12 +29,12 @@ export default function LoginPage() {
 			const userFetch = await axios({
 				method: "GET",
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/profile`,
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/logged-user`,
 			});
 			setUser(userFetch.data);
 			console.log(response);
 			console.log(userFetch.data);
-			navigate("../profile");
+			navigate(`../user/${userFetch.data.username}`);
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
