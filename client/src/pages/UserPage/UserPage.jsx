@@ -5,6 +5,7 @@ import UserCollection from "../../components/UserCollection";
 import "./UserPage.css";
 import axios from "axios";
 import BrowsePage from "../BrowsePage/BrowsePage";
+import ProfileHeader from "./ProfileHeader";
 
 export default function UserPage() {
 	const { username } = useParams();
@@ -40,13 +41,16 @@ export default function UserPage() {
 	};
 
 	return (
-		<div>
+		<>
 			{user ? (
-				<UserCollection user={user}></UserCollection>
+				<div>
+					<ProfileHeader user={user}></ProfileHeader>
+					<UserCollection user={user}></UserCollection>
+				</div>
 			) : (
 				renderLoginRedirect()
 			)}
-		</div>
+		</>
 		//Header -> Profile info
 		//body
 		//Collection
