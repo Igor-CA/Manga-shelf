@@ -1,12 +1,9 @@
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { UserContext } from "../../components/userProvider";
 export default function MissingVolumesPage(){
     const {username} = useParams()
-    const [seriesVolumesList, setSeriesVolumesList] = useState([])
     const [missingList, setMissingList] = useState([])
-    const [user, setUser] = useState();
 
     useEffect(()=>{
         const fetchVolumesData = async () => {
@@ -18,40 +15,14 @@ export default function MissingVolumesPage(){
                 });
 				console.log(response.data);
 				const responseData = response.data;
-				setSeriesVolumesList(responseData);
+				setMissingList(responseData);
 			} catch (error) {
 				console.error("Error fetching Series Data:", error);
 			}
 		};
-        const querryUser = async () => {
-			try {
-				const res = await axios({
-					method: "GET",
-					withCredentials: true,
-					url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}`,
-				});
-				console.log(res.data);
-				setUser(res.data);
-
-			} catch (error) {
-				console.log(error);
-			}
-		};
-        
-		querryUser();
 		fetchVolumesData();
     }, [])
 
-    useEffect(() => {
-        if(seriesVolumesList.length > 0 && user){
-            console.log({user,seriesVolumesList})
-            const missingVolumesList = seriesVolumesList.filter((volume) => {
-                return !user.ownedVolumes.includes(volume.volumeId)
-            })
-            setMissingList(missingVolumesList)
-        }
-    },[seriesVolumesList])
-    
     const renderVolumeItem = (volume) => {
 		const { series, volumeId, image, volumeNumber } = volume;
 		return (

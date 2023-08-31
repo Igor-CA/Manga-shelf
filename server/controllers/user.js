@@ -213,7 +213,7 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username 
 	if (targetUser) {
-		const user = await User.findOne({ username: targetUser })
+		const user = await User.findOne({ username: targetUser }, "userList ownedVolumes")
 			.populate({
 				path: "userList.Series",
 				select: "title volumes",
@@ -233,7 +233,10 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				}));
 				return volumesWithImages;
 			});
-			res.send(mangaList);
+			const missingVolumesList = mangaList.filter((volume) => {
+				return !user.ownedVolumes.includes(volume.volumeId)
+			})
+			res.send(missingVolumesList)
 		} else {
 			res.send({ msg: "User not found" });
 		}
