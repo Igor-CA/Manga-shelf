@@ -186,7 +186,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
-	const targetUser = req.params.username 
+	const targetUser = req.params.username;
 	if (targetUser) {
 		const user = await User.findOne({ username: targetUser })
 			.populate({
@@ -194,7 +194,7 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 				select: "title",
 			})
 			.exec();
-		if (user) {  
+		if (user) {
 			const userInfo = {
 				_id: user._id,
 				username: user.username,
@@ -208,12 +208,15 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	} else {
 		res.send();
 	}
-}); 
+});
 
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
-	const targetUser = req.params.username 
+	const targetUser = req.params.username;
 	if (targetUser) {
-		const user = await User.findOne({ username: targetUser }, "userList ownedVolumes")
+		const user = await User.findOne(
+			{ username: targetUser },
+			"userList ownedVolumes"
+		)
 			.populate({
 				path: "userList.Series",
 				select: "title volumes",
@@ -234,9 +237,9 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				return volumesWithImages;
 			});
 			const missingVolumesList = mangaList.filter((volume) => {
-				return !user.ownedVolumes.includes(volume.volumeId)
-			})
-			res.send(missingVolumesList)
+				return !user.ownedVolumes.includes(volume.volumeId);
+			});
+			res.send(missingVolumesList);
 		} else {
 			res.send({ msg: "User not found" });
 		}
@@ -251,14 +254,27 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 			{ _id: req.user._id },
 			{
 				ownedVolumes: 1,
-				userList: { $elemMatch: { Series: req.body.seriesId } },
+				userList: 1,
 			}
 		).populate("userList.Series");
 		if (user) {
+			const indexOfSeries = user.userList.findIndex((seriesObj, index) => {
+				return (seriesObj.Series._id.toString() === req.body.seriesId)?index:false
+			})
+			
+			if (indexOfSeries === -1) {
+				const addedSeries = {
+					Series: req.body.seriesId,
+					completionPercentage: req.body.completePorcentage,
+				};
+				user.userList.push(addedSeries);
+			}else{
+				const seriesBeingAdded = user.userList[indexOfSeries];
+				seriesBeingAdded.completionPercentage = req.body.completePorcentage;
+			}
 			user.ownedVolumes.push(req.body._id);
-			user.userList[0].completionPercentage = req.body.completePorcentage;
 			user.save();
-			res.send({ msg: "Volume successfully added"});
+			res.send({ msg: "Volume successfully added" });
 		} else {
 			res.send({ msg: "User not found" });
 		}
@@ -274,10 +290,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 				userList: { $elemMatch: { Series: req.body.seriesId } },
 			}
 		).populate("userList.Series");
-		console.log(user.ownedVolumes);
 		if (user) {
-			console.log("Previous List", user.ownedVolumes);
-			console.log("Removed Id", req.body._id);
 			const newList = user.ownedVolumes.filter((volumeId) => {
 				return volumeId.toString() !== req.body._id;
 			});

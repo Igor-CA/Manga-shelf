@@ -44,7 +44,7 @@ export default function SeriesPage() {
 			setLocalVolumeState(newLocalVolumeState);
 			if (user) setLocalUserListState([...user.userList]);
 		}
-	}, [series]);
+	}, [series, user]);
 
 	const getAuthorsString = (authors) => {
 		const authorsCount = authors.length;
@@ -69,7 +69,6 @@ export default function SeriesPage() {
 	};
 
 	const checkOwnedVolumes = (id) => {
-		console.log(user)
 		if (user) {
 			return user.ownedVolumes.includes(id);
 		}
@@ -98,7 +97,7 @@ export default function SeriesPage() {
 				);
 				setLocalUserListState([...newUserList]);
 			}
-			//setOutdated(false)
+			setOutdated(false)
 			console.log(response);
 		} catch (err) {
 			console.log(err);
@@ -106,14 +105,12 @@ export default function SeriesPage() {
 	};
 
 	const handleChange = (e, id) => {
-		//updates user in database
 		const previousValue = !e.target.checked;
 		const completePorcentage = calculateCompletePorcentage(previousValue);
 		previousValue
 			? addOrRemoveVolume(false, id, completePorcentage)
 			: addOrRemoveVolume(true, id, completePorcentage);
 
-		//update the state of checklist
 		const newList = localVolumeState.map((checkbox) => {
 			const { volumeId, ownsVolume } = checkbox;
 			if (volumeId === id) {
