@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import ReactDOM, { render } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faUserPlus,

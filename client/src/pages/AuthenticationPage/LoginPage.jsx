@@ -9,7 +9,7 @@ import "./Authentication.css";
 export default function LoginPage() {
 	const navigate = useNavigate();
 	const [formData, setFormData] = useState({ login: "", password: "" });
-	const {user, setUser} = useContext(UserContext);
+	const {setUser} = useContext(UserContext);
 	const [errors, setErrors] = useState([]);
 
 	const handleChange = (e) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { SeriesCard } from "../../components/SeriesCard";
 import "./AdminPage.css";
 import debaunce from "../../utils/debaunce";

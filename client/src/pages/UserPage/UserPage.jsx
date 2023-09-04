@@ -1,10 +1,8 @@
-import { useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { UserContext } from "../../components/userProvider";
 import UserCollection from "../../components/UserCollection";
 import "./UserPage.css";
 import axios from "axios";
-import BrowsePage from "../BrowsePage/BrowsePage";
 import ProfileHeader from "./ProfileHeader";
 
 export default function UserPage() {
