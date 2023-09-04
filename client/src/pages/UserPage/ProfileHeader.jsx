@@ -6,11 +6,7 @@ export default function ProfileHeader({user}) {
             <nav className="profile-header__navbar">
                 <ul className="profile-header__navbar__list">
                     <li><a href={`./${user.username}`} className="profile-header__navbar__link">Collection</a></li>
-                    <li><a href={`./${user.username}`} className="profile-header__navbar__link">Missing page</a></li>
-                    <li><a href={`./${user.username}`} className="profile-header__navbar__link">Following</a></li>
-                    <li><a href={`./${user.username}`} className="profile-header__navbar__link">Followers</a></li>
-                    <li><a href={`./${user.username}`} className="profile-header__navbar__link">Stats</a></li>
-                    <li><a href={`./${user.username}`} className="profile-header__navbar__link">Favorites</a></li>
+                    <li><a href={`./${user.username}/missing`} className="profile-header__navbar__link">Missing page</a></li>
                 </ul>
             </nav>
 		</header>

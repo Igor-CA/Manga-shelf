@@ -54,8 +54,6 @@ export default function LoginPage() {
 
 		if (input.validity.valueMissing) {
 			customErrorMessage = `${inputName} field is required.`;
-		}else if(input.validity.patternMismatch){
-			customErrorMessage = `${inputName} is invalid.`;
 		}
 
 		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -109,7 +107,6 @@ export default function LoginPage() {
 					onInvalid={(e) => {
 						handleInvalid(e);
 					}}
-					pattern="^[A-Za-z0-9]{3,16}$"
 					required
 				/>
 				<label htmlFor="password" className="autentication-form__label">

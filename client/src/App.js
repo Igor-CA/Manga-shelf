@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useContext, useEffect } from "react";
 import { UserContext } from "./components/userProvider";
 import SeriesPage from "./pages/SeriesPage/SeriesPage";
-import "./app.css";
+import "./App.css";
 import VolumePage from "./pages/VolumePage/VolumePage";
 import axios from "axios";
 import SignupPage from "./pages/AuthenticationPage/SignupPage";

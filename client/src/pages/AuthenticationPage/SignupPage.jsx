@@ -3,8 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import "./Authentication.css";
+import { useNavigate } from "react-router-dom";
 
 export default function SignupPage() {
+	const navigate = useNavigate();
 	const [errors, setErrors] = useState([]);
 	const [formData, setFormData] = useState({
 		username: "",
@@ -28,6 +30,7 @@ export default function SignupPage() {
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/signup`,
 			});
 			console.log(response.data);
+			navigate("./login")
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
