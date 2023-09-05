@@ -147,13 +147,25 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeSeries = asyncHandler(async (req, res, next) => {
-	const user = await fetchUser(req);
-
+	const user = await User.findById(req.user._id, {
+		ownedVolumes: 1,
+		userList: 1,
+	}).populate({
+		path: "ownedVolumes",
+		select: "serie"
+	});
+	console.log(user.ownedVolumes)
 	if (user) {
-		const newList = user.userList.filter((seriesObject) => {
+		const newSeriesList = user.userList.filter((seriesObject) => {
 			return seriesObject.Series.toString() !== req.body.id;
 		});
-		user.userList = newList;
+		const newVolumesList = user.ownedVolumes.filter((volume) => {
+			volumeSeriesId = volume.serie.toString()
+			console.log(volumeSeriesId,  req.body.id)
+			return volumeSeriesId !== req.body.id;
+		});
+		user.userList = newSeriesList;
+		user.ownedVolumes = newVolumesList;
 		user.save();
 		res.send({ msg: "Series successfully removed" });
 	} else {
@@ -272,7 +284,8 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 				const seriesBeingAdded = user.userList[indexOfSeries];
 				seriesBeingAdded.completionPercentage = req.body.completePorcentage;
 			}
-			user.ownedVolumes.push(req.body._id);
+			
+			user.ownedVolumes.push(...req.body.idList);
 			user.save();
 			res.send({ msg: "Volume successfully added" });
 		} else {
@@ -291,8 +304,9 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 			}
 		).populate("userList.Series");
 		if (user) {
+			const [removedVolumeId] =  req.body.idList
 			const newList = user.ownedVolumes.filter((volumeId) => {
-				return volumeId.toString() !== req.body._id;
+				return volumeId.toString() !== removedVolumeId;
 			});
 			user.ownedVolumes = newList;
 			user.userList[0].completionPercentage = req.body.completePorcentage;
