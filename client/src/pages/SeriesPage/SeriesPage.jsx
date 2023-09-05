@@ -3,10 +3,11 @@ import { Link, useParams } from "react-router-dom";
 import "./SeriesPage.css";
 import { UserContext } from "../../components/userProvider";
 import axios from "axios";
+import PromptConfirm from "../../components/PromptConfirm";
 
 export default function SeriesPage() {
 	const { id } = useParams();
-	const {user, setOutdated} = useContext(UserContext);
+	const { user, setOutdated } = useContext(UserContext);
 	const [series, setSeries] = useState({
 		title: "",
 		publisher: "",
@@ -16,6 +17,10 @@ export default function SeriesPage() {
 	});
 	const [localVolumeState, setLocalVolumeState] = useState();
 	const [localUserListState, setLocalUserListState] = useState([]);
+	const [showConfirmation, setShowConfirmation] = useState(false);
+	const [confirmationMessage, setConfirmationMessage] = useState("");
+	const [onConfirm, setOnConfirm] = useState(null);
+	const [onCancel, setOnCancel] = useState(null);
 
 	useEffect(() => {
 		const fetchSeriesData = async () => {
@@ -23,7 +28,7 @@ export default function SeriesPage() {
 				const response = await axios.get(
 					`${process.env.REACT_APP_HOST_ORIGIN}/api/series/${id}`
 				);
-				console.log(response);
+				//console.log(response);
 				const responseData = response.data;
 				setSeries(responseData);
 			} catch (error) {
@@ -59,8 +64,9 @@ export default function SeriesPage() {
 		}
 	};
 
-	const calculateCompletePorcentage = (newVolume) => {
-		const correctionValue = newVolume ? -1 : 1;
+	const calculateCompletePorcentage = (isAdding, quantity = 1) => {
+		const removing = -1;
+		const correctionValue = isAdding ? quantity : removing;
 		const total = localVolumeState.length;
 		const ownedVolumes =
 			localVolumeState.filter((volume) => volume.ownsVolume).length +
@@ -73,6 +79,14 @@ export default function SeriesPage() {
 			return user.ownedVolumes.includes(id);
 		}
 		return false;
+	};
+
+	const customWindowConfirm = (message, onConfirmCb, onCancelCb) => {
+		console.log({onConfirmCb, onCancelCb})
+		setOnConfirm(() => onConfirmCb);
+		setOnCancel(() => onCancelCb);
+		setConfirmationMessage(message);
+		setShowConfirmation(true);
 	};
 
 	const addOrRemoveSeries = async (isAdding) => {
@@ -97,19 +111,54 @@ export default function SeriesPage() {
 				);
 				setLocalUserListState([...newUserList]);
 			}
-			setOutdated(false)
-			console.log(response);
+			setOutdated(true);
+			//console.log(response);
 		} catch (err) {
 			console.log(err);
 		}
 	};
 
 	const handleChange = (e, id) => {
-		const previousValue = !e.target.checked;
-		const completePorcentage = calculateCompletePorcentage(previousValue);
-		previousValue
-			? addOrRemoveVolume(false, id, completePorcentage)
-			: addOrRemoveVolume(true, id, completePorcentage);
+		const adding = e.target.checked;
+
+		if (adding) {
+			//Lista do que precisa ser adicionado
+			const index = localVolumeState.findIndex(
+				(volumeState) => volumeState.volumeId === id
+			);
+			const listToAdd = localVolumeState
+				.slice(0, index + 1)
+				.filter((volume) => volume.ownsVolume === false)
+				.map((volume) => {
+					return volume.volumeId;
+				});
+
+				if (listToAdd.length > 1) {
+					customWindowConfirm(
+						"Do you want to mark all previous volumes too?",
+						() => {
+							const completePorcentage = calculateCompletePorcentage(
+								adding,
+								listToAdd.length
+							);
+							
+							addOrRemoveVolume(true, listToAdd, completePorcentage);
+							
+							return;
+						},
+						() => {
+							const completePorcentage = calculateCompletePorcentage(adding, 1);
+							addOrRemoveVolume(true, [id], completePorcentage);
+						}
+					);
+				} else {
+					const completePorcentage = calculateCompletePorcentage(adding, 1);
+					addOrRemoveVolume(true, [id], completePorcentage);
+				}
+		} else {
+			const completePorcentage = calculateCompletePorcentage(adding);
+			addOrRemoveVolume(false, [id], completePorcentage);
+		}
 
 		const newList = localVolumeState.map((checkbox) => {
 			const { volumeId, ownsVolume } = checkbox;
@@ -121,7 +170,7 @@ export default function SeriesPage() {
 		setLocalVolumeState(newList);
 	};
 
-	const addOrRemoveVolume = async (isAdding, volumeId, completePorcentage) => {
+	const addOrRemoveVolume = async (isAdding, idList, completePorcentage) => {
 		try {
 			const url = isAdding
 				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-volume`
@@ -129,25 +178,33 @@ export default function SeriesPage() {
 
 			const response = await axios({
 				method: "POST",
-				data: { _id: volumeId, completePorcentage, seriesId: id },
+				data: { idList: idList, completePorcentage, seriesId: id },
 				withCredentials: true,
 				url: url,
 			});
-			setOutdated(true)
-			console.log("RESPONSE:", response);
+			setOutdated(true);
+			//console.log("RESPONSE:", response);
 		} catch (err) {
 			console.log(err);
 		}
 	};
 
+	const handleRemoveSeries = () => {
+		customWindowConfirm("Remover essa coleção também irá remover todos os seus volumes deseja prosseguir?", 
+		() => addOrRemoveSeries(false),
+		null
+		)
+	}
 	const renderAddRemoveButton = () => {
-		console.log(localUserListState);
+
+
+		//console.log(localUserListState);
 		const inList = localUserListState.find((series) => series.Series.id === id);
 		return (
 			<button
 				className="add-button"
 				onClick={() => {
-					inList ? addOrRemoveSeries(false) : addOrRemoveSeries(true);
+					inList ? handleRemoveSeries() : addOrRemoveSeries(true);
 				}}
 			>
 				{inList ? "Remove Series" : "Add Series"}
@@ -194,6 +251,14 @@ export default function SeriesPage() {
 
 	return (
 		<div className="series">
+			{showConfirmation && (
+				<PromptConfirm
+					message={confirmationMessage}
+					onConfirm={onConfirm}
+					onCancel={onCancel}
+					hidePrompt={setShowConfirmation}
+				></PromptConfirm>
+			)}
 			<div className="series__info-container">
 				<img
 					src={seriesCover}
