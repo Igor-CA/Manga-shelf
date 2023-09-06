@@ -16,7 +16,7 @@ export default function SeriesPage() {
 		volumes: [],
 	});
 	const [localVolumeState, setLocalVolumeState] = useState();
-	const [localUserListState, setLocalUserListState] = useState([]);
+
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [confirmationMessage, setConfirmationMessage] = useState("");
 	const [onConfirm, setOnConfirm] = useState(null);
@@ -47,7 +47,6 @@ export default function SeriesPage() {
 				return { volumeId, ownsVolume };
 			});
 			setLocalVolumeState(newLocalVolumeState);
-			if (user) setLocalUserListState([...user.userList]);
 		}
 	}, [series, user]);
 
@@ -65,10 +64,8 @@ export default function SeriesPage() {
 	};
 
 	const getCompletionPercentage = () => {
-		const indexOfSeries = user.userList.findIndex((seriesObj, index) => {
-			return seriesObj.Series._id.toString() === id
-				? index
-				: false;
+		const indexOfSeries = user.userList.findIndex((seriesObj) => {
+			return seriesObj.Series._id.toString() === id;
 		});
 		if(indexOfSeries !== -1){
 			console.log("OBJECT FODASE",user.userList[indexOfSeries])
@@ -104,16 +101,6 @@ export default function SeriesPage() {
 				withCredentials: true,
 				url: url,
 			});
-			if (isAdding) {
-				const newUserList = [...localUserListState];
-				newUserList.push({ Series: { id } });
-				setLocalUserListState([...newUserList]);
-			} else {
-				const newUserList = localUserListState.filter(
-					(series) => series.Series.id !== id
-				);
-				setLocalUserListState([...newUserList]);
-			}
 			setOutdated(true);
 			//console.log(response);
 		} catch (err) {
@@ -211,8 +198,10 @@ export default function SeriesPage() {
 		);
 	};
 	const renderAddRemoveButton = () => {
-		//console.log(localUserListState);
-		const inList = localUserListState.find((series) => series.Series.id === id);
+		const indexOfSeries = user.userList.findIndex((seriesObj) => {
+			return seriesObj.Series._id.toString() === id;
+		});
+		const inList = (indexOfSeries !== -1);
 		return (
 			<button
 				className="add-button"
