@@ -16,7 +16,7 @@ exports.all = asyncHandler(async (req, res, next) => {
 
 exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 	const desiredVolume = await Volume.findById(req.params.id)
-		.populate("serie", "title")
+		.populate("serie", "title volumes")
 		.exec();
 
 	const { serie, number } = desiredVolume;
