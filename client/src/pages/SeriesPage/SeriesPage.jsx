@@ -64,15 +64,15 @@ export default function SeriesPage() {
 		}
 	};
 
-	const calculateCompletePorcentage = (isAdding, quantity = 1) => {
-		if(localVolumeState){
-			const removing = -1;
-			const correctionValue = isAdding ? quantity : removing;
-			const total = localVolumeState.length;
-			const ownedVolumes =
-				localVolumeState.filter((volume) => volume.ownsVolume).length +
-				correctionValue;
-			return ownedVolumes / total;
+	const getCompletionPercentage = () => {
+		const indexOfSeries = user.userList.findIndex((seriesObj, index) => {
+			return seriesObj.Series._id.toString() === id
+				? index
+				: false;
+		});
+		if(indexOfSeries !== -1){
+			console.log("OBJECT FODASE",user.userList[indexOfSeries])
+			return user.userList[indexOfSeries].completionPercentage
 		}
 		return 0
 	};
@@ -140,27 +140,20 @@ export default function SeriesPage() {
 				customWindowConfirm(
 					"Do you want to mark all previous volumes too?",
 					() => {
-						const completePorcentage = calculateCompletePorcentage(
-							adding,
-							listToAdd.length
-						);
 
-						addOrRemoveVolume(adding, listToAdd, completePorcentage);
+						addOrRemoveVolume(adding, listToAdd);
 
 						return;
 					},
 					() => {
-						const completePorcentage = calculateCompletePorcentage(adding, 1);
-						addOrRemoveVolume(adding, [id], completePorcentage);
+						addOrRemoveVolume(adding, [id]);
 					}
 				);
 			} else {
-				const completePorcentage = calculateCompletePorcentage(adding, 1);
-				addOrRemoveVolume(adding, [id], completePorcentage);
+				addOrRemoveVolume(adding, [id]);
 			}
 		} else {
-			const completePorcentage = calculateCompletePorcentage(adding);
-			addOrRemoveVolume(adding, [id], completePorcentage);
+			addOrRemoveVolume(adding, [id]);
 		}
 
 		const newList = localVolumeState.map((checkbox) => {
@@ -182,23 +175,24 @@ export default function SeriesPage() {
 				});
 		if(!adding){
 			customWindowConfirm("Deseja remover todos os volumes?", 
-				() => addOrRemoveVolume(adding, list, 0),
+				() => addOrRemoveVolume(adding, list),
 				null
 			)
 		}else{
-			addOrRemoveVolume(adding, list, 1)
+			addOrRemoveVolume(adding, list)
 		}
 	}
 
-	const addOrRemoveVolume = async (isAdding, idList, completePorcentage) => {
+	const addOrRemoveVolume = async (isAdding, idList) => {
 		try {
 			const url = isAdding
 				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-volume`
 				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-volume`;
 
+			const amoutVolumesFromSeries = series.volumes.length
 			const response = await axios({
 				method: "POST",
-				data: { idList: idList, completePorcentage, seriesId: id },
+				data: { idList: idList, amoutVolumesFromSeries, seriesId: id },
 				withCredentials: true,
 				url: url,
 			});
@@ -301,7 +295,7 @@ export default function SeriesPage() {
 							className="checkmark"
 							disabled={user ? false : true}
 							checked={
-								user && calculateCompletePorcentage(true, 0) === 1?true:false
+								user && getCompletionPercentage() === 1?true:false
 							}
 							onChange={(e) => handleSelectAll(e)}
 						/>

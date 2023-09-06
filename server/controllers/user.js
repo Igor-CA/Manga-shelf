@@ -152,16 +152,16 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 		userList: 1,
 	}).populate({
 		path: "ownedVolumes",
-		select: "serie"
+		select: "serie",
 	});
-	console.log(user.ownedVolumes)
+	console.log(user.ownedVolumes);
 	if (user) {
 		const newSeriesList = user.userList.filter((seriesObject) => {
 			return seriesObject.Series.toString() !== req.body.id;
 		});
 		const newVolumesList = user.ownedVolumes.filter((volume) => {
-			volumeSeriesId = volume.serie.toString()
-			console.log(volumeSeriesId,  req.body.id)
+			volumeSeriesId = volume.serie.toString();
+			console.log(volumeSeriesId, req.body.id);
 			return volumeSeriesId !== req.body.id;
 		});
 		user.userList = newSeriesList;
@@ -271,21 +271,30 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 		).populate("userList.Series");
 		if (user) {
 			const indexOfSeries = user.userList.findIndex((seriesObj, index) => {
-				return (seriesObj.Series._id.toString() === req.body.seriesId)?index:false
-			})
-			
+				console.log(`testedID: ${seriesObj.Series._id.toString()}, index: ${index}, seriesID: ${ req.body.seriesId}`)
+				return seriesObj.Series._id.toString() === req.body.seriesId
+			});
+			user.ownedVolumes.push(...req.body.idList);
+
 			if (indexOfSeries === -1) {
+				const completePorcentage = req.body.idList.length / req.body.amoutVolumesFromSeries 
 				const addedSeries = {
 					Series: req.body.seriesId,
-					completionPercentage: req.body.completePorcentage,
+					completionPercentage: completePorcentage,
 				};
 				user.userList.push(addedSeries);
-			}else{
+			} else {
+				const seriesList = user.userList[indexOfSeries].Series.volumes;
+				const haveFromSeries = seriesList.filter((volumesId) => {
+					id = volumesId.toString();
+					return user.ownedVolumes.includes(id);
+				});
+				const completePorcentage = haveFromSeries.length / seriesList.length;
+
 				const seriesBeingAdded = user.userList[indexOfSeries];
-				seriesBeingAdded.completionPercentage = req.body.completePorcentage;
+				seriesBeingAdded.completionPercentage = completePorcentage;
 			}
-			
-			user.ownedVolumes.push(...req.body.idList);
+
 			user.save();
 			res.send({ msg: "Volume successfully added" });
 		} else {
@@ -305,13 +314,19 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 		).populate("userList.Series");
 		if (user) {
 			const newVolumesList = user.ownedVolumes.filter((volumeId) => {
-				id = volumeId.toString()
-				return !(req.body.idList.includes(id))
+				id = volumeId.toString();
+				return !req.body.idList.includes(id);
 			});
-			
 			user.ownedVolumes = newVolumesList;
-			user.userList[0].completionPercentage = req.body.completePorcentage;
-			
+			const seriesList = user.userList[0].Series.volumes;
+			const haveFromSeries = seriesList.filter((volumesId) => {
+				id = volumesId.toString();
+				return user.ownedVolumes.includes(id);
+			});
+			const completePorcentage = haveFromSeries.length / seriesList.length;
+
+			user.userList[0].completionPercentage = completePorcentage;
+
 			user.save();
 			res.send({ msg: "Volume successfully removed" });
 		} else {

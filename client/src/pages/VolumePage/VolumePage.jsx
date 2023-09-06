@@ -42,17 +42,18 @@ export default function VolumePage() {
 	};
 
 
-	const addOrRemoveVolume = async (isAdding, completePorcentage) => {
+	const addOrRemoveVolume = async (isAdding) => {
 		try {
 			const url = isAdding
 				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-volume`
 				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-volume`;
-
+			
+			const amoutVolumesFromSeries = volumeData.serie.volumes.length
 			const response = await axios({
 				method: "POST",
 				data: {
 					idList: [id],
-					completePorcentage,
+					amoutVolumesFromSeries,
 					seriesId: volumeData.serie.id,
 				},
 				withCredentials: true,
@@ -67,8 +68,7 @@ export default function VolumePage() {
 
 	const handleChange = (e) => {
 		const adding = e.target.checked;
-		//Complete porcentage gonna be wrong
-		addOrRemoveVolume(adding, 1);
+		addOrRemoveVolume(adding);
 	};
 
 	const { image, serie, number, date, pagesNumber, summary } = volumeData;
