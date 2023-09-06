@@ -304,12 +304,14 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 			}
 		).populate("userList.Series");
 		if (user) {
-			const [removedVolumeId] =  req.body.idList
-			const newList = user.ownedVolumes.filter((volumeId) => {
-				return volumeId.toString() !== removedVolumeId;
+			const newVolumesList = user.ownedVolumes.filter((volumeId) => {
+				id = volumeId.toString()
+				return !(req.body.idList.includes(id))
 			});
-			user.ownedVolumes = newList;
+			
+			user.ownedVolumes = newVolumesList;
 			user.userList[0].completionPercentage = req.body.completePorcentage;
+			
 			user.save();
 			res.send({ msg: "Volume successfully removed" });
 		} else {

@@ -28,7 +28,7 @@ export default function SeriesPage() {
 				const response = await axios.get(
 					`${process.env.REACT_APP_HOST_ORIGIN}/api/series/${id}`
 				);
-				//console.log(response);
+				console.log(response);
 				const responseData = response.data;
 				setSeries(responseData);
 			} catch (error) {
@@ -65,13 +65,16 @@ export default function SeriesPage() {
 	};
 
 	const calculateCompletePorcentage = (isAdding, quantity = 1) => {
-		const removing = -1;
-		const correctionValue = isAdding ? quantity : removing;
-		const total = localVolumeState.length;
-		const ownedVolumes =
-			localVolumeState.filter((volume) => volume.ownsVolume).length +
-			correctionValue;
-		return ownedVolumes / total;
+		if(localVolumeState){
+			const removing = -1;
+			const correctionValue = isAdding ? quantity : removing;
+			const total = localVolumeState.length;
+			const ownedVolumes =
+				localVolumeState.filter((volume) => volume.ownsVolume).length +
+				correctionValue;
+			return ownedVolumes / total;
+		}
+		return 0
 	};
 
 	const checkOwnedVolumes = (id) => {
@@ -82,7 +85,7 @@ export default function SeriesPage() {
 	};
 
 	const customWindowConfirm = (message, onConfirmCb, onCancelCb) => {
-		console.log({onConfirmCb, onCancelCb})
+		console.log({ onConfirmCb, onCancelCb });
 		setOnConfirm(() => onConfirmCb);
 		setOnCancel(() => onCancelCb);
 		setConfirmationMessage(message);
@@ -133,31 +136,31 @@ export default function SeriesPage() {
 					return volume.volumeId;
 				});
 
-				if (listToAdd.length > 1) {
-					customWindowConfirm(
-						"Do you want to mark all previous volumes too?",
-						() => {
-							const completePorcentage = calculateCompletePorcentage(
-								adding,
-								listToAdd.length
-							);
-							
-							addOrRemoveVolume(true, listToAdd, completePorcentage);
-							
-							return;
-						},
-						() => {
-							const completePorcentage = calculateCompletePorcentage(adding, 1);
-							addOrRemoveVolume(true, [id], completePorcentage);
-						}
-					);
-				} else {
-					const completePorcentage = calculateCompletePorcentage(adding, 1);
-					addOrRemoveVolume(true, [id], completePorcentage);
-				}
+			if (listToAdd.length > 1) {
+				customWindowConfirm(
+					"Do you want to mark all previous volumes too?",
+					() => {
+						const completePorcentage = calculateCompletePorcentage(
+							adding,
+							listToAdd.length
+						);
+
+						addOrRemoveVolume(adding, listToAdd, completePorcentage);
+
+						return;
+					},
+					() => {
+						const completePorcentage = calculateCompletePorcentage(adding, 1);
+						addOrRemoveVolume(adding, [id], completePorcentage);
+					}
+				);
+			} else {
+				const completePorcentage = calculateCompletePorcentage(adding, 1);
+				addOrRemoveVolume(adding, [id], completePorcentage);
+			}
 		} else {
 			const completePorcentage = calculateCompletePorcentage(adding);
-			addOrRemoveVolume(false, [id], completePorcentage);
+			addOrRemoveVolume(adding, [id], completePorcentage);
 		}
 
 		const newList = localVolumeState.map((checkbox) => {
@@ -169,6 +172,23 @@ export default function SeriesPage() {
 		});
 		setLocalVolumeState(newList);
 	};
+
+	const handleSelectAll = (e) => {
+		const adding = e.target.checked;
+		const list = localVolumeState
+				.filter((volume) => volume.ownsVolume === !adding)
+				.map((volume) => {
+					return volume.volumeId;
+				});
+		if(!adding){
+			customWindowConfirm("Deseja remover todos os volumes?", 
+				() => addOrRemoveVolume(adding, list, 0),
+				null
+			)
+		}else{
+			addOrRemoveVolume(adding, list, 1)
+		}
+	}
 
 	const addOrRemoveVolume = async (isAdding, idList, completePorcentage) => {
 		try {
@@ -190,14 +210,13 @@ export default function SeriesPage() {
 	};
 
 	const handleRemoveSeries = () => {
-		customWindowConfirm("Remover essa coleção também irá remover todos os seus volumes deseja prosseguir?", 
-		() => addOrRemoveSeries(false),
-		null
-		)
-	}
+		customWindowConfirm(
+			"Remover essa coleção também irá remover todos os seus volumes deseja prosseguir?",
+			() => addOrRemoveSeries(false),
+			null
+		);
+	};
 	const renderAddRemoveButton = () => {
-
-
 		//console.log(localUserListState);
 		const inList = localUserListState.find((series) => series.Series.id === id);
 		return (
@@ -274,6 +293,19 @@ export default function SeriesPage() {
 						<strong>Autores:</strong> {getAuthorsString(authors)}
 					</p>
 					{user && renderAddRemoveButton()}
+					<label htmlFor="have-volume-check-mark">
+						<strong>Select all:</strong>
+						<input
+							type="checkbox"
+							name="select-all-check-mark"
+							className="checkmark"
+							disabled={user ? false : true}
+							checked={
+								user && calculateCompletePorcentage(true, 0) === 1?true:false
+							}
+							onChange={(e) => handleSelectAll(e)}
+						/>
+					</label>
 				</div>
 			</div>
 			<ol className="series__volumes-container">
