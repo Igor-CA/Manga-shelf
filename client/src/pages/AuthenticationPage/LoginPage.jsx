@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import axios from "axios";
 import { UserContext } from "../../components/userProvider";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import "./Authentication.css";
@@ -28,7 +28,7 @@ export default function LoginPage() {
 			});
 			const userFetch = await axios({
 				method: "GET",
-				withCredentials: true,
+				withCredentials: true,	
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/logged-user`,
 			});
 			setUser(userFetch.data);
@@ -127,6 +127,8 @@ export default function LoginPage() {
 					}}
 					required
 				/>
+				<Link to={"/signup"} className="autentication-form__link">Not registered? Click here to sign up</Link>
+				<Link to={"/forgot"} className="autentication-form__link">Forgot password?</Link>
 				<button className="autentication-form__button">Log in</button>
 			</form>
 			{errors.length > 0 && renderErrorsMessage()}

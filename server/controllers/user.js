@@ -3,6 +3,8 @@ const Series = require("../models/Series");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 const { body, validationResult } = require("express-validator");
 
 exports.signup = [
@@ -48,7 +50,7 @@ exports.signup = [
 	asyncHandler(async (req, res, next) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
-			return res.status(400).json({ errors: errors.array() });
+			return res.status(400).json({ message: errors.array() });
 		}
 
 		const {
@@ -98,6 +100,11 @@ exports.login = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ message: errors.array() });
+		}
+
 		const [user] = await User.find()
 			.or([{ username: req.body.login }, { email: req.body.login }])
 			.limit(1);
@@ -122,6 +129,117 @@ exports.login = [
 				.status(401)
 				.json({ message: "User or password are incorrect try again" });
 		}
+	}),
+];
+
+exports.sendResetEmail = [
+	body("email")
+		.trim()
+		.notEmpty()
+		.withMessage("Email must be specified.")
+		.isEmail()
+		.withMessage("Invalid email format.")
+		.escape(),
+
+	asyncHandler(async (req, res, next) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ message: errors.array() });
+		}
+
+		const user = await User.findOne({ email: req.body.email });
+		if (user) {
+			const tokenLength = 32;
+			const token = crypto.randomBytes(tokenLength).toString("hex");
+			const urlCode = `${user._id}/${token}`;
+
+			const timestamp = new Date();
+			timestamp.setMinutes(timestamp.getMinutes() + 15);
+
+			user.tokenTimestamp = timestamp;
+			user.token = token;
+			user.save();
+
+			const transporter = nodemailer.createTransport({
+				service: "gmail",
+				auth: {
+					user: process.env.EMAIL,
+					pass: process.env.APP_PASSWORD,
+				},
+			});
+			const mailOptions = {
+				from: `Change your manga shelf password accout<${process.env.EMAIL}>`,
+				to: user.email,
+				subject: "Change your password",
+				text: `${process.env.CLIENT_HOST_ORIGIN}/reset/${urlCode}`,
+				html: `<a href="${process.env.CLIENT_HOST_ORIGIN}/reset/${urlCode}">Click here to change your password</a>`,
+			};
+
+			transporter
+				.sendMail(mailOptions)
+				.then(() => res.send({ msg: "Email sent" }))
+				.catch((error) => res.send(error));
+
+			return;
+		}
+		res
+			.status(401)
+			.json({ message: "No user with this email" });
+	}),
+];
+
+exports.resetPassword = [
+	body("password")
+		.trim()
+		.notEmpty()
+		.withMessage("Password must be specified.")
+		.matches(
+			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
+		)
+		.withMessage(
+			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
+		)
+		.escape(),
+	body("confirm-password")
+		.trim()
+		.notEmpty()
+		.withMessage("Password must be specified.")
+		.matches(
+			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
+		)
+		.withMessage(
+			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
+		)
+		.escape(),
+		
+	asyncHandler(async (req, res, next) => {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ message: errors.array() });
+		}
+
+		const currentTimeStamp = new Date();
+		const user = await User.findOne({ _id: req.body.userId });
+		if (!user) {
+			res.status(400).json({message:"Error: this user does not exist"});
+			return;
+		}
+
+		if (user.token !== req.body.token) {
+			res.status(400).json({message: "Error: Invalid token"});
+			return;
+		}
+
+		if (currentTimeStamp < user.timestamp) {
+			res.status(400).json({message: "Error: Token Expired"});
+			return;
+		}
+
+		const newHashedPassword = await bcrypt.hash(req.body.password, 10);
+		user.password = newHashedPassword;
+		user.token = null;
+		user.save();
+		res.send("Password changed successfully");
 	}),
 ];
 
@@ -270,14 +388,14 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 			}
 		).populate("userList.Series");
 		if (user) {
-			const indexOfSeries = user.userList.findIndex((seriesObj, index) => {
-				console.log(`testedID: ${seriesObj.Series._id.toString()}, index: ${index}, seriesID: ${ req.body.seriesId}`)
-				return seriesObj.Series._id.toString() === req.body.seriesId
+			const indexOfSeries = user.userList.findIndex((seriesObj) => {
+				return seriesObj.Series._id.toString() === req.body.seriesId;
 			});
 			user.ownedVolumes.push(...req.body.idList);
 
 			if (indexOfSeries === -1) {
-				const completePorcentage = req.body.idList.length / req.body.amoutVolumesFromSeries 
+				const completePorcentage =
+					req.body.idList.length / req.body.amoutVolumesFromSeries;
 				const addedSeries = {
 					Series: req.body.seriesId,
 					completionPercentage: completePorcentage,

@@ -1,23 +1,35 @@
+import axios from "axios";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
-import "./Authentication.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-export default function SignupPage() {
-	const navigate = useNavigate();
+export default function ResetPasswordPage() {
+    const {userId, token} = useParams()
+	const [formData, setFormData] = useState({ email: "" });
 	const [errors, setErrors] = useState([]);
-	const [formData, setFormData] = useState({
-		username: "",
-		password: "",
-		email: "",
-		"confirm-password": "",
-	});
+    const navigate = useNavigate()
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
+	};
+
+	const renderErrorsMessage = () => {
+		return (
+			<div className="errors-message">
+				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
+				<div>
+					{errors.map((erro, index) => {
+						return (
+							<p key={index} className="errors-message__error">
+								{erro}
+							</p>
+						);
+					})}
+				</div>
+			</div>
+		);
 	};
 
 	const handleSubmit = async (e) => {
@@ -25,12 +37,11 @@ export default function SignupPage() {
 		try {
 			const response = await axios({
 				method: "POST",
-				data: formData,
+				data: {...formData, userId, token},
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/signup`,
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/reset-password`,
 			});
-			console.log(response.data);
-			navigate("./login")
+            navigate("/login")
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -40,20 +51,13 @@ export default function SignupPage() {
 			}, 5000);
 		}
 	};
+
 	const handleInvalid = (e) => {
 		e.preventDefault();
 		const inputName = e.target.name;
 		const input = e.target;
 
 		const validationMessages = {
-			email: {
-				valueMissing: "The email field is required",
-				typeMismatch: "The email must be a valid email address.",
-			},
-			username: {
-				valueMissing: "The username field is required",
-				patternMismatch: "The username can't contain special characters and between 3 and 16 characters.",
-			},
 			password: {
 				valueMissing: "The password field is required",
 				patternMismatch:
@@ -75,7 +79,6 @@ export default function SignupPage() {
 		const inputValidity = validationTypes.find((type) => input.validity[type]);
 
 		const customErrorMessage = validationMessages[inputName][inputValidity];
-
 		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
 
 		setTimeout(() => {
@@ -83,69 +86,17 @@ export default function SignupPage() {
 		}, 5000);
 	};
 
-	const renderErrorsMessage = () => {
-		return (
-			<div className="errors-message">
-				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
-				<div>
-					{errors.map((erro, index) => {
-						return (
-							<p key={index} className="errors-message__error">
-								{erro}
-							</p>
-						);
-					})}
-				</div>
-			</div>
-		);
-	};
-
 	return (
 		<div className="form-container">
-			<h1 className="form-title">Sign up</h1>
+			<h1 className="form-title">Set your new password</h1>
 			<form
+				action="/login"
 				method="post"
 				className="autentication-form"
 				onSubmit={(e) => {
 					handleSubmit(e);
 				}}
 			>
-				<label htmlFor="email" className="autentication-form__label">
-					Email:
-				</label>
-				<input
-					type="email"
-					name="email"
-					placeholder="Email"
-					id="email"
-					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-				/>
-				<label htmlFor="username" className="autentication-form__label">
-					User name:{" "}
-				</label>
-				<input
-					type="text"
-					name="username"
-					placeholder="Username"
-					id="username"
-					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-					pattern="^[A-Za-z0-9]{3,16}$"
-					maxLength="16"
-				/>
 				<label htmlFor="password" className="autentication-form__label">
 					Password:
 				</label>
@@ -183,8 +134,10 @@ export default function SignupPage() {
 					required
 					pattern={formData.password}
 				/>
-				<Link to={"/login"} className="autentication-form__link">Already sign? click here to login</Link>
-				<button className="autentication-form__button">Sign up</button>
+				<Link to={"/login"} className="autentication-form__link">
+					Login
+				</Link>
+				<button className="autentication-form__button">Set new password</button>
 			</form>
 			{errors.length > 0 && renderErrorsMessage()}
 		</div>

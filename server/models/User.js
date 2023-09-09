@@ -17,6 +17,8 @@ const UserSchema = new Schema({
 	],
 	ownedVolumes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Volume" }],
 	following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+	tokenTimestamp: { type: Date },
+	token: { type: String },
 });
 
 module.exports = mongoose.model("User", UserSchema);
