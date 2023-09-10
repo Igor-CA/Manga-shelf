@@ -44,14 +44,14 @@ export default function NavBar() {
 				</Link>
 
 				<Link
-					to={"/signup"}
+					to={"/report"}
 					className="navbar__button"
 					onClick={() => {
 						setMenuVisibility(false);
 					}}
 				>
 					<FontAwesomeIcon icon={faBug} size="lg" fixedWidth />
-					<span className="navbar__label">Report </span>
+					<span className="navbar__label">Report</span>
 				</Link>
 
 				<Link

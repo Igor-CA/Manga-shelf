@@ -13,6 +13,7 @@ import BrowsePage from "./pages/BrowsePage/BrowsePage";
 import MissingVolumesPage from "./pages/MissingVolumesPage/MissingVolumesPage";
 import ForgotPage from "./pages/AuthenticationPage/ForgotPage";
 import ResetPasswordPage from "./pages/AuthenticationPage/ResetPasswordPage";
+import ReportProblem from "./pages/ReportPoblem/ReportProblem";
 function App() {
 	const {user, setUser, outdated, setOutdated} = useContext(UserContext);
 
@@ -46,6 +47,7 @@ function App() {
 					<Route path="/login" element={<LoginPage />}></Route>
 					<Route path="/forgot" element={<ForgotPage/>}></Route>
 					<Route path="/reset/:userId/:token" element={<ResetPasswordPage/>}></Route>
+					<Route path="/report" element={<ReportProblem />}></Route>
 					<Route path="/browse" element={<BrowsePage />}></Route>
 					<Route path="/series/:id" element={<SeriesPage />}></Route>
 					<Route path="/volume/:id" element={<VolumePage />}></Route>
