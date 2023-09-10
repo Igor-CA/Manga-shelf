@@ -90,7 +90,6 @@ export default function ResetPasswordPage() {
 		<div className="form-container">
 			<h1 className="form-title">Set your new password</h1>
 			<form
-				action="/login"
 				method="post"
 				className="autentication-form"
 				onSubmit={(e) => {

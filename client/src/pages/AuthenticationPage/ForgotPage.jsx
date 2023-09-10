@@ -73,7 +73,6 @@ export default function ForgotPage(){
         <div className="form-container">
 			<h1 className="form-title">Reset password</h1>
 			<form
-				action="/login"
 				method="post"
 				className="autentication-form"
 				onSubmit={(e) => {
