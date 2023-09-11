@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { SeriesCard } from "../../components/SeriesCard";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 export default function BrowsePage() {
 	const [page, setPage] = useState(1);
@@ -114,20 +116,24 @@ export default function BrowsePage() {
 	}, [loading]);
 
 	return (
-		<div className="browse-collection-page">
+		<div className="browse-collection-page container">
 			<form className="form" onSubmit={(e) => handleSubmit(e)}>
 				<label htmlFor="search-bar" className="form__label">
 					Pesquisa
 				</label>
 				<input
-					type="text"
+					type="search"
 					name="search-bar"
-					className="form__input"
+					className="form__input form__input__grow" 
+					placeholder="Search title"
 					onChange={(e) => {
 						handleChange(e);
 					}}
 					value={search}
 				/>
+				<button type="submit" className="form__input">
+					<FontAwesomeIcon icon={faMagnifyingGlass} size="xl" fixedWidth />
+				</button>
 			</form>
 
 			{loading && <p>Carregando...</p>}

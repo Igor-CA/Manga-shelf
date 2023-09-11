@@ -5,22 +5,53 @@
 .form {
 	width: 100%;
 	padding: 10px;
-	padding-bottom: 0px;
+	display: flex;
+
 }
 .form__input {
-	width: 100%;
+	background-color: white;
+	color: #5c728a;
+	font-weight: bold;
 	padding: 10px;
-	border-radius: 10px;
+	border-radius: 3px;
+	border: none;
+	outline: none;
+}
+.form__input::placeholder{
+	font-weight: normal;
+}
+.form__input__grow {
+	flex-grow: 1;
 }
 .form__label {
 	display: none;
 }
 .collection-container {
+	margin: auto;
 	padding: 10px 10px;
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
 	justify-content: space-evenly;
-	gap: 10px;
+	gap: 20px 10px;
     overflow: scroll;
     padding-bottom: 100px;
+}
+
+@media only screen and (max-width: 320px) {
+    .collection-container{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+
+@media only screen and (min-width: 768px) {
+    .collection-container{
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    .collection-container{
+        grid-template-columns: repeat(6, 1fr);
+    }
 }

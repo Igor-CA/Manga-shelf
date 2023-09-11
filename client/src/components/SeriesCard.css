@@ -1,8 +1,18 @@
-.series-card {
-	box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.449);
+
+.series__title{
+	font-size: 0.8em;
+	color: #5c728a;
+	display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+	overflow: hidden;
+	margin-top: 10px;
+}
+.series-card__image-container {
+	display: block;
 	position: relative;
-	border-radius: 10px;
-	width: 30%;
+	border-radius: 5px;
+	width: 100%;
 	overflow: hidden;
 	aspect-ratio: auto 465 / 695;
 }

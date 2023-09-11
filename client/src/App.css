@@ -4,6 +4,18 @@
 	font-family: Arial, Helvetica, sans-serif;
 	box-sizing: border-box;
 }
+.App{
+	background-color: #edf1f5;
+}
+.container {
+    max-width: 1520px;
+}
+@media only screen and (min-width: 1040px) {
+	.container{
+		padding-left: 100px;
+		padding-right: 100px;
+	}
+}
 a {
 	text-decoration: none;
 }
