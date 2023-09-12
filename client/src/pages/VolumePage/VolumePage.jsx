@@ -41,14 +41,13 @@ export default function VolumePage() {
 		return false;
 	};
 
-
 	const addOrRemoveVolume = async (isAdding) => {
 		try {
 			const url = isAdding
 				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-volume`
 				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-volume`;
-			
-			const amoutVolumesFromSeries = volumeData.serie.volumes.length
+
+			const amoutVolumesFromSeries = volumeData.serie.volumes.length;
 			const response = await axios({
 				method: "POST",
 				data: {
@@ -71,26 +70,21 @@ export default function VolumePage() {
 		addOrRemoveVolume(adding);
 	};
 
-	const { image, serie, number, date, pagesNumber, summary } = volumeData;
+	const { image, serie, number, defaultPrice, pagesNumber, summary } = volumeData;
 
 	return (
 		<div className="volume">
-			<div className="volume__main-container">
-				<img
-					src={image}
-					alt={`cover ${serie.title} volume ${number}`}
-					className="volume__cover"
-				/>
-				<div className="volume_details-container">
-					<h1 className="volume__details">
-						{serie.title} Volume {number}
-					</h1>
-					<p className="volume__details">
-						<strong>Data de publicação:</strong> {date}
-					</p>
-					<p className="volume__details">
-						<strong>Páginas:</strong> {pagesNumber}
-					</p>
+			<img
+				src={image}
+				alt={`cover ${serie.title} volume ${number}`}
+				className="volume__cover"
+			/>
+			<div className="volume_info-container">
+				<div className="volume__functions">
+					<Link to={`../series/${serie.id}`} className="volume__series-button">
+						<strong>See Series page</strong>
+					</Link>
+
 					<label htmlFor="have-volume-check-mark" className="checkmark-label">
 						Tem:
 					</label>
@@ -104,25 +98,24 @@ export default function VolumePage() {
 							handleChange(e);
 						}}
 					/>
-					<div key={id} className="add-button">
-						<Link
-							to={`../series/${serie.id}`}
-							className="series__volume__number"
-						>
-							<strong>See Series page</strong>
-						</Link>
-					</div>
 				</div>
-			</div>
-			<div className="volume__details">
-				<strong>Sinopse:</strong>
-				{summary.map((paragraph, index) => {
-					return (
-						<p className="volume__summary" key={index}>
-							{paragraph}
-						</p>
-					);
-				})}
+				<h1 className="volume__title">
+					{serie.title} Volume {number}
+				</h1>
+				<ul className="volume__details-container">
+					<li className="volume__details"><strong>Pages:</strong> {pagesNumber}</li>
+					<li className="volume__details"><strong>Price:</strong> R$ {defaultPrice}</li>
+					<li className="volume__details">
+						<strong>Sinopse:</strong>
+						{summary.map((paragraph, index) => {
+							return (
+								<p className="volume__summary" key={index}>
+									{paragraph}
+								</p>
+							);
+						})}
+					</li>
+				</ul>
 			</div>
 		</div>
 	);
