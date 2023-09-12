@@ -23,7 +23,6 @@ export default function BrowsePage() {
 			console.error("Error fetching series list:", error);
 		}
 	};
-	
 	const updatePage = async () => {
 		if (!loading && !reachedEnd) {
 			setLoading(true);
@@ -31,12 +30,12 @@ export default function BrowsePage() {
 				const resultList = await fetchSeriesList();
 				console.log(resultList);
 				if (resultList.length > 0) {
-					setSeriesList((prevList) =>
-						page === 1 ? [...resultList] : [...prevList, ...resultList]
+					setSeriesList(
+						page === 1 ? [...resultList] : [...seriesList, ...resultList]
 					);
 					setPage(page + 1);
-				}else{
-					setReachedEnd(true)
+				} else {
+					setReachedEnd(true);
 				}
 			} catch (error) {
 				console.error("Error fetching user Data:", error);
@@ -86,21 +85,22 @@ export default function BrowsePage() {
 	);
 
 	const handleScroll = () => {
-		const scrollY = window.scrollY;
-		const windowHeight = window.innerHeight;
-		const contentHeight = document.documentElement.offsetHeight;
-		
-		const bottomOffset = contentHeight - (scrollY + windowHeight);
-		const loadMoreThreshold = 600; // Adjust this value as needed
-		if (bottomOffset < loadMoreThreshold && !loading && search.trim() === "") {
-			updatePage();
+		const offset = 250;
+		const screeHeigh = window.innerHeight;
+		const distanceScrollTop = document.documentElement.scrollTop;
+		const appTotalHeight = document.documentElement.offsetHeight;
+
+		if (screeHeigh + distanceScrollTop + offset <= appTotalHeight || loading) {
+			return;
 		}
+		updatePage();
 	};
-	
-	const debouncedHandleScroll  = useCallback(
-		debaunce(handleScroll, 100),
-		[page, reachedEnd]
-	);
+
+	const debouncedHandleScroll = useCallback(debaunce(handleScroll, 100), [
+		loading,
+		page,
+		reachedEnd,
+	]);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -124,7 +124,7 @@ export default function BrowsePage() {
 				<input
 					type="search"
 					name="search-bar"
-					className="form__input form__input__grow" 
+					className="form__input form__input__grow"
 					placeholder="Search title"
 					onChange={(e) => {
 						handleChange(e);
