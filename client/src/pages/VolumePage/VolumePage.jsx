@@ -13,9 +13,33 @@ export default function VolumePage() {
 		number: "",
 		summary: [],
 		date: "",
+		defaultPrice: 0,
 		pagesNumber: "",
 		image: "",
 	});
+
+	useEffect(() => {
+		const handleResize = () => {
+			console.log("aaaaaa")
+			if (window.innerWidth < 768) {
+				const mainInfo = document.querySelector(".volume__main-info");
+				const image = document.querySelector(".volume__cover")
+				const contentComponent = document.querySelector(
+					".volume__info-container"
+				);
+				console.log("Main info Height", mainInfo.offsetHeight)
+				console.log("Main info Top", mainInfo.getBoundingClientRect().top)
+				console.log("Image heigh", image.offsetHeight*0.6)
+				const contentTop = `calc(${mainInfo.offsetHeight}px + ${image.offsetHeight*0.6}px)`;
+				contentComponent.style.top = contentTop;
+			}
+		};
+		handleResize();
+		window.addEventListener("resize", handleResize);
+
+		return () => window.removeEventListener("resize", handleResize)
+	}, [volumeData]);
+
 	const { user, setOutdated } = useContext(UserContext);
 	useEffect(() => {
 		const fetchVolumeData = async () => {
@@ -70,41 +94,54 @@ export default function VolumePage() {
 		addOrRemoveVolume(adding);
 	};
 
-	const { image, serie, number, defaultPrice, pagesNumber, summary } = volumeData;
+	const { image, serie, number, defaultPrice, pagesNumber, summary } =
+		volumeData;
 
+	//TODO change how this component is rendered. currently is pretty shit how it works
 	return (
-		<div className="volume">
-			<img
-				src={image}
-				alt={`cover ${serie.title} volume ${number}`}
-				className="volume__cover"
-			/>
-			<div className="volume_info-container">
-				<div className="volume__functions">
-					<Link to={`../series/${serie.id}`} className="volume__series-button">
-						<strong>See Series page</strong>
-					</Link>
+		<div className="volume container">
+			<div className="volume__cover-wrapper">
+				<img
+					src={image}
+					alt={`cover ${serie.title} volume ${number}`}
+					className="volume__cover"
+				/>
 
-					<label htmlFor="have-volume-check-mark" className="checkmark-label">
-						Tem:
-					</label>
-					<input
-						type="checkbox"
-						name="have-volume-check-mark"
-						className="checkmark"
-						disabled={user ? false : true}
-						checked={user && checkOwnedVolume()}
-						onChange={(e) => {
-							handleChange(e);
-						}}
-					/>
+				<div className="volume__main-info">
+					<div className="volume__functions">
+						<Link
+							to={`../series/${serie.id}`}
+							className="volume__series-button"
+						>
+							<strong>See Series page</strong>
+						</Link>
+						<label htmlFor="have-volume-check-mark" className="checkmark-label">
+							Tem:
+						</label>
+						<input
+							type="checkbox"
+							name="have-volume-check-mark"
+							className="checkmark"
+							disabled={user ? false : true}
+							checked={user && checkOwnedVolume()}
+							onChange={(e) => {
+								handleChange(e);
+							}}
+						/>
+					</div>
+					<h1 className="volume__title">
+						{serie.title} Volume {number}
+					</h1>
 				</div>
-				<h1 className="volume__title">
-					{serie.title} Volume {number}
-				</h1>
+			</div>
+			<div className="volume__info-container">
 				<ul className="volume__details-container">
-					<li className="volume__details"><strong>Pages:</strong> {pagesNumber}</li>
-					<li className="volume__details"><strong>Price:</strong> R$ {defaultPrice}</li>
+					<li className="volume__details">
+						<strong>Pages:</strong> {pagesNumber}
+					</li>
+					<li className="volume__details">
+						<strong>Price:</strong> R$ {defaultPrice}
+					</li>
 					<li className="volume__details">
 						<strong>Sinopse:</strong>
 						{summary.map((paragraph, index) => {

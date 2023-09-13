@@ -5,12 +5,14 @@
 	box-sizing: border-box;
 }
 .App{
+	min-height: 100vh;
 	background-color: #edf1f5;
 }
 .container {
+	margin: auto;
     max-width: 1520px;
 }
-@media only screen and (min-width: 1040px) {
+@media only screen and (min-width: 1024px) {
 	.container{
 		padding-left: 100px;
 		padding-right: 100px;
@@ -18,4 +20,5 @@
 }
 a {
 	text-decoration: none;
+	color: currentColor;
 }
