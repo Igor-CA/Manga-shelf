@@ -35,7 +35,17 @@
 	gap: 20px 10px;
     overflow: scroll;
 }
-
+.not-found-message{
+	text-align: center;
+	color: #5c728a;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+	max-width: 600px;
+}.not-found-message > a{
+	text-decoration: underline;
+}
 @media only screen and (max-width: 320px) {
     .collection-container{
         grid-template-columns: repeat(2, 1fr);
@@ -49,7 +59,7 @@
     }
 }
 
-@media only screen and (min-width: 992px) {
+@media only screen and (min-width: 1024px) {
     .collection-container{
         grid-template-columns: repeat(6, 1fr);
     }

@@ -4,6 +4,7 @@ import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
 export default function BrowsePage() {
 	const [page, setPage] = useState(1);
@@ -11,6 +12,7 @@ export default function BrowsePage() {
 	const [loading, setLoading] = useState(false);
 	const [seriesList, setSeriesList] = useState([]);
 	const [reachedEnd, setReachedEnd] = useState(false);
+	const [isEmptyList, setIsEmptyList] = useState(false)
 
 	const fetchSeriesList = async () => {
 		try {
@@ -34,6 +36,7 @@ export default function BrowsePage() {
 						page === 1 ? [...resultList] : [...seriesList, ...resultList]
 					);
 					setPage(page + 1);
+					setIsEmptyList(false)
 				} else {
 					setReachedEnd(true);
 				}
@@ -68,7 +71,11 @@ export default function BrowsePage() {
 					setSeriesList(data);
 					setLoading(false);
 					setPage(1);
+					setIsEmptyList(false)
+					return
 				}
+				setSeriesList([])
+				setIsEmptyList(true)
 			} catch (error) {
 				console.error("Error fetching user Data:", error);
 			} finally {
@@ -96,7 +103,8 @@ export default function BrowsePage() {
 		updatePage();
 	};
 
-	const debouncedHandleScroll = useCallback(debaunce(handleScroll, 100), [
+	const debouncedHandleScroll = useCallback(debaunce(handleScroll, 100), 
+	[
 		loading,
 		page,
 		reachedEnd,
@@ -137,6 +145,9 @@ export default function BrowsePage() {
 			</form>
 
 			{loading && <p>Carregando...</p>}
+			{isEmptyList && (
+				<p className="not-found-message">Seems like we can't find anything for "{search}" check if your typed it right or <Link to={"/report"}><strong>suggest your title to us</strong></Link> so we can add it in the future </p>
+			)}
 			<div className="collection-container">
 				{seriesList.map((series) => {
 					const { _id, title, image } = series;
