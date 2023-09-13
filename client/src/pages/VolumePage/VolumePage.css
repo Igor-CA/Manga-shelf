@@ -20,7 +20,6 @@
 	width: 100vw;
 }
 .volume__info-container {
-	/* display: none; */
 	padding: 10px;
 	width: 100%;
 	position: absolute;
@@ -71,9 +70,6 @@
 @media only screen and (min-width: 768px) {
 	.volume {
 		display: flex;
-		position: absolute;
-		top: 50%;
-		translate: 0 -50%;
 	}
 	.volume__cover {
 		border-radius: 5px;
