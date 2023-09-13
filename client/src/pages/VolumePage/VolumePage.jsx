@@ -20,16 +20,13 @@ export default function VolumePage() {
 
 	useEffect(() => {
 		const handleResize = () => {
-			console.log("aaaaaa")
 			if (window.innerWidth < 768) {
 				const mainInfo = document.querySelector(".volume__main-info");
 				const image = document.querySelector(".volume__cover")
 				const contentComponent = document.querySelector(
 					".volume__info-container"
 				);
-				console.log("Main info Height", mainInfo.offsetHeight)
-				console.log("Main info Top", mainInfo.getBoundingClientRect().top)
-				console.log("Image heigh", image.offsetHeight*0.6)
+
 				const contentTop = `calc(${mainInfo.offsetHeight}px + ${image.offsetHeight*0.6}px)`;
 				contentComponent.style.top = contentTop;
 			}
@@ -97,7 +94,6 @@ export default function VolumePage() {
 	const { image, serie, number, defaultPrice, pagesNumber, summary } =
 		volumeData;
 
-	//TODO change how this component is rendered. currently is pretty shit how it works
 	return (
 		<div className="volume container">
 			<div className="volume__cover-wrapper">
@@ -114,14 +110,15 @@ export default function VolumePage() {
 							className="volume__series-button"
 						>
 							<strong>See Series page</strong>
-						</Link>
-						<label htmlFor="have-volume-check-mark" className="checkmark-label">
-							Tem:
+						</Link> 
+						<label htmlFor="have-volume-check-mark"className={`volume__series-button volume__series-button--grow volume__series-button--${(user && !checkOwnedVolume())?"green":"red"}`}>
+						<strong>{user && checkOwnedVolume() ? "Remove Volume" : "Add Volume"}</strong>
 						</label>
 						<input
 							type="checkbox"
 							name="have-volume-check-mark"
-							className="checkmark"
+							id="have-volume-check-mark"
+							className="checkmark invisible"
 							disabled={user ? false : true}
 							checked={user && checkOwnedVolume()}
 							onChange={(e) => {

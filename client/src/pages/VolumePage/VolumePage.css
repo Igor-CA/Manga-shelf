@@ -28,21 +28,32 @@
 	min-height: 60vh;
 }
 .volume__series-button {
-	margin-top: 100px;
+	text-align: center;
+	font-size: 1rem;
 	display: inline-block;
 	padding: 10px;
-	border-radius: 50px;
+	border-radius: 5px;
 	border: none;
 	background-color: #3db4f2;
 	color: white;
 	font-weight: bold;
 	cursor: pointer;
+}.volume__series-button--grow{
+	flex-grow: 1;
+}
+.volume__series-button--green{
+	background-color: rgb(76, 175, 80);
+}
+.volume__series-button--red{
+	background-color: rgb(236,41,75);
 }
 .volume__functions {
+	margin-top: 100px;
 	display: flex;
 	justify-content: space-between;
-	align-items: flex-end;
+	align-items: stretch;
 	margin-bottom: 15px;
+	gap: 10px;
 }
 .volume__details-container {
 	list-style: none;
@@ -105,12 +116,10 @@
 	.volume__details-container::before {
 		display: none;
 	}
-	.volume__functions {
-		padding-top: 10px;
-		gap: 10px;
+	.volume__functions{
+		margin-top: 10px;
 	}
 	.volume__series-button {
-		flex-grow: 1;
 		text-align: center;
 		margin-top: 0;
 	}
