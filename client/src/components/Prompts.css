@@ -14,6 +14,7 @@
 	translate: -50% -50%;
 	width: 420px;
 	max-width: 80vw;
+	z-index: 999;
 }
 .prompt-confirm__button {
 	cursor: pointer;

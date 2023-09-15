@@ -16,6 +16,9 @@ export default function SeriesPage() {
 		volumes: [],
 	});
 	const [localVolumeState, setLocalVolumeState] = useState();
+	const [infoToShow, setInfoToShow] = useState("details");
+	const [contentTopValue, setContentTopValue] = useState();
+	const [onMobile, setOnMobile] = useState(false);
 
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [confirmationMessage, setConfirmationMessage] = useState("");
@@ -48,6 +51,23 @@ export default function SeriesPage() {
 			});
 			setLocalVolumeState(newLocalVolumeState);
 		}
+
+		const handleResize = () => {
+			(window.innerWidth < 768)?setOnMobile(true):setOnMobile(false)
+			if (onMobile) {
+				const mainInfo = document.querySelector(".series_main-info");
+				const image = document.querySelector(".series__cover");
+
+				const contentTop = `calc(${mainInfo.offsetHeight}px + ${
+					image.offsetHeight * 0.6
+				}px)`;
+				setContentTopValue(contentTop);
+			}
+		};
+		handleResize();
+		window.addEventListener("resize", handleResize);
+
+		return () => window.removeEventListener("resize", handleResize);
 	}, [series, user]);
 
 	const getAuthorsString = (authors) => {
@@ -67,11 +87,11 @@ export default function SeriesPage() {
 		const indexOfSeries = user.userList.findIndex((seriesObj) => {
 			return seriesObj.Series._id.toString() === id;
 		});
-		if(indexOfSeries !== -1){
-			console.log("OBJECT FODASE",user.userList[indexOfSeries])
-			return user.userList[indexOfSeries].completionPercentage
+		if (indexOfSeries !== -1) {
+			console.log("OBJECT FODASE", user.userList[indexOfSeries]);
+			return user.userList[indexOfSeries].completionPercentage;
 		}
-		return 0
+		return 0;
 	};
 
 	const checkOwnedVolumes = (id) => {
@@ -127,7 +147,6 @@ export default function SeriesPage() {
 				customWindowConfirm(
 					"Do you want to mark all previous volumes too?",
 					() => {
-
 						addOrRemoveVolume(adding, listToAdd);
 
 						return;
@@ -156,19 +175,20 @@ export default function SeriesPage() {
 	const handleSelectAll = (e) => {
 		const adding = e.target.checked;
 		const list = localVolumeState
-				.filter((volume) => volume.ownsVolume === !adding)
-				.map((volume) => {
-					return volume.volumeId;
-				});
-		if(!adding){
-			customWindowConfirm("Deseja remover todos os volumes?", 
+			.filter((volume) => volume.ownsVolume === !adding)
+			.map((volume) => {
+				return volume.volumeId;
+			});
+		if (!adding) {
+			customWindowConfirm(
+				"Deseja remover todos os volumes?",
 				() => addOrRemoveVolume(adding, list),
 				null
-			)
-		}else{
-			addOrRemoveVolume(adding, list)
+			);
+		} else {
+			addOrRemoveVolume(adding, list);
 		}
-	}
+	};
 
 	const addOrRemoveVolume = async (isAdding, idList) => {
 		try {
@@ -176,7 +196,7 @@ export default function SeriesPage() {
 				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-volume`
 				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-volume`;
 
-			const amoutVolumesFromSeries = series.volumes.length
+			const amoutVolumesFromSeries = series.volumes.length;
 			const response = await axios({
 				method: "POST",
 				data: { idList: idList, amoutVolumesFromSeries, seriesId: id },
@@ -201,10 +221,12 @@ export default function SeriesPage() {
 		const indexOfSeries = user.userList.findIndex((seriesObj) => {
 			return seriesObj.Series._id.toString() === id;
 		});
-		const inList = (indexOfSeries !== -1);
+		const inList = indexOfSeries !== -1;
 		return (
 			<button
-				className="add-button"
+				className={`add-button add-button--grow add-button--${
+					inList ? "red" : "green"
+				}`}
 				onClick={() => {
 					inList ? handleRemoveSeries() : addOrRemoveSeries(true);
 				}}
@@ -222,11 +244,14 @@ export default function SeriesPage() {
 			: false;
 		return (
 			<li key={volumeId} className="series__volume-item">
-				<img
-					src={image}
-					alt={`cover volume ${volumeNumber}`}
-					className="series__volume__image"
-				/>
+				<Link to={`../volume/${volumeId}`} >
+
+					<img
+						src={image}
+						alt={`cover volume ${volumeNumber}`}
+						className="series__volume__image"
+					/>
+				</Link>
 				<Link to={`../volume/${volumeId}`} className="series__volume__number">
 					<strong>Volume {volumeNumber}</strong>
 				</Link>
@@ -249,10 +274,19 @@ export default function SeriesPage() {
 		);
 	};
 
-	const { seriesCover, title, publisher, authors, volumes } = series;
+	const {
+		seriesCover,
+		title,
+		publisher,
+		authors,
+		volumes,
+		dimmensions,
+		summary,
+		genres,
+	} = series;
 
 	return (
-		<div className="series">
+		<div className="series container">
 			{showConfirmation && (
 				<PromptConfirm
 					message={confirmationMessage}
@@ -261,39 +295,100 @@ export default function SeriesPage() {
 					hidePrompt={setShowConfirmation}
 				></PromptConfirm>
 			)}
-			<div className="series__info-container">
+
+			<div className="series__main-container">
 				<img
 					src={seriesCover}
 					alt={`cover volume ${title}`}
 					className="series__cover"
 				/>
-				<div className="series_details-container">
-					<h1 className="series__details">{title}</h1>
-					<p className="series__details">
-						<strong>Editora:</strong> {publisher}
-					</p>
-					<p className="series__details">
-						<strong>Autores:</strong> {getAuthorsString(authors)}
-					</p>
-					{user && renderAddRemoveButton()}
-					<label htmlFor="have-volume-check-mark">
-						<strong>Select all:</strong>
-						<input
-							type="checkbox"
-							name="select-all-check-mark"
-							className="checkmark"
-							disabled={user ? false : true}
-							checked={
-								user && getCompletionPercentage() === 1?true:false
-							}
-							onChange={(e) => handleSelectAll(e)}
-						/>
-					</label>
+				<div className="series_main-info">
+					{user && (
+						<div className="series__butons-containers">
+							<label htmlFor="select-all-check-mark" className="add-button">
+								<strong>
+									{user && getCompletionPercentage() === 1
+										? "Remove all volumes"
+										: "Select all volumes"}
+								</strong>
+								<input
+									type="checkbox"
+									name="select-all-check-mark"
+									id="select-all-check-mark"
+									className="checkmark invisible"
+									disabled={user ? false : true}
+									checked={
+										user && getCompletionPercentage() === 1 ? true : false
+									}
+									onChange={(e) => handleSelectAll(e)}
+								/>
+							</label>
+							{renderAddRemoveButton()}
+						</div>
+					)}
+					<h1 className="series__title">{title}</h1>
+					<div className="series__mobile-options-container">
+						<div
+							className={`series__mobile-options series__mobile-options--${
+								infoToShow === "details" && "selected"
+							}`}
+							onClick={() => {
+								setInfoToShow("details");
+							}}
+						>
+							Details
+						</div>
+						<div
+							className={`series__mobile-options series__mobile-options--${
+								infoToShow === "volumes" && "selected"
+							}`}
+							onClick={() => {
+								setInfoToShow("volumes");
+							}}
+						>
+							Volumes
+						</div>
+					</div>
 				</div>
+				{(infoToShow === "details" || !onMobile) && (
+					<ul
+						className="series__details-container series__content"
+						style={{ top: contentTopValue }}
+					>
+						<li className="series__details">
+							<strong>Editora:</strong> {publisher}
+						</li>
+						<li className="series__details">
+							<strong>Autores:</strong> {getAuthorsString(authors)}
+						</li>
+						<li className="series__details">
+							<strong>Formato:</strong> {dimmensions?.join("cm x ") + "cm"}
+						</li>
+
+						<li className="series__details">
+							<strong>Generos:</strong> {genres?.getAuthorsString(genres)}
+						</li>
+						<li className="series__details">
+							<strong>Sinopse:</strong>
+							{summary?.map((paragraph, index) => {
+								return (
+									<p className="series__summary" key={index}>
+										{paragraph}
+									</p>
+								);
+							})}
+						</li>
+					</ul>
+				)}
 			</div>
-			<ol className="series__volumes-container">
-				{volumes.map((volume) => renderVolumeItem(volume))}
-			</ol>
+			{(infoToShow === "volumes" || !onMobile) && (
+				<ol
+					className="series__volumes-container series__content"
+					style={{ top: contentTopValue }}
+				>
+					{volumes.map((volume) => renderVolumeItem(volume))}
+				</ol>
+			)}
 		</div>
 	);
 }

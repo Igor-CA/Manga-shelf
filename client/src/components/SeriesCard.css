@@ -1,5 +1,5 @@
 
-.series__title{
+.series-card__title{
 	font-size: 0.8em;
 	color: #5c728a;
 	display: -webkit-box;
@@ -15,15 +15,6 @@
 	width: 100%;
 	overflow: hidden;
 	aspect-ratio: auto 465 / 695;
-}
-.series-card__title {
-	color: white;
-	text-align: center;
-	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.473);
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	translate: -50% -50%;
 }
 .series-card__overlay {
 	position: absolute;

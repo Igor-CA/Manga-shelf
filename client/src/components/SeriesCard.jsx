@@ -21,7 +21,7 @@ export function SeriesCard({ seriesDetails }) {
 					</div>
 				)}
 			</Link>
-			<p className="series__title">{title}</p>
+			<p className="series-card__title">{title}</p>
 		</div>
 	);
 }
