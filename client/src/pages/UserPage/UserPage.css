@@ -3,10 +3,10 @@
     gap: 10px;
     display: flex;
     flex-direction: column;
-    background-color: rgb(6,13,34);
+    background-color: #060d22;
     align-items: center;
     justify-content: space-evenly;
-    color: white;
+    color: #edf1f5;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.401);
 }
 .profile-header__picture{
@@ -18,7 +18,7 @@
 }
 .profile-header__navbar{
     align-self: stretch;
-    background-color: rgb(15, 31, 81);
+    background-color: #0f1f51;
     overflow-x: scroll;
 }
 .profile-header__navbar__list{
@@ -32,7 +32,7 @@
     padding: 15px;
     text-align: center;
     text-decoration: none;
-    color: white;
+    color: #edf1f5;
     font-weight: bold;
     white-space: nowrap;
 }

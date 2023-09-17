@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Route, Routes, useParams } from "react-router-dom";
 import UserCollection from "../../components/UserCollection";
 import "./UserPage.css";
 import axios from "axios";
 import ProfileHeader from "./ProfileHeader";
+import MissingVolumesPage from "./MissingVolumesPage";
 
 export default function UserPage() {
 	const { username } = useParams();
 	const [user, setUser] = useState();
+	const [missingList, setMissingList] = useState([]);
 	useEffect(() => {
 		const querryUser = async () => {
 			try {
@@ -18,11 +20,26 @@ export default function UserPage() {
 				});
 				console.log(res.data);
 				setUser(res.data);
-
 			} catch (error) {
 				console.log(error);
 			}
 		};
+
+		const fetchMissingVolumes = async () => {
+			try {
+				const response = await axios({
+					method: "GET",
+					withCredentials: true,
+					url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}/missing`,
+				});
+				console.log(response.data);
+				const responseData = response.data;
+				setMissingList(responseData);
+			} catch (error) {
+				console.error("Error fetching Series Data:", error);
+			}
+		};
+		fetchMissingVolumes();
 		querryUser();
 	}, []);
 
@@ -40,13 +57,17 @@ export default function UserPage() {
 
 	return (
 		<>
-			{user ? (
+			{user && (
 				<div>
 					<ProfileHeader user={user}></ProfileHeader>
-					<UserCollection user={user}></UserCollection>
+					<Routes>
+						<Route
+							path="missing"
+							element={<MissingVolumesPage missingList={missingList} />}
+						></Route>
+						<Route path="" element={<UserCollection user={user} />}></Route>
+					</Routes>
 				</div>
-			) : (
-				renderLoginRedirect()
 			)}
 		</>
 		//Header -> Profile info

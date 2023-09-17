@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function ProfileHeader({user}) {
 	return (
 		<header className="profile-header">
@@ -5,8 +7,8 @@ export default function ProfileHeader({user}) {
             <h1 className="user-name">{user.username}</h1>
             <nav className="profile-header__navbar">
                 <ul className="profile-header__navbar__list">
-                    <li><a href={`./${user.username}`} className="profile-header__navbar__link">Collection</a></li>
-                    <li><a href={`./${user.username}/missing`} className="profile-header__navbar__link">Missing page</a></li>
+                    <li><Link to={`/user/${user.username}`} className="profile-header__navbar__link">Collection</Link></li>
+                    <li><Link to={`/user/${user.username}/missing`} className="profile-header__navbar__link">Missing page</Link></li>
                 </ul>
             </nav>
 		</header>
