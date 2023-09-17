@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "./SeriesPage.css";
 import { UserContext } from "../../components/userProvider";
@@ -19,11 +19,16 @@ export default function SeriesPage() {
 	const [infoToShow, setInfoToShow] = useState("details");
 	const [contentTopValue, setContentTopValue] = useState();
 	const [onMobile, setOnMobile] = useState(false);
+	const [showingMore, setShowingMore] = useState(false);
+	const [needShowButton, setNeedShowButon] = useState(false);
 
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [confirmationMessage, setConfirmationMessage] = useState("");
 	const [onConfirm, setOnConfirm] = useState(null);
 	const [onCancel, setOnCancel] = useState(null);
+	const mainInfo = useRef(null);
+	const seriesCoverImage = useRef(null);
+	const seriesSummarry = useRef(null);
 
 	useEffect(() => {
 		const fetchSeriesData = async () => {
@@ -53,22 +58,26 @@ export default function SeriesPage() {
 		}
 
 		const handleResize = () => {
-			(window.innerWidth < 768)?setOnMobile(true):setOnMobile(false)
-			if (onMobile) {
-				const mainInfo = document.querySelector(".series_main-info");
-				const image = document.querySelector(".series__cover");
-
-				const contentTop = `calc(${mainInfo.offsetHeight}px + ${
-					image.offsetHeight * 0.6
+			console.log(contentTopValue);
+			setOnMobile(window.innerWidth < 768);
+			if (window.innerWidth < 768) {
+				const contentTop = `calc(${mainInfo.current.offsetHeight}px + ${
+					seriesCoverImage.current.offsetHeight * 0.6
 				}px)`;
 				setContentTopValue(contentTop);
 			}
+
+			//Show the button show more on summary
+			setNeedShowButon(
+				seriesSummarry.current?.scrollHeight >
+					seriesSummarry.current?.clientHeight
+			);
 		};
 		handleResize();
 		window.addEventListener("resize", handleResize);
 
 		return () => window.removeEventListener("resize", handleResize);
-	}, [series, user]);
+	}, [series, user, onMobile]);
 
 	const getAuthorsString = (authors) => {
 		const authorsCount = authors.length;
@@ -88,7 +97,6 @@ export default function SeriesPage() {
 			return seriesObj.Series._id.toString() === id;
 		});
 		if (indexOfSeries !== -1) {
-			console.log("OBJECT FODASE", user.userList[indexOfSeries]);
 			return user.userList[indexOfSeries].completionPercentage;
 		}
 		return 0;
@@ -244,24 +252,32 @@ export default function SeriesPage() {
 			: false;
 		return (
 			<li key={volumeId} className="series__volume-item">
-				<Link to={`../volume/${volumeId}`} >
-
+				<Link
+					to={`../volume/${volumeId}`}
+					className="series__volume__image-wrapper"
+				>
 					<img
 						src={image}
 						alt={`cover volume ${volumeNumber}`}
 						className="series__volume__image"
 					/>
 				</Link>
-				<Link to={`../volume/${volumeId}`} className="series__volume__number">
-					<strong>Volume {volumeNumber}</strong>
-				</Link>
-				<div>
-					<label htmlFor="have-volume-check-mark" className="checkmark-label">
-						Tem:
+				{onMobile && (
+					<Link to={`../volume/${volumeId}`} className="series__volume__number">
+						<strong>Volume {volumeNumber}</strong>
+					</Link>
+				)}
+				<div className="series__volume__checkmark-container">
+					<label
+						htmlFor={`have-volume-check-mark-${volumeId}`}
+						className={onMobile ? "checkmark-label" : null}
+					>
+						<strong>Volume {volumeNumber}</strong>
 					</label>
 					<input
 						type="checkbox"
-						name="have-volume-check-mark"
+						name={`have-volume-check-mark-${volumeId}`}
+						id={`have-volume-check-mark-${volumeId}`}
 						className="checkmark"
 						disabled={user ? false : true}
 						checked={ownsVolume}
@@ -297,56 +313,59 @@ export default function SeriesPage() {
 			)}
 
 			<div className="series__main-container">
-				<img
-					src={seriesCover}
-					alt={`cover volume ${title}`}
-					className="series__cover"
-				/>
-				<div className="series_main-info">
-					{user && (
-						<div className="series__butons-containers">
-							<label htmlFor="select-all-check-mark" className="add-button">
-								<strong>
-									{user && getCompletionPercentage() === 1
-										? "Remove all volumes"
-										: "Select all volumes"}
-								</strong>
-								<input
-									type="checkbox"
-									name="select-all-check-mark"
-									id="select-all-check-mark"
-									className="checkmark invisible"
-									disabled={user ? false : true}
-									checked={
-										user && getCompletionPercentage() === 1 ? true : false
-									}
-									onChange={(e) => handleSelectAll(e)}
-								/>
-							</label>
-							{renderAddRemoveButton()}
-						</div>
-					)}
-					<h1 className="series__title">{title}</h1>
-					<div className="series__mobile-options-container">
-						<div
-							className={`series__mobile-options series__mobile-options--${
-								infoToShow === "details" && "selected"
-							}`}
-							onClick={() => {
-								setInfoToShow("details");
-							}}
-						>
-							Details
-						</div>
-						<div
-							className={`series__mobile-options series__mobile-options--${
-								infoToShow === "volumes" && "selected"
-							}`}
-							onClick={() => {
-								setInfoToShow("volumes");
-							}}
-						>
-							Volumes
+				<div className="series__image-wrapper">
+					<img
+						src={seriesCover}
+						alt={`cover volume ${title}`}
+						className="series__cover"
+						ref={seriesCoverImage}
+					/>
+					<div className="series_main-info" ref={mainInfo}>
+						{user && (
+							<div className="series__butons-containers">
+								<label htmlFor="select-all-check-mark" className="add-button">
+									<strong>
+										{user && getCompletionPercentage() === 1
+											? "Remove all volumes"
+											: "Select all volumes"}
+									</strong>
+									<input
+										type="checkbox"
+										name="select-all-check-mark"
+										id="select-all-check-mark"
+										className="checkmark invisible"
+										disabled={user ? false : true}
+										checked={
+											user && getCompletionPercentage() === 1 ? true : false
+										}
+										onChange={(e) => handleSelectAll(e)}
+									/>
+								</label>
+								{renderAddRemoveButton()}
+							</div>
+						)}
+						{onMobile && <h1 className="series__title">{title}</h1>}
+						<div className="series__mobile-options-container">
+							<div
+								className={`series__mobile-options series__mobile-options--${
+									infoToShow === "details" && "selected"
+								}`}
+								onClick={() => {
+									setInfoToShow("details");
+								}}
+							>
+								Details
+							</div>
+							<div
+								className={`series__mobile-options series__mobile-options--${
+									infoToShow === "volumes" && "selected"
+								}`}
+								onClick={() => {
+									setInfoToShow("volumes");
+								}}
+							>
+								Volumes
+							</div>
 						</div>
 					</div>
 				</div>
@@ -355,6 +374,11 @@ export default function SeriesPage() {
 						className="series__details-container series__content"
 						style={{ top: contentTopValue }}
 					>
+						{!onMobile && (
+							<li>
+								<h1 className="series__title">{title}</h1>
+							</li>
+						)}
 						<li className="series__details">
 							<strong>Editora:</strong> {publisher}
 						</li>
@@ -370,13 +394,30 @@ export default function SeriesPage() {
 						</li>
 						<li className="series__details">
 							<strong>Sinopse:</strong>
-							{summary?.map((paragraph, index) => {
-								return (
-									<p className="series__summary" key={index}>
-										{paragraph}
-									</p>
-								);
-							})}
+							<p
+								ref={seriesSummarry}
+								className="series__summary"
+								style={{ display: showingMore ? "block" : null }}
+							>
+								{summary?.map((paragraph) => {
+									return (
+										<>
+											{paragraph}
+											<br />
+										</>
+									);
+								})}
+							</p>
+							{needShowButton && !showingMore && (
+								<div
+									className="series__show-more"
+									onClick={() => {
+										setShowingMore(true);
+									}}
+								>
+									Show more
+								</div>
+							)}
 						</li>
 					</ul>
 				)}

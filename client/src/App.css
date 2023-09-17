@@ -15,7 +15,7 @@
 .invisible{
 	display: none;
 }
-@media only screen and (min-width: 1024px) {
+@media only screen and (min-width: 1540px) {
 	.container{
 		padding-left: 100px;
 		padding-right: 100px;

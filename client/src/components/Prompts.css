@@ -2,7 +2,7 @@
 	font-size: 1.5em;
 	text-align: center;
 	font-weight: bold;
-	position: absolute;
+	position: fixed;
 	top: 50%;
 	left: 50%;
 	line-height: 1.5em;
