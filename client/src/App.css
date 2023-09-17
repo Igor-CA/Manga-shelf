@@ -4,8 +4,10 @@
 	font-family: Arial, Helvetica, sans-serif;
 	box-sizing: border-box;
 }
+body{
+	background-color: #edf1f5;
+}
 .App{
-	min-height: 100vh;
 	background-color: #edf1f5;
 }
 .container {

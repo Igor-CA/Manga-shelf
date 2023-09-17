@@ -10,165 +10,138 @@ import {
 	faUser,
 	faGear,
 	faList,
+	faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 import "./NavBar.css";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "./userProvider";
 export default function NavBar() {
-	const {user} = useContext(UserContext);
+	const { user } = useContext(UserContext);
 	const [menuVisibility, setMenuVisibility] = useState(false);
+	const [onMobile, setOnMobile] = useState(false);
 
-	const renderVisitorNavbar = () => {
-		return (
-			<nav className={`navbar ${menuVisibility ? "visible" : ""}`}>
-				<Link
-					to={"/info"}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faUserPlus} size="xl" fixedWidth />
-					<span className="navbar__label">About</span>
-				</Link>
+	useEffect(() => {
+		const handleResize = () => {
+			setOnMobile(window.innerWidth < 1040);
+		};
+		handleResize();
+		window.addEventListener("resize", handleResize);
 
-				<Link
-					to={"/browse"}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faMagnifyingGlass} size="lg" fixedWidth />
-					<span className="navbar__label">Search</span>
-				</Link>
-
-				<Link
-					to={"/report"}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faBug} size="lg" fixedWidth />
-					<span className="navbar__label">Report</span>
-				</Link>
-
-				<Link
-					to={"/login"}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faRightToBracket} size="lg" fixedWidth />
-					<span className="navbar__label">Log in</span>
-				</Link>
-
-				<Link
-					to={"/signup"}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faUserPlus} size="lg" fixedWidth />
-					<span className="navbar__label">Sign up</span>
-				</Link>
-
-				<div
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faXmark} size="lg" fixedWidth />
-				</div>
-			</nav>
-		);
-	};
-	const renderUserNavbar = () => {
-		return (
-			<nav className={`navbar ${menuVisibility ? "visible" : ""}`}>
-				<Link
-					to={"/browse"}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faMagnifyingGlass} size="lg" fixedWidth />
-					<span className="navbar__label">Search</span>
-				</Link>
-
-				<Link
-					to={"/report"}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faBug} size="lg" fixedWidth />
-					<span className="navbar__label">Report</span>
-				</Link>
-
-				<Link
-					to={`/user/${user.username}`}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faUser} size="lg" fixedWidth />
-					<span className="navbar__label">Profile</span>
-				</Link>
-
-				<Link
-					to={`/user/${user.username}/missing`}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faList} size="lg" fixedWidth />
-					<span className="navbar__label">Missing</span>
-				</Link>
-
-				<Link
-					to={"/settings"}
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faGear} size="lg" fixedWidth />
-					<span className="navbar__label">Settings</span>
-				</Link>
-
-				<div
-					className="navbar__button"
-					onClick={() => {
-						setMenuVisibility(false);
-					}}
-				>
-					<FontAwesomeIcon icon={faXmark} size="lg" fixedWidth />
-				</div>
-			</nav>
-		);
-	};
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
 
 	return (
-		<div className="mobile-menu">
-			<div
-				className="hamburger"
-				style={{ display: menuVisibility ? "none" : "" }}
-				onClick={() => {
-					setMenuVisibility(true);
-				}}
-			>
-				<FontAwesomeIcon icon={faBars} size="2x" fixedWidth />
-			</div>
-			{user ? renderUserNavbar() : renderVisitorNavbar()}
+		<div className={onMobile ? "mobile-menu" : "menu"}>
+			{onMobile && (
+				<div
+					className="hamburger"
+					style={{ display: menuVisibility ? "none" : "" }}
+					onClick={() => {
+						setMenuVisibility(true);
+					}}
+				>
+					<FontAwesomeIcon icon={faBars} size="2x" fixedWidth />
+				</div>
+			)}
+
+			<nav>
+				<ul
+					className={`navbar ${menuVisibility || !onMobile ? "visible" : ""}`}
+				>
+					<li className="navbar__button">
+						<Link
+							to={user ? `/user/${user.username}` : "/login"}
+							onClick={() => {
+								setMenuVisibility(false);
+							}}
+						>
+							{onMobile && (
+								<FontAwesomeIcon
+									icon={user ? faUser : faRightToBracket}
+									size="lg"
+									fixedWidth
+								/>
+							)}
+							<span className="navbar__label">
+								{user ? "Profile" : "Log in"}
+							</span>
+						</Link>
+					</li>
+					<li className="navbar__button">
+						<Link
+							to={user ? `/user/${user.username}/missing` : "/signup"}
+							onClick={() => {
+								setMenuVisibility(false);
+							}}
+						>
+							{onMobile && (
+								<FontAwesomeIcon
+									icon={user ? faList : faUserPlus}
+									size="lg"
+									fixedWidth
+								/>
+							)}
+							<span className="navbar__label">
+								{user ? "Missing" : "Sign up"}
+							</span>
+						</Link>
+					</li>
+					<Link
+						to={"/browse"}
+						className="navbar__button"
+						onClick={() => {
+							setMenuVisibility(false);
+						}}
+					>
+						{onMobile && (
+							<FontAwesomeIcon icon={faMagnifyingGlass} size="lg" fixedWidth />
+						)}
+						<span className="navbar__label">Search</span>
+					</Link>
+
+					<Link
+						to={"/report"}
+						className="navbar__button"
+						onClick={() => {
+							setMenuVisibility(false);
+						}}
+					>
+						{onMobile && <FontAwesomeIcon icon={faBug} size="lg" fixedWidth />}
+						<span className="navbar__label">Report</span>
+					</Link>
+
+					<li className="navbar__button">
+						<Link
+							to={user ? "/settings" : "/home"}
+							onClick={() => {
+								setMenuVisibility(false);
+							}}
+						>
+							{onMobile && (
+								<FontAwesomeIcon
+									icon={user ? faGear : faHouse}
+									size="lg"
+									fixedWidth
+								/>
+							)}
+							<span className="navbar__label">
+								{user ? "Settings" : "Home"}
+							</span>
+						</Link>
+					</li>
+
+					{onMobile && (
+						<li
+							className="navbar__button"
+							onClick={() => {
+								setMenuVisibility(false);
+							}}
+						>
+							<FontAwesomeIcon icon={faXmark} size="lg" fixedWidth />
+						</li>
+					)}
+				</ul>
+			</nav>
 		</div>
 	);
 }

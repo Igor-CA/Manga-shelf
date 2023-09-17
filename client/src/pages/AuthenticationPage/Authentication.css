@@ -1,14 +1,15 @@
 .form-title{
+	font-size: 1.5em;
+	padding-top: 15px;
+	padding-bottom: 45px;
     color: #5c728a;
     text-align: center;
 }
 .form-container {
+	background-color: white;
     width: 100%;
     min-height: 100vh;
     padding: 40px;
-	position: relative;
-	left: 50%;
-	translate: -50%;
 }
 .autentication-form {
 	display: flex;
@@ -17,6 +18,14 @@
 }
 .autentication-form__label {
 	display: none;
+}
+
+.form__label--visible{
+	margin-top: 10px;
+	font-weight: bold;
+	color: #5c728a;
+	align-self: flex-start;
+	display: block;
 }
 .autentication-form__input {
 	background-color: #edf1f5;
@@ -27,14 +36,18 @@
 	border-radius: 3px;
 	border: none;
     width: 100%;
+	resize: none;
+}.autentication-form__input::placeholder{
+	font-weight: normal;
 }
 .autentication-form__button{
     color: white;
     font-weight: bold;
     padding: 10px;
-    background-color: rgb(61,180,242);
+    background-color: #3db4f2;
     border: none;
     border-radius: 3px;
+	cursor: pointer;
 }
 .errors-message{
 	font-weight: bold;
@@ -56,4 +69,21 @@
 }
 .errors-message__error{
 	margin: 0.5rem;
+}
+.autentication-form__link{
+	padding: 10px;
+	color: #3db4f2;
+}
+
+@media only screen and (min-width: 768px){
+	.form-container {
+		display: block;
+		max-width: 400px;
+		margin: auto;
+		margin-top: 40px;
+		height: auto;
+		min-height: auto;
+		border-radius: 4px;
+		box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+	}
 }
