@@ -22,7 +22,7 @@ export default function NavBar() {
 
 	useEffect(() => {
 		const handleResize = () => {
-			setOnMobile(window.innerWidth < 1040);
+			setOnMobile( window.matchMedia("(max-width: 1040px)").matches);
 		};
 		handleResize();
 		window.addEventListener("resize", handleResize);
@@ -112,7 +112,7 @@ export default function NavBar() {
 
 					<li className="navbar__button">
 						<Link
-							to={user ? "/settings" : "/home"}
+							to={user ? "/settings" : "/"}
 							onClick={() => {
 								setMenuVisibility(false);
 							}}

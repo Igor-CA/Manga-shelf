@@ -44,7 +44,7 @@ function App() {
 			<BrowserRouter>
 				<NavBar></NavBar>
 				<Routes>
-					<Route path="/" element={<BrowsePage />}></Route>
+					<Route path="/" element={<Home />}></Route>
 					<Route path="/signup" element={<SignupPage />}></Route>
 					<Route path="/login" element={<LoginPage />}></Route>
 					<Route path="/forgot" element={<ForgotPage />}></Route>
