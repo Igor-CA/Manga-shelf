@@ -1,8 +1,6 @@
+import { SeriesCard } from "../../components/SeriesCard";
 
-import { SeriesCard } from "./SeriesCard";
-
-export default function UserCollection({user}) {
-
+export default function UserCollection({ user }) {
 	const renderUserCollection = () => {
 		return (
 			<div className="collection-container">
@@ -26,6 +24,8 @@ export default function UserCollection({user}) {
 	};
 
 	return (
-		<div className="user-collection">{user && renderUserCollection()}</div>
+		<div className="user-collection container">
+			{user && renderUserCollection()}
+		</div>
 	);
 }

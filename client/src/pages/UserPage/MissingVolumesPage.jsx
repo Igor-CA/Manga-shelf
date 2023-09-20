@@ -18,8 +18,10 @@ export default function MissingVolumesPage({missingList}){
 	};
 
     return(
-        <ol className="collection-container">
-            {missingList.map((volume) => renderVolumeItem(volume))}
-        </ol>
+        <div className="container">
+			<ol className="collection-container">
+				{missingList.map((volume) => renderVolumeItem(volume))}
+			</ol>
+		</div>
     )
 }

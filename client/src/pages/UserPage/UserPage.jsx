@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, Route, Routes, useParams } from "react-router-dom";
-import UserCollection from "../../components/UserCollection";
+import UserCollection from "./UserCollection";
 import "./UserPage.css";
 import axios from "axios";
 import ProfileHeader from "./ProfileHeader";
