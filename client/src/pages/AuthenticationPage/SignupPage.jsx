@@ -30,7 +30,7 @@ export default function SignupPage() {
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/signup`,
 			});
 			console.log(response.data);
-			navigate("./login")
+			navigate("./login");
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -52,7 +52,8 @@ export default function SignupPage() {
 			},
 			username: {
 				valueMissing: "The username field is required",
-				patternMismatch: "The username can't contain special characters and between 3 and 16 characters.",
+				patternMismatch:
+					"The username can't contain special characters and between 3 and 16 characters.",
 			},
 			password: {
 				valueMissing: "The password field is required",
@@ -183,8 +184,10 @@ export default function SignupPage() {
 					required
 					pattern={formData.password}
 				/>
-				<Link to={"/login"} className="autentication-form__link">Already sign? click here to login</Link>
-				<button className="autentication-form__button">Sign up</button>
+				<Link to={"/login"} className="autentication-form__link">
+					Already sign? click here to login
+				</Link>
+				<button className="button">Sign up</button>
 			</form>
 			{errors.length > 0 && renderErrorsMessage()}
 		</div>

@@ -1,5 +1,5 @@
 .mobile-menu {
-	color: #5c728a;
+	color: var(--text);
 	position: fixed;
 	bottom: 25px;
 	right: 20px;
@@ -12,7 +12,7 @@
 	height: 50px;
 	border-radius: 6px;
 	box-shadow: 0 1px 20px rgba(0, 0, 0, 1);
-	background-color: white;
+	background-color: var(--foreground);
 	align-items: center;
 	justify-content: center;
 }
@@ -38,10 +38,10 @@
 	width: 210px;
 	opacity: 1;
 	transition: 0.2s;
-	background-color: white;
+	background-color: var(--foreground);
 }
 .navbar__button {
-	color: #5c728a;
+	color: var(--text);
 	text-align: center;
 	font-weight: bold;
 }
@@ -58,11 +58,11 @@
 		padding: 15px;
 		border-radius: 0;
 		box-shadow: none;
-		color: #a0b1c5;
-		background-color: #11161d;
+		color: white;
+		background-color: var(--primary);
 		justify-content: space-evenly;
 	}
     .navbar__label{
-        color: #a0b1c5;;
+        color: white;
     }
 }

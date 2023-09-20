@@ -1,5 +1,5 @@
 .browse-collection-page {
-	background-color: #edf1f5;
+	background-color: var(--background);
 	min-height: 100vh;
 }
 .form {
@@ -9,8 +9,8 @@
 
 }
 .form__input {
-	background-color: white;
-	color: #5c728a;
+	background-color: var(--foreground);
+	color: var(--text);
 	font-weight: bold;
 	padding: 10px;
 	border-radius: 3px;
@@ -38,7 +38,7 @@
 }
 .not-found-message{
 	text-align: center;
-	color: #5c728a;
+	color: var(--text);
 	position: absolute;
 	top: 50%;
 	left: 50%;

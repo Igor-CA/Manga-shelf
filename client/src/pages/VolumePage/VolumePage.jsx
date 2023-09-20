@@ -22,19 +22,21 @@ export default function VolumePage() {
 		const handleResize = () => {
 			if (window.innerWidth < 768) {
 				const mainInfo = document.querySelector(".volume__main-info");
-				const image = document.querySelector(".volume__cover")
+				const image = document.querySelector(".volume__cover");
 				const contentComponent = document.querySelector(
 					".volume__info-container"
 				);
 
-				const contentTop = `calc(${mainInfo.offsetHeight}px + ${image.offsetHeight*0.6}px)`;
+				const contentTop = `calc(${mainInfo.offsetHeight}px + ${
+					image.offsetHeight * 0.6
+				}px)`;
 				contentComponent.style.top = contentTop;
 			}
 		};
 		handleResize();
 		window.addEventListener("resize", handleResize);
 
-		return () => window.removeEventListener("resize", handleResize)
+		return () => window.removeEventListener("resize", handleResize);
 	}, [volumeData]);
 
 	const { user, setOutdated } = useContext(UserContext);
@@ -105,14 +107,18 @@ export default function VolumePage() {
 
 				<div className="volume__main-info">
 					<div className="volume__functions">
-						<Link
-							to={`../series/${serie.id}`}
-							className="volume__series-button"
-						>
+						<Link to={`../series/${serie.id}`} className="button">
 							<strong>See Series page</strong>
-						</Link> 
-						<label htmlFor="have-volume-check-mark"className={`volume__series-button volume__series-button--grow volume__series-button--${(user && !checkOwnedVolume())?"green":"red"}`}>
-						<strong>{user && checkOwnedVolume() ? "Remove Volume" : "Add Volume"}</strong>
+						</Link>
+						<label
+							htmlFor="have-volume-check-mark"
+							className={`button button--grow button--${
+								user && !checkOwnedVolume() ? "green" : "red"
+							}`}
+						>
+							<strong>
+								{user && checkOwnedVolume() ? "Remove Volume" : "Add Volume"}
+							</strong>
 						</label>
 						<input
 							type="checkbox"

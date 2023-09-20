@@ -7,9 +7,9 @@
 	left: 50%;
 	line-height: 1.5em;
 	padding: 15px;
-	color: #5c728a;
-	background-color: #edf1f5;
-	border: 2px solid #5c728a;
+	color: var(--text);
+	background-color:  var(--background);
+	border: 2px solid var(--secondary);
 	border-radius: 4px;
 	translate: -50% -50%;
 	width: 420px;
@@ -22,19 +22,11 @@
 	margin: 10px;
 	border-radius: 4px;
 	border: none;
-	background-color: green;
+	background-color: var(--green);
 	color: white;
 	width: 40%;
 	font-weight: bold;
 }
-.prompt-confirm__button:hover,
-.prompt-confirm__button:active {
-	background-color: rgb(2, 171, 2);
-}
 .prompt-confirm__button--cancel {
-	background-color: red;
-}
-.prompt-confirm__button--cancel:hover,
-.prompt-confirm__button--cancel:active {
-	background-color: rgb(255, 67, 67);
+	background-color: var(--red);
 }

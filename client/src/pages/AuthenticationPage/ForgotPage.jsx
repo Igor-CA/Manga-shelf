@@ -4,17 +4,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
-export default function ForgotPage(){
-    const [formData, setFormData] = useState({ email: ""});
-    const [errors, setErrors] = useState([]);
-    
-    const handleChange = (e) => {
+export default function ForgotPage() {
+	const [formData, setFormData] = useState({ email: "" });
+	const [errors, setErrors] = useState([]);
+
+	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
-        
 	};
 
-    const renderErrorsMessage = () => {
+	const renderErrorsMessage = () => {
 		return (
 			<div className="errors-message">
 				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
@@ -31,7 +30,7 @@ export default function ForgotPage(){
 		);
 	};
 
-    const handleSubmit = async (e) => {
+	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
 			const response = await axios({
@@ -39,7 +38,7 @@ export default function ForgotPage(){
 				data: formData,
 				withCredentials: true,
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/forgot`,
-			});			
+			});
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -50,7 +49,7 @@ export default function ForgotPage(){
 		}
 	};
 
-    const handleInvalid = (e) => {
+	const handleInvalid = (e) => {
 		e.preventDefault();
 		const inputName = e.target.name;
 		const input = e.target;
@@ -68,9 +67,8 @@ export default function ForgotPage(){
 		}, 5000);
 	};
 
-
-    return(
-        <div className="form-container">
+	return (
+		<div className="form-container">
 			<h1 className="form-title">Reset password</h1>
 			<form
 				method="post"
@@ -97,10 +95,12 @@ export default function ForgotPage(){
 					}}
 					required
 				/>
-				<Link to={"/login"} className="autentication-form__link">Login</Link>
-				<button className="autentication-form__button">Reset password</button>
+				<Link to={"/login"} className="autentication-form__link">
+					Login
+				</Link>
+				<button className="button">Reset password</button>
 			</form>
 			{errors.length > 0 && renderErrorsMessage()}
 		</div>
-    )
+	);
 }

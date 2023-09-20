@@ -3,7 +3,7 @@
 }
 .volume {
 	position: relative;
-	background-color: #edf1f5;
+	background-color:  var(--background);
 }
 .volume__cover-wrapper {
 	position: relative;
@@ -11,8 +11,8 @@
 .volume__main-info {
 	padding: 10px;
 	width: 100%;
-	color: #5c728a;
-	background: linear-gradient(#ffffff00, #edf1f5 120px);
+	color: var(--text);
+	background: linear-gradient(#ffffff00,  var(--background) 120px);
 	position: absolute;
 	top: 60%;
 }
@@ -23,29 +23,9 @@
 	padding: 10px;
 	width: 100%;
 	position: absolute;
-	color: #5c728a;
-	background-color: #edf1f5;
+	color: var(--text);
+	background-color:  var(--background);
 	min-height: 60vh;
-}
-.volume__series-button {
-	text-align: center;
-	font-size: 1rem;
-	display: inline-block;
-	padding: 10px;
-	border-radius: 5px;
-	border: none;
-	background-color: #3db4f2;
-	color: white;
-	font-weight: bold;
-	cursor: pointer;
-}.volume__series-button--grow{
-	flex-grow: 1;
-}
-.volume__series-button--green{
-	background-color: rgb(76, 175, 80);
-}
-.volume__series-button--red{
-	background-color: rgb(236,41,75);
 }
 .volume__functions {
 	margin-top: 100px;
@@ -67,7 +47,7 @@
 	left: 50%;
 	width: 80%;
 	height: 1px;
-	background-color: rgb(146, 153, 161);
+	background-color: var(--text);
 	transform: translateX(-50%);
 }
 .volume__details {
@@ -88,12 +68,12 @@
 	}
 	.volume__main-info {
 		padding: 0;
-		background-color: #edf1f5;
+		background-color:  var(--background);
 		position: static;
 	}
 	.volume__cover-wrapper {
 		padding: 10px;
-		color: #5c728a;
+		color: var(--text);
 		max-width: 400px;
 	}
 	.volume__title {
@@ -101,7 +81,7 @@
 	}
 	.volume__info-container {
 		position: static;
-		background-color: #edf1f5;
+		background-color:  var(--background);
 		overflow: scroll;
 	}
 	.volume__details {

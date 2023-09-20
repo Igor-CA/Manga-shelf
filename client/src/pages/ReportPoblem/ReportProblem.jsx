@@ -219,7 +219,7 @@ export default function ReportProblem() {
 						handleInvalid(e);
 					}}
 				/>
-				<button className="autentication-form__button">Send Report</button>
+				<button className="button">Send Report</button>
 			</form>
 			{errors.length > 0 && renderErrorsMessage()}
 		</div>

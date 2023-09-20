@@ -1,5 +1,5 @@
 .browse-collection-page {
-	background-color: #edf1f5;
+	background-color:  var(--background);
 	min-height: 100vh;
 }
 .form {

@@ -232,9 +232,7 @@ export default function SeriesPage() {
 		const inList = indexOfSeries !== -1;
 		return (
 			<button
-				className={`add-button add-button--grow add-button--${
-					inList ? "red" : "green"
-				}`}
+				className={`button button--grow button--${inList ? "red" : "green"}`}
 				onClick={() => {
 					inList ? handleRemoveSeries() : addOrRemoveSeries(true);
 				}}
@@ -323,7 +321,7 @@ export default function SeriesPage() {
 					<div className="series_main-info" ref={mainInfo}>
 						{user && (
 							<div className="series__butons-containers">
-								<label htmlFor="select-all-check-mark" className="add-button">
+								<label htmlFor="select-all-check-mark" className="button">
 									<strong>
 										{user && getCompletionPercentage() === 1
 											? "Remove all volumes"

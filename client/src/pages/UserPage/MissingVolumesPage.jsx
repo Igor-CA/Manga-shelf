@@ -9,7 +9,7 @@ export default function MissingVolumesPage({missingList}){
 		const { series, volumeId, image, volumeNumber } = volume;
 		return (
 			<li className="series-card">
-				<Link to={`../volume/${volumeId}`} className="series-card__image-container">
+				<Link to={`/volume/${volumeId}`} className="series-card__image-container">
 					<img src={image} alt={`cover of ${series}`} className="series-card__img" />
 				</Link>
 				<p className="series-card__title">{series} - {volumeNumber}</p>

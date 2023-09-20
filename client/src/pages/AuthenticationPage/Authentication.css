@@ -2,11 +2,11 @@
 	font-size: 1.5em;
 	padding-top: 15px;
 	padding-bottom: 45px;
-    color: #5c728a;
+    color: var(--text);
     text-align: center;
 }
 .form-container {
-	background-color: white;
+	background-color: var(--foreground);
     width: 100%;
     min-height: 100vh;
     padding: 40px;
@@ -23,13 +23,13 @@
 .form__label--visible{
 	margin-top: 10px;
 	font-weight: bold;
-	color: #5c728a;
+	color: var(--text);
 	align-self: flex-start;
 	display: block;
 }
 .autentication-form__input {
-	background-color: #edf1f5;
-	color: #5c728a;
+	background-color:  var(--background);
+	color: var(--text);
 	font-weight: bold;
 	padding: 10px;
 	margin: 10px;
@@ -41,10 +41,10 @@
 	font-weight: normal;
 }
 .autentication-form__button{
-    color: white;
+    color: var(--foreground);
     font-weight: bold;
     padding: 10px;
-    background-color: #3db4f2;
+    background-color: var(--blue);
     border: none;
     border-radius: 3px;
 	cursor: pointer;
@@ -72,7 +72,7 @@
 }
 .autentication-form__link{
 	padding: 10px;
-	color: #3db4f2;
+	color: var(--blue);
 }
 
 @media only screen and (min-width: 768px){

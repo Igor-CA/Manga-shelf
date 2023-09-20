@@ -5,10 +5,10 @@ import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 export default function ResetPasswordPage() {
-    const {userId, token} = useParams()
+	const { userId, token } = useParams();
 	const [formData, setFormData] = useState({ email: "" });
 	const [errors, setErrors] = useState([]);
-    const navigate = useNavigate()
+	const navigate = useNavigate();
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -37,11 +37,11 @@ export default function ResetPasswordPage() {
 		try {
 			const response = await axios({
 				method: "POST",
-				data: {...formData, userId, token},
+				data: { ...formData, userId, token },
 				withCredentials: true,
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/reset-password`,
 			});
-            navigate("/login")
+			navigate("/login");
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -136,7 +136,7 @@ export default function ResetPasswordPage() {
 				<Link to={"/login"} className="autentication-form__link">
 					Login
 				</Link>
-				<button className="autentication-form__button">Set new password</button>
+				<button className="button">Set new password</button>
 			</form>
 			{errors.length > 0 && renderErrorsMessage()}
 		</div>
