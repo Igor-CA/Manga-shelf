@@ -68,39 +68,41 @@ export default function ForgotPage() {
 	};
 
 	return (
-		<div className="form-container">
-			<h1 className="form-title">Reset password</h1>
-			<form
-				method="post"
-				className="autentication-form"
-				onSubmit={(e) => {
-					handleSubmit(e);
-				}}
-			>
-				<label htmlFor="email" className="autentication-form__label">
-					Email:
-				</label>
-				<input
-					type="text"
-					name="email"
-					id="email"
-					placeholder="Email"
-					className="autentication-form__input"
-					value={formData.login}
-					onChange={(e) => {
-						handleChange(e);
+		<div className="page-content">
+			<div className="form-container">
+				<h1 className="form-title">Reset password</h1>
+				<form
+					method="post"
+					className="autentication-form"
+					onSubmit={(e) => {
+						handleSubmit(e);
 					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-				/>
-				<Link to={"/login"} className="autentication-form__link">
-					Login
-				</Link>
-				<button className="button">Reset password</button>
-			</form>
-			{errors.length > 0 && renderErrorsMessage()}
+				>
+					<label htmlFor="email" className="autentication-form__label">
+						Email:
+					</label>
+					<input
+						type="text"
+						name="email"
+						id="email"
+						placeholder="Email"
+						className="autentication-form__input"
+						value={formData.login}
+						onChange={(e) => {
+							handleChange(e);
+						}}
+						onInvalid={(e) => {
+							handleInvalid(e);
+						}}
+						required
+					/>
+					<Link to={"/login"} className="autentication-form__link">
+						Login
+					</Link>
+					<button className="button">Reset password</button>
+				</form>
+				{errors.length > 0 && renderErrorsMessage()}
+			</div>
 		</div>
 	);
 }

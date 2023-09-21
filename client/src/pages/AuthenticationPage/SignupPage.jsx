@@ -102,94 +102,96 @@ export default function SignupPage() {
 	};
 
 	return (
-		<div className="form-container">
-			<h1 className="form-title">Sign up</h1>
-			<form
-				method="post"
-				className="autentication-form"
-				onSubmit={(e) => {
-					handleSubmit(e);
-				}}
-			>
-				<label htmlFor="email" className="autentication-form__label">
-					Email:
-				</label>
-				<input
-					type="email"
-					name="email"
-					placeholder="Email"
-					id="email"
-					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
+		<div className="page-content">
+			<div className="form-container">
+				<h1 className="form-title">Sign up</h1>
+				<form
+					method="post"
+					className="autentication-form"
+					onSubmit={(e) => {
+						handleSubmit(e);
 					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-				/>
-				<label htmlFor="username" className="autentication-form__label">
-					User name:{" "}
-				</label>
-				<input
-					type="text"
-					name="username"
-					placeholder="Username"
-					id="username"
-					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-					pattern="^[A-Za-z0-9]{3,16}$"
-					maxLength="16"
-				/>
-				<label htmlFor="password" className="autentication-form__label">
-					Password:
-				</label>
-				<input
-					type="password"
-					name="password"
-					placeholder="Password"
-					id="password"
-					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-					pattern="^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
-					minLength="8"
-				/>
-				<label htmlFor="confirm-password" className="autentication-form__label">
-					Confirm password:
-				</label>
-				<input
-					type="password"
-					name="confirm-password"
-					placeholder="Confirm password"
-					id="confirm-password"
-					className="autentication-form__input"
-					onChange={(e) => {
-						handleChange(e);
-					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-					pattern={formData.password}
-				/>
-				<Link to={"/login"} className="autentication-form__link">
-					Already sign? click here to login
-				</Link>
-				<button className="button">Sign up</button>
-			</form>
-			{errors.length > 0 && renderErrorsMessage()}
+				>
+					<label htmlFor="email" className="autentication-form__label">
+						Email:
+					</label>
+					<input
+						type="email"
+						name="email"
+						placeholder="Email"
+						id="email"
+						className="autentication-form__input"
+						onChange={(e) => {
+							handleChange(e);
+						}}
+						onInvalid={(e) => {
+							handleInvalid(e);
+						}}
+						required
+					/>
+					<label htmlFor="username" className="autentication-form__label">
+						User name:{" "}
+					</label>
+					<input
+						type="text"
+						name="username"
+						placeholder="Username"
+						id="username"
+						className="autentication-form__input"
+						onChange={(e) => {
+							handleChange(e);
+						}}
+						onInvalid={(e) => {
+							handleInvalid(e);
+						}}
+						required
+						pattern="^[A-Za-z0-9]{3,16}$"
+						maxLength="16"
+					/>
+					<label htmlFor="password" className="autentication-form__label">
+						Password:
+					</label>
+					<input
+						type="password"
+						name="password"
+						placeholder="Password"
+						id="password"
+						className="autentication-form__input"
+						onChange={(e) => {
+							handleChange(e);
+						}}
+						onInvalid={(e) => {
+							handleInvalid(e);
+						}}
+						required
+						pattern="^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
+						minLength="8"
+					/>
+					<label htmlFor="confirm-password" className="autentication-form__label">
+						Confirm password:
+					</label>
+					<input
+						type="password"
+						name="confirm-password"
+						placeholder="Confirm password"
+						id="confirm-password"
+						className="autentication-form__input"
+						onChange={(e) => {
+							handleChange(e);
+						}}
+						onInvalid={(e) => {
+							handleInvalid(e);
+						}}
+						required
+						pattern={formData.password}
+					/>
+					<Link to={"/login"} className="autentication-form__link">
+						Already sign? click here to login
+					</Link>
+					<button className="button">Sign up</button>
+				</form>
+				{errors.length > 0 && renderErrorsMessage()}
+			</div>
 		</div>
 	);
 }

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { useContext, useEffect } from "react";
 import { UserContext } from "./components/userProvider";
 import SeriesPage from "./pages/SeriesPage/SeriesPage";
@@ -55,6 +55,12 @@ function App() {
 					<Route path="/volume/:id" element={<VolumePage />}></Route>
 					<Route path="/user/:username/*" element={<UserPage />}></Route>
 				</Routes>
+				<footer className="footer">
+					<Link to="/login">Login</Link>
+					<Link to="/about">About</Link>
+					<Link to="/donate">Donate</Link>
+					<Link to="/contacts">Contact us</Link>
+				</footer>
 			</BrowserRouter>
 		</div>
 	);

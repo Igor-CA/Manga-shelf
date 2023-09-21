@@ -65,6 +65,13 @@ export default function SeriesPage() {
 					seriesCoverImage.current.offsetHeight * 0.6
 				}px)`;
 				setContentTopValue(contentTop);
+				const footer = document.querySelector(".footer")
+				const content = document.querySelector(".series__content")
+				
+				footer.style.position = "absolute"
+				footer.style.top = `calc(${mainInfo.current.offsetHeight + content.offsetHeight}px + ${
+					seriesCoverImage.current.offsetHeight * 0.6
+				}px)`
 			}
 
 			//Show the button show more on summary
@@ -76,8 +83,12 @@ export default function SeriesPage() {
 		handleResize();
 		window.addEventListener("resize", handleResize);
 
-		return () => window.removeEventListener("resize", handleResize);
-	}, [series, user, onMobile]);
+		return () => {
+			window.removeEventListener("resize", handleResize)
+			const footer = document.querySelector(".footer")
+			footer.style = null
+		};
+	}, [series, user, onMobile, infoToShow]);
 
 	const getAuthorsString = (authors) => {
 		const authorsCount = authors.length;
@@ -251,7 +262,7 @@ export default function SeriesPage() {
 		return (
 			<li key={volumeId} className="series__volume-item">
 				<Link
-					to={`../volume/${volumeId}`}
+					to={`/volume/${volumeId}`}
 					className="series__volume__image-wrapper"
 				>
 					<img
@@ -261,7 +272,7 @@ export default function SeriesPage() {
 					/>
 				</Link>
 				{onMobile && (
-					<Link to={`../volume/${volumeId}`} className="series__volume__number">
+					<Link to={`/volume/${volumeId}`} className="series__volume__number">
 						<strong>Volume {volumeNumber}</strong>
 					</Link>
 				)}

@@ -34,7 +34,7 @@ export default function LoginPage() {
 			setUser(userFetch.data);
 			console.log(response);
 			console.log(userFetch.data);
-			navigate(`../user/${userFetch.data.username}`);
+			navigate(`/user/${userFetch.data.username}`);
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -81,57 +81,59 @@ export default function LoginPage() {
 	};
 
 	return (
-		<div className="form-container">
-			<h1 className="form-title">Log in</h1>
-			<form
-				action="/login"
-				method="post"
-				className="autentication-form"
-				onSubmit={(e) => {
-					handleSubmit(e);
-				}}
-			>
-				<label htmlFor="login" className="autentication-form__label">
-					Nome de usuário:
-				</label>
-				<input
-					type="text"
-					name="login"
-					id="login"
-					placeholder="Email or Username"
-					className="autentication-form__input"
-					value={formData.login}
-					onChange={(e) => {
-						handleChange(e);
+		<div className="page-content">
+			<div className="form-container">
+				<h1 className="form-title">Log in</h1>
+				<form
+					action="/login"
+					method="post"
+					className="autentication-form"
+					onSubmit={(e) => {
+						handleSubmit(e);
 					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-				/>
-				<label htmlFor="password" className="autentication-form__label">
-					Senha:
-				</label>
-				<input
-					type="password"
-					name="password"
-					id="password"
-					placeholder="Password"
-					className="autentication-form__input"
-					value={formData.password}
-					onChange={(e) => {
-						handleChange(e);
-					}}
-					onInvalid={(e) => {
-						handleInvalid(e);
-					}}
-					required
-				/>
-				<Link to={"/signup"} className="autentication-form__link">Not registered? Click here to sign up</Link>
-				<Link to={"/forgot"} className="autentication-form__link">Forgot password?</Link>
-				<button className="autentication-form__button">Log in</button>
-			</form>
-			{errors.length > 0 && renderErrorsMessage()}
+				>
+					<label htmlFor="login" className="autentication-form__label">
+						Nome de usuário:
+					</label>
+					<input
+						type="text"
+						name="login"
+						id="login"
+						placeholder="Email or Username"
+						className="autentication-form__input"
+						value={formData.login}
+						onChange={(e) => {
+							handleChange(e);
+						}}
+						onInvalid={(e) => {
+							handleInvalid(e);
+						}}
+						required
+					/>
+					<label htmlFor="password" className="autentication-form__label">
+						Senha:
+					</label>
+					<input
+						type="password"
+						name="password"
+						id="password"
+						placeholder="Password"
+						className="autentication-form__input"
+						value={formData.password}
+						onChange={(e) => {
+							handleChange(e);
+						}}
+						onInvalid={(e) => {
+							handleInvalid(e);
+						}}
+						required
+					/>
+					<Link to={"/signup"} className="autentication-form__link">Not registered? Click here to sign up</Link>
+					<Link to={"/forgot"} className="autentication-form__link">Forgot password?</Link>
+					<button className="autentication-form__button">Log in</button>
+				</form>
+				{errors.length > 0 && renderErrorsMessage()}
+			</div>
 		</div>
 	);
 }

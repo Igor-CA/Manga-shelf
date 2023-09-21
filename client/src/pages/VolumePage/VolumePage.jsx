@@ -31,12 +31,30 @@ export default function VolumePage() {
 					image.offsetHeight * 0.6
 				}px)`;
 				contentComponent.style.top = contentTop;
+
+				const footer = document.querySelector(".footer")
+				const content = document.querySelector(".series__content")
+				
+				footer.style.position = "absolute"
+				footer.style.top = `calc(${mainInfo.offsetHeight + contentComponent.offsetHeight}px + ${
+					image.offsetHeight * 0.6
+				}px)`;
+
+				return () => {
+					window.removeEventListener("resize", handleResize)
+					const footer = document.querySelector(".footer")
+					footer.style = null
+				};
 			}
 		};
 		handleResize();
 		window.addEventListener("resize", handleResize);
 
-		return () => window.removeEventListener("resize", handleResize);
+		return () => {
+			window.removeEventListener("resize", handleResize)
+			const footer = document.querySelector(".footer")
+			footer.style = null
+		};
 	}, [volumeData]);
 
 	const { user, setOutdated } = useContext(UserContext);
@@ -107,7 +125,7 @@ export default function VolumePage() {
 
 				<div className="volume__main-info">
 					<div className="volume__functions">
-						<Link to={`../series/${serie.id}`} className="button">
+						<Link to={`/series/${serie.id}`} className="button">
 							<strong>See Series page</strong>
 						</Link>
 						<label

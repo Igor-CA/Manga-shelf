@@ -30,6 +30,9 @@ body{
 	margin: auto;
     max-width: 1520px;
 }
+.page-content{
+	min-height: 100vh;
+}
 
 .button {
 	text-align: center;
@@ -56,10 +59,33 @@ body{
 .invisible{
 	display: none;
 }
+
+.footer{
+	margin-top: 2em;
+	width: 100%;
+	background-color: var(--primary);
+	color: white;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+}
+.footer > *{
+	flex-grow: 1;
+	padding: 1em;
+}
 @media only screen and (min-width: 1040px) {
 	.container{
 		padding-left: 100px;
 		padding-right: 100px;
+	}
+	.footer{
+		padding-left: 100px;
+		padding-right: 100px;
+		flex-direction: row;
+		align-items: center;
+	}.footer > *{
+		padding-top: 3em;
+		padding-bottom: 3em;
 	}
 }
 a {

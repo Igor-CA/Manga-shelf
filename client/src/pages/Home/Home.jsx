@@ -6,7 +6,7 @@ import BrowsePage from "../BrowsePage/BrowsePage";
 
 export default function Home() {
 	return (
-		<div className="container">
+		<div className="page-content">
 			<div className="home">
                 <h1>Bem vindo ao My Manga Shelf!</h1>
                 <p className="home__main-description">

@@ -58,7 +58,7 @@ export default function UserPage() {
 	return (
 		<>
 			{user && (
-				<div>
+				<div className="page-content">
 					<ProfileHeader user={user}></ProfileHeader>
 					<Routes>
 						<Route
