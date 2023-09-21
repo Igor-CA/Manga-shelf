@@ -6,7 +6,7 @@ export function SeriesCard({ seriesDetails }) {
 
 	return (
 		<div className="series-card">
-			<Link to={`../series/${_id}`} className="series-card__image-container">
+			<Link to={`/series/${_id}`} className="series-card__image-container">
 				<img src={image} alt={`cover of ${title}`} className="series-card__img" />
 				{completionPercentage > 0 && (
 					<div className="series-card__bar">

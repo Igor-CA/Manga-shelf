@@ -26,7 +26,7 @@ export default function BrowsePage() {
 		}
 	};
 	const updatePage = async () => {
-		if (!loading && !reachedEnd) {
+		if (!loading && !reachedEnd && search === "") {
 			setLoading(true);
 			try {
 				const resultList = await fetchSeriesList();
@@ -116,6 +116,7 @@ export default function BrowsePage() {
 
 	useEffect(() => {
 		updatePage();
+		window.scrollTo(0, 0);
 	}, []);
 
 	useEffect(() => {
@@ -124,7 +125,7 @@ export default function BrowsePage() {
 	}, [loading]);
 
 	return (
-		<div className="browse-collection-page container">
+		<div className="browse-collection-page container page-content">
 			<form className="form" onSubmit={(e) => handleSubmit(e)}>
 				<label htmlFor="search-bar" className="form__label">
 					Pesquisa
