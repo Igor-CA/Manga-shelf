@@ -5,7 +5,7 @@ import {
 	faMagnifyingGlass,
 	faRightToBracket,
 	faBars,
-	faBug,
+	faComment,
 	faXmark,
 	faUser,
 	faGear,
@@ -100,14 +100,14 @@ export default function NavBar() {
 					</Link>
 
 					<Link
-						to={"/report"}
+						to={"/feedback"}
 						className="navbar__button"
 						onClick={() => {
 							setMenuVisibility(false);
 						}}
 					>
-						{onMobile && <FontAwesomeIcon icon={faBug} size="lg" fixedWidth />}
-						<span className="navbar__label">Report</span>
+						{onMobile && <FontAwesomeIcon icon={faComment} size="lg" fixedWidth />}
+						<span className="navbar__label">Feedback</span>
 					</Link>
 
 					<li className="navbar__button">

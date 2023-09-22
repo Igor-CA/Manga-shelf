@@ -115,7 +115,7 @@ export default function VolumePage() {
 		volumeData;
 
 	return (
-		<div className="volume container">
+		<div className="volume container page-content">
 			<div className="volume__cover-wrapper">
 				<img
 					src={image}

@@ -311,7 +311,7 @@ export default function SeriesPage() {
 	} = series;
 
 	return (
-		<div className="series container">
+		<div className="series container page-content">
 			{showConfirmation && (
 				<PromptConfirm
 					message={confirmationMessage}

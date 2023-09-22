@@ -147,7 +147,7 @@ export default function BrowsePage() {
 
 			{loading && <p>Carregando...</p>}
 			{isEmptyList && (
-				<p className="not-found-message">Seems like we can't find anything for "{search}" check if your typed it right or <Link to={"/report"}><strong>suggest your title to us</strong></Link> so we can add it in the future </p>
+				<p className="not-found-message">Seems like we can't find anything for "{search}" check if your typed it right or <Link to={"/feedback"}><strong>suggest your title to us</strong></Link> so we can add it in the future </p>
 			)}
 			<div className="collection-container">
 				{seriesList.map((series) => {
