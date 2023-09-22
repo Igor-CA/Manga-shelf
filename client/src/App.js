@@ -10,7 +10,6 @@ import LoginPage from "./pages/AuthenticationPage/LoginPage";
 import UserPage from "./pages/UserPage/UserPage";
 import NavBar from "./components/NavBar";
 import BrowsePage from "./pages/BrowsePage/BrowsePage";
-import MissingVolumesPage from "./pages/UserPage/MissingVolumesPage";
 import ForgotPage from "./pages/AuthenticationPage/ForgotPage";
 import ResetPasswordPage from "./pages/AuthenticationPage/ResetPasswordPage";
 import ReportProblem from "./pages/ReportPoblem/ReportProblem";
@@ -42,16 +41,33 @@ function App() {
 		}
 	}, [outdated]);
 
+	const logout = async () => {
+		try {
+			const res = await axios({
+				method: "GET",
+				withCredentials: true,
+				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/logout`,
+			});
+			setOutdated(true);
+			window.location.href = '/'
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
 	return (
 		<div className="App">
 			<BrowserRouter>
-				<NavBar></NavBar>
+				<NavBar logout={logout}></NavBar>
 				<Routes>
 					<Route path="/" element={<Home />}></Route>
 					<Route path="/signup" element={<SignupPage />}></Route>
 					<Route path="/login" element={<LoginPage />}></Route>
 					<Route path="/forgot" element={<ForgotPage />}></Route>
-					<Route path="/reset/:userId/:token" element={<ResetPasswordPage />} ></Route>
+					<Route
+						path="/reset/:userId/:token"
+						element={<ResetPasswordPage />}
+					></Route>
 					<Route path="/feedback" element={<ReportProblem />}></Route>
 					<Route path="/browse" element={<BrowsePage />}></Route>
 					<Route path="/donate" element={<DonatePage />}></Route>
@@ -61,9 +77,13 @@ function App() {
 					<Route path="/user/:username/*" element={<UserPage />}></Route>
 					<Route path="*" element={<NotFound />}></Route>
 				</Routes>
-				
+
 				<footer className="footer">
-					<Link to="/login">Login</Link>
+					{user ? (
+						<Link onClick={logout}>Sair</Link>
+					) : (
+						<Link to="/login">Logar</Link>
+					)}
 					<Link to="/about">Sobre nós</Link>
 					<Link to="/donate">Apoie o projeto</Link>
 					<Link to="/contacts">Contact us</Link>

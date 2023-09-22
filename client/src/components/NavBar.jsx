@@ -8,14 +8,13 @@ import {
 	faComment,
 	faXmark,
 	faUser,
-	faGear,
 	faList,
 	faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 import "./NavBar.css";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "./userProvider";
-export default function NavBar() {
+export default function NavBar({logout}) {
 	const { user } = useContext(UserContext);
 	const [menuVisibility, setMenuVisibility] = useState(false);
 	const [onMobile, setOnMobile] = useState(false);
@@ -29,7 +28,7 @@ export default function NavBar() {
 
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
-
+	
 	return (
 		<div className={onMobile ? "mobile-menu" : "menu"}>
 			{onMobile && (
@@ -112,20 +111,21 @@ export default function NavBar() {
 
 					<li className="navbar__button">
 						<Link
-							to={user ? "/settings" : "/"}
+							to={user ? "" : "/"}
 							onClick={() => {
+								if(user){logout();}
 								setMenuVisibility(false);
 							}}
 						>
 							{onMobile && (
 								<FontAwesomeIcon
-									icon={user ? faGear : faHouse}
+									icon={user ? faRightToBracket : faHouse}
 									size="lg"
 									fixedWidth
 								/>
 							)}
 							<span className="navbar__label">
-								{user ? "Settings" : "Home"}
+								{user ? "Sair" : "Home"}
 							</span>
 						</Link>
 					</li>

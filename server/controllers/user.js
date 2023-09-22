@@ -132,6 +132,14 @@ exports.login = [
 	}),
 ];
 
+exports.logout = (req, res, next) => {
+	req.logout(function (err) {
+		if (err) {
+			return next(err);
+		}
+		res.send({msg:"Successfully logout"});
+	});
+}
 exports.sendResetEmail = [
 	body("email")
 		.trim()
