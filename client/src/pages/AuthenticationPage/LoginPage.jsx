@@ -4,13 +4,15 @@ import { UserContext } from "../../components/userProvider";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import ReCAPTCHA from "react-google-recaptcha";
 import "./Authentication.css";
 
 export default function LoginPage() {
 	const navigate = useNavigate();
+	const { setUser } = useContext(UserContext);
 	const [formData, setFormData] = useState({ login: "", password: "" });
-	const {setUser} = useContext(UserContext);
 	const [errors, setErrors] = useState([]);
+	const [captchaVal, setCaptchaVal] = useState(null)
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -19,6 +21,14 @@ export default function LoginPage() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		if(!captchaVal){
+			setErrors((prevErrors) => [...prevErrors, "Captcha Invalido"]);
+
+			setTimeout(() => {
+				setErrors([]);
+			}, 5000);
+			return
+		}
 		try {
 			const response = await axios({
 				method: "POST",
@@ -28,7 +38,7 @@ export default function LoginPage() {
 			});
 			const userFetch = await axios({
 				method: "GET",
-				withCredentials: true,	
+				withCredentials: true,
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/logged-user`,
 			});
 			setUser(userFetch.data);
@@ -128,8 +138,17 @@ export default function LoginPage() {
 						}}
 						required
 					/>
-					<Link to={"/signup"} className="autentication-form__link">Not registered? Click here to sign up</Link>
-					<Link to={"/forgot"} className="autentication-form__link">Forgot password?</Link>
+					<ReCAPTCHA
+						sitekey={process.env.REACT_APP_CAPTCHA_KEY}
+						onChange={(val) => {setCaptchaVal(val)}}
+					/>
+					<Link to={"/signup"} className="autentication-form__link">
+						Not registered? Click here to sign up
+					</Link>
+					<Link to={"/forgot"} className="autentication-form__link">
+						Forgot password?
+					</Link>
+
 					<button className="autentication-form__button">Log in</button>
 				</form>
 				{errors.length > 0 && renderErrorsMessage()}
