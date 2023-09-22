@@ -1,0 +1,46 @@
+.donate-page{
+    margin: auto;
+	margin-bottom: 2em;
+    margin-top: 2em;
+	position: relative;
+	font-size: 1em;
+	padding: 70px 2em;
+	color: var(--text);
+	background-color: var(--foreground);
+	max-width: 700px;
+    text-align: justify;
+    box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.282);
+}
+.donate-page h1{
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: 2rem;
+}
+.donate-page ul{
+    margin-top: 1rem;
+    margin-left: 2rem;
+}
+.donate-page li{
+    margin-top: 1rem;
+}
+.donate-page h2, .donate-page  h3{
+    margin-top: 1rem;
+}
+.donate-page p{
+    margin-top: 1rem;
+    text-indent: 2rem;
+    line-height: 1.5rem;
+}
+.donate-page a{
+    color: var(--blue);
+}
+.donate-page__donation-button{
+    text-align: center;
+    margin: 25px;
+}
+@media only screen and (min-width: 1040px) {
+	.donate-page {
+		margin-top: 2em;
+		border-radius: 10px;
+	}
+}

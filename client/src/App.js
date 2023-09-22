@@ -15,6 +15,8 @@ import ForgotPage from "./pages/AuthenticationPage/ForgotPage";
 import ResetPasswordPage from "./pages/AuthenticationPage/ResetPasswordPage";
 import ReportProblem from "./pages/ReportPoblem/ReportProblem";
 import Home from "./pages/Home/Home";
+import DonatePage from "./pages/Donate/DonatePage";
+import AboutPage from "./pages/About/AboutPage";
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
@@ -49,16 +51,19 @@ function App() {
 					<Route path="/login" element={<LoginPage />}></Route>
 					<Route path="/forgot" element={<ForgotPage />}></Route>
 					<Route path="/reset/:userId/:token" element={<ResetPasswordPage />} ></Route>
-					<Route path="/report" element={<ReportProblem />}></Route>
+					<Route path="/feedback" element={<ReportProblem />}></Route>
 					<Route path="/browse" element={<BrowsePage />}></Route>
+					<Route path="/donate" element={<DonatePage />}></Route>
+					<Route path="/about" element={<AboutPage />}></Route>
 					<Route path="/series/:id" element={<SeriesPage />}></Route>
 					<Route path="/volume/:id" element={<VolumePage />}></Route>
 					<Route path="/user/:username/*" element={<UserPage />}></Route>
 				</Routes>
+				
 				<footer className="footer">
 					<Link to="/login">Login</Link>
-					<Link to="/about">About</Link>
-					<Link to="/donate">Donate</Link>
+					<Link to="/about">Sobre nós</Link>
+					<Link to="/donate">Apoie o projeto</Link>
 					<Link to="/contacts">Contact us</Link>
 				</footer>
 			</BrowserRouter>
