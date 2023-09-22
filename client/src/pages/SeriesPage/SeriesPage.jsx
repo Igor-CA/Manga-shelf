@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "./SeriesPage.css";
 import { UserContext } from "../../components/userProvider";
 import axios from "axios";
@@ -7,6 +7,7 @@ import PromptConfirm from "../../components/PromptConfirm";
 
 export default function SeriesPage() {
 	const { id } = useParams();
+	const navigate = useNavigate()
 	const { user, setOutdated } = useContext(UserContext);
 	const [series, setSeries] = useState({
 		title: "",
@@ -40,6 +41,10 @@ export default function SeriesPage() {
 				const responseData = response.data;
 				setSeries(responseData);
 			} catch (error) {
+				const errorType = error.response.status
+				if(errorType === 400){
+					navigate("/404")
+				}
 				console.error("Error fetching Series Data:", error);
 			}
 		};

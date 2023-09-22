@@ -1,0 +1,41 @@
+.not-found{
+    margin: auto;
+	margin-bottom: 2em;
+    margin-top: 2em;
+    border-radius: 10px;
+	position: relative;
+	font-size: 1em;
+	padding: 70px 2em;
+	color: var(--text);
+	background-color: var(--foreground);
+	max-width: 700px;
+    text-align: justify;
+    box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.282);
+}
+.not-found h1{
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: 2rem;
+}
+.not-found ul{
+    margin-top: 1rem;
+    margin-left: 2rem;
+}
+.not-found li{
+    margin-top: 1rem;
+}
+.not-found h2, .not-found  h3{
+    margin-top: 1rem;
+}
+.not-found p{
+    margin-top: 1rem;
+    text-indent: 2rem;
+    line-height: 1.5rem;
+}
+.not-found--link{
+    color: var(--blue);
+}
+.donate-page__donation-button{
+    text-align: center;
+    margin: 25px;
+}

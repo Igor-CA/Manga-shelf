@@ -17,6 +17,7 @@ import ReportProblem from "./pages/ReportPoblem/ReportProblem";
 import Home from "./pages/Home/Home";
 import DonatePage from "./pages/Donate/DonatePage";
 import AboutPage from "./pages/About/AboutPage";
+import NotFound from "./pages/404Page/NotFound";
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
@@ -58,6 +59,7 @@ function App() {
 					<Route path="/series/:id" element={<SeriesPage />}></Route>
 					<Route path="/volume/:id" element={<VolumePage />}></Route>
 					<Route path="/user/:username/*" element={<UserPage />}></Route>
+					<Route path="*" element={<NotFound />}></Route>
 				</Routes>
 				
 				<footer className="footer">

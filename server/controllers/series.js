@@ -1,5 +1,5 @@
 const Series = require("../models/Series");
-const volumes = require("../models/volume");
+const mongoose = require('mongoose');
 const {
 	getSeriesCoverURL,
 	getVolumeCoverURL,
@@ -68,20 +68,29 @@ exports.searchSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
+	const validId = mongoose.Types.ObjectId.isValid(req.params.id)
+	if (!validId) {
+		res.status(400).json({msg:"Series not found"})
+		return
+	}
+
 	const desiredSeries = await Series.findById(req.params.id)
 		.populate({
 			path: "volumes",
 			options: { sort: { number: 1 } } // Sort populated volumes by their number field
 		})
 		.exec();
-
+	if(desiredSeries === null){
+		res.status(400).json({msg:"Seried not found"})
+		return
+	}
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
 		image: getVolumeCoverURL(desiredSeries, volume.number),
 	}));
 
-	const { _id: id, title, authors, publisher, seriesCover } = desiredSeries;
+	const { _id: id, title, authors, publisher, seriesCover, dimmensions } = desiredSeries;
 
 	const jsonResponse = {
 		id,
@@ -89,6 +98,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		authors,
 		publisher,
 		seriesCover,
+		dimmensions,
 		volumes: volumesWithImages,
 	};
 	res.send(jsonResponse);

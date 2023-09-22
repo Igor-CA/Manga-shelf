@@ -1,11 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./VolumePage.css";
 import { UserContext } from "../../components/userProvider";
 
 export default function VolumePage() {
 	const { id } = useParams();
+	const navigate = useNavigate()
 	const [volumeData, setVolumeData] = useState({
 		serie: {
 			title: "",
@@ -68,6 +69,10 @@ export default function VolumePage() {
 				console.log(responseData);
 				setVolumeData(responseData);
 			} catch (error) {
+				const errorType = error.response.status
+				if(errorType === 400){
+					navigate("/404")
+				}
 				console.error("Error fetching Volume Data:", error);
 			}
 		};

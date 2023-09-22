@@ -260,7 +260,7 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 		user.save();
 		res.send({ msg: "Series successfully added" });
 	} else {
-		res.send({ msg: "User not found" });
+		res.status(400).json({ msg: "User not authenticated" });
 	}
 });
 
@@ -272,14 +272,12 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 		path: "ownedVolumes",
 		select: "serie",
 	});
-	console.log(user.ownedVolumes);
 	if (user) {
 		const newSeriesList = user.userList.filter((seriesObject) => {
 			return seriesObject.Series.toString() !== req.body.id;
 		});
 		const newVolumesList = user.ownedVolumes.filter((volume) => {
 			volumeSeriesId = volume.serie.toString();
-			console.log(volumeSeriesId, req.body.id);
 			return volumeSeriesId !== req.body.id;
 		});
 		user.userList = newSeriesList;
@@ -287,7 +285,7 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 		user.save();
 		res.send({ msg: "Series successfully removed" });
 	} else {
-		res.send({ msg: "User not found" });
+		res.status(400).json({ msg: "User not found" });
 	}
 });
 
@@ -308,10 +306,10 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 			};
 			res.send(userInfo);
 		} else {
-			res.send({ msg: "User not found" });
+			res.status(400).json({ msg: "User not found" });
 		}
 	} else {
-		res.send();
+		res.status(400).json({ msg: "No user logged" });
 	}
 });
 
@@ -333,7 +331,7 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 			};
 			res.send(userInfo);
 		} else {
-			res.send({ msg: "User not found" });
+			res.status(400).json({ msg: "User not found" });
 		}
 	} else {
 		res.send();
@@ -368,10 +366,15 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			});
 			const missingVolumesList = mangaList.filter((volume) => {
 				return !user.ownedVolumes.includes(volume.volumeId);
-			});
+			}).sort((volumeOne, volumeTwo) => {
+				if (volumeOne.series < volumeTwo.series) return -1;
+				if (volumeOne.series > volumeTwo.series) return 1;
+				return volumeOne.volumeNumber - volumeTwo.volumeNumber;
+			  });
+
 			res.send(missingVolumesList);
 		} else {
-			res.send({ msg: "User not found" });
+			res.status(400).json({ msg: "User not found" });
 		}
 	} else {
 		res.send();
@@ -416,8 +419,10 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 			user.save();
 			res.send({ msg: "Volume successfully added" });
 		} else {
-			res.send({ msg: "User not found" });
+			res.status(400).json({ msg: "User not found" });
 		}
+	}else{
+		res.send({ msg: "User need to be authenticated" });
 	}
 });
 
@@ -448,7 +453,10 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 			user.save();
 			res.send({ msg: "Volume successfully removed" });
 		} else {
-			res.send({ msg: "User not found" });
+			res.status(400).json({ msg: "User not found" });
 		}
+	}
+	else{
+		res.send({ msg: "User need to be authenticated" });
 	}
 });

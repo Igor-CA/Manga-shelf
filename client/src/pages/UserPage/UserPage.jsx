@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, Route, Routes, useParams } from "react-router-dom";
+import { Link, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import UserCollection from "./UserCollection";
 import "./UserPage.css";
 import axios from "axios";
@@ -10,6 +10,7 @@ export default function UserPage() {
 	const { username } = useParams();
 	const [user, setUser] = useState();
 	const [missingList, setMissingList] = useState([]);
+	const navigate = useNavigate()
 	useEffect(() => {
 		const querryUser = async () => {
 			try {
@@ -21,7 +22,11 @@ export default function UserPage() {
 				console.log(res.data);
 				setUser(res.data);
 			} catch (error) {
-				console.log(error);
+				const errorType = error.response.status
+				if(errorType === 400){
+					navigate("/404")
+				}
+				console.log("Error fetching user data:", error.response.data.msg);
 			}
 		};
 
@@ -36,7 +41,11 @@ export default function UserPage() {
 				const responseData = response.data;
 				setMissingList(responseData);
 			} catch (error) {
-				console.error("Error fetching Series Data:", error);
+				const errorType = error.response.status
+				if(errorType === 400){
+					navigate("/404")
+				}
+				console.error("Error fetching Missing volumes data:", error.response.data.msg);
 			}
 		};
 		fetchMissingVolumes();
