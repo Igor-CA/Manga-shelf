@@ -48,10 +48,12 @@ export default function AboutPage() {
 						Estamos empolgados em disponibilizar essas funcionalidades para você
 						nesta fase inicial. Como é uma versão alpha, pode ser que você
 						encontre problemas ou erros pelo caminho. Caso isso aconteça,
-						pedimos que nos ajude, detalhando o problema na aba de <Link to={"/feedback"}>feedback</Link>.
-						Estaremos dedicados a corrigi-lo o mais rápido possível. E se você
-						tiver alguma questão mais específica, entre em contato através da
-						nossa página de <Link to={"/contacts"}>Contatos</Link>. Estamos aqui para ajudar!
+						pedimos que nos ajude, detalhando o problema na aba de{" "}
+						<Link to={"/feedback"}>feedback</Link>. Estaremos dedicados a
+						corrigi-lo o mais rápido possível. E se você tiver alguma questão
+						mais específica, entre em contato através da nosso{" "}
+						<a href={"mailto:mymangashelfs@gmail.com"}>email</a>. Estamos aqui
+						para ajudar!
 					</p>
 					<h2>Funcionalidades em desenvolvimento</h2>
 					<p>
@@ -77,6 +79,23 @@ export default function AboutPage() {
 						<li>Sistema de review de volumes e coleções</li>
 						<li>Tema escuro (dark theme)</li>
 					</ul>
+					<h2>Créditos especiais</h2>
+					<p>
+						Todos os dados como imagens, sinópses e generos utilizados no site
+						foram retiradas diretamente dos sites de cada editora ou de sites
+						como <a href="https://blogbbm.com/" target="_blank" rel="noreferrer">Biblioteca Brasileira de Mangas</a>, <a href="http://www.guiadosquadrinhos.com/" target="_blank" rel="noreferrer">Guia dos quadrinhos</a> ou <a href="https://anilist.co/home" target="_blank" rel="noreferrer">Anilist</a>{" "}
+					</p>
+					<p>
+						Se você é o detentor dos direitos autorais de qualquer conteúdo
+						exibido neste site e acredita que seu trabalho foi usado de maneira
+						que constitui violação de direitos autorais, entre em contato
+						conosco em{" "}
+						<a href={"mailto:mymangashelfs@gmail.com"}>
+							mymangashelfs@gmail.com.
+						</a>{" "}
+						Estamos dispostos a cooperar para remover ou creditar
+						apropriadamente o conteúdo, conforme necessário.
+					</p>
 				</article>
 			</div>
 		</div>
