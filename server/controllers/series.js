@@ -47,6 +47,12 @@ exports.searchSeries = asyncHandler(async (req, res, next) => {
 								fuzzy: {},
 								score: { boost: { value: 2 } },
 							},
+							text: {
+								query: query,
+								path: "synonyms",
+								fuzzy: {},
+								score: { boost: { value: 1.5 } },
+							},
 						},
 					],
 				},
@@ -90,7 +96,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		image: getVolumeCoverURL(desiredSeries, volume.number),
 	}));
 
-	const { _id: id, title, authors, publisher, seriesCover, dimmensions } = desiredSeries;
+	const { _id: id, title, authors, publisher, seriesCover, dimmensions, summary, genres, isAdult, status } = desiredSeries;
 
 	const jsonResponse = {
 		id,
@@ -99,6 +105,10 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		publisher,
 		seriesCover,
 		dimmensions,
+		summary,
+		genres,
+		isAdult,
+		status,
 		volumes: volumesWithImages,
 	};
 	res.send(jsonResponse);
