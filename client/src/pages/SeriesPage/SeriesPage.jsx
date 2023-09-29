@@ -7,7 +7,7 @@ import PromptConfirm from "../../components/PromptConfirm";
 
 export default function SeriesPage() {
 	const { id } = useParams();
-	const navigate = useNavigate()
+	const navigate = useNavigate();
 	const { user, setOutdated } = useContext(UserContext);
 	const [series, setSeries] = useState({
 		title: "",
@@ -41,9 +41,9 @@ export default function SeriesPage() {
 				const responseData = response.data;
 				setSeries(responseData);
 			} catch (error) {
-				const errorType = error.response.status
-				if(errorType === 400){
-					navigate("/404")
+				const errorType = error.response.status;
+				if (errorType === 400) {
+					navigate("/404");
 				}
 				console.error("Error fetching Series Data:", error);
 			}
@@ -70,13 +70,13 @@ export default function SeriesPage() {
 					seriesCoverImage.current.offsetHeight * 0.6
 				}px)`;
 				setContentTopValue(contentTop);
-				const footer = document.querySelector(".footer")
-				const content = document.querySelector(".series__content")
-				
-				footer.style.position = "absolute"
-				footer.style.top = `calc(${mainInfo.current.offsetHeight + content.offsetHeight}px + ${
-					seriesCoverImage.current.offsetHeight * 0.6
-				}px)`
+				const footer = document.querySelector(".footer");
+				const content = document.querySelector(".series__content");
+
+				footer.style.position = "absolute";
+				footer.style.top = `calc(${
+					mainInfo.current.offsetHeight + content.offsetHeight
+				}px + ${seriesCoverImage.current.offsetHeight * 0.6}px)`;
 			}
 
 			//Show the button show more on summary
@@ -89,22 +89,22 @@ export default function SeriesPage() {
 		window.addEventListener("resize", handleResize);
 
 		return () => {
-			window.removeEventListener("resize", handleResize)
-			const footer = document.querySelector(".footer")
-			footer.style = null
+			window.removeEventListener("resize", handleResize);
+			const footer = document.querySelector(".footer");
+			footer.style = null;
 		};
 	}, [series, user, onMobile, infoToShow]);
 
-	const getAuthorsString = (authors) => {
-		const authorsCount = authors.length;
+	const printArray = (list) => {
+		const listCount = list.length;
 
-		if (authorsCount === 1) {
-			return authors[0];
-		} else if (authorsCount === 2) {
-			return `${authors[0]} e ${authors[1]}`;
+		if (listCount === 1) {
+			return list[0];
+		} else if (listCount === 2) {
+			return `${list[0]} e ${list[1]}`;
 		} else {
-			const allButLast = authors.slice(0, -1).join(", ");
-			return `${allButLast}, e ${authors[authorsCount - 1]}`;
+			const allButLast = list.slice(0, -1).join(", ");
+			return `${allButLast}, e ${list[listCount - 1]}`;
 		}
 	};
 
@@ -169,7 +169,7 @@ export default function SeriesPage() {
 
 			if (listToAdd.length > 1) {
 				customWindowConfirm(
-					"Do you want to mark all previous volumes too?",
+					"Deseja adicionar os volumes anteriores também?",
 					() => {
 						addOrRemoveVolume(adding, listToAdd);
 
@@ -197,6 +197,9 @@ export default function SeriesPage() {
 	};
 
 	const handleSelectAll = (e) => {
+		if (!user) {
+			return;
+		}
 		const adding = e.target.checked;
 		const list = localVolumeState
 			.filter((volume) => volume.ownsVolume === !adding)
@@ -242,18 +245,22 @@ export default function SeriesPage() {
 		);
 	};
 	const renderAddRemoveButton = () => {
-		const indexOfSeries = user.userList.findIndex((seriesObj) => {
-			return seriesObj.Series._id.toString() === id;
-		});
-		const inList = indexOfSeries !== -1;
+		let inList = false
+		if(user){
+			const indexOfSeries = user.userList.findIndex((seriesObj) => {
+				return seriesObj.Series._id.toString() === id;
+			});
+			inList = indexOfSeries !== -1;
+		}
 		return (
 			<button
 				className={`button button--grow button--${inList ? "red" : "green"}`}
 				onClick={() => {
+					if (!user) { return; }
 					inList ? handleRemoveSeries() : addOrRemoveSeries(true);
 				}}
 			>
-				{inList ? "Remove Series" : "Add Series"}
+				{inList ? "Remover coleção" : "Adicionar coleção"}
 			</button>
 		);
 	};
@@ -335,13 +342,13 @@ export default function SeriesPage() {
 						ref={seriesCoverImage}
 					/>
 					<div className="series_main-info" ref={mainInfo}>
-						{user && (
+						{
 							<div className="series__butons-containers">
 								<label htmlFor="select-all-check-mark" className="button">
 									<strong>
 										{user && getCompletionPercentage() === 1
-											? "Remove all volumes"
-											: "Select all volumes"}
+											? "Remover todos"
+											: "Adicionar todos"}
 									</strong>
 									<input
 										type="checkbox"
@@ -357,7 +364,7 @@ export default function SeriesPage() {
 								</label>
 								{renderAddRemoveButton()}
 							</div>
-						)}
+						}
 						{onMobile && <h1 className="series__title">{title}</h1>}
 						<div className="series__mobile-options-container">
 							<div
@@ -393,46 +400,56 @@ export default function SeriesPage() {
 								<h1 className="series__title">{title}</h1>
 							</li>
 						)}
-						<li className="series__details">
-							<strong>Editora:</strong> {publisher}
-						</li>
-						<li className="series__details">
-							<strong>Autores:</strong> {getAuthorsString(authors)}
-						</li>
-						<li className="series__details">
-							<strong>Formato:</strong> {dimmensions?.join("cm x ") + "cm"}
-						</li>
+						{publisher && (
+							<li className="series__details">
+								<strong>Editora:</strong> {publisher}
+							</li>
+						)}
+						{authors && (
+							<li className="series__details">
+								<strong>Autores:</strong> {printArray(authors)}
+							</li>
+						)}
+						{dimmensions && (
+							<li className="series__details">
+								<strong>Formato:</strong> {dimmensions?.join("cm x ") + "cm"}
+							</li>
+						)}
 
-						<li className="series__details">
-							<strong>Generos:</strong> {genres?.getAuthorsString(genres)}
-						</li>
-						<li className="series__details">
-							<strong>Sinopse:</strong>
-							<p
-								ref={seriesSummarry}
-								className="series__summary"
-								style={{ display: showingMore ? "block" : null }}
-							>
-								{summary?.map((paragraph) => {
-									return (
-										<>
-											{paragraph}
-											<br />
-										</>
-									);
-								})}
-							</p>
-							{needShowButton && !showingMore && (
-								<div
-									className="series__show-more"
-									onClick={() => {
-										setShowingMore(true);
-									}}
+						{genres && (
+							<li className="series__details">
+								<strong>Generos:</strong> {printArray(genres)}
+							</li>
+						)}
+						{summary && (
+							<li className="series__details" style={{ paddingBottom: "0px" }}>
+								<strong>Sinopse:</strong>
+								<p
+									ref={seriesSummarry}
+									className="series__summary"
+									style={{ display: showingMore ? "block" : null }}
 								>
-									Show more
-								</div>
-							)}
-						</li>
+									{summary.map((paragraph) => {
+										return (
+											<>
+												{paragraph}
+												<br />
+											</>
+										);
+									})}
+								</p>
+								{needShowButton && !showingMore && (
+									<div
+										className="series__show-more"
+										onClick={() => {
+											setShowingMore(true);
+										}}
+									>
+										Mostrar mais
+									</div>
+								)}
+							</li>
+						)}
 					</ul>
 				)}
 			</div>
