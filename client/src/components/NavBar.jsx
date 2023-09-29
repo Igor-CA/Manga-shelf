@@ -62,7 +62,7 @@ export default function NavBar({logout}) {
 								/>
 							)}
 							<span className="navbar__label">
-								{user ? "Profile" : "Log in"}
+								{user ? "Perfil" : "Logar"}
 							</span>
 						</Link>
 					</li>
@@ -81,7 +81,7 @@ export default function NavBar({logout}) {
 								/>
 							)}
 							<span className="navbar__label">
-								{user ? "Missing" : "Sign up"}
+								{user ? "Faltando" : "Criar conta"}
 							</span>
 						</Link>
 					</li>
@@ -95,7 +95,7 @@ export default function NavBar({logout}) {
 						{onMobile && (
 							<FontAwesomeIcon icon={faMagnifyingGlass} size="lg" fixedWidth />
 						)}
-						<span className="navbar__label">Search</span>
+						<span className="navbar__label">Buscar</span>
 					</Link>
 
 					<Link
@@ -106,7 +106,7 @@ export default function NavBar({logout}) {
 						}}
 					>
 						{onMobile && <FontAwesomeIcon icon={faComment} size="lg" fixedWidth />}
-						<span className="navbar__label">Feedback</span>
+						<span className="navbar__label">Sugestões</span>
 					</Link>
 
 					<li className="navbar__button">
@@ -125,7 +125,7 @@ export default function NavBar({logout}) {
 								/>
 							)}
 							<span className="navbar__label">
-								{user ? "Sair" : "Home"}
+								{user ? "Sair" : "Início"}
 							</span>
 						</Link>
 					</li>

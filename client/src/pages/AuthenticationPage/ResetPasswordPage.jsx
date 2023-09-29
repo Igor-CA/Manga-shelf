@@ -59,14 +59,14 @@ export default function ResetPasswordPage() {
 
 		const validationMessages = {
 			password: {
-				valueMissing: "The password field is required",
+				valueMissing: "A senha é obrigatória",
 				patternMismatch:
-					"The password must contain at least one letter, one number, and a special character.",
-				tooShort: "The password must be at least 8 characters long.",
+					"A senha deve conter pelo menos uma letra, número e caractere especial(!@#$%^&*)",
+				tooShort: "A senha precisa de pelo menos 8 caracteres",
 			},
 			"confirm-password": {
-				valueMissing: "The confirm password field is required",
-				patternMismatch: "Both passwords are not coinciding.",
+				valueMissing: "O campo de confirmar senha é obrigatório",
+				patternMismatch: "As senhas devem coincidir",
 			},
 		};
 
@@ -89,7 +89,7 @@ export default function ResetPasswordPage() {
 	return (
 		<div className="page-content">
 			<div className="form-container">
-				<h1 className="form-title">Set your new password</h1>
+				<h1 className="form-title">Defina sua nova senha</h1>
 				<form
 					method="post"
 					className="autentication-form"
@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
 					}}
 				>
 					<label htmlFor="password" className="autentication-form__label">
-						Password:
+						Senha:
 					</label>
 					<input
 						type="password"
@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
 						minLength="8"
 					/>
 					<label htmlFor="confirm-password" className="autentication-form__label">
-						Confirm password:
+						Confirme sua senha:
 					</label>
 					<input
 						type="password"
@@ -135,9 +135,9 @@ export default function ResetPasswordPage() {
 						pattern={formData.password}
 					/>
 					<Link to={"/login"} className="autentication-form__link">
-						Login
+						Entrar
 					</Link>
-					<button className="button">Set new password</button>
+					<button className="button">Definir nova senha</button>
 				</form>
 				{errors.length > 0 && renderErrorsMessage()}
 			</div>

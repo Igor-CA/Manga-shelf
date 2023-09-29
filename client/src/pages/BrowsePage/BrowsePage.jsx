@@ -26,7 +26,7 @@ export default function BrowsePage() {
 		}
 	};
 	const updatePage = async () => {
-		if (!loading && !reachedEnd && search === "") {
+		if (!loading && !reachedEnd) {
 			setLoading(true);
 			try {
 				const resultList = await fetchSeriesList();
@@ -97,9 +97,14 @@ export default function BrowsePage() {
 		const distanceScrollTop = document.documentElement.scrollTop;
 		const appTotalHeight = document.documentElement.offsetHeight;
 
-		if (screeHeigh + distanceScrollTop + offset <= appTotalHeight || loading) {
+		if (screeHeigh + distanceScrollTop + offset <= appTotalHeight) 
 			return;
-		}
+		if (loading) 
+			return;
+		if (search.trim() !== "") 
+			return;
+		
+		
 		updatePage();
 	};
 
@@ -134,7 +139,7 @@ export default function BrowsePage() {
 					type="search"
 					name="search-bar"
 					className="form__input form__input__grow"
-					placeholder="Search title"
+					placeholder="Buscar "
 					onChange={(e) => {
 						handleChange(e);
 					}}
@@ -145,9 +150,8 @@ export default function BrowsePage() {
 				</button>
 			</form>
 
-			{loading && <p>Carregando...</p>}
 			{isEmptyList && (
-				<p className="not-found-message">Seems like we can't find anything for "{search}" check if your typed it right or <Link to={"/feedback"}><strong>suggest your title to us</strong></Link> so we can add it in the future </p>
+				<p className="not-found-message">Não encontramos nada para "{search}" verifique se você digitou corretamente ou então  <Link to={"/feedback"}><strong>sugira sua obra para nós</strong></Link> para que poçamos adiciona-la no futuro</p>
 			)}
 			<div className="collection-container">
 				{seriesList.map((series) => {

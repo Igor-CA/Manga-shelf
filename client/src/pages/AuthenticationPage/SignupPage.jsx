@@ -30,7 +30,7 @@ export default function SignupPage() {
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/signup`,
 			});
 			console.log(response.data);
-			navigate("./login");
+			navigate("/login");
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -47,23 +47,26 @@ export default function SignupPage() {
 
 		const validationMessages = {
 			email: {
-				valueMissing: "The email field is required",
-				typeMismatch: "The email must be a valid email address.",
+				valueMissing: "É obrigatório informar um email",
+				typeMismatch: "O email inserido não é um email válido",
 			},
 			username: {
-				valueMissing: "The username field is required",
+				valueMissing: "É obrigatório informar um nome de usuário",
 				patternMismatch:
-					"The username can't contain special characters and between 3 and 16 characters.",
+					"O nome de usuário não pode ter caracteres especiais (!@#$%^&*) e deve ter entre 3 e 16 caracteres.",
 			},
 			password: {
-				valueMissing: "The password field is required",
+				valueMissing: "A senha é obrigatória",
 				patternMismatch:
-					"The password must contain at least one letter, one number, and a special character.",
-				tooShort: "The password must be at least 8 characters long.",
+					"A senha deve conter pelo menos uma letra, número e caractere especial(!@#$%^&*)",
+				tooShort: "A senha precisa de pelo menos 8 caracteres",
 			},
 			"confirm-password": {
-				valueMissing: "The confirm password field is required",
-				patternMismatch: "Both passwords are not coinciding.",
+				valueMissing: "O campo de confirmar senha é obrigatório",
+				patternMismatch: "As senhas devem coincidir",
+			},
+			"tos-checkbox": {
+				valueMissing: "Concorde com nossos termos para criar uma conta",
 			},
 		};
 
@@ -104,7 +107,7 @@ export default function SignupPage() {
 	return (
 		<div className="page-content">
 			<div className="form-container">
-				<h1 className="form-title">Sign up</h1>
+				<h1 className="form-title">Criar conta</h1>
 				<form
 					method="post"
 					className="autentication-form"
@@ -135,7 +138,7 @@ export default function SignupPage() {
 					<input
 						type="text"
 						name="username"
-						placeholder="Username"
+						placeholder="Nome de usuário"
 						id="username"
 						className="autentication-form__input"
 						onChange={(e) => {
@@ -154,7 +157,7 @@ export default function SignupPage() {
 					<input
 						type="password"
 						name="password"
-						placeholder="Password"
+						placeholder="Senha"
 						id="password"
 						className="autentication-form__input"
 						onChange={(e) => {
@@ -167,13 +170,16 @@ export default function SignupPage() {
 						pattern="^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
 						minLength="8"
 					/>
-					<label htmlFor="confirm-password" className="autentication-form__label">
+					<label
+						htmlFor="confirm-password"
+						className="autentication-form__label"
+					>
 						Confirm password:
 					</label>
 					<input
 						type="password"
 						name="confirm-password"
-						placeholder="Confirm password"
+						placeholder="Confirmar senha"
 						id="confirm-password"
 						className="autentication-form__input"
 						onChange={(e) => {
@@ -185,10 +191,31 @@ export default function SignupPage() {
 						required
 						pattern={formData.password}
 					/>
+					<label htmlFor="tos-checkbox" className="form__label--visible">
+						<input
+							type="checkbox"
+							name="tos-checkbox"
+							id="tos-checkbox"
+							className=""
+							required
+							onInvalid={(e) => {
+								handleInvalid(e);
+							}}
+							onChange={(e) => {
+								handleChange(e);
+							}}
+						/>
+						Ao marcar esta aba você concorda com nossos{" "}
+						<Link to={"/tos"} className="autentication-form__link">
+							termos e condições
+						</Link>
+					</label>
+					<button className="button" style={{ margin: "10px" }}>
+						Criar conta
+					</button>
 					<Link to={"/login"} className="autentication-form__link">
-						Already sign? click here to login
+						Já tem conta?
 					</Link>
-					<button className="button">Sign up</button>
 				</form>
 				{errors.length > 0 && renderErrorsMessage()}
 			</div>

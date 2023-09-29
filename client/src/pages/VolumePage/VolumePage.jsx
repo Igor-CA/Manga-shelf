@@ -131,16 +131,16 @@ export default function VolumePage() {
 				<div className="volume__main-info">
 					<div className="volume__functions">
 						<Link to={`/series/${serie.id}`} className="button">
-							<strong>See Series page</strong>
+							<strong>Ver coleção</strong>
 						</Link>
 						<label
 							htmlFor="have-volume-check-mark"
 							className={`button button--grow button--${
-								user && !checkOwnedVolume() ? "green" : "red"
+								(user && checkOwnedVolume()) ? "red" : "green"
 							}`}
 						>
 							<strong>
-								{user && checkOwnedVolume() ? "Remove Volume" : "Add Volume"}
+								{user && checkOwnedVolume() ? "Remover volume" : "Adicionar Volume"}
 							</strong>
 						</label>
 						<input
@@ -162,13 +162,13 @@ export default function VolumePage() {
 			</div>
 			<div className="volume__info-container">
 				<ul className="volume__details-container">
-					<li className="volume__details">
-						<strong>Pages:</strong> {pagesNumber}
-					</li>
-					<li className="volume__details">
-						<strong>Price:</strong> R$ {defaultPrice}
-					</li>
-					<li className="volume__details">
+					{pagesNumber && <li className="volume__details">
+						<strong>Páginas:</strong> {pagesNumber}
+					</li>}
+					{defaultPrice && <li className="volume__details">
+						<strong>Preço:</strong> R$ {defaultPrice}
+					</li>}
+					{summary && <li className="volume__details">
 						<strong>Sinopse:</strong>
 						{summary.map((paragraph, index) => {
 							return (
@@ -177,7 +177,7 @@ export default function VolumePage() {
 								</p>
 							);
 						})}
-					</li>
+					</li>}
 				</ul>
 			</div>
 		</div>

@@ -87,7 +87,7 @@ export default function ReportProblem() {
 	return (
 		<div className="page-content">
 			<div className="form-container">
-				<h1 className="form-title">Reporte um problema</h1>
+				<h1 className="form-title">Envie uma sugestão</h1>
 				<form
 					method="post"
 					className="autentication-form"
@@ -217,7 +217,7 @@ export default function ReportProblem() {
 							handleInvalid(e);
 						}}
 					/>
-					<button className="button">Send Report</button>
+					<button className="button">Enviar sugestão</button>
 				</form>
 				{errors.length > 0 && renderErrorsMessage()}
 			</div>

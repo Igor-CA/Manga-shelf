@@ -27,8 +27,8 @@ export default function PromptConfirm({
 	return (
 		<div className="prompt-confirm">
 			<p>{message}</p>
-			<button onClick={handleYesClick} className="prompt-confirm__button">Yes</button>
-			<button onClick={handleNoClick} className="prompt-confirm__button prompt-confirm__button--cancel">No</button>
+			<button onClick={handleYesClick} className="prompt-confirm__button">Confirmar</button>
+			<button onClick={handleNoClick} className="prompt-confirm__button prompt-confirm__button--cancel">Cancelar</button>
 		</div>
 	);
 }

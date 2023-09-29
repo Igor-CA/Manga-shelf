@@ -12,7 +12,7 @@ export default function LoginPage() {
 	const { setUser } = useContext(UserContext);
 	const [formData, setFormData] = useState({ login: "", password: "" });
 	const [errors, setErrors] = useState([]);
-	const [captchaVal, setCaptchaVal] = useState(null)
+	const [captchaVal, setCaptchaVal] = useState(null);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -21,13 +21,13 @@ export default function LoginPage() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		if(!captchaVal){
+		if (!captchaVal) {
 			setErrors((prevErrors) => [...prevErrors, "Captcha Invalido"]);
 
 			setTimeout(() => {
 				setErrors([]);
 			}, 5000);
-			return
+			return;
 		}
 		try {
 			const response = await axios({
@@ -63,7 +63,7 @@ export default function LoginPage() {
 		let customErrorMessage = "";
 
 		if (input.validity.valueMissing) {
-			customErrorMessage = `${inputName} field is required.`;
+			customErrorMessage = `O campo de ${inputName} é obrigatório.`;
 		}
 
 		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -93,7 +93,7 @@ export default function LoginPage() {
 	return (
 		<div className="page-content">
 			<div className="form-container">
-				<h1 className="form-title">Log in</h1>
+				<h1 className="form-title">Entrar</h1>
 				<form
 					action="/login"
 					method="post"
@@ -109,7 +109,7 @@ export default function LoginPage() {
 						type="text"
 						name="login"
 						id="login"
-						placeholder="Email or Username"
+						placeholder="Email ou nome de usuário"
 						className="autentication-form__input"
 						value={formData.login}
 						onChange={(e) => {
@@ -127,7 +127,7 @@ export default function LoginPage() {
 						type="password"
 						name="password"
 						id="password"
-						placeholder="Password"
+						placeholder="Senha"
 						className="autentication-form__input"
 						value={formData.password}
 						onChange={(e) => {
@@ -140,13 +140,21 @@ export default function LoginPage() {
 					/>
 					<ReCAPTCHA
 						sitekey={process.env.REACT_APP_CAPTCHA_KEY}
-						onChange={(val) => {setCaptchaVal(val)}}
+						onChange={(val) => {
+							setCaptchaVal(val);
+						}}
 					/>
-					<Link to={"/signup"} className="autentication-form__link">
-						Not registered? Click here to sign up
-					</Link>
+
+					<p>
+						Não tem uma conta?
+						<Link to={"/signup"} className="autentication-form__link">
+							{" "}
+							clique aqui
+						</Link>{" "}
+						para criar
+					</p>
 					<Link to={"/forgot"} className="autentication-form__link">
-						Forgot password?
+						Esqueceu sua senha?
 					</Link>
 
 					<button className="autentication-form__button">Log in</button>

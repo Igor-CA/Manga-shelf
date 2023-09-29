@@ -70,7 +70,7 @@ export default function ForgotPage() {
 	return (
 		<div className="page-content">
 			<div className="form-container">
-				<h1 className="form-title">Reset password</h1>
+				<h1 className="form-title">Mude sua senha</h1>
 				<form
 					method="post"
 					className="autentication-form"
@@ -97,9 +97,9 @@ export default function ForgotPage() {
 						required
 					/>
 					<Link to={"/login"} className="autentication-form__link">
-						Login
+						Entrar
 					</Link>
-					<button className="button">Reset password</button>
+					<button className="button">Mudar senha</button>
 				</form>
 				{errors.length > 0 && renderErrorsMessage()}
 			</div>
