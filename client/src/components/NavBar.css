@@ -46,6 +46,7 @@
 	font-weight: bold;
 }
 .navbar__label {
+	white-space: nowrap;
 	font-size: 0.8em;
 	display: block;
 }

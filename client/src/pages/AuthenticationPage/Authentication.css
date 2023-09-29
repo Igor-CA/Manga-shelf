@@ -71,7 +71,7 @@
 	margin: 0.5rem;
 }
 .autentication-form__link{
-	padding: 10px;
+	padding: 10px auto;
 	color: var(--blue);
 }
 

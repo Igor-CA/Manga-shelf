@@ -44,6 +44,7 @@
 	padding: 10px;
 }
 .series__details {
+	position: relative;
 	padding-bottom: 40px;
 }
 .series__butons-containers{
@@ -229,9 +230,9 @@
 		padding: 10px;
 		font-size: 1rem;
 		font-weight: bold;
-		background: linear-gradient(#ffffff00, var(--foreground) 50%);
-		position: relative;
-		bottom: 30px;
+		background: linear-gradient(#ffffff00, var(--foreground) 75%);
+		position: absolute;
+		bottom: 0px;
 		z-index: 1;
 		width: 100%;
 		text-align: center;
