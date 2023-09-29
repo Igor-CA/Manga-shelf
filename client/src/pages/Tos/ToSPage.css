@@ -1,0 +1,43 @@
+.tos{
+    margin: auto;
+	margin-bottom: 2em;
+    margin-top: 2em;
+	position: relative;
+	font-size: 1em;
+	padding: 70px 2em;
+	color: var(--text);
+	background-color: var(--foreground);
+	max-width: 700px;
+    text-align: justify;
+    box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.282);
+}
+.tos h1{
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: 2rem;
+}
+.tos ul{
+    margin-top: 1rem;
+    margin-left: 2rem;
+}
+.tos li{
+    margin-top: 1rem;
+}
+.tos h2, .tos  h3{
+    margin-top: 1rem;
+}
+.tos p{
+    max-width: 600px;
+    margin-top: 1rem;
+    text-indent: 2rem;
+    line-height: 1.5rem;
+}
+.tos a{
+    color: var(--blue);
+}
+@media only screen and (min-width: 1040px) {
+	.tos {
+		margin-top: 2em;
+		border-radius: 10px;
+	}
+}

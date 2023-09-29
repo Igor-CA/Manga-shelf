@@ -17,6 +17,7 @@ import Home from "./pages/Home/Home";
 import DonatePage from "./pages/Donate/DonatePage";
 import AboutPage from "./pages/About/AboutPage";
 import NotFound from "./pages/404Page/NotFound";
+import ToSPage from "./pages/Tos/ToSPage";
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
@@ -62,6 +63,7 @@ function App() {
 				<Routes>
 					<Route path="/" element={<Home />}></Route>
 					<Route path="/signup" element={<SignupPage />}></Route>
+					<Route path="/tos" element={<ToSPage />}></Route>
 					<Route path="/login" element={<LoginPage />}></Route>
 					<Route path="/forgot" element={<ForgotPage />}></Route>
 					<Route
@@ -86,7 +88,6 @@ function App() {
 					)}
 					<Link to="/about">Sobre nós</Link>
 					<Link to="/donate">Apoie o projeto</Link>
-					<Link to="/contacts">Contact us</Link>
 				</footer>
 			</BrowserRouter>
 		</div>

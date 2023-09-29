@@ -58,12 +58,18 @@ exports.signup = [
 			password,
 			email,
 			["confirm-password"]: confirmPassword,
+			["tos-checkbox"]: tosCheckbox
 		} = req.body;
 
 		if (password !== confirmPassword) {
 			return res
 				.status(409)
 				.json({ message: "Passwords don't match properly" });
+		}
+		if(!tosCheckbox){
+			return res
+				.status(409)
+				.json({ message: "Precisa concordar com os termos de serviço" });
 		}
 
 		const [existingUser] = await User.find()
