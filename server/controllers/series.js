@@ -7,12 +7,12 @@ const {
 const asyncHandler = require("express-async-handler");
 
 const ITEMS_PER_PAGE = 24;
-const SEARCH_RESULT_LIMIT = 12;
+const SEARCH_RESULT_LIMIT = 24;
 
 exports.all = asyncHandler(async (req, res, next) => {
 	const currentPage = req.query.p ? Number(req.query.p) : 1;
 	const skip = ITEMS_PER_PAGE * (currentPage - 1);
-	const seriesList = await Series.find({}, "title")
+	const seriesList = await Series.find({isAdult:false}, "title")
 		.sort({ title: 1 })
 		.skip(skip)
 		.limit(ITEMS_PER_PAGE)
@@ -61,6 +61,7 @@ exports.searchSeries = asyncHandler(async (req, res, next) => {
 		{
 			$project: {
 				title: 1,
+				isAdult:1,
 			},
 		},
 	])
@@ -69,7 +70,7 @@ exports.searchSeries = asyncHandler(async (req, res, next) => {
 	const searchResults = values.map((serie) => ({
 		...serie,
 		image: getSeriesCoverURL(serie),
-	}));
+	})).filter(series => series.isAdult === false);
 	res.send(searchResults);
 });
 
@@ -95,7 +96,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		volumeNumber: volume.number,
 		image: getVolumeCoverURL(desiredSeries, volume.number),
 	}));
-
+  
 	const { _id: id, title, authors, publisher, seriesCover, dimmensions, summary, genres, isAdult, status } = desiredSeries;
 
 	const jsonResponse = {

@@ -17,7 +17,7 @@ export default function BrowsePage() {
 	const fetchSeriesList = async () => {
 		try {
 			const response = await fetch(
-				`${process.env.REACT_APP_HOST_ORIGIN}/admin?p=${page}`
+				`${process.env.REACT_APP_HOST_ORIGIN}/api/browse?p=${page}`
 			);
 			const resultList = await response.json();
 			return resultList;
@@ -30,7 +30,6 @@ export default function BrowsePage() {
 			setLoading(true);
 			try {
 				const resultList = await fetchSeriesList();
-				console.log(resultList);
 				if (resultList.length > 0) {
 					setSeriesList(
 						page === 1 ? [...resultList] : [...seriesList, ...resultList]
@@ -66,7 +65,6 @@ export default function BrowsePage() {
 					`${process.env.REACT_APP_HOST_ORIGIN}/api/search?q=${querry}`
 				);
 				const data = await response.json();
-				console.log(querry);
 				if (data.length > 0) {
 					setSeriesList(data);
 					setLoading(false);
