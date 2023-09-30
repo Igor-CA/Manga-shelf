@@ -11,6 +11,7 @@ router.get("/user/:username", userController.getUserCollection);
 router.get("/user/:username/missing", userController.getMissingPage);
 
 //Collection page api
+router.get("/browse", seriesController.all);
 router.get("/series/:id", seriesController.getSeriesDetails);
 router.get("/search", seriesController.searchSeries);
 
