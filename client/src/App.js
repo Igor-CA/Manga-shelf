@@ -22,7 +22,6 @@ function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
 	useEffect(() => {
-		console.log({ user, setUser, outdated, setOutdated });
 		if (outdated) {
 			const querryUser = async () => {
 				try {
@@ -31,7 +30,6 @@ function App() {
 						withCredentials: true,
 						url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/logged-user`,
 					});
-					console.log(res.data);
 					setUser(res.data);
 					setOutdated(false);
 				} catch (error) {

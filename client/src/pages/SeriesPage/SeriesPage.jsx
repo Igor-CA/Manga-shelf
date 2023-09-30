@@ -37,7 +37,6 @@ export default function SeriesPage() {
 				const response = await axios.get(
 					`${process.env.REACT_APP_HOST_ORIGIN}/api/series/${id}`
 				);
-				console.log(response);
 				const responseData = response.data;
 				setSeries(responseData);
 			} catch (error) {
@@ -63,7 +62,6 @@ export default function SeriesPage() {
 		}
 
 		const handleResize = () => {
-			console.log(contentTopValue);
 			setOnMobile(window.innerWidth < 768);
 			if (window.innerWidth < 768) {
 				const contentTop = `calc(${mainInfo.current.offsetHeight}px + ${
@@ -126,7 +124,6 @@ export default function SeriesPage() {
 	};
 
 	const customWindowConfirm = (message, onConfirmCb, onCancelCb) => {
-		console.log({ onConfirmCb, onCancelCb });
 		setOnConfirm(() => onConfirmCb);
 		setOnCancel(() => onCancelCb);
 		setConfirmationMessage(message);
@@ -146,7 +143,6 @@ export default function SeriesPage() {
 				url: url,
 			});
 			setOutdated(true);
-			//console.log(response);
 		} catch (err) {
 			console.log(err);
 		}
@@ -231,7 +227,6 @@ export default function SeriesPage() {
 				url: url,
 			});
 			setOutdated(true);
-			//console.log("RESPONSE:", response);
 		} catch (err) {
 			console.log(err);
 		}

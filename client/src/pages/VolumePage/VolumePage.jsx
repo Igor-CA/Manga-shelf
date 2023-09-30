@@ -66,7 +66,6 @@ export default function VolumePage() {
 					`${process.env.REACT_APP_HOST_ORIGIN}/api/volume/${id}`
 				);
 				const responseData = response.data;
-				console.log(responseData);
 				setVolumeData(responseData);
 			} catch (error) {
 				const errorType = error.response.status
@@ -105,7 +104,6 @@ export default function VolumePage() {
 				url: url,
 			});
 			setOutdated(true);
-			//console.log("RESPONSE:", response);
 		} catch (err) {
 			console.log(err);
 		}

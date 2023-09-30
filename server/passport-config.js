@@ -22,13 +22,11 @@ module.exports = function (passport) {
 	);
 
 	passport.serializeUser(function (user, done) {
-		console.log("Serialize");
 		done(null, user.id);
 	});
 
 	passport.deserializeUser(
 		asyncHandler(async (id, done) => {
-			console.log("Deserialize");
 			const user = await User.findById(id);
 			const userInfo = {
 				_id: user._id,

@@ -42,8 +42,6 @@ export default function LoginPage() {
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/logged-user`,
 			});
 			setUser(userFetch.data);
-			console.log(response);
-			console.log(userFetch.data);
 			navigate(`/user/${userFetch.data.username}`);
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;

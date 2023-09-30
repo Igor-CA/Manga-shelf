@@ -29,7 +29,6 @@ export default function SignupPage() {
 				withCredentials: true,
 				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/signup`,
 			});
-			console.log(response.data);
 			navigate("/login");
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;

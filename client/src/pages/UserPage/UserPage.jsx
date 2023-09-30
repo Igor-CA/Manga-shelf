@@ -19,14 +19,12 @@ export default function UserPage() {
 					withCredentials: true,
 					url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}`,
 				});
-				console.log(res.data);
 				setUser(res.data);
 			} catch (error) {
 				const errorType = error.response.status
 				if(errorType === 400){
 					navigate("/404")
 				}
-				console.log("Error fetching user data:", error.response.data.msg);
 			}
 		};
 
@@ -37,7 +35,6 @@ export default function UserPage() {
 					withCredentials: true,
 					url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}/missing`,
 				});
-				console.log(response.data);
 				const responseData = response.data;
 				setMissingList(responseData);
 			} catch (error) {
@@ -53,16 +50,6 @@ export default function UserPage() {
 	}, []);
 
 	//TODO change to loading page login redirect not needed anymore
-	const renderLoginRedirect = () => {
-		return (
-			<div className="redirect-page">
-				<h1>User not connected</h1>
-				<h2>Please login or Signup</h2>
-				<Link to={"/login"}>Login</Link>
-				<Link to={"/signup"}>Signup</Link>
-			</div>
-		);
-	};
 
 	return (
 		<>
@@ -79,11 +66,5 @@ export default function UserPage() {
 				</div>
 			)}
 		</>
-		//Header -> Profile info
-		//body
-		//Collection
-		//Search
-		//Missing volumes
-		//Footer / navbar
 	);
 }
