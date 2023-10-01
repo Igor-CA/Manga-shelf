@@ -9,7 +9,7 @@ import "./Authentication.css";
 
 export default function LoginPage() {
 	const navigate = useNavigate();
-	const { setUser } = useContext(UserContext);
+	const { setOutdated } = useContext(UserContext);
 	const [formData, setFormData] = useState({ login: "", password: "" });
 	const [errors, setErrors] = useState([]);
 	const [captchaVal, setCaptchaVal] = useState(null);
@@ -41,8 +41,8 @@ export default function LoginPage() {
 				withCredentials: true,
 				url: `/api/data/user/logged-user`,
 			});
-			setUser(userFetch.data);
 			navigate(`/user/${userFetch.data.username}`);
+			window.location.reload(true)
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
