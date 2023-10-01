@@ -12,13 +12,11 @@ export default function BrowsePage() {
 	const [loading, setLoading] = useState(false);
 	const [seriesList, setSeriesList] = useState([]);
 	const [reachedEnd, setReachedEnd] = useState(false);
-	const [isEmptyList, setIsEmptyList] = useState(false)
+	const [isEmptyList, setIsEmptyList] = useState(false);
 
 	const fetchSeriesList = async () => {
 		try {
-			const response = await fetch(
-				`${process.env.REACT_APP_HOST_ORIGIN}/api/browse?p=${page}`
-			);
+			const response = await fetch(`/api/data/browse?p=${page}`);
 			const resultList = await response.json();
 			return resultList;
 		} catch (error) {
@@ -35,7 +33,7 @@ export default function BrowsePage() {
 						page === 1 ? [...resultList] : [...seriesList, ...resultList]
 					);
 					setPage(page + 1);
-					setIsEmptyList(false)
+					setIsEmptyList(false);
 				} else {
 					setReachedEnd(true);
 				}
@@ -61,19 +59,17 @@ export default function BrowsePage() {
 		if (querry.length > 1) {
 			setLoading(true);
 			try {
-				const response = await fetch(
-					`${process.env.REACT_APP_HOST_ORIGIN}/api/search?q=${querry}`
-				);
+				const response = await fetch(`/api/data/search?q=${querry}`);
 				const data = await response.json();
 				if (data.length > 0) {
 					setSeriesList(data);
 					setLoading(false);
 					setPage(1);
-					setIsEmptyList(false)
-					return
+					setIsEmptyList(false);
+					return;
 				}
-				setSeriesList([])
-				setIsEmptyList(true)
+				setSeriesList([]);
+				setIsEmptyList(true);
 			} catch (error) {
 				console.error("Error fetching user Data:", error);
 			} finally {
@@ -95,19 +91,14 @@ export default function BrowsePage() {
 		const distanceScrollTop = document.documentElement.scrollTop;
 		const appTotalHeight = document.documentElement.offsetHeight;
 
-		if (screeHeigh + distanceScrollTop + offset <= appTotalHeight) 
-			return;
-		if (loading) 
-			return;
-		if (search.trim() !== "") 
-			return;
-		
-		
+		if (screeHeigh + distanceScrollTop + offset <= appTotalHeight) return;
+		if (loading) return;
+		if (search.trim() !== "") return;
+
 		updatePage();
 	};
 
-	const debouncedHandleScroll = useCallback(debaunce(handleScroll, 100), 
-	[
+	const debouncedHandleScroll = useCallback(debaunce(handleScroll, 100), [
 		loading,
 		page,
 		reachedEnd,
@@ -149,7 +140,14 @@ export default function BrowsePage() {
 			</form>
 
 			{isEmptyList && (
-				<p className="not-found-message">Não encontramos nada para "{search}" verifique se você digitou corretamente ou então  <Link to={"/feedback"}><strong>sugira sua obra para nós</strong></Link> para que poçamos adiciona-la no futuro</p>
+				<p className="not-found-message">
+					Não encontramos nada para "{search}" verifique se você digitou
+					corretamente ou então{" "}
+					<Link to={"/feedback"}>
+						<strong>sugira sua obra para nós</strong>
+					</Link>{" "}
+					para que poçamos adiciona-la no futuro
+				</p>
 			)}
 			<div className="collection-container">
 				{seriesList.map((series) => {

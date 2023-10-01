@@ -8,6 +8,7 @@ const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const bodyParser = require("body-parser");
 const createError = require("http-errors");
 
@@ -44,6 +45,10 @@ app.use(
 		secret: process.env.SECRET_KEY,
 		resave: true,
 		saveUninitialized: true,
+		store: MongoStore.create({
+			mongoUrl: process.env.MONGODB_URI,
+			collection: "sessions",
+		}),
 	})
 );
 app.use(cookieParser(process.env.SECRET_KEY));
@@ -53,15 +58,26 @@ require("./passport-config")(passport);
 
 app.use(express.static(path.resolve(__dirname, "public")));
 
-app.use("/user", userRouter);
+app.use("/api/user", userRouter);
 app.use("/admin", adminRouter);
-app.use("/api", apiRouter);
+app.use("/api/data", apiRouter);
+
+if (process.env.NODE_ENV === "production") {
+	app.use(express.static(path.join(__dirname, "../client/build")));
+
+	app.get("*", (req, res) =>
+		res.sendFile(
+			path.resolve(__dirname, "../", "client", "build", "index.html")
+		)
+	);
+} else {
+	app.get("/", (req, res) => res.send("Please set to production"));
+}
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
 	next(createError(404));
 });
-
 // error handler
 app.use(function (err, req, res, next) {
 	// set locals, only providing error in development

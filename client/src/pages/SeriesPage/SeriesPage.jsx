@@ -34,9 +34,7 @@ export default function SeriesPage() {
 	useEffect(() => {
 		const fetchSeriesData = async () => {
 			try {
-				const response = await axios.get(
-					`${process.env.REACT_APP_HOST_ORIGIN}/api/series/${id}`
-				);
+				const response = await axios.get(`/api/data/series/${id}`);
 				const responseData = response.data;
 				setSeries(responseData);
 			} catch (error) {
@@ -132,9 +130,7 @@ export default function SeriesPage() {
 
 	const addOrRemoveSeries = async (isAdding) => {
 		try {
-			const url = isAdding
-				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-series`
-				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-series`;
+			const url = isAdding ? `/api/user/add-series` : `/api/user/remove-series`;
 
 			const response = await axios({
 				method: "POST",
@@ -215,9 +211,7 @@ export default function SeriesPage() {
 
 	const addOrRemoveVolume = async (isAdding, idList) => {
 		try {
-			const url = isAdding
-				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-volume`
-				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-volume`;
+			const url = isAdding ? `/api/user/add-volume` : `/api/user/remove-volume`;
 
 			const amoutVolumesFromSeries = series.volumes.length;
 			const response = await axios({
@@ -240,8 +234,8 @@ export default function SeriesPage() {
 		);
 	};
 	const renderAddRemoveButton = () => {
-		let inList = false
-		if(user){
+		let inList = false;
+		if (user) {
 			const indexOfSeries = user.userList.findIndex((seriesObj) => {
 				return seriesObj.Series._id.toString() === id;
 			});
@@ -251,7 +245,9 @@ export default function SeriesPage() {
 			<button
 				className={`button button--grow button--${inList ? "red" : "green"}`}
 				onClick={() => {
-					if (!user) { return; }
+					if (!user) {
+						return;
+					}
 					inList ? handleRemoveSeries() : addOrRemoveSeries(true);
 				}}
 			>

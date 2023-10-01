@@ -28,7 +28,7 @@ function App() {
 					const res = await axios({
 						method: "GET",
 						withCredentials: true,
-						url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/logged-user`,
+						url: `/api/data/user/logged-user`,
 					});
 					setUser(res.data);
 					setOutdated(false);
@@ -45,10 +45,10 @@ function App() {
 			const res = await axios({
 				method: "GET",
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/logout`,
+				url: `/api/user/logout`,
 			});
 			setOutdated(true);
-			window.location.href = '/'
+			window.location.href = "/";
 		} catch (error) {
 			console.log(error);
 		}

@@ -34,12 +34,12 @@ export default function LoginPage() {
 				method: "POST",
 				data: formData,
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/login`,
+				url: `/api/user/login`,
 			});
 			const userFetch = await axios({
 				method: "GET",
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/logged-user`,
+				url: `/api/data/user/logged-user`,
 			});
 			setUser(userFetch.data);
 			navigate(`/user/${userFetch.data.username}`);

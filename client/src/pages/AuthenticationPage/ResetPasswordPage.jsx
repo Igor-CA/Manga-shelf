@@ -39,7 +39,7 @@ export default function ResetPasswordPage() {
 				method: "POST",
 				data: { ...formData, userId, token },
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/reset-password`,
+				url: `/api/user/reset-password`,
 			});
 			navigate("/login");
 		} catch (error) {
@@ -116,7 +116,10 @@ export default function ResetPasswordPage() {
 						pattern="^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
 						minLength="8"
 					/>
-					<label htmlFor="confirm-password" className="autentication-form__label">
+					<label
+						htmlFor="confirm-password"
+						className="autentication-form__label"
+					>
 						Confirme sua senha:
 					</label>
 					<input

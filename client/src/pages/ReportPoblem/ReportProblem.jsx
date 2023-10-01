@@ -23,23 +23,22 @@ export default function ReportProblem() {
 				method: "POST",
 				data: { ...formData },
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/report`,
+				url: `/api/data/user/report`,
 			});
-			setFormData(({
+			setFormData({
 				type: "",
 				local: "",
 				details: "",
 				page: "",
 				user: "",
-			}))
-			//TODO change to make a success message instead 
+			});
+			//TODO change to make a success message instead
 			const customErrorMessage = response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
 
 			setTimeout(() => {
 				setErrors([]);
 			}, 5000);
-
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
@@ -64,7 +63,6 @@ export default function ReportProblem() {
 
 		setTimeout(() => {
 			setErrors([]);
-
 		}, 5000);
 	};
 	const renderErrorsMessage = () => {
@@ -195,7 +193,7 @@ export default function ReportProblem() {
 						onInvalid={(e) => {
 							handleInvalid(e);
 						}}
-								required
+						required
 					/>
 					<label
 						htmlFor="user"

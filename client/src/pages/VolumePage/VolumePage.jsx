@@ -6,7 +6,7 @@ import { UserContext } from "../../components/userProvider";
 
 export default function VolumePage() {
 	const { id } = useParams();
-	const navigate = useNavigate()
+	const navigate = useNavigate();
 	const [volumeData, setVolumeData] = useState({
 		serie: {
 			title: "",
@@ -33,18 +33,18 @@ export default function VolumePage() {
 				}px)`;
 				contentComponent.style.top = contentTop;
 
-				const footer = document.querySelector(".footer")
-				const content = document.querySelector(".series__content")
-				
-				footer.style.position = "absolute"
-				footer.style.top = `calc(${mainInfo.offsetHeight + contentComponent.offsetHeight}px + ${
-					image.offsetHeight * 0.6
-				}px)`;
+				const footer = document.querySelector(".footer");
+				const content = document.querySelector(".series__content");
+
+				footer.style.position = "absolute";
+				footer.style.top = `calc(${
+					mainInfo.offsetHeight + contentComponent.offsetHeight
+				}px + ${image.offsetHeight * 0.6}px)`;
 
 				return () => {
-					window.removeEventListener("resize", handleResize)
-					const footer = document.querySelector(".footer")
-					footer.style = null
+					window.removeEventListener("resize", handleResize);
+					const footer = document.querySelector(".footer");
+					footer.style = null;
 				};
 			}
 		};
@@ -52,9 +52,9 @@ export default function VolumePage() {
 		window.addEventListener("resize", handleResize);
 
 		return () => {
-			window.removeEventListener("resize", handleResize)
-			const footer = document.querySelector(".footer")
-			footer.style = null
+			window.removeEventListener("resize", handleResize);
+			const footer = document.querySelector(".footer");
+			footer.style = null;
 		};
 	}, [volumeData]);
 
@@ -62,15 +62,13 @@ export default function VolumePage() {
 	useEffect(() => {
 		const fetchVolumeData = async () => {
 			try {
-				const response = await axios.get(
-					`${process.env.REACT_APP_HOST_ORIGIN}/api/volume/${id}`
-				);
+				const response = await axios.get(`/api/data/volume/${id}`);
 				const responseData = response.data;
 				setVolumeData(responseData);
 			} catch (error) {
-				const errorType = error.response.status
-				if(errorType === 400){
-					navigate("/404")
+				const errorType = error.response.status;
+				if (errorType === 400) {
+					navigate("/404");
 				}
 				console.error("Error fetching Volume Data:", error);
 			}
@@ -88,9 +86,7 @@ export default function VolumePage() {
 
 	const addOrRemoveVolume = async (isAdding) => {
 		try {
-			const url = isAdding
-				? `${process.env.REACT_APP_HOST_ORIGIN}/user/add-volume`
-				: `${process.env.REACT_APP_HOST_ORIGIN}/user/remove-volume`;
+			const url = isAdding ? `/api/user/add-volume` : `/api/user/remove-volume`;
 
 			const amoutVolumesFromSeries = volumeData.serie.volumes.length;
 			const response = await axios({
@@ -134,11 +130,13 @@ export default function VolumePage() {
 						<label
 							htmlFor="have-volume-check-mark"
 							className={`button button--grow button--${
-								(user && checkOwnedVolume()) ? "red" : "green"
+								user && checkOwnedVolume() ? "red" : "green"
 							}`}
 						>
 							<strong>
-								{user && checkOwnedVolume() ? "Remover volume" : "Adicionar Volume"}
+								{user && checkOwnedVolume()
+									? "Remover volume"
+									: "Adicionar Volume"}
 							</strong>
 						</label>
 						<input
@@ -160,22 +158,28 @@ export default function VolumePage() {
 			</div>
 			<div className="volume__info-container">
 				<ul className="volume__details-container">
-					{pagesNumber && <li className="volume__details">
-						<strong>Páginas:</strong> {pagesNumber}
-					</li>}
-					{defaultPrice && <li className="volume__details">
-						<strong>Preço:</strong> R$ {defaultPrice}
-					</li>}
-					{summary && <li className="volume__details">
-						<strong>Sinopse:</strong>
-						{summary.map((paragraph, index) => {
-							return (
-								<p className="volume__summary" key={index}>
-									{paragraph}
-								</p>
-							);
-						})}
-					</li>}
+					{pagesNumber && (
+						<li className="volume__details">
+							<strong>Páginas:</strong> {pagesNumber}
+						</li>
+					)}
+					{defaultPrice && (
+						<li className="volume__details">
+							<strong>Preço:</strong> R$ {defaultPrice}
+						</li>
+					)}
+					{summary && (
+						<li className="volume__details">
+							<strong>Sinopse:</strong>
+							{summary.map((paragraph, index) => {
+								return (
+									<p className="volume__summary" key={index}>
+										{paragraph}
+									</p>
+								);
+							})}
+						</li>
+					)}
 				</ul>
 			</div>
 		</div>

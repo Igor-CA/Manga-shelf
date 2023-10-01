@@ -37,7 +37,7 @@ export default function ForgotPage() {
 				method: "POST",
 				data: formData,
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/forgot`,
+				url: `/api/user/forgot`,
 			});
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;

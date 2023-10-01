@@ -10,20 +10,20 @@ export default function UserPage() {
 	const { username } = useParams();
 	const [user, setUser] = useState();
 	const [missingList, setMissingList] = useState([]);
-	const navigate = useNavigate()
+	const navigate = useNavigate();
 	useEffect(() => {
 		const querryUser = async () => {
 			try {
 				const res = await axios({
 					method: "GET",
 					withCredentials: true,
-					url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}`,
+					url: `/api/data/user/${username}`,
 				});
 				setUser(res.data);
 			} catch (error) {
-				const errorType = error.response.status
-				if(errorType === 400){
-					navigate("/404")
+				const errorType = error.response.status;
+				if (errorType === 400) {
+					navigate("/404");
 				}
 			}
 		};
@@ -33,16 +33,19 @@ export default function UserPage() {
 				const response = await axios({
 					method: "GET",
 					withCredentials: true,
-					url: `${process.env.REACT_APP_HOST_ORIGIN}/api/user/${username}/missing`,
+					url: `/api/data/user/${username}/missing`,
 				});
 				const responseData = response.data;
 				setMissingList(responseData);
 			} catch (error) {
-				const errorType = error.response.status
-				if(errorType === 400){
-					navigate("/404")
+				const errorType = error.response.status;
+				if (errorType === 400) {
+					navigate("/404");
 				}
-				console.error("Error fetching Missing volumes data:", error.response.data.msg);
+				console.error(
+					"Error fetching Missing volumes data:",
+					error.response.data.msg
+				);
 			}
 		};
 		fetchMissingVolumes();

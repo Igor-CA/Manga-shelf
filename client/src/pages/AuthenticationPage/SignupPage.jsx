@@ -27,7 +27,7 @@ export default function SignupPage() {
 				method: "POST",
 				data: formData,
 				withCredentials: true,
-				url: `${process.env.REACT_APP_HOST_ORIGIN}/user/signup`,
+				url: `/api/user/signup`,
 			});
 			navigate("/login");
 		} catch (error) {
