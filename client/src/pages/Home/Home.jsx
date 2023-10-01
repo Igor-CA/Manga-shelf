@@ -13,11 +13,11 @@ export default function Home() {
 	return (
 		<div className="page-content">
 			<div className="home">
-				<h1>Bem vindo ao My Manga Shelf!</h1>
+				<h1>Bem vindo ao Manga Shelf!</h1>
 				<p className="home__main-description">
 					Chega de anotações perdidas e planilhas chatas! Descubra uma maneira
 					prática e divertida de gerenciar sua coleção de mangás na versão alpha
-					do My Manga Shelf.
+					do Manga Shelf.
 				</p>
 				<div className="home__features-container">
 					<div className="home__feature">

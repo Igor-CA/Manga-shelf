@@ -5,12 +5,11 @@ export default function AboutPage() {
 		<div className="page-content">
 			<div className="container">
 				<article className="about-page">
-					<h1>Sobre o My Manga Shelf</h1>
-					<h2>O que é o My Manga Shelf?</h2>
+					<h1>Sobre o Manga Shelf</h1>
+					<h2>O que é o Manga Shelf?</h2>
 					<p>
-						O My Manga Shelf nasceu da necessidade de oferecer uma alternativa
-						às complicadas planilhas ou anotações para organizar coleções de
-						mangás
+						O Manga Shelf nasceu da necessidade de oferecer uma alternativa às
+						complicadas planilhas ou anotações para organizar coleções de mangás
 					</p>
 					<p>
 						Embora existam excelentes soluções semelhantes, como MyAnimeList e
@@ -83,7 +82,22 @@ export default function AboutPage() {
 					<p>
 						Todos os dados como imagens, sinópses e generos utilizados no site
 						foram retiradas diretamente dos sites de cada editora ou de sites
-						como <a href="https://blogbbm.com/" target="_blank" rel="noreferrer">Biblioteca Brasileira de Mangas</a>, <a href="http://www.guiadosquadrinhos.com/" target="_blank" rel="noreferrer">Guia dos quadrinhos</a> ou <a href="https://anilist.co/home" target="_blank" rel="noreferrer">Anilist</a>{" "}
+						como{" "}
+						<a href="https://blogbbm.com/" target="_blank" rel="noreferrer">
+							Biblioteca Brasileira de Mangas
+						</a>
+						,{" "}
+						<a
+							href="http://www.guiadosquadrinhos.com/"
+							target="_blank"
+							rel="noreferrer"
+						>
+							Guia dos quadrinhos
+						</a>{" "}
+						ou{" "}
+						<a href="https://anilist.co/home" target="_blank" rel="noreferrer">
+							Anilist
+						</a>{" "}
 					</p>
 					<p>
 						Se você é o detentor dos direitos autorais de qualquer conteúdo
