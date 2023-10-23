@@ -17,6 +17,9 @@ export default function UserPage() {
 				const res = await axios({
 					method: "GET",
 					withCredentials: true,
+					headers: {
+						Authorization:process.env.REACT_APP_API_KEY,
+					},
 					url: `/api/data/user/${username}`,
 				});
 				setUser(res.data);
@@ -33,6 +36,9 @@ export default function UserPage() {
 				const response = await axios({
 					method: "GET",
 					withCredentials: true,
+					headers: {
+						Authorization:process.env.REACT_APP_API_KEY,
+					},
 					url: `/api/data/user/${username}/missing`,
 				});
 				const responseData = response.data;

@@ -1,11 +1,15 @@
 const Volume = require("../models/volume");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
 const ITEMS_PER_PAGE = 10;
 exports.all = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	const page = req.query.p ? Number(req.query.p) : 0;
-	const skip = (ITEMS_PER_PAGE * page)
+	const skip = ITEMS_PER_PAGE * page;
 	const volumes = await Volume.find({}, "number")
 		.populate("serie", "title")
 		.skip(skip)
@@ -16,10 +20,14 @@ exports.all = asyncHandler(async (req, res, next) => {
 });
 
 exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
-	const validId = mongoose.Types.ObjectId.isValid(req.params.id)
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+	const validId = mongoose.Types.ObjectId.isValid(req.params.id);
 	if (!validId) {
-		res.status(400).json({msg:"volume not found"})
-		return
+		res.status(400).json({ msg: "volume not found" });
+		return;
 	}
 
 	const desiredVolume = await Volume.findById(req.params.id)
@@ -27,8 +35,8 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 		.exec();
 
 	if (!desiredVolume) {
-		res.status(400).json({msg:"volume not found"})
-		return
+		res.status(400).json({ msg: "volume not found" });
+		return;
 	}
 
 	const { serie, number } = desiredVolume;

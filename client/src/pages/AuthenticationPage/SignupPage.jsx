@@ -27,6 +27,9 @@ export default function SignupPage() {
 				method: "POST",
 				data: formData,
 				withCredentials: true,
+				headers: {
+					Authorization:process.env.REACT_APP_API_KEY,
+				},
 				url: `/api/user/signup`,
 			});
 			navigate("/login");

@@ -28,6 +28,9 @@ function App() {
 					const res = await axios({
 						method: "GET",
 						withCredentials: true,
+						headers: {
+							Authorization:process.env.REACT_APP_API_KEY,
+						},
 						url: `/api/data/user/logged-user`,
 					});
 					setUser(res.data);
@@ -45,6 +48,9 @@ function App() {
 			const res = await axios({
 				method: "GET",
 				withCredentials: true,
+				headers: {
+					Authorization:process.env.REACT_APP_API_KEY,
+				},
 				url: `/api/user/logout`,
 			});
 			setOutdated(true);

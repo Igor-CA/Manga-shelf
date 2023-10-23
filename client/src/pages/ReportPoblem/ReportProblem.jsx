@@ -23,6 +23,9 @@ export default function ReportProblem() {
 				method: "POST",
 				data: { ...formData },
 				withCredentials: true,
+				headers: {
+					Authorization:process.env.REACT_APP_API_KEY,
+				},
 				url: `/api/data/user/report`,
 			});
 			setFormData({

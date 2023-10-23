@@ -48,6 +48,10 @@ exports.signup = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
+		if (req.headers.authorization !== process.env.API_KEY) {
+			res.status(401).json({ msg: "Not authorized" });
+			return;
+		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -58,7 +62,7 @@ exports.signup = [
 			password,
 			email,
 			["confirm-password"]: confirmPassword,
-			["tos-checkbox"]: tosCheckbox
+			["tos-checkbox"]: tosCheckbox,
 		} = req.body;
 
 		if (password !== confirmPassword) {
@@ -66,7 +70,7 @@ exports.signup = [
 				.status(409)
 				.json({ message: "Passwords don't match properly" });
 		}
-		if(!tosCheckbox){
+		if (!tosCheckbox) {
 			return res
 				.status(409)
 				.json({ message: "Precisa concordar com os termos de serviço" });
@@ -106,6 +110,10 @@ exports.login = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
+		if (req.headers.authorization !== process.env.API_KEY) {
+			res.status(401).json({ msg: "Not authorized" });
+			return;
+		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -139,13 +147,17 @@ exports.login = [
 ];
 
 exports.logout = (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	req.logout(function (err) {
 		if (err) {
 			return next(err);
 		}
-		res.send({msg:"Successfully logout"});
+		res.send({ msg: "Successfully logout" });
 	});
-}
+};
 exports.sendResetEmail = [
 	body("email")
 		.trim()
@@ -156,6 +168,10 @@ exports.sendResetEmail = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
+		if (req.headers.authorization !== process.env.API_KEY) {
+			res.status(401).json({ msg: "Not authorized" });
+			return;
+		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -196,9 +212,7 @@ exports.sendResetEmail = [
 
 			return;
 		}
-		res
-			.status(401)
-			.json({ message: "No user with this email" });
+		res.status(401).json({ message: "No user with this email" });
 	}),
 ];
 
@@ -225,8 +239,12 @@ exports.resetPassword = [
 			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
 		)
 		.escape(),
-		
+
 	asyncHandler(async (req, res, next) => {
+		if (req.headers.authorization !== process.env.API_KEY) {
+			res.status(401).json({ msg: "Not authorized" });
+			return;
+		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -235,17 +253,17 @@ exports.resetPassword = [
 		const currentTimeStamp = new Date();
 		const user = await User.findOne({ _id: req.body.userId });
 		if (!user) {
-			res.status(400).json({message:"Error: this user does not exist"});
+			res.status(400).json({ message: "Error: this user does not exist" });
 			return;
 		}
 
 		if (user.token !== req.body.token) {
-			res.status(400).json({message: "Error: Invalid token"});
+			res.status(400).json({ message: "Error: Invalid token" });
 			return;
 		}
 
 		if (currentTimeStamp < user.timestamp) {
-			res.status(400).json({message: "Error: Token Expired"});
+			res.status(400).json({ message: "Error: Token Expired" });
 			return;
 		}
 
@@ -266,6 +284,10 @@ async function fetchUser(req) {
 }
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	const user = await fetchUser(req);
 
 	if (user) {
@@ -279,6 +301,10 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeSeries = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	const user = await User.findById(req.user._id, {
 		ownedVolumes: 1,
 		userList: 1,
@@ -304,6 +330,10 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.getLoggedUser = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	if (req.user) {
 		const user = await User.findById(req.user._id)
 			.populate({
@@ -328,6 +358,10 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	const targetUser = req.params.username;
 	if (targetUser) {
 		const user = await User.findOne({ username: targetUser })
@@ -353,6 +387,10 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 });
 
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	const targetUser = req.params.username;
 	if (targetUser) {
 		const user = await User.findOne(
@@ -378,13 +416,15 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				}));
 				return volumesWithImages;
 			});
-			const missingVolumesList = mangaList.filter((volume) => {
-				return !user.ownedVolumes.includes(volume.volumeId);
-			}).sort((volumeOne, volumeTwo) => {
-				if (volumeOne.series < volumeTwo.series) return -1;
-				if (volumeOne.series > volumeTwo.series) return 1;
-				return volumeOne.volumeNumber - volumeTwo.volumeNumber;
-			  });
+			const missingVolumesList = mangaList
+				.filter((volume) => {
+					return !user.ownedVolumes.includes(volume.volumeId);
+				})
+				.sort((volumeOne, volumeTwo) => {
+					if (volumeOne.series < volumeTwo.series) return -1;
+					if (volumeOne.series > volumeTwo.series) return 1;
+					return volumeOne.volumeNumber - volumeTwo.volumeNumber;
+				});
 
 			res.send(missingVolumesList);
 		} else {
@@ -396,6 +436,10 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 });
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	if (req.isAuthenticated()) {
 		const user = await User.findOne(
 			{ _id: req.user._id },
@@ -435,12 +479,16 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 		} else {
 			res.status(400).json({ msg: "User not found" });
 		}
-	}else{
+	} else {
 		res.send({ msg: "User need to be authenticated" });
 	}
 });
 
 exports.removeVolume = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
 	if (req.isAuthenticated()) {
 		const user = await User.findOne(
 			{ _id: req.user._id },
@@ -469,8 +517,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 		} else {
 			res.status(400).json({ msg: "User not found" });
 		}
-	}
-	else{
+	} else {
 		res.send({ msg: "User need to be authenticated" });
 	}
 });

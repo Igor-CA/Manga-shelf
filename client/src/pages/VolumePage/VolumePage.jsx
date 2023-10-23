@@ -62,7 +62,11 @@ export default function VolumePage() {
 	useEffect(() => {
 		const fetchVolumeData = async () => {
 			try {
-				const response = await axios.get(`/api/data/volume/${id}`);
+				const response = await axios.get(`/api/data/volume/${id}`, {
+					headers: {
+						Authorization: process.env.REACT_APP_API_KEY,
+					},
+				});
 				const responseData = response.data;
 				setVolumeData(responseData);
 			} catch (error) {
@@ -95,6 +99,9 @@ export default function VolumePage() {
 					idList: [id],
 					amoutVolumesFromSeries,
 					seriesId: volumeData.serie.id,
+				},
+				headers: {
+					Authorization: process.env.REACT_APP_API_KEY,
 				},
 				withCredentials: true,
 				url: url,

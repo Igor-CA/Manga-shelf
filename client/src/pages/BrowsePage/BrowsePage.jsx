@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import { SeriesCard } from "../../components/SeriesCard";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
@@ -16,8 +17,15 @@ export default function BrowsePage() {
 
 	const fetchSeriesList = async () => {
 		try {
-			const response = await fetch(`/api/data/browse?p=${page}`);
-			const resultList = await response.json();
+			const response = await axios({
+				method: "GET",
+				withCredentials: true,
+				headers: {
+					Authorization: process.env.REACT_APP_API_KEY,
+				},
+				url: `/api/data/browse?p=${page}`,
+			});
+			const resultList = response.data;
 			return resultList;
 		} catch (error) {
 			console.error("Error fetching series list:", error);
@@ -59,8 +67,15 @@ export default function BrowsePage() {
 		if (querry.length > 1) {
 			setLoading(true);
 			try {
-				const response = await fetch(`/api/data/search?q=${querry}`);
-				const data = await response.json();
+				const response = await axios({
+					method: "GET",
+					withCredentials: true,
+					headers: {
+						Authorization: process.env.REACT_APP_API_KEY,
+					},
+					url: `/api/data/search?q=${querry}`,
+				});
+				const data = response.data;
 				if (data.length > 0) {
 					setSeriesList(data);
 					setLoading(false);

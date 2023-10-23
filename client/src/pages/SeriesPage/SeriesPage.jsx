@@ -34,7 +34,11 @@ export default function SeriesPage() {
 	useEffect(() => {
 		const fetchSeriesData = async () => {
 			try {
-				const response = await axios.get(`/api/data/series/${id}`);
+				const response = await axios.get(`/api/data/series/${id}`, {
+					headers: {
+						Authorization: process.env.REACT_APP_API_KEY,
+					},
+				});
 				const responseData = response.data;
 				setSeries(responseData);
 			} catch (error) {
@@ -136,6 +140,9 @@ export default function SeriesPage() {
 				method: "POST",
 				data: { id },
 				withCredentials: true,
+				headers: {
+					Authorization:process.env.REACT_APP_API_KEY,
+				},
 				url: url,
 			});
 			setOutdated(true);
@@ -218,6 +225,9 @@ export default function SeriesPage() {
 				method: "POST",
 				data: { idList: idList, amoutVolumesFromSeries, seriesId: id },
 				withCredentials: true,
+				headers: {
+					Authorization:process.env.REACT_APP_API_KEY,
+				},
 				url: url,
 			});
 			setOutdated(true);

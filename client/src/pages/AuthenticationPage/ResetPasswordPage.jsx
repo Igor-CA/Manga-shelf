@@ -39,6 +39,9 @@ export default function ResetPasswordPage() {
 				method: "POST",
 				data: { ...formData, userId, token },
 				withCredentials: true,
+				headers: {
+					Authorization:process.env.REACT_APP_API_KEY,
+				},
 				url: `/api/user/reset-password`,
 			});
 			navigate("/login");

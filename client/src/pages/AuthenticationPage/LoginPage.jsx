@@ -34,15 +34,21 @@ export default function LoginPage() {
 				method: "POST",
 				data: formData,
 				withCredentials: true,
+				headers: {
+					Authorization: process.env.REACT_APP_API_KEY,
+				},
 				url: `/api/user/login`,
 			});
 			const userFetch = await axios({
 				method: "GET",
 				withCredentials: true,
+				headers: {
+					Authorization: process.env.REACT_APP_API_KEY,
+				},
 				url: `/api/data/user/logged-user`,
 			});
 			navigate(`/user/${userFetch.data.username}`);
-			window.location.reload(true)
+			window.location.reload(true);
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
