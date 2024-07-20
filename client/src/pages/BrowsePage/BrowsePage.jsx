@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+	useState,
+	useEffect,
+	useCallback,
+	useRef,
+	useMemo,
+} from "react";
 import axios from "axios";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
@@ -7,18 +13,14 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { Link, useSearchParams } from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
 
-const SKELETON_LOADING_COUNT = 12
+const SKELETON_LOADING_COUNT = 12;
 
 export default function BrowsePage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const initialSearch = searchParams.get("q") || "";
-	const [page, setPage] = useState(1);
 	const [searchBarValue, setSearchBarValue] = useState(initialSearch);
 	const [query, setQuery] = useState(initialSearch);
-	const [loading, setLoading] = useState(false);
-	const [seriesList, setSeriesList] = useState([]);
-	const [reachedEnd, setReachedEnd] = useState(false);
-	const [isEmptyList, setIsEmptyList] = useState(false);
+	const functionArguments = useMemo(() => [query], [query]);
 
 	const fetchPage = async (page, query) => {
 		try {
@@ -41,43 +43,17 @@ export default function BrowsePage() {
 		}
 	};
 
-	const observer = useRef();
-
-	const lastSeriesElementRef = useCallback((node) => {
-		if (observer.current) observer.current.disconnect();
-		observer.current = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting) {
-				setPage((prevPage) => prevPage + 1);
-			}
-		});
-		if (node) observer.current.observe(node);
-	}, []);
-
-	const updatePage = async (targetPage, targetQuery) => {
-		if (!loading && !reachedEnd) {
-			setLoading(true);
-			try {
-				const resultList = await fetchPage(targetPage, targetQuery);
-				if (resultList.length > 0) {
-					setSeriesList((previousList) =>
-						targetPage === 1
-							? [...resultList]
-							: [...previousList, ...resultList]
-					);
-					setIsEmptyList(false);
-				} else {
-					if (page === 1) {
-						setSeriesList([]);
-						setIsEmptyList(true);
-					}
-					setReachedEnd(true);
-				}
-			} catch (error) {
-				console.error("Error fetching user Data:", error);
-			} finally {
-				setLoading(false);
-			}
-		}
+	const ErrorComponent = () => {
+		return (
+			<p className="not-found-message">
+				Não encontramos nada para "{query}" verifique se você digitou
+				corretamente ou então{" "}
+				<Link to={"/feedback"}>
+					<strong>sugira sua obra para nós</strong>
+				</Link>{" "}
+				para que poçamos adiciona-la no futuro
+			</p>
+		);
 	};
 
 	const handleChange = (e) => {
@@ -87,18 +63,12 @@ export default function BrowsePage() {
 		if (inputValue.trim() !== "") {
 			debouncedSearch(inputValue);
 		} else {
-			setReachedEnd(false);
-			setPage(1);
-			setQuery(null);
+			setQuery("");
 		}
 	};
 
 	const debouncedSearch = useCallback(
 		debaunce((value) => {
-			console.log("value:", value);
-			setReachedEnd(false);
-			setPage(1); // Reset page number on new search
-			setSeriesList([])
 			setQuery(value);
 		}, 500),
 		[]
@@ -107,10 +77,6 @@ export default function BrowsePage() {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 	};
-
-	useEffect(() => {
-		updatePage(page, query);
-	}, [page, query]);
 
 	return (
 		<div className="browse-collection-page container page-content">
@@ -132,21 +98,11 @@ export default function BrowsePage() {
 					<FontAwesomeIcon icon={faMagnifyingGlass} size="xl" fixedWidth />
 				</button>
 			</form>
-
-			{isEmptyList && (
-				<p className="not-found-message">
-					Não encontramos nada para "{query}" verifique se você digitou
-					corretamente ou então{" "}
-					<Link to={"/feedback"}>
-						<strong>sugira sua obra para nós</strong>
-					</Link>{" "}
-					para que poçamos adiciona-la no futuro
-				</p>
-			)}
 			<SeriesCardList
-				list={seriesList}
-				lastSeriesElementRef={lastSeriesElementRef}
-				skeletonsCount={loading?SKELETON_LOADING_COUNT:0}
+				skeletonsCount={12}
+				fetchFunction={fetchPage}
+				functionArguments={functionArguments}
+				errorComponent={ErrorComponent}
 			></SeriesCardList>
 		</div>
 	);
