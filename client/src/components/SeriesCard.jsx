@@ -1,13 +1,24 @@
+import { useState } from "react";
 import "./SeriesCard.css";
 import { Link } from "react-router-dom";
 
 export function SeriesCard({ seriesDetails }) {
-	const { title, image, _id , completionPercentage} = seriesDetails;
+	const [loaded, setLoaded] = useState(false);
+	const { title, image, _id, completionPercentage } = seriesDetails;
+
+	const handleLoading = () => {
+		setLoaded(true);
+	};
 
 	return (
 		<div className="series-card">
 			<Link to={`/series/${_id}`} className="series-card__image-container">
-				<img src={image} alt={`cover of ${title}`} className="series-card__img" />
+				<img
+					src={image}
+					alt={`cover of ${title}`}
+					className={`series-card__img ${!loaded && "series-card__img--loading"}`}
+					onLoad={handleLoading}
+				/>
 				{completionPercentage > 0 && (
 					<div className="series-card__bar">
 						<div

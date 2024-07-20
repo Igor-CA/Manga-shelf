@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
-import { SeriesCard } from "../../components/SeriesCard";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { Link, useSearchParams } from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
+
+const SKELETON_LOADING_COUNT = 12
 
 export default function BrowsePage() {
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -88,7 +89,6 @@ export default function BrowsePage() {
 		} else {
 			setReachedEnd(false);
 			setPage(1);
-			updatePage(1);
 			setQuery(null);
 		}
 	};
@@ -98,6 +98,7 @@ export default function BrowsePage() {
 			console.log("value:", value);
 			setReachedEnd(false);
 			setPage(1); // Reset page number on new search
+			setSeriesList([])
 			setQuery(value);
 		}, 500),
 		[]
@@ -145,6 +146,7 @@ export default function BrowsePage() {
 			<SeriesCardList
 				list={seriesList}
 				lastSeriesElementRef={lastSeriesElementRef}
+				skeletonsCount={loading?SKELETON_LOADING_COUNT:0}
 			></SeriesCardList>
 		</div>
 	);
