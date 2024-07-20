@@ -110,18 +110,6 @@ export default function BrowsePage() {
 	useEffect(() => {
 		updatePage(page, query);
 	}, [page, query]);
-	/*
-	useEffect(() => {
-		//updatePage();
-		window.scrollTo(0, 0);
-	}, []);
-	*/
-	/*
-	useEffect(() => {
-		window.addEventListener("scroll", debouncedHandleScroll);
-		return () => window.removeEventListener("scroll", debouncedHandleScroll);
-	}, [loading]);
-	*/
 
 	return (
 		<div className="browse-collection-page container page-content">
@@ -158,18 +146,6 @@ export default function BrowsePage() {
 				list={seriesList}
 				lastSeriesElementRef={lastSeriesElementRef}
 			></SeriesCardList>
-			{/*
-			<div className="collection-container">
-				{seriesList.map((series) => {
-					return (
-						<SeriesCard
-							key={series._id}
-							seriesDetails={series}
-						></SeriesCard>
-					);
-				})}
-			</div>
-				*/}
 		</div>
 	);
 }
