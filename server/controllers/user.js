@@ -371,10 +371,18 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 			})
 			.exec();
 		if (user) {
+
+			const filteredList = user.userList.map((series) => {
+				const {Series, completionPercentage} = series
+				const seriesObj = Series.toObject();
+				const { seriesCover, ...seriesData } = seriesObj;
+     			return { ...seriesData, image: seriesCover, completionPercentage };
+			})
+			
 			const userInfo = {
 				_id: user._id,
 				username: user.username,
-				userList: user.userList,
+				userList: filteredList,
 				ownedVolumes: user.ownedVolumes,
 			};
 			res.send(userInfo);

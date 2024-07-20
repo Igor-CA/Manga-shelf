@@ -1,25 +1,10 @@
 import { SeriesCard } from "../../components/SeriesCard";
+import SeriesCardList from "../../components/SeriesCardList";
 
 export default function UserCollection({ user }) {
 	const renderUserCollection = () => {
 		return (
-			<div className="collection-container">
-				{user.userList.map((seriesObj) => {
-					const { title, _id, seriesCover } = seriesObj.Series;
-					const completionPercentage = seriesObj.completionPercentage;
-					return (
-						<SeriesCard
-							key={_id}
-							seriesDetails={{
-								title,
-								_id,
-								image: seriesCover,
-								completionPercentage,
-							}}
-						></SeriesCard>
-					);
-				})}
-			</div>
+			<SeriesCardList list={user.userList}></SeriesCardList>
 		);
 	};
 

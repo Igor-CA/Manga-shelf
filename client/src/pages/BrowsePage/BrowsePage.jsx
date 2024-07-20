@@ -1,21 +1,25 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { SeriesCard } from "../../components/SeriesCard";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import SeriesCardList from "../../components/SeriesCardList";
 
 export default function BrowsePage() {
+	const [searchParams, setSearchParams] = useSearchParams();
+	const initialSearch = searchParams.get("q") || "";
 	const [page, setPage] = useState(1);
-	const [search, setSearch] = useState("");
+	const [searchBarValue, setSearchBarValue] = useState(initialSearch);
+	const [query, setQuery] = useState(initialSearch);
 	const [loading, setLoading] = useState(false);
 	const [seriesList, setSeriesList] = useState([]);
 	const [reachedEnd, setReachedEnd] = useState(false);
 	const [isEmptyList, setIsEmptyList] = useState(false);
 
-	const fetchSeriesList = async () => {
+	const fetchPage = async (page, query) => {
 		try {
 			const response = await axios({
 				method: "GET",
@@ -23,7 +27,11 @@ export default function BrowsePage() {
 				headers: {
 					Authorization: process.env.REACT_APP_API_KEY,
 				},
-				url: `/api/data/browse?p=${page}`,
+				params: {
+					p: page,
+					q: query,
+				},
+				url: "/api/data/browse",
 			});
 			const resultList = response.data;
 			return resultList;
@@ -31,18 +39,36 @@ export default function BrowsePage() {
 			console.error("Error fetching series list:", error);
 		}
 	};
-	const updatePage = async () => {
+
+	const observer = useRef();
+
+	const lastSeriesElementRef = useCallback((node) => {
+		if (observer.current) observer.current.disconnect();
+		observer.current = new IntersectionObserver((entries) => {
+			if (entries[0].isIntersecting) {
+				setPage((prevPage) => prevPage + 1);
+			}
+		});
+		if (node) observer.current.observe(node);
+	}, []);
+
+	const updatePage = async (targetPage, targetQuery) => {
 		if (!loading && !reachedEnd) {
 			setLoading(true);
 			try {
-				const resultList = await fetchSeriesList();
+				const resultList = await fetchPage(targetPage, targetQuery);
 				if (resultList.length > 0) {
-					setSeriesList(
-						page === 1 ? [...resultList] : [...seriesList, ...resultList]
+					setSeriesList((previousList) =>
+						targetPage === 1
+							? [...resultList]
+							: [...previousList, ...resultList]
 					);
-					setPage(page + 1);
 					setIsEmptyList(false);
 				} else {
+					if (page === 1) {
+						setSeriesList([]);
+						setIsEmptyList(true);
+					}
 					setReachedEnd(true);
 				}
 			} catch (error) {
@@ -55,83 +81,47 @@ export default function BrowsePage() {
 
 	const handleChange = (e) => {
 		const inputValue = e.target.value;
-		setSearch(inputValue);
+		setSearchBarValue(inputValue);
+		setSearchParams({ q: inputValue });
 		if (inputValue.trim() !== "") {
-			debaunceSearch(inputValue);
+			debouncedSearch(inputValue);
 		} else {
-			updatePage();
 			setReachedEnd(false);
-		}
-	};
-	const fetchSearch = async (querry) => {
-		if (querry.length > 1) {
-			setLoading(true);
-			try {
-				const response = await axios({
-					method: "GET",
-					withCredentials: true,
-					headers: {
-						Authorization: process.env.REACT_APP_API_KEY,
-					},
-					url: `/api/data/search?q=${querry}`,
-				});
-				const data = response.data;
-				if (data.length > 0) {
-					setSeriesList(data);
-					setLoading(false);
-					setPage(1);
-					setIsEmptyList(false);
-					return;
-				}
-				setSeriesList([]);
-				setIsEmptyList(true);
-			} catch (error) {
-				console.error("Error fetching user Data:", error);
-			} finally {
-				setLoading(false);
-			}
+			setPage(1);
+			updatePage(1);
+			setQuery(null);
 		}
 	};
 
-	const debaunceSearch = useCallback(
-		debaunce((search) => {
-			fetchSearch(search);
+	const debouncedSearch = useCallback(
+		debaunce((value) => {
+			console.log("value:", value);
+			setReachedEnd(false);
+			setPage(1); // Reset page number on new search
+			setQuery(value);
 		}, 500),
 		[]
 	);
-
-	const handleScroll = () => {
-		const offset = 250;
-		const screeHeigh = window.innerHeight;
-		const distanceScrollTop = document.documentElement.scrollTop;
-		const appTotalHeight = document.documentElement.offsetHeight;
-
-		if (screeHeigh + distanceScrollTop + offset <= appTotalHeight) return;
-		if (loading) return;
-		if (search.trim() !== "") return;
-
-		updatePage();
-	};
-
-	const debouncedHandleScroll = useCallback(debaunce(handleScroll, 100), [
-		loading,
-		page,
-		reachedEnd,
-	]);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
 	};
 
 	useEffect(() => {
-		updatePage();
+		updatePage(page, query);
+	}, [page, query]);
+	/*
+	useEffect(() => {
+		//updatePage();
 		window.scrollTo(0, 0);
 	}, []);
-
+	*/
+	/*
 	useEffect(() => {
 		window.addEventListener("scroll", debouncedHandleScroll);
 		return () => window.removeEventListener("scroll", debouncedHandleScroll);
 	}, [loading]);
+	*/
 
 	return (
 		<div className="browse-collection-page container page-content">
@@ -147,7 +137,7 @@ export default function BrowsePage() {
 					onChange={(e) => {
 						handleChange(e);
 					}}
-					value={search}
+					value={searchBarValue}
 				/>
 				<button type="submit" className="form__input">
 					<FontAwesomeIcon icon={faMagnifyingGlass} size="xl" fixedWidth />
@@ -156,7 +146,7 @@ export default function BrowsePage() {
 
 			{isEmptyList && (
 				<p className="not-found-message">
-					Não encontramos nada para "{search}" verifique se você digitou
+					Não encontramos nada para "{query}" verifique se você digitou
 					corretamente ou então{" "}
 					<Link to={"/feedback"}>
 						<strong>sugira sua obra para nós</strong>
@@ -164,17 +154,22 @@ export default function BrowsePage() {
 					para que poçamos adiciona-la no futuro
 				</p>
 			)}
+			<SeriesCardList
+				list={seriesList}
+				lastSeriesElementRef={lastSeriesElementRef}
+			></SeriesCardList>
+			{/*
 			<div className="collection-container">
 				{seriesList.map((series) => {
-					const { _id, title, image } = series;
 					return (
 						<SeriesCard
-							key={_id}
-							seriesDetails={{ title, image, _id }}
+							key={series._id}
+							seriesDetails={series}
 						></SeriesCard>
 					);
 				})}
 			</div>
+				*/}
 		</div>
 	);
 }
