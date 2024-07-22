@@ -212,7 +212,7 @@ export default function SignupPage() {
 							termos e condições
 						</Link>
 					</label>
-					<button className="button" style={{ margin: "10px" }}>
+					<button className="button">
 						Criar conta
 					</button>
 					<Link to={"/login"} className="autentication-form__link">

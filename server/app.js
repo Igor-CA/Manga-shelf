@@ -48,6 +48,8 @@ app.use(
 		store: MongoStore.create({
 			mongoUrl: process.env.MONGODB_URI,
 			collection: "sessions",
+			ttl: 15 * 24 * 60 * 60, 
+			autoRemove: "native",
 		}),
 	})
 );
