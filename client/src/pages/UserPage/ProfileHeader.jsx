@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 
 export default function ProfileHeader({ user }) {
+	const {username} = user
 	return (
 		<header className="profile-header">
-			<h1 className="user-name">{user.username}</h1>
+			<h1 className="user-name">{username}</h1>
 			<img
 				src={`/images/deffault-profile-picture.webp`}
 				alt="user profile"
@@ -13,7 +14,7 @@ export default function ProfileHeader({ user }) {
 				<ul className="profile-header__navbar__list">
 					<li>
 						<Link
-							to={`/user/${user.username}`}
+							to={`/user/${username}`}
 							className="profile-header__navbar__link"
 						>
 							Estante
@@ -21,7 +22,7 @@ export default function ProfileHeader({ user }) {
 					</li>
 					<li>
 						<Link
-							to={`/user/${user.username}/missing`}
+							to={`/user/${username}/missing`}
 							className="profile-header__navbar__link"
 						>
 							Volumes faltosos

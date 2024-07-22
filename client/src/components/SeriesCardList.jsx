@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SeriesCard } from "./SeriesCard";
 import { SkeletonSeriesCard } from "./SkeletonSeriesCard";
 
@@ -6,15 +6,15 @@ export default function SeriesCardList({
 	skeletonsCount,
 	fetchFunction,
 	functionArguments,
-	errorComponent
+	errorComponent,
+	itemType
 }) {
 	const [page, setPage] = useState(1);
 	const [loading, setLoading] = useState(false);
 	const [reachedEnd, setReachedEnd] = useState(false);
 	const [seriesList, setSeriesList] = useState([]);
-	const [argsCopy, setArgsCopy] = useState(functionArguments);
+	const [argsCopy, setArgsCopy] = useState(functionArguments || []);
 	const [showErrorComponent, setShowErrorComponent] = useState(false);
-	//const memoizedArgs = useMemo(() => functionArguments, [functionArguments]);
 
 	const observer = useRef();
 	const lastSeriesElementRef = useCallback((node) => {
@@ -42,6 +42,9 @@ export default function SeriesCardList({
 							? [...resultList]
 							: [...previousList, ...resultList]
 					);
+					if(resultList.length < skeletonsCount ){
+						setReachedEnd(true)
+					}
 					setShowErrorComponent(false);
 				} else {
 					if (page === 1) {
@@ -64,7 +67,7 @@ export default function SeriesCardList({
 			setPage(1);
 			setSeriesList([]);
 			setReachedEnd(false);
-			setArgsCopy(functionArguments);
+			setArgsCopy(functionArguments || []);
 		};
 		resetPage();
 	}, [functionArguments]);
@@ -86,7 +89,7 @@ export default function SeriesCardList({
 									: undefined
 							}
 						>
-							<SeriesCard seriesDetails={series}></SeriesCard>
+							<SeriesCard itemDetails={series} itemType={itemType || "Series"}></SeriesCard>
 						</div>
 					);
 				})}
