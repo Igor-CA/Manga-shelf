@@ -25,7 +25,7 @@ export default function Home() {
 							<FontAwesomeIcon className="home__icon" icon={faBook} />
 						</div>
 						<div>
-							<h3 className="feature__title">Acompanhe coleções:</h3>
+							<h2 className="feature__title">Acompanhe coleções:</h2>
 							<p className="feature__description">
 								Adicione mangás à sua prateleira e mantenha-se atualizado sobre
 								o estado de cada série.
@@ -37,7 +37,7 @@ export default function Home() {
 							<FontAwesomeIcon className="home__icon" icon={faCheck} />
 						</div>
 						<div>
-							<h3 className="feature__title">Marque seus volumes:</h3>
+							<h2 className="feature__title">Marque seus volumes:</h2>
 							<p className="feature__description">
 								Mantenha o controle sobre os volumes que você já possui. Marque
 								os volumes que estão em suas mãos, acompanhe edições especiais e
@@ -50,7 +50,7 @@ export default function Home() {
 							<FontAwesomeIcon className="home__icon" icon={faList} />
 						</div>
 						<div>
-							<h3 className="feature__title">Veja o que te falta:</h3>
+							<h2 className="feature__title">Veja o que te falta:</h2>
 							<p className="feature__description">
 								Descubra exatamente quais volumes precisa comprar para completar
 								suas coleções.
@@ -65,7 +65,7 @@ export default function Home() {
 							/>
 						</div>
 						<div>
-							<h3 className="feature__title">Explore novos titulos:</h3>
+							<h2 className="feature__title">Explore novos titulos:</h2>
 							<p className="feature__description">
 								Encontre diferentes obras e obtenha detalhes como autores,
 								editora, formato, sinopse e mais de cada coleção/volume.

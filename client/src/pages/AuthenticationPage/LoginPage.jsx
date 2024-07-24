@@ -159,23 +159,21 @@ export default function LoginPage() {
 					/>
 
 					<p>
-						Não tem uma conta?
+						Não tem uma conta?{" "}
 						<Link to={"/signup"} className="autentication-form__link">
-							{" "}
-							clique aqui
+							Crie uma agora
 						</Link>{" "}
-						para criar
 					</p>
 					<Link to={"/forgot"} className="autentication-form__link">
 						Esqueceu sua senha?
 					</Link>
 
-					<button className="autentication-form__button">Log in</button>
+					<button className="button">Log in</button>
 				</form>
 				<button
 					type="button"
 					onClick={handleGoogleLogin}
-					className="autentication-form__button autentication-form__button--google"
+					className="button autentication-form__button--google"
 				>
 					<svg
 						className="autentication-form__icon"

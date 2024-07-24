@@ -74,19 +74,13 @@ export default function BrowsePage() {
 		[]
 	);
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
-	};
-
 	return (
 		<div className="browse-collection-page container page-content">
-			<form className="form" onSubmit={(e) => handleSubmit(e)}>
-				<label htmlFor="search-bar" className="form__label">
-					Pesquisa
-				</label>
+			<form className="form">
 				<input
 					type="search"
 					name="search-bar"
+					id="search-bar"
 					className="form__input form__input__grow"
 					placeholder="Buscar "
 					onChange={(e) => {
@@ -94,9 +88,9 @@ export default function BrowsePage() {
 					}}
 					value={searchBarValue}
 				/>
-				<button type="submit" className="form__input">
-					<FontAwesomeIcon icon={faMagnifyingGlass} size="xl" fixedWidth />
-				</button>
+					<label htmlFor="search-bar" className="form__input">
+							<FontAwesomeIcon icon={faMagnifyingGlass} size="xl" fixedWidth />
+					</label>
 			</form>
 			<SeriesCardList
 				skeletonsCount={12}

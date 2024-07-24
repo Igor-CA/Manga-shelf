@@ -21,7 +21,7 @@
 .profile-header__navbar{
     align-self: stretch;
 
-    background-color: var(--accent);
+    background-color: var(--secundary);
 
     overflow-x: scroll;
 }
