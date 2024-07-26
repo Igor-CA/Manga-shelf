@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
 import SeriesCardList from "../../components/SeriesCardList";
 export default function MissingVolumesPage() {
@@ -33,12 +33,24 @@ export default function MissingVolumesPage() {
 		}
 	};
 
+	const EmptyListComponent = () => {
+		return (
+			<p className="not-found-message">
+				Esta conta não possuí nenhum volume faltando. Talvez seja a hora de começar uma nova coleção?
+				<Link to={"/browse"}>
+					<strong>Busque novos títulos na nossa página de pesquisa</strong>
+				</Link>{" "}
+			</p>
+		);
+	};
+
 	return (
 		<div className="container">
 			<SeriesCardList
 				skeletonsCount={36}
 				fetchFunction={fetchMissingVolumes}
 				itemType="Volumes"
+				errorComponent={EmptyListComponent}
 			></SeriesCardList>
 		</div>
 	);

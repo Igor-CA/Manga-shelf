@@ -18,6 +18,7 @@ import DonatePage from "./pages/Donate/DonatePage";
 import AboutPage from "./pages/About/AboutPage";
 import NotFound from "./pages/404Page/NotFound";
 import ToSPage from "./pages/Tos/ToSPage";
+import ScrollToTop from "./utils/ScrollToTop";
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
@@ -66,6 +67,7 @@ function App() {
 		<div className="App">
 			<BrowserRouter>
 				<NavBar logout={logout}></NavBar>
+				<ScrollToTop />
 				<Routes>
 					<Route path="/" element={<Home />}></Route>
 					<Route path="/signup" element={<SignupPage />}></Route>

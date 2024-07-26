@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
 import axios from "axios";
 
@@ -28,11 +28,28 @@ export default function UserCollection() {
 			}
 		}
 	};
+
+	const EmptyListComponent = () => {
+		return (
+			<p className="not-found-message">
+				Esta conta não possuí nenhuma coleção registrada. Caso essa seja
+				sua conta tente{" "}
+				<Link to={"/browse"}>
+					<strong>
+						adicionar suas coleções buscando em nossa página de
+						busca
+					</strong>
+				</Link>{" "}
+			</p>
+		);
+	};
+
 	return (
 		<div className="user-collection container">
 			<SeriesCardList
 				skeletonsCount={36}
 				fetchFunction={querryUserList}
+				errorComponent={EmptyListComponent}
 			></SeriesCardList>
 		</div>
 	);
