@@ -27,3 +27,5 @@ yarn-error.log*
 server/databaseDetails.js
 server/populateDB.js
 client/build
+server/sitemap.xml
+server/sitemapGenerator.js
