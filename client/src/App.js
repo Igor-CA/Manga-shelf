@@ -33,6 +33,8 @@ function App() {
 						},
 						url: `/api/data/user/logged-user`,
 					});
+					if(res.data.msg) return
+					
 					setUser(res.data);
 					setOutdated(false);
 				} catch (error) {

@@ -351,10 +351,10 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 			};
 			res.send(userInfo);
 		} else {
-			res.status(400).json({ msg: "User not found" });
+			res.send({ msg: "User not found" });
 		}
 	} else {
-		res.status(400).json({ msg: "No user logged" });
+		res.send({ msg: "No user logged" });
 	}
 });
 
