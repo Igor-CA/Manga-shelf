@@ -10,7 +10,7 @@ module.exports = function (passport) {
 			{
 				clientID: process.env.OAUTH_CLIENT_ID,
 				clientSecret: process.env.OAUTH_KEY,
-				callbackURL: "http://localhost:3001/api/user/auth/google/callback", // Your callback URL
+				callbackURL: process.env.CALLBACK_URL,
 			},
 			asyncHandler(async (accessToken, refreshToken, profile, done) => {
 				try {
@@ -43,7 +43,9 @@ module.exports = function (passport) {
 					if (res) {
 						return done(null, user);
 					} else {
-						return done(null, false, { message: "Incorrect password" });
+						return done(null, false, {
+							message: "Incorrect password",
+						});
 					}
 				});
 			})
