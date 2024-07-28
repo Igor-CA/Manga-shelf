@@ -73,19 +73,21 @@ export default function BrowsePage() {
 		}, 500),
 		[]
 	);
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		setQuery(searchBarValue)
+	};
 
 	return (
 		<div className="browse-collection-page container page-content">
-			<form className="form">
+			<form className="form" onSubmit={handleSubmit} >
 				<input
 					type="search"
 					name="search-bar"
 					id="search-bar"
 					className="form__input form__input__grow"
 					placeholder="Buscar "
-					onChange={(e) => {
-						handleChange(e);
-					}}
+					onChange={handleChange}
 					value={searchBarValue}
 				/>
 					<label htmlFor="search-bar" className="form__input">
