@@ -14,7 +14,7 @@
 	color: var(--text);
 	background: linear-gradient(#ffffff00,  var(--background) 120px);
 	position: absolute;
-	top: 60%;
+	bottom: 0;
 }
 .volume__cover {
 	width: 100vw;
@@ -22,14 +22,13 @@
 .volume__info-container {
 	padding: 10px;
 	width: 100%;
-	position: absolute;
 	color: var(--text);
-	background-color:  var(--background);
-	min-height: 60vh;
+	background-color: var(--background);
 }
 .volume__functions {
 	margin-top: 100px;
 	display: flex;
+	flex-direction: column;
 	justify-content: space-between;
 	align-items: stretch;
 	margin-bottom: 15px;
@@ -39,6 +38,10 @@
 	list-style: none;
 	margin-top: 10px;
 	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5em;
+	padding-top: 1.5em;
 }
 .volume__details-container::before {
 	content: "";
@@ -50,9 +53,6 @@
 	background-color: var(--text);
 	transform: translateX(-50%);
 }
-.volume__details {
-	padding-top: 40px;
-}
 .volume__summary {
 	text-indent: 2rem;
 	text-align: justify;
@@ -61,6 +61,11 @@
 @media only screen and (min-width: 768px) {
 	.volume {
 		display: flex;
+		background-color: var(--foreground);
+		border-radius: 5px;
+		margin: 10px;
+		box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.449);
+		overflow: hidden;
 	}
 	.volume__cover {
 		border-radius: 5px;
@@ -68,25 +73,24 @@
 	}
 	.volume__main-info {
 		padding: 0;
-		background-color:  var(--background);
+		background-color: var(--foreground);
 		position: static;
 	}
 	.volume__cover-wrapper {
+		flex-grow: 1;
 		padding: 10px;
 		color: var(--text);
-		max-width: 400px;
+		max-width: 360px;
+		width: 100%;
 	}
 	.volume__title {
-		font-size: 1em;
+		font-size: 1.5em;
 	}
 	.volume__info-container {
 		position: static;
-		background-color:  var(--background);
+		background-color: var(--foreground);
 		overflow: scroll;
-	}
-	.volume__details {
-		padding-top: 0px;
-		padding-bottom: 30px;
+		max-width: 800px;
 	}
 	.volume__details-container {
 		list-style: none;
@@ -96,7 +100,8 @@
 	.volume__details-container::before {
 		display: none;
 	}
-	.volume__functions{
+	.volume__functions {
+		flex-direction: row;
 		margin-top: 10px;
 	}
 	.volume__series-button {
