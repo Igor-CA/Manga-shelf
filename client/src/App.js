@@ -19,6 +19,7 @@ import AboutPage from "./pages/About/AboutPage";
 import NotFound from "./pages/404Page/NotFound";
 import ToSPage from "./pages/Tos/ToSPage";
 import ScrollToTop from "./utils/ScrollToTop";
+import LogoutPage from "./pages/AuthenticationPage/LogoutPage";
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
@@ -46,33 +47,17 @@ function App() {
 		}
 	}, [outdated]);
 
-	const logout = async () => {
-		try {
-			const res = await axios({
-				method: "GET",
-				withCredentials: true,
-				headers: {
-					Authorization:process.env.REACT_APP_API_KEY,
-				},
-				url: `/api/user/logout`,
-			});
-			setOutdated(true);
-			window.location.href = "/";
-		} catch (error) {
-			console.log(error);
-		}
-	};
-
 	return (
 		<div className="App">
 			<BrowserRouter>
-				<NavBar logout={logout}></NavBar>
+				<NavBar></NavBar>
 				<ScrollToTop />
 				<Routes>
 					<Route path="/" element={<Home />}></Route>
 					<Route path="/signup" element={<SignupPage />}></Route>
 					<Route path="/tos" element={<ToSPage />}></Route>
 					<Route path="/login" element={<LoginPage />}></Route>
+					<Route path="/logout" element={<LogoutPage />}></Route>
 					<Route path="/forgot" element={<ForgotPage />}></Route>
 					<Route
 						path="/reset/:userId/:token"
@@ -90,7 +75,7 @@ function App() {
 
 				<footer className="footer">
 					{user ? (
-						<Link onClick={logout}>Sair</Link>
+						<Link  to="/logout">Sair</Link>
 					) : (
 						<Link to="/login">Logar</Link>
 					)}
