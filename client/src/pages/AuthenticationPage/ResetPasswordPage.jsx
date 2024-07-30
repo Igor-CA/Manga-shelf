@@ -1,41 +1,22 @@
 import axios from "axios";
-import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import { useContext, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { messageContext } from "../../components/messageStateProvider";
 
 export default function ResetPasswordPage() {
 	const { userId, token } = useParams();
 	const [formData, setFormData] = useState({ email: "" });
-	const [errors, setErrors] = useState([]);
+	const {addMessage} = useContext(messageContext);
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
 	};
-
-	const renderErrorsMessage = () => {
-		return (
-			<div className="errors-message">
-				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
-				<div>
-					{errors.map((erro, index) => {
-						return (
-							<p key={index} className="errors-message__error">
-								{erro}
-							</p>
-						);
-					})}
-				</div>
-			</div>
-		);
-	};
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			const response = await axios({
+			await axios({
 				method: "POST",
 				data: { ...formData, userId, token },
 				withCredentials: true,
@@ -47,11 +28,7 @@ export default function ResetPasswordPage() {
 			navigate("/login");
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
-			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-			setTimeout(() => {
-				setErrors([]);
-			}, 5000);
+			addMessage(customErrorMessage);
 		}
 	};
 
@@ -82,11 +59,7 @@ export default function ResetPasswordPage() {
 		const inputValidity = validationTypes.find((type) => input.validity[type]);
 
 		const customErrorMessage = validationMessages[inputName][inputValidity];
-		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-		setTimeout(() => {
-			setErrors([]);
-		}, 5000);
+		addMessage(customErrorMessage);
 	};
 
 	return (
@@ -145,7 +118,6 @@ export default function ResetPasswordPage() {
 					</Link>
 					<button className="button">Definir nova senha</button>
 				</form>
-				{errors.length > 0 && renderErrorsMessage()}
 			</div>
 		</div>
 	);

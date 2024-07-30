@@ -1,11 +1,14 @@
 .form-title{
 	font-size: 1.5em;
 	padding-top: 15px;
-	padding-bottom: 45px;
+	padding-bottom: 30px;
     color: var(--text);
     text-align: center;
 }
 .form-container {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 	background-color: var(--foreground);
     width: 100%;
     min-height: 100vh;
@@ -14,12 +17,16 @@
 .autentication-form {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+	align-items: stretch;
+	color: var(--text);
+	gap: 10px;
 }
 .autentication-form__label {
 	display: none;
 }
-
+.autentication-form__captcha{
+	align-self: center;
+}
 .form__label--visible{
 	margin-top: 10px;
 	font-weight: bold;
@@ -32,22 +39,12 @@
 	color: var(--text);
 	font-weight: bold;
 	padding: 10px;
-	margin: 10px;
 	border-radius: 3px;
 	border: none;
     width: 100%;
 	resize: none;
 }.autentication-form__input::placeholder{
 	font-weight: normal;
-}
-.autentication-form__button{
-    color: var(--foreground);
-    font-weight: bold;
-    padding: 10px;
-    background-color: var(--blue);
-    border: none;
-    border-radius: 3px;
-	cursor: pointer;
 }
 .errors-message{
 	font-weight: bold;
@@ -71,13 +68,23 @@
 	margin: 0.5rem;
 }
 .autentication-form__link{
-	padding: 10px auto;
-	color: var(--blue);
+	color: var(--accent);
+	text-decoration: underline;
 }
-
+.autentication-form__icon{
+	margin-right: 8px;
+	margin-left: -4px;
+	width: 16px;
+	height: 16px;
+}
+.autentication-form__button--google{
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	align-items: center;
+}
 @media only screen and (min-width: 768px){
 	.form-container {
-		display: block;
 		max-width: 400px;
 		margin: auto;
 		margin-top: 40px;

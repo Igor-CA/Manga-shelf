@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { body, validationResult } = require("express-validator");
+const ITEMS_PER_PAGE = 36;
 
 exports.signup = [
 	body("username")
@@ -350,10 +351,10 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 			};
 			res.send(userInfo);
 		} else {
-			res.status(400).json({ msg: "User not found" });
+			res.send({ msg: "User not found" });
 		}
 	} else {
-		res.status(400).json({ msg: "No user logged" });
+		res.send({ msg: "No user logged" });
 	}
 });
 
@@ -364,20 +365,24 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	}
 	const targetUser = req.params.username;
 	if (targetUser) {
-		const user = await User.findOne({ username: targetUser })
+		const page = parseInt(req.query.p) || 1;
+		const skip = ITEMS_PER_PAGE * (page - 1);
+		const user = await User.findOne({ username: targetUser }, { userList: 1 })
+			.select({ userList: { $slice: [skip, ITEMS_PER_PAGE] } })
 			.populate({
 				path: "userList.Series",
 				select: "title",
 			})
+
 			.exec();
 		if (user) {
-			const userInfo = {
-				_id: user._id,
-				username: user.username,
-				userList: user.userList,
-				ownedVolumes: user.ownedVolumes,
-			};
-			res.send(userInfo);
+			const filteredList = user.userList.map((series) => {
+				const { Series, completionPercentage } = series;
+				const seriesObj = Series.toObject();
+				const { seriesCover, ...seriesData } = seriesObj;
+				return { ...seriesData, image: seriesCover, completionPercentage };
+			});
+			res.send(filteredList);
 		} else {
 			res.status(400).json({ msg: "User not found" });
 		}
@@ -393,43 +398,96 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	}
 	const targetUser = req.params.username;
 	if (targetUser) {
-		const user = await User.findOne(
-			{ username: targetUser },
-			"userList ownedVolumes"
-		)
-			.populate({
-				path: "userList.Series",
-				select: "title volumes",
-				populate: {
-					path: "volumes",
-					select: "number",
-				},
-			})
-			.exec();
-		if (user) {
-			const mangaList = user.userList.flatMap((seriesObj) => {
-				const volumesWithImages = seriesObj.Series.volumes.map((volume) => ({
-					series: seriesObj.Series.title,
-					volumeId: volume._id,
-					volumeNumber: volume.number,
-					image: getVolumeCoverURL(seriesObj.Series, volume.number),
-				}));
-				return volumesWithImages;
-			});
-			const missingVolumesList = mangaList
-				.filter((volume) => {
-					return !user.ownedVolumes.includes(volume.volumeId);
-				})
-				.sort((volumeOne, volumeTwo) => {
-					if (volumeOne.series < volumeTwo.series) return -1;
-					if (volumeOne.series > volumeTwo.series) return 1;
-					return volumeOne.volumeNumber - volumeTwo.volumeNumber;
-				});
+		const page = parseInt(req.query.p) || 1;
+		const skip = ITEMS_PER_PAGE * (page - 1);
 
-			res.send(missingVolumesList);
-		} else {
-			res.status(400).json({ msg: "User not found" });
-		}
+		const aggregationPipeline = [
+			// Match the user by username
+			{ $match: { username: targetUser } },
+
+			// Unwind userList to process individual series
+			{ $unwind: "$userList" },
+			// Lookup the series details
+			{
+				$lookup: {
+					from: "series",
+					localField: "userList.Series",
+					foreignField: "_id",
+					as: "seriesDetails",
+				},
+			},
+			{ $unwind: "$seriesDetails" },
+
+			// Unwind the volumes array within seriesDetails
+			{ $unwind: "$seriesDetails.volumes" },
+
+			// Lookup to get volume details
+			{
+				$lookup: {
+					from: "volumes",
+					localField: "seriesDetails.volumes",
+					foreignField: "_id",
+					as: "volumeDetails",
+				},
+			},
+			{ $unwind: "$volumeDetails" },
+
+			// Prepare the list of owned volume IDs
+			{
+				$addFields: {
+					ownedVolumesSet: { $setUnion: ["$ownedVolumes", []] },
+				},
+			},
+
+			// Add a field to indicate whether the volume is owned or not
+			{
+				$addFields: {
+					isOwned: {
+						$cond: [
+							{ $in: ["$volumeDetails._id", "$ownedVolumesSet"] },
+							true,
+							false,
+						],
+					},
+				},
+			},
+
+			// Filter out volumes that are owned
+			{ $match: { isOwned: false } },
+
+			// Group back the data
+			{
+				$group: {
+					_id: "$volumeDetails._id",
+					series: { $first: "$seriesDetails.title" },
+					volumeId: { $first: "$volumeDetails._id" },
+					volumeNumber: { $first: "$volumeDetails.number" },
+				},
+			},
+
+			// Sort the results by series title and volume number
+			{
+				$sort: {
+					series: 1,
+					volumeNumber: 1,
+				},
+			},
+
+			// Pagination
+			{ $skip: skip },
+			{ $limit: ITEMS_PER_PAGE },
+		];
+
+		const missingVolumesList = await User.aggregate(aggregationPipeline).exec();
+		const listWithImages = missingVolumesList.map((volume) => {
+			const seriesObject = {title:volume.series}
+			return {
+				...volume,
+				title: volume.series,
+				image: getVolumeCoverURL(seriesObject, volume.volumeNumber),
+			};
+		});
+		res.send(listWithImages);
 	} else {
 		res.send();
 	}

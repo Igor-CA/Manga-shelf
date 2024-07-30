@@ -1,21 +1,28 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, {
+	useState,
+	useEffect,
+	useCallback,
+	useRef,
+	useMemo,
+} from "react";
 import axios from "axios";
-import { SeriesCard } from "../../components/SeriesCard";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import SeriesCardList from "../../components/SeriesCardList";
+
+const SKELETON_LOADING_COUNT = 12;
 
 export default function BrowsePage() {
-	const [page, setPage] = useState(1);
-	const [search, setSearch] = useState("");
-	const [loading, setLoading] = useState(false);
-	const [seriesList, setSeriesList] = useState([]);
-	const [reachedEnd, setReachedEnd] = useState(false);
-	const [isEmptyList, setIsEmptyList] = useState(false);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const initialSearch = searchParams.get("q") || "";
+	const [searchBarValue, setSearchBarValue] = useState(initialSearch);
+	const [query, setQuery] = useState(initialSearch);
+	const functionArguments = useMemo(() => [query], [query]);
 
-	const fetchSeriesList = async () => {
+	const fetchPage = async (page, query) => {
 		try {
 			const response = await axios({
 				method: "GET",
@@ -23,7 +30,11 @@ export default function BrowsePage() {
 				headers: {
 					Authorization: process.env.REACT_APP_API_KEY,
 				},
-				url: `/api/data/browse?p=${page}`,
+				params: {
+					p: page,
+					q: query,
+				},
+				url: "/api/data/browse",
 			});
 			const resultList = response.data;
 			return resultList;
@@ -31,150 +42,64 @@ export default function BrowsePage() {
 			console.error("Error fetching series list:", error);
 		}
 	};
-	const updatePage = async () => {
-		if (!loading && !reachedEnd) {
-			setLoading(true);
-			try {
-				const resultList = await fetchSeriesList();
-				if (resultList.length > 0) {
-					setSeriesList(
-						page === 1 ? [...resultList] : [...seriesList, ...resultList]
-					);
-					setPage(page + 1);
-					setIsEmptyList(false);
-				} else {
-					setReachedEnd(true);
-				}
-			} catch (error) {
-				console.error("Error fetching user Data:", error);
-			} finally {
-				setLoading(false);
-			}
-		}
+
+	const ErrorComponent = () => {
+		return (
+			<p className="not-found-message">
+				Não encontramos nada para "{query}" verifique se você digitou
+				corretamente ou então{" "}
+				<Link to={"/feedback"}>
+					<strong>sugira sua obra para nós</strong>
+				</Link>{" "}
+				para que poçamos adiciona-la no futuro
+			</p>
+		);
 	};
 
 	const handleChange = (e) => {
 		const inputValue = e.target.value;
-		setSearch(inputValue);
+		setSearchBarValue(inputValue);
+		setSearchParams({ q: inputValue });
 		if (inputValue.trim() !== "") {
-			debaunceSearch(inputValue);
+			debouncedSearch(inputValue);
 		} else {
-			updatePage();
-			setReachedEnd(false);
-		}
-	};
-	const fetchSearch = async (querry) => {
-		if (querry.length > 1) {
-			setLoading(true);
-			try {
-				const response = await axios({
-					method: "GET",
-					withCredentials: true,
-					headers: {
-						Authorization: process.env.REACT_APP_API_KEY,
-					},
-					url: `/api/data/search?q=${querry}`,
-				});
-				const data = response.data;
-				if (data.length > 0) {
-					setSeriesList(data);
-					setLoading(false);
-					setPage(1);
-					setIsEmptyList(false);
-					return;
-				}
-				setSeriesList([]);
-				setIsEmptyList(true);
-			} catch (error) {
-				console.error("Error fetching user Data:", error);
-			} finally {
-				setLoading(false);
-			}
+			setQuery("");
 		}
 	};
 
-	const debaunceSearch = useCallback(
-		debaunce((search) => {
-			fetchSearch(search);
+	const debouncedSearch = useCallback(
+		debaunce((value) => {
+			setQuery(value);
 		}, 500),
 		[]
 	);
-
-	const handleScroll = () => {
-		const offset = 250;
-		const screeHeigh = window.innerHeight;
-		const distanceScrollTop = document.documentElement.scrollTop;
-		const appTotalHeight = document.documentElement.offsetHeight;
-
-		if (screeHeigh + distanceScrollTop + offset <= appTotalHeight) return;
-		if (loading) return;
-		if (search.trim() !== "") return;
-
-		updatePage();
-	};
-
-	const debouncedHandleScroll = useCallback(debaunce(handleScroll, 100), [
-		loading,
-		page,
-		reachedEnd,
-	]);
-
 	const handleSubmit = (e) => {
 		e.preventDefault();
+		setQuery(searchBarValue)
 	};
-
-	useEffect(() => {
-		updatePage();
-		window.scrollTo(0, 0);
-	}, []);
-
-	useEffect(() => {
-		window.addEventListener("scroll", debouncedHandleScroll);
-		return () => window.removeEventListener("scroll", debouncedHandleScroll);
-	}, [loading]);
 
 	return (
 		<div className="browse-collection-page container page-content">
-			<form className="form" onSubmit={(e) => handleSubmit(e)}>
-				<label htmlFor="search-bar" className="form__label">
-					Pesquisa
-				</label>
+			<form className="form" onSubmit={handleSubmit} >
 				<input
 					type="search"
 					name="search-bar"
+					id="search-bar"
 					className="form__input form__input__grow"
 					placeholder="Buscar "
-					onChange={(e) => {
-						handleChange(e);
-					}}
-					value={search}
+					onChange={handleChange}
+					value={searchBarValue}
 				/>
-				<button type="submit" className="form__input">
-					<FontAwesomeIcon icon={faMagnifyingGlass} size="xl" fixedWidth />
-				</button>
+					<label htmlFor="search-bar" className="form__input">
+							<FontAwesomeIcon icon={faMagnifyingGlass} size="xl" fixedWidth />
+					</label>
 			</form>
-
-			{isEmptyList && (
-				<p className="not-found-message">
-					Não encontramos nada para "{search}" verifique se você digitou
-					corretamente ou então{" "}
-					<Link to={"/feedback"}>
-						<strong>sugira sua obra para nós</strong>
-					</Link>{" "}
-					para que poçamos adiciona-la no futuro
-				</p>
-			)}
-			<div className="collection-container">
-				{seriesList.map((series) => {
-					const { _id, title, image } = series;
-					return (
-						<SeriesCard
-							key={_id}
-							seriesDetails={{ title, image, _id }}
-						></SeriesCard>
-					);
-				})}
-			</div>
+			<SeriesCardList
+				skeletonsCount={12}
+				fetchFunction={fetchPage}
+				functionArguments={functionArguments}
+				errorComponent={ErrorComponent}
+			></SeriesCardList>
 		</div>
 	);
 }

@@ -1,39 +1,24 @@
 import axios from "axios";
-import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import { messageContext } from "../../components/messageStateProvider";
 
 export default function ForgotPage() {
 	const [formData, setFormData] = useState({ email: "" });
-	const [errors, setErrors] = useState([]);
+	const {addMessage, setMessageType} = useContext(messageContext);
+	const [loading, setLoading] = useState(false)
+
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
 	};
 
-	const renderErrorsMessage = () => {
-		return (
-			<div className="errors-message">
-				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
-				<div>
-					{errors.map((erro, index) => {
-						return (
-							<p key={index} className="errors-message__error">
-								{erro}
-							</p>
-						);
-					})}
-				</div>
-			</div>
-		);
-	};
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			const response = await axios({
+			setLoading(true)
+			await axios({
 				method: "POST",
 				data: formData,
 				withCredentials: true,
@@ -42,13 +27,12 @@ export default function ForgotPage() {
 				},
 				url: `/api/user/forgot`,
 			});
+			addMessage("Um link para mudar sua senha foi enviado")
+			setMessageType("Success")
+			setLoading(false)
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
-			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-			setTimeout(() => {
-				setErrors([]);
-			}, 5000);
+			addMessage(customErrorMessage);
 		}
 	};
 
@@ -60,14 +44,10 @@ export default function ForgotPage() {
 		let customErrorMessage = "";
 
 		if (input.validity.valueMissing) {
-			customErrorMessage = `${inputName} field is required.`;
+			customErrorMessage = `O campo de ${inputName} é obrigatório`;
 		}
 
-		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-		setTimeout(() => {
-			setErrors([]);
-		}, 5000);
+		addMessage(customErrorMessage);
 	};
 
 	return (
@@ -102,9 +82,8 @@ export default function ForgotPage() {
 					<Link to={"/login"} className="autentication-form__link">
 						Entrar
 					</Link>
-					<button className="button">Mudar senha</button>
+					<button className={`button ${loading?"button--disabled":""}`} disabled={loading} >Mudar senha</button>
 				</form>
-				{errors.length > 0 && renderErrorsMessage()}
 			</div>
 		</div>
 	);

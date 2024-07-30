@@ -32,7 +32,7 @@
     line-height: 1.5rem;
 }
 .donate-page a{
-    color: var(--blue);
+    color: var(--accent);
 }
 .donate-page__donation-button{
     text-align: center;

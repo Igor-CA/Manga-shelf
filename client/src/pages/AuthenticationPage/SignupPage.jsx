@@ -1,13 +1,12 @@
-import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import { useContext, useState } from "react";
 import axios from "axios";
 import "./Authentication.css";
 import { Link, useNavigate } from "react-router-dom";
+import { messageContext } from "../../components/messageStateProvider";
 
 export default function SignupPage() {
 	const navigate = useNavigate();
-	const [errors, setErrors] = useState([]);
+	const { addMessage } = useContext(messageContext);
 	const [formData, setFormData] = useState({
 		username: "",
 		password: "",
@@ -23,23 +22,19 @@ export default function SignupPage() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			const response = await axios({
+			await axios({
 				method: "POST",
 				data: formData,
 				withCredentials: true,
 				headers: {
-					Authorization:process.env.REACT_APP_API_KEY,
+					Authorization: process.env.REACT_APP_API_KEY,
 				},
 				url: `/api/user/signup`,
 			});
 			navigate("/login");
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
-			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-			setTimeout(() => {
-				setErrors([]);
-			}, 5000);
+			addMessage(customErrorMessage);
 		}
 	};
 	const handleInvalid = (e) => {
@@ -78,32 +73,13 @@ export default function SignupPage() {
 			"typeMismatch",
 			"valueMissing",
 		];
-		const inputValidity = validationTypes.find((type) => input.validity[type]);
+		const inputValidity = validationTypes.find(
+			(type) => input.validity[type]
+		);
 
 		const customErrorMessage = validationMessages[inputName][inputValidity];
 
-		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-		setTimeout(() => {
-			setErrors([]);
-		}, 5000);
-	};
-
-	const renderErrorsMessage = () => {
-		return (
-			<div className="errors-message">
-				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
-				<div>
-					{errors.map((erro, index) => {
-						return (
-							<p key={index} className="errors-message__error">
-								{erro}
-							</p>
-						);
-					})}
-				</div>
-			</div>
-		);
+		addMessage(customErrorMessage);
 	};
 
 	return (
@@ -117,7 +93,10 @@ export default function SignupPage() {
 						handleSubmit(e);
 					}}
 				>
-					<label htmlFor="email" className="autentication-form__label">
+					<label
+						htmlFor="email"
+						className="autentication-form__label"
+					>
 						Email:
 					</label>
 					<input
@@ -134,7 +113,10 @@ export default function SignupPage() {
 						}}
 						required
 					/>
-					<label htmlFor="username" className="autentication-form__label">
+					<label
+						htmlFor="username"
+						className="autentication-form__label"
+					>
 						User name:{" "}
 					</label>
 					<input
@@ -153,7 +135,10 @@ export default function SignupPage() {
 						pattern="^[A-Za-z0-9]{3,16}$"
 						maxLength="16"
 					/>
-					<label htmlFor="password" className="autentication-form__label">
+					<label
+						htmlFor="password"
+						className="autentication-form__label"
+					>
 						Password:
 					</label>
 					<input
@@ -193,7 +178,10 @@ export default function SignupPage() {
 						required
 						pattern={formData.password}
 					/>
-					<label htmlFor="tos-checkbox" className="form__label--visible">
+					<label
+						htmlFor="tos-checkbox"
+						className="form__label--visible"
+					>
 						<input
 							type="checkbox"
 							name="tos-checkbox"
@@ -212,14 +200,11 @@ export default function SignupPage() {
 							termos e condições
 						</Link>
 					</label>
-					<button className="button" style={{ margin: "10px" }}>
-						Criar conta
-					</button>
+					<button className="button">Criar conta</button>
 					<Link to={"/login"} className="autentication-form__link">
 						Já tem conta?
 					</Link>
 				</form>
-				{errors.length > 0 && renderErrorsMessage()}
 			</div>
 		</div>
 	);

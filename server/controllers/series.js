@@ -7,15 +7,9 @@ const {
 const asyncHandler = require("express-async-handler");
 
 const ITEMS_PER_PAGE = 24;
-const SEARCH_RESULT_LIMIT = 24;
 
-exports.all = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
-	const currentPage = req.query.p ? Number(req.query.p) : 1;
-	const skip = ITEMS_PER_PAGE * (currentPage - 1);
+async function getSeriesList(page) {
+	const skip = ITEMS_PER_PAGE * (page - 1);
 	const seriesList = await Series.find({ isAdult: false }, "title")
 		.sort({ title: 1 })
 		.skip(skip)
@@ -26,16 +20,13 @@ exports.all = asyncHandler(async (req, res, next) => {
 		..._doc,
 		image: seriesCover,
 	}));
-	res.send(formattedSeriesList);
-});
-
-exports.searchSeries = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
-	const query = req.query.q;
-	const values = await Series.aggregate([
+	return formattedSeriesList;
+}
+async function searchSeries(page, query) {
+	const MIN_SCORE = 1.0; 
+	
+	const skip = ITEMS_PER_PAGE * (page - 1);
+	const seriesList = await Series.aggregate([
 		{
 			$search: {
 				index: "SeriesSearchIndex",
@@ -45,20 +36,23 @@ exports.searchSeries = asyncHandler(async (req, res, next) => {
 							text: {
 								query: query,
 								path: "authors",
-								fuzzy: {},
+								fuzzy: { maxEdits: 2, prefixLength: 2 },
+								score: { boost: { value: 1.5 } },
 							},
 						},
 						{
 							text: {
 								query: query,
 								path: "title",
-								fuzzy: {},
-								score: { boost: { value: 2 } },
+								fuzzy: { maxEdits: 2, prefixLength: 2 },
+								score: { boost: { value: 1.75 } },
 							},
+						},
+						{
 							text: {
 								query: query,
 								path: "synonyms",
-								fuzzy: {},
+								fuzzy: { maxEdits: 2, prefixLength: 2 },
 								score: { boost: { value: 1.5 } },
 							},
 						},
@@ -67,22 +61,49 @@ exports.searchSeries = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{
+            $addFields: {
+                score: { $meta: "searchScore" },
+            },
+        },
+        {
+            $match: {
+                score: { $gte: MIN_SCORE },
+            },
+        },
+		{
 			$project: {
 				title: 1,
 				isAdult: 1,
 			},
 		},
 	])
-		.limit(SEARCH_RESULT_LIMIT)
+		.skip(skip)
+		.limit(ITEMS_PER_PAGE)
 		.exec();
-	const searchResults = values
+
+	const searchResults = seriesList
 		.map((serie) => ({
 			...serie,
 			image: getSeriesCoverURL(serie),
 		}))
 		.filter((series) => series.isAdult === false);
-	res.send(searchResults);
+
+	return searchResults;
+}
+
+exports.browse = asyncHandler(async (req, res, next) => {
+	if (req.headers.authorization !== process.env.API_KEY) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+	const page = req.query.p ? Number(req.query.p) : 1;
+	const query = req.query.q;
+	const result = query
+		? await searchSeries(page, query)
+		: await getSeriesList(page);
+	res.send(result);
 });
+
 
 exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	if (req.headers.authorization !== process.env.API_KEY) {

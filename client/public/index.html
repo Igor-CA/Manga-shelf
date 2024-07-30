@@ -5,7 +5,7 @@
 		<link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="theme-color" content="#1e3e9e" />
-
+		<meta name="color-scheme" content="light dark" />
 		<link
 			rel="apple-touch-icon"
 			sizes="180x180"
@@ -46,9 +46,22 @@
 			gtag("config", "G-VEFFWC5XX4");
 		</script>
 
-		<title>MyMangaShelf - Mantenha e organize sua coleção de mangás</title>
+		<title>MangaShelf - Mantenha e organize sua coleção de mangás</title>
 	</head>
 	<body>
+		<script>
+			const savedTheme = localStorage.getItem("theme");
+			if (savedTheme) {
+				document.body.classList.toggle(savedTheme);
+			} else {
+				const prefersDarkScheme = window.matchMedia(
+					"(prefers-color-scheme: dark)"
+				).matches;
+				const theme = prefersDarkScheme ? "dark" : "light";
+				document.body.classList.add(theme);
+				localStorage.setItem("theme", theme);
+			}
+		</script>
 		<noscript>You need to enable JavaScript to run this app.</noscript>
 		<div id="root"></div>
 	</body>
