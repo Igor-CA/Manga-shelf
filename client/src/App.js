@@ -20,6 +20,7 @@ import NotFound from "./pages/404Page/NotFound";
 import ToSPage from "./pages/Tos/ToSPage";
 import ScrollToTop from "./utils/ScrollToTop";
 import LogoutPage from "./pages/AuthenticationPage/LogoutPage";
+import MessageComponent from "./components/MessageComponent";
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
@@ -31,12 +32,12 @@ function App() {
 						method: "GET",
 						withCredentials: true,
 						headers: {
-							Authorization:process.env.REACT_APP_API_KEY,
+							Authorization: process.env.REACT_APP_API_KEY,
 						},
 						url: `/api/data/user/logged-user`,
 					});
-					if(res.data.msg) return
-					
+					if (res.data.msg) return;
+
 					setUser(res.data);
 					setOutdated(false);
 				} catch (error) {
@@ -69,19 +70,25 @@ function App() {
 					<Route path="/about" element={<AboutPage />}></Route>
 					<Route path="/series/:id" element={<SeriesPage />}></Route>
 					<Route path="/volume/:id" element={<VolumePage />}></Route>
-					<Route path="/user/:username/*" element={<UserPage />}></Route>
+					<Route
+						path="/user/:username/*"
+						element={<UserPage />}
+					></Route>
 					<Route path="*" element={<NotFound />}></Route>
 				</Routes>
 
 				<footer className="footer">
 					{user ? (
-						<Link  to="/logout">Sair</Link>
+						<Link to="/logout">Sair</Link>
 					) : (
 						<Link to="/login">Logar</Link>
 					)}
 					<Link to="/about">Sobre nós</Link>
 					<Link to="/donate">Apoie o projeto</Link>
 				</footer>
+				<MessageComponent></MessageComponent>
+				
+
 			</BrowserRouter>
 		</div>
 	);
