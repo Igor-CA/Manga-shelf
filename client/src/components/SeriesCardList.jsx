@@ -63,7 +63,6 @@ export default function SeriesCardList({
 
 	useEffect(() => {
 		const resetPage = () => {
-			console.log("Reseting page");
 			setPage(1);
 			setSeriesList([]);
 			setReachedEnd(false);
@@ -72,7 +71,6 @@ export default function SeriesCardList({
 		resetPage();
 	}, [functionArguments]);
 	useEffect(() => {
-		console.log("Updating page", argsCopy);
 		updatePage(page, argsCopy);
 	}, [page, argsCopy]);
 
