@@ -1,17 +1,14 @@
 import { useContext, useState } from "react";
 import axios from "axios";
-import { UserContext } from "../../components/userProvider";
 import { Link, useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import ReCAPTCHA from "react-google-recaptcha";
 import "./Authentication.css";
+import { messageContext } from "../../components/messageStateProvider";
 
 export default function LoginPage() {
 	const navigate = useNavigate();
-	const { setOutdated } = useContext(UserContext);
 	const [formData, setFormData] = useState({ login: "", password: "" });
-	const [errors, setErrors] = useState([]);
+	const {addMessage} = useContext(messageContext);
 	const [captchaVal, setCaptchaVal] = useState(null);
 
 	const handleChange = (e) => {
@@ -22,15 +19,11 @@ export default function LoginPage() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		if (!captchaVal) {
-			setErrors((prevErrors) => [...prevErrors, "Captcha Invalido"]);
-
-			setTimeout(() => {
-				setErrors([]);
-			}, 5000);
+			addMessage("Captcha Invalido");
 			return;
 		}
 		try {
-			const response = await axios({
+			await axios({
 				method: "POST",
 				data: formData,
 				withCredentials: true,
@@ -51,11 +44,7 @@ export default function LoginPage() {
 			window.location.reload(true);
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
-			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-			setTimeout(() => {
-				setErrors([]);
-			}, 5000);
+			addMessage(customErrorMessage);
 		}
 	};
 
@@ -70,11 +59,7 @@ export default function LoginPage() {
 			customErrorMessage = `O campo de ${inputName} é obrigatório.`;
 		}
 
-		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-		setTimeout(() => {
-			setErrors([]);
-		}, 5000);
+		addMessage(customErrorMessage);
 	};
 
 	const handleGoogleLogin = async () => {
@@ -85,22 +70,7 @@ export default function LoginPage() {
 		}
 	};
 
-	const renderErrorsMessage = () => {
-		return (
-			<div className="errors-message">
-				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
-				<div>
-					{errors.map((erro, index) => {
-						return (
-							<p key={index} className="errors-message__error">
-								{erro}
-							</p>
-						);
-					})}
-				</div>
-			</div>
-		);
-	};
+	
 
 	return (
 		<div className="page-content">
@@ -192,7 +162,6 @@ export default function LoginPage() {
 					</svg>
 					Logar com o Google
 				</button>
-				{errors.length > 0 && renderErrorsMessage()}
 			</div>
 		</div>
 	);

@@ -1,7 +1,6 @@
-import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { messageContext } from "../../components/messageStateProvider";
 
 export default function ReportProblem() {
 	const [formData, setFormData] = useState({
@@ -11,7 +10,7 @@ export default function ReportProblem() {
 		page: "",
 		user: "",
 	});
-	const [errors, setErrors] = useState([]);
+	const {addMessage, setMessageType} = useContext(messageContext);
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
@@ -26,7 +25,7 @@ export default function ReportProblem() {
 				headers: {
 					Authorization:process.env.REACT_APP_API_KEY,
 				},
-				url: `/api/data/user/report`,
+				url: `/api/user/report`,
 			});
 			setFormData({
 				type: "",
@@ -35,20 +34,12 @@ export default function ReportProblem() {
 				page: "",
 				user: "",
 			});
-			//TODO change to make a success message instead
 			const customErrorMessage = response.data.message;
-			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-			setTimeout(() => {
-				setErrors([]);
-			}, 5000);
+			addMessage(customErrorMessage);
+			setMessageType("Success")
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
-			setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-			setTimeout(() => {
-				setErrors([]);
-			}, 5000);
+			addMessage(customErrorMessage);
 		}
 	};
 	const handleInvalid = (e) => {
@@ -59,30 +50,10 @@ export default function ReportProblem() {
 		let customErrorMessage = "";
 
 		if (input.validity.valueMissing) {
-			customErrorMessage = `${inputName} field is required.`;
+			customErrorMessage = `O campo de ${inputName} é obrigatório`;
 		}
 
-		setErrors((prevErrors) => [...prevErrors, customErrorMessage]);
-
-		setTimeout(() => {
-			setErrors([]);
-		}, 5000);
-	};
-	const renderErrorsMessage = () => {
-		return (
-			<div className="errors-message">
-				<FontAwesomeIcon icon={faCircleXmark} size="lg" />
-				<div>
-					{errors.map((erro, index) => {
-						return (
-							<p key={index} className="errors-message__error">
-								{erro}
-							</p>
-						);
-					})}
-				</div>
-			</div>
-		);
+		addMessage(customErrorMessage);
 	};
 
 	return (
@@ -220,7 +191,6 @@ export default function ReportProblem() {
 					/>
 					<button className="button">Enviar sugestão</button>
 				</form>
-				{errors.length > 0 && renderErrorsMessage()}
 			</div>
 		</div>
 	);
