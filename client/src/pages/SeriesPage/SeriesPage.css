@@ -39,7 +39,7 @@
 }
 .series__mobile-options--selected {
 	background-color: var(--text);
-	color: white;
+	color: var(--background);
 	border: none;
 }
 .series__details-container {

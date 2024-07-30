@@ -12,8 +12,9 @@ import {
 	faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 import "./NavBar.css";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "./userProvider";
+import { LuMoonStar, LuSunDim } from "react-icons/lu";
 
 function NavLink({ to, icon, label }) {
 	return (
@@ -32,6 +33,26 @@ function NavLink({ to, icon, label }) {
 export default function NavBar() {
 	const { user } = useContext(UserContext);
 	const [menuVisibility, setMenuVisibility] = useState(false);
+	const [theme, setTheme] = useState(
+		localStorage.theme ? localStorage.theme : "light"
+	);
+	useEffect(() => {
+		if (theme === "light") {
+			document.body.classList = "light";
+			localStorage.theme = "light";
+		} else {
+			document.body.classList = "dark";
+			localStorage.theme = "dark";
+		}
+	}, [theme]);
+
+	const toggleTheme = () => {
+		if (theme === "light") {
+			setTheme("dark");
+		} else {
+			setTheme("light");
+		}
+	};
 	return (
 		<div className="menu">
 			{/*This div appears only when on mobile devices */}
@@ -51,7 +72,11 @@ export default function NavBar() {
 					setMenuVisibility(false);
 				}}
 			>
-				<ul className={`navbar ${menuVisibility ? "mobile--visible" : ""}`}>
+				<ul
+					className={`navbar ${
+						menuVisibility ? "mobile--visible" : ""
+					}`}
+				>
 					<li className="navbar__button">
 						<NavLink
 							to={user ? `/user/${user.username}` : "/login"}
@@ -61,16 +86,28 @@ export default function NavBar() {
 					</li>
 					<li className="navbar__button">
 						<NavLink
-							to={user ? `/user/${user.username}/missing` : "/signup"}
+							to={
+								user
+									? `/user/${user.username}/missing`
+									: "/signup"
+							}
 							icon={user ? faList : faUserPlus}
 							label={user ? "Faltando" : "Criar conta"}
 						/>
 					</li>
 					<li className="navbar__button">
-						<NavLink to={"/browse"} icon={faMagnifyingGlass} label="Buscar" />
+						<NavLink
+							to={"/browse"}
+							icon={faMagnifyingGlass}
+							label="Buscar"
+						/>
 					</li>
 					<li className="navbar__button">
-						<NavLink to={"/feedback"} icon={faComment} label="Sugestões" />
+						<NavLink
+							to={"/feedback"}
+							icon={faComment}
+							label="Sugestões"
+						/>
 					</li>
 					<li className="navbar__button">
 						<NavLink
@@ -78,6 +115,10 @@ export default function NavBar() {
 							icon={user ? faRightToBracket : faHouse}
 							label={user ? "Sair" : "Início"}
 						/>
+					</li>
+					<li className="navbar__button navbar__button--theme" onClick={toggleTheme}>
+						{theme === "light" ? <LuMoonStar className="navbar__icon--theme"/> : <LuSunDim className="navbar__icon--theme"/>}
+						<span className="navbar__label navbar__label--theme">{theme === "light" ? "Tema escuro": "Tema claro"}</span>
 					</li>
 					{/*Close icon that appears only when on mobile device*/}
 					<li className="navbar__button navbar__icon">

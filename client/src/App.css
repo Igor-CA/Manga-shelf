@@ -19,6 +19,14 @@
 	--secundary: #06517a;
 	--accent: #3db4f2;
 }
+.dark{
+	--text: #cbd5e1;
+	--background: #151d32;
+	--foreground: #1e293b;
+	--gray: 30,42,56;
+	--light-blue: 247,247,99;
+
+}
 body {
 	background-color: var(--background);
 }
@@ -57,6 +65,7 @@ body {
 }
 .button--disabled {
 	background-color: var(--text);
+	color: var(--background);
 	opacity: 0.6;
 }
 
