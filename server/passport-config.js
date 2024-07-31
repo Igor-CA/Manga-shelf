@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const localStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const asyncHandler = require("express-async-handler");
-
 module.exports = function (passport) {
 	passport.use(
 		new GoogleStrategy(
@@ -11,6 +10,7 @@ module.exports = function (passport) {
 				clientID: process.env.OAUTH_CLIENT_ID,
 				clientSecret: process.env.OAUTH_KEY,
 				callbackURL: process.env.CALLBACK_URL,
+				scope: ["profile", "email"],
 			},
 			asyncHandler(async (accessToken, refreshToken, profile, done) => {
 				try {
