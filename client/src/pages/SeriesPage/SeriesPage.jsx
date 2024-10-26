@@ -7,7 +7,7 @@ import PromptConfirm from "../../components/PromptConfirm";
 import SeriesInfoCard from "./SeriesInfoCard";
 import SeriesVolumesList from "./SeriesVolumesList";
 import { checkOwnedVolumes, customWindowConfirm } from "./utils";
-import SkeletonPage from "../VolumePage/SkeletonPage";
+import SkeletonPage from "../../components/SkeletonPage";
 import SkeletonVolumesList from "./SkeletonVolumesList";
 
 export default function SeriesPage() {
@@ -158,7 +158,7 @@ export default function SeriesPage() {
 				</>
 			) : (
 				<>
-					<SkeletonPage></SkeletonPage>
+					<SkeletonPage type="Series"></SkeletonPage>
 					<div
 						className={`series__volumes-container mobile-appearence ${
 							infoToShow !== "volumes"

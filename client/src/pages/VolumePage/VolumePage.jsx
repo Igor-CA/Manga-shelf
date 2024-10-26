@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./VolumePage.css";
-import SkeletonPage from "./SkeletonPage";
+import SkeletonPage from "../../components/SkeletonPage";
 import VolumeInfoCard from "./VolumeInfoCard";
 
 export default function VolumePage() {

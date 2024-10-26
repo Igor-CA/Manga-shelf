@@ -1,4 +1,4 @@
-export default function SkeletonPage() {
+export default function SkeletonPage({ type = "Volume" }) {
 	return (
 		<div className="volume">
 			<div className="volume__cover-wrapper">
@@ -6,13 +6,19 @@ export default function SkeletonPage() {
 				<div className="volume__main-info">
 					<div className="volume__functions">
 						<div className="button button--disabled">
-							<strong>Ver coleção</strong>
+							<strong>
+								{type === "Volume"
+									? "Ver coleção"
+									: "Adicionar todos"}
+							</strong>
 						</div>
 						<label
 							htmlFor="have-volume-check-mark"
 							className="button button--grow button--disabled"
 						>
-							Adicionar Volume
+							{type === "Volume"
+								? "Adicionar Volume"
+								: "Adicionar coleção"}
 						</label>
 						<input
 							type="checkbox"
@@ -21,9 +27,16 @@ export default function SkeletonPage() {
 							className="checkmark invisible"
 						/>
 					</div>
+					{type === "Series" && (
+						<div className="series__mobile-options-container">
+							<div className='series__mobile-options series__mobile-options--selected'>Detalhes</div>
+							<div className='series__mobile-options'>Volumes</div>
+						</div>
+					)}
 				</div>
 			</div>
 			<div className="volume__info-container">
+
 				<h1 className="volume__title series-card__loader">Titulo</h1>
 				<ul className="volume__details-container">
 					<li className="volume__details series-card__loader">

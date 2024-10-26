@@ -161,7 +161,7 @@ export default function SeriesInfoCard({
 								setInfoToShow("details");
 							}}
 						>
-							Details
+							Detalhes
 						</div>
 						<div
 							className={`series__mobile-options series__mobile-options--${
