@@ -28,6 +28,7 @@ export default function VolumeItem({
 					sizes=" (min-width: 1024px) 15vw,
 							(min-width: 768px) 20vw, 
 							(max-width: 768px) 20vw, "
+					loading="lazy"
 					alt={`cover volume ${volumeNumber}`}
 					className="series__volume__image"
 				/>

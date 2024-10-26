@@ -68,6 +68,7 @@ export default function VolumeInfoCard({ volumeData }) {
 							/images/extralarge/${image} 1000w,`
 						}
 						alt={`cover ${serie.title} volume ${number}`}
+						loading="lazy"
 						className={`series-card__img ${
 							!loaded && "series-card__img--loading"
 						}`}

@@ -29,6 +29,8 @@ export function SeriesCard({ itemDetails, itemType }) {
 							(min-width: 768px) 20vw, 
 							(min-width: 360px) and (max-width: 768px) 35vw, 
 							(max-width: 320px) 50vw"
+					loading="lazy"
+
 					alt={`cover of ${title}`}
 					className={`series-card__img ${
 						!loaded && "series-card__img--loading"

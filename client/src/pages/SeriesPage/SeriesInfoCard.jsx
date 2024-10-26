@@ -109,6 +109,8 @@ export default function SeriesInfoCard({
 						}
 						sizes=" (min-width: 768px) 360px, 
 								(max-width: 768px) 100vw,"
+						loading="lazy"
+
 						alt={`cover volume ${title}`}
 						className={`series-card__img ${
 							!loaded && "series-card__img--loading"
