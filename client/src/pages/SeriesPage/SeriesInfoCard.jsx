@@ -98,8 +98,17 @@ export default function SeriesInfoCard({
 		<div className="series">
 			<div className="series__image-wrapper">
 				<div className="series-card__image-container">
+					
 					<img
-						src={seriesCover}
+						src={`/images/medium/${seriesCover}`}
+						srcSet={`
+							/images/small/${seriesCover} 100w,
+							/images/medium/${seriesCover} 400w, 
+							/images/large/${seriesCover} 700w,
+							/images/extralarge/${seriesCover} 1000w,`
+						}
+						sizes=" (min-width: 768px) 360px, 
+								(max-width: 768px) 100vw,"
 						alt={`cover volume ${title}`}
 						className={`series-card__img ${
 							!loaded && "series-card__img--loading"

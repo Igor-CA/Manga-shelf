@@ -21,7 +21,7 @@ SeriesSchema.virtual("seriesCover").get(function () {
 		.replace(/[?:/–\s]+/g, "-")
 		.replace(/-+/g, "-");
 	const nameURL = encodeURIComponent(sanitizedTitle);
-	return `${process.env.HOST_ORIGIN}/images/cover-${nameURL}-1.jpg`;
+	return `cover-${nameURL}-1.webp`;
 });
 
 SeriesSchema.set("toObject", { virtuals: true });

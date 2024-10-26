@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 
 export function SeriesCard({ itemDetails, itemType }) {
 	const [loaded, setLoaded] = useState(false);
-	const { title, image, _id, completionPercentage, volumeNumber } = itemDetails;
-	const link = (itemType === "Series")?`/series/${_id}`:`/volume/${_id}`
-	const imageText = (itemType === "Series")?title:`${title} - ${volumeNumber}`
+	const { title, image, _id, completionPercentage, volumeNumber } =
+		itemDetails;
+	const link = itemType === "Series" ? `/series/${_id}` : `/volume/${_id}`;
+	const imageText =
+		itemType === "Series" ? title : `${title} - ${volumeNumber}`;
 
 	const handleLoading = () => {
 		setLoaded(true);
@@ -16,9 +18,21 @@ export function SeriesCard({ itemDetails, itemType }) {
 		<div className="series-card">
 			<Link to={link} className="series-card__image-container">
 				<img
-					src={image}
+					src={`/images/medium/${image}`}
+					srcSet={`
+						/images/small/${image} 100w,
+						/images/medium/${image} 400w, 
+						/images/large/${image} 700w,
+						/images/extralarge/${image} 1000w,`
+					}
+					sizes=" (min-width: 1024px) 15vw, 
+							(min-width: 768px) 20vw, 
+							(min-width: 360px) and (max-width: 768px) 35vw, 
+							(max-width: 320px) 50vw"
 					alt={`cover of ${title}`}
-					className={`series-card__img ${!loaded && "series-card__img--loading"}`}
+					className={`series-card__img ${
+						!loaded && "series-card__img--loading"
+					}`}
 					onLoad={handleLoading}
 				/>
 				{completionPercentage > 0 && (

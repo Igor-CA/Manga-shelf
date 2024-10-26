@@ -18,7 +18,16 @@ export default function VolumeItem({
 				className="series__volume__image-wrapper"
 			>
 				<img
-					src={image}
+					src={`/images/medium/${image}`}
+					srcSet={`
+						/images/small/${image} 100w,
+						/images/medium/${image} 400w, 
+						/images/large/${image} 700w,
+						/images/extralarge/${image} 1000w,`
+					}
+					sizes=" (min-width: 1024px) 15vw,
+							(min-width: 768px) 20vw, 
+							(max-width: 768px) 20vw, "
 					alt={`cover volume ${volumeNumber}`}
 					className="series__volume__image"
 				/>

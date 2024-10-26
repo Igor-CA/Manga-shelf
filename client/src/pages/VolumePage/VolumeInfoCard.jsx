@@ -60,7 +60,13 @@ export default function VolumeInfoCard({ volumeData }) {
 			<div className="volume__cover-wrapper">
 				<div className="series-card__image-container">
 					<img
-						src={image}
+						src={`/images/medium/${image}`}
+						srcSet={`
+							/images/small/${image} 100w,
+							/images/medium/${image} 400w, 
+							/images/large/${image} 700w,
+							/images/extralarge/${image} 1000w,`
+						}
 						alt={`cover ${serie.title} volume ${number}`}
 						className={`series-card__img ${
 							!loaded && "series-card__img--loading"

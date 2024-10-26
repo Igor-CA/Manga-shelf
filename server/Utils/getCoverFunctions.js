@@ -3,7 +3,7 @@ function getSeriesCoverURL(Series) {
 		.replace(/[?:/–\s]+/g, "-")
 		.replace(/-+/g, "-");
 	const nameURL = encodeURIComponent(sanitizedTitle);
-	const imageURL = `${process.env.HOST_ORIGIN}/images/cover-${nameURL}-1.jpg`;
+	const imageURL = `cover-${nameURL}-1.webp`;
 	return imageURL;
 }
 
@@ -12,7 +12,7 @@ function getVolumeCoverURL(Series, volumeNumber) {
 		.replace(/[?:/–\s]+/g, "-")
 		.replace(/-+/g, "-");
 	const nameURL = encodeURIComponent(sanitizedTitle);
-	const imageURL = `${process.env.HOST_ORIGIN}/images/cover-${nameURL}-${volumeNumber}.jpg`;
+	const imageURL = `cover-${nameURL}-${volumeNumber}.webp`;
 	return imageURL;
 }
 
