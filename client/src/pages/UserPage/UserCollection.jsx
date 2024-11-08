@@ -2,6 +2,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
 import axios from "axios";
 
+const genreList = [
+	"Action",
+];
+const publishersList = [
+	"Viz media",
+];
 export default function UserCollection() {
 	const { username } = useParams();
 	const navigate = useNavigate();
@@ -46,6 +52,51 @@ export default function UserCollection() {
 
 	return (
 		<div className="user-collection container">
+			<div className="filter">
+				<div className="filter__search">
+					<label htmlFor="search-bar" className="filter__label">
+						Buscar
+						<input type="text" name="search-bar" id="search-bar" autoComplete="off" placeholder="Buscar" className="form__input filter__input filter__input--grow " />
+					</label>
+				</div>
+
+				<div className="filter__types">
+					<label htmlFor="genres" className="filter__label">
+						Gêneros
+						<select name="genres" id="genres" className="form__input filter__input">
+							{genreList.map((genre, id) => {
+								return (
+									<option value={id} key={id}>
+										{genre}
+									</option>
+								);
+							})}
+						</select>
+					</label>
+					<label htmlFor="publisher" className="filter__label">
+						Editora
+						<select name="publisher" id="publisher" className="form__input filter__input">
+							{publishersList.map((publisher, id) => {
+								return (
+									<option value={id} key={id}>
+										{publisher}
+									</option>
+								);
+							})}
+						</select>
+					</label>
+					<label htmlFor="ordering" className="filter__label">
+						Ordem
+						<select name="ordering" id="ordering" className="form__input filter__input">
+							<option value={1}>Alfabética</option>
+							<option value={2}>Adicionados</option>
+							<option value={3}>Tamanho</option>
+							<option value={4}>Editora</option>
+							<option value={5}>Status</option>
+						</select>
+					</label>
+				</div>
+			</div>
 			<SeriesCardList
 				skeletonsCount={36}
 				fetchFunction={querryUserList}

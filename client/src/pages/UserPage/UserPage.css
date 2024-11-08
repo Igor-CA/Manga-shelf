@@ -5,28 +5,46 @@
     flex-direction: column;
 
     background: linear-gradient(var(--secundary), var(--primary));
-    
+    min-height: 240px;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: flex-end;
     color: white;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 1);
 }
 .user-collection{
     position: relative;
     min-height: 50vh;
 }
+.profile-header__info{
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    width: 100%;
+    gap: 1em;
+    margin-bottom: 0;
+}
+.user-name{
+    padding-bottom: 10px;
+    line-break: anywhere;
+    font-size: 1em;
+}
+.profile-header__button{
+    margin-left: auto;
+    margin-bottom: 10px; 
+    margin-right: 10px;
+}
 .profile-header__picture{
+    max-width: 120px;
+    max-height: 120px;
     aspect-ratio: 1/1;
-    border-radius: 50%;
+    border-radius: 10px 10px 0px 0px;
     border: 2px solid white;
     height: 200px;
     background-color: rgb(230, 232, 240);
+    margin-left: 10px;
 }
 .profile-header__navbar{
     align-self: stretch;
-
-    background-color: var(--secundary);
-
+    background-color: var(--foreground);
     overflow-x: scroll;
 }
 .profile-header__navbar__list{
@@ -40,16 +58,69 @@
     padding: 15px;
     text-align: center;
     text-decoration: none;
-    color: #edf1f5;
+    color: var(--text);
+    opacity: 80%;
     font-weight: bold;
     white-space: nowrap;
 }
+.profile-header__navbar__link--active{
+    color: var(--accent);
+}
 .profile-header__navbar__link:hover{
-    transition: 100ms;
-    background-color: #ffffff37;
+    transition: 200ms;
+    color: var(--accent);
+}
+
+.filter{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+.filter__search{
+    flex-grow: 1;
+    width: 100%;
+}
+.filter__types{
+    display: flex;
+    flex-direction: row;
+    overflow: scroll;
+    gap: 10px;
+}
+.filter__input {
+    width: 100%;
+    margin-top: 10px;
+}.filter__input::placeholder{
+    font-weight: normal;
+}
+.filter__label{
+    color: var(--text);
+    font-weight: bold;
+    flex-grow: 1;
+}
+.filter__search__container{
+    display: flex;
+    width: 100%;
+    margin-top: 10px;
 }
 @media only screen and (min-width: 768px) {
     .profile-header__navbar__list{
         justify-content: space-evenly;
+    }
+    .profile-header__picture{
+        max-width: 160px;
+        max-height: 160px;
+    }
+}
+@media only screen and (min-width: 1024px) {
+    .filter{
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        padding: 10px;
+    }
+    .filter__search{
+        flex-grow: 1;
+        width: auto;
     }
 }
