@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
 	username: { type: String },
 	email: { type: String, required: true },
-	password: { type: String, required: true },
+	password: { type: String },
 	userList: [
 		{
 			Series: {
@@ -19,6 +19,8 @@ const UserSchema = new Schema({
 	following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	tokenTimestamp: { type: Date },
 	token: { type: String },
+	TOSAcceptedAt: {type: Date, required:true}, 
+	TOSAccepted: {type: Boolean,} // To fit users created before adding of TOSAcceptedAt
 });
 
 module.exports = mongoose.model("User", UserSchema);

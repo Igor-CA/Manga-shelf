@@ -21,6 +21,7 @@ import ToSPage from "./pages/Tos/ToSPage";
 import ScrollToTop from "./utils/ScrollToTop";
 import LogoutPage from "./pages/AuthenticationPage/LogoutPage";
 import MessageComponent from "./components/MessageComponent";
+import UserNameModal from "./pages/AuthenticationPage/UserNameModal";
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
@@ -53,6 +54,9 @@ function App() {
 			<BrowserRouter>
 				<NavBar></NavBar>
 				<ScrollToTop />
+				{user && user?.username === undefined &&
+					<UserNameModal>precisa setar nome</UserNameModal>
+				}
 				<Routes>
 					<Route path="/" element={<Home />}></Route>
 					<Route path="/signup" element={<SignupPage />}></Route>

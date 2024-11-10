@@ -19,8 +19,8 @@ module.exports = function (passport) {
 					});
 					if (!user) {
 						const newUser = new User({
+							TOSAcceptedAt: new Date(),
 							email: profile._json.email,
-							username: profile._json.name,
 						});
 						await newUser.save();
 						return done(null, newUser);

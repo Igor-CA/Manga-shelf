@@ -10,6 +10,7 @@
 	flex-direction: column;
 	gap: 10px;
 	background-color: var(--foreground);
+	color: var(--text);
     width: 100%;
     min-height: 100vh;
     padding: 40px;

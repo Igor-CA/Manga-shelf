@@ -41,6 +41,15 @@ body {
 	min-height: 100vh;
 	position: relative;
 }
+.page-content--modal {
+	min-height: 100vh;
+	min-width: 100vw;
+	position: fixed;
+	top: 0;
+	padding-top: 80px;
+	z-index: 99999;
+	background: rgba(0, 0, 0, .5);
+}
 
 .button {
 	text-align: center;

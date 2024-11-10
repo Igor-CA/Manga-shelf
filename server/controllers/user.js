@@ -67,14 +67,12 @@ exports.signup = [
 		} = req.body;
 
 		if (password !== confirmPassword) {
-			return res
-				.status(409)
-				.json({ message: "Passwords don't match properly" });
+			return res.status(409).json({ message: "Senhas não combinam" });
 		}
 		if (!tosCheckbox) {
-			return res
-				.status(409)
-				.json({ message: "Precisa concordar com os termos de serviço" });
+			return res.status(409).json({
+				message: "Precisa concordar com os termos de serviço",
+			});
 		}
 
 		const [existingUser] = await User.find()
@@ -84,7 +82,7 @@ exports.signup = [
 		if (existingUser) {
 			return res
 				.status(409)
-				.json({ message: "Email or username is already in use" });
+				.json({ message: "Email ou nome de usuário já existe" });
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
@@ -92,6 +90,7 @@ exports.signup = [
 			username,
 			password: hashedPassword,
 			email,
+			TOSAcceptedAt: new Date(),
 		});
 		await newUser.save();
 		res.status(201).json({ message: "User created successfully" });
@@ -124,9 +123,9 @@ exports.login = [
 			.or([{ username: req.body.login }, { email: req.body.login }])
 			.limit(1);
 		if (!user) {
-			res
-				.status(401)
-				.json({ message: "User or password are incorrect try again" });
+			res.status(401).json({
+				message: "Usuário ou senha está errado, tente novamente.",
+			});
 			return;
 		}
 
@@ -140,9 +139,9 @@ exports.login = [
 				res.send({ msg: "Successfully authenticated" });
 			});
 		} else {
-			res
-				.status(401)
-				.json({ message: "User or password are incorrect try again" });
+			res.status(401).json({
+				message: "Usuário ou senha está errado, tente novamente.",
+			});
 		}
 	}),
 ];
@@ -254,7 +253,9 @@ exports.resetPassword = [
 		const currentTimeStamp = new Date();
 		const user = await User.findOne({ _id: req.body.userId });
 		if (!user) {
-			res.status(400).json({ message: "Error: this user does not exist" });
+			res.status(400).json({
+				message: "Erro: Esse usuário não existe",
+			});
 			return;
 		}
 
@@ -367,7 +368,10 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	if (targetUser) {
 		const page = parseInt(req.query.p) || 1;
 		const skip = ITEMS_PER_PAGE * (page - 1);
-		const user = await User.findOne({ username: targetUser }, { userList: 1 })
+		const user = await User.findOne(
+			{ username: targetUser },
+			{ userList: 1 }
+		)
 			.select({ userList: { $slice: [skip, ITEMS_PER_PAGE] } })
 			.populate({
 				path: "userList.Series",
@@ -380,7 +384,11 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 				const { Series, completionPercentage } = series;
 				const seriesObj = Series.toObject();
 				const { seriesCover, ...seriesData } = seriesObj;
-				return { ...seriesData, image: seriesCover, completionPercentage };
+				return {
+					...seriesData,
+					image: seriesCover,
+					completionPercentage,
+				};
 			});
 			res.send(filteredList);
 		} else {
@@ -478,9 +486,11 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			{ $limit: ITEMS_PER_PAGE },
 		];
 
-		const missingVolumesList = await User.aggregate(aggregationPipeline).exec();
+		const missingVolumesList = await User.aggregate(
+			aggregationPipeline
+		).exec();
 		const listWithImages = missingVolumesList.map((volume) => {
-			const seriesObject = {title:volume.series}
+			const seriesObject = { title: volume.series };
 			return {
 				...volume,
 				title: volume.series,
@@ -526,7 +536,8 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 					id = volumesId.toString();
 					return user.ownedVolumes.includes(id);
 				});
-				const completePorcentage = haveFromSeries.length / seriesList.length;
+				const completePorcentage =
+					haveFromSeries.length / seriesList.length;
 
 				const seriesBeingAdded = user.userList[indexOfSeries];
 				seriesBeingAdded.completionPercentage = completePorcentage;
@@ -566,7 +577,8 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 				id = volumesId.toString();
 				return user.ownedVolumes.includes(id);
 			});
-			const completePorcentage = haveFromSeries.length / seriesList.length;
+			const completePorcentage =
+				haveFromSeries.length / seriesList.length;
 
 			user.userList[0].completionPercentage = completePorcentage;
 
@@ -579,3 +591,39 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 		res.send({ msg: "User need to be authenticated" });
 	}
 });
+
+exports.setUserName = [
+	body("username")
+		.trim()
+		.notEmpty()
+		.withMessage("É obrigatório informar um nome de usuário.")
+		.matches(/^[A-Za-z0-9]{3,16}$/)
+		.withMessage(
+			"O nome de usuário não pode ter caracteres especiais (!@#$%^&*) e deve ter entre 3 e 16 caracteres."
+		)
+		.escape(),
+
+	asyncHandler(async (req, res, next) => {
+		if (req.headers.authorization !== process.env.API_KEY) {
+			return res.status(401).json({ msg: "Not authorized" });;
+		}
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ message: errors.array() });
+		}
+		if (!req.isAuthenticated()) {
+			return res.status(401).json({ msg: "Usuário deve estar logado" });
+		}
+		
+		
+		const user = await User.findOne({ username: req.body.username });
+		if (user) {
+			return res.status(409).json({ msg: "Nome de usuário já existe" });
+		}
+
+		await User.findByIdAndUpdate(req.user._id, {
+			username: req.body.username,
+		});
+		res.send({ msg: "Nome atualizado com sucesso" });
+	}),
+];
