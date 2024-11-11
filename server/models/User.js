@@ -19,8 +19,9 @@ const UserSchema = new Schema({
 	following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	tokenTimestamp: { type: Date },
 	token: { type: String },
-	TOSAcceptedAt: {type: Date, required:true}, 
-	TOSAccepted: {type: Boolean,} // To fit users created before adding of TOSAcceptedAt
+	TOSAcceptedAt: { type: Date },
+	TOSAccepted: { type: Boolean }, // To fit users created before adding of TOSAcceptedAt
+	profileImageUrl: { type: String },
 });
 
 module.exports = mongoose.model("User", UserSchema);

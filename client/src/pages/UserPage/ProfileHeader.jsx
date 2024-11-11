@@ -1,26 +1,77 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import ImageModal from "../../components/ImageModal";
+import axios from "axios";
+import { UserContext } from "../../components/userProvider";
 
 export default function ProfileHeader({ user }) {
+	const [loaded, setLoaded] = useState(false);
+	const [showModal, setShowModal] = useState(false);
 	const location = useLocation();
-	const { username } = user;
+	const { user: loggedUser } = useContext(UserContext);
 	const [activeLink, setActiveLink] = useState(
-		location.pathname.replace(`/user/${username}`, "")
+		location.pathname.replace(`/user/${user}`, "")
 	);
+	const avatarUrl = useRef("");
 
 	useEffect(() => {
-		setActiveLink(location.pathname.replace(`/user/${username}`, ""));
-	}, [location]);
+		const getProfilePicture = async (page) => {
+			try {
+				const res = await axios({
+					method: "GET",
+					withCredentials: true,
+					headers: {
+						Authorization: process.env.REACT_APP_API_KEY,
+					},
+					params: {
+						p: page,
+					},
+					url: `/api/data/get-user-info/${user}`,
+				});
+				avatarUrl.current = res.data?.profileImageUrl
+					? res.data.profileImageUrl
+					: "/images/deffault-profile-picture.webp";
+			} catch (error) {}
+		};
+		getProfilePicture();
+		console.log("user")
+	},[user]);
+
+	useEffect(() => {
+		setActiveLink(location.pathname.replace(`/user/${user}`, ""));
+	}, [location, user]);
+
+	const toggleModal = () => {
+		setShowModal((prev) => !prev);
+	};
+	const handleLoading = () => {
+		setLoaded(true);
+	};
 	return (
 		<div>
+			{showModal && <ImageModal closeModal={toggleModal}></ImageModal>}
 			<header className="profile-header">
 				<div className="container profile-header__info">
-					<img
-						src={`/images/deffault-profile-picture.webp`}
-						alt="user profile"
-						className="profile-header__picture"
-					></img>
-					<h1 className="user-name">{username}</h1>
+					<div className="profile-header__picture-container">
+						<img
+							src={avatarUrl.current}
+							alt="user profile"
+							className={`profile-header__picture ${
+								!loaded && "profile-header__picture--loading"
+							}`}
+							onLoad={handleLoading}
+						></img>
+						{loggedUser?.username === user && (
+							<button
+								className="profile-header__change-picture-button"
+								onClick={toggleModal}
+							>
+								Mudar foto de perfil
+							</button>
+						)}
+					</div>
+					<h1 className="user-name">{user}</h1>
+
 					<button className="button profile-header__button">
 						Seguir
 					</button>
@@ -30,7 +81,7 @@ export default function ProfileHeader({ user }) {
 				<ul className="profile-header__navbar__list">
 					<li>
 						<Link
-							to={`/user/${username}`}
+							to={`/user/${user}`}
 							className={getStyle(activeLink === "")}
 						>
 							Estante
@@ -38,7 +89,7 @@ export default function ProfileHeader({ user }) {
 					</li>
 					<li>
 						<Link
-							to={`/user/${username}/missing`}
+							to={`/user/${user}/missing`}
 							className={getStyle(activeLink === "/missing")}
 						>
 							Volumes faltosos
@@ -46,7 +97,7 @@ export default function ProfileHeader({ user }) {
 					</li>
 					<li>
 						<Link
-							to={`/user/${username}/stats`}
+							to={`/user/${user}/stats`}
 							className={getStyle(activeLink === "/stats")}
 						>
 							Informações
@@ -54,7 +105,7 @@ export default function ProfileHeader({ user }) {
 					</li>
 					<li>
 						<Link
-							to={`/user/${username}/socials`}
+							to={`/user/${user}/socials`}
 							className={getStyle(activeLink === "/socials")}
 						>
 							Social
