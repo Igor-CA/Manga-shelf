@@ -16,6 +16,7 @@ export default function ProfileHeader({ user }) {
 
 	useEffect(() => {
 		const getProfilePicture = async (page) => {
+			setLoaded(false)
 			try {
 				const res = await axios({
 					method: "GET",
@@ -32,9 +33,9 @@ export default function ProfileHeader({ user }) {
 					? res.data.profileImageUrl
 					: "/images/deffault-profile-picture.webp";
 			} catch (error) {}
+			finally{setLoaded(true)}
 		};
 		getProfilePicture();
-		console.log("user")
 	},[user]);
 
 	useEffect(() => {

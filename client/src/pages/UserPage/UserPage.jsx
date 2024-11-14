@@ -10,7 +10,7 @@ export default function UserPage() {
 
 	return (
 		<>
-			<div className="page-content">
+			<div className="page-content" key={username}>
 				<ProfileHeader user={username}></ProfileHeader>
 				<Routes>
 					<Route path="missing" element={<MissingVolumesPage />}></Route>
