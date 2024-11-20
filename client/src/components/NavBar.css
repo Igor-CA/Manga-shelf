@@ -34,7 +34,7 @@
 .mobile--visible {
 	pointer-events: auto;
 	height: 225px;
-	width: 230px;
+	width: 245px;
 	opacity: 1;
 	transition: 0.2s;
 	background-color: var(--background);
@@ -46,7 +46,8 @@
 }
 .navbar__label {
 	white-space: nowrap;
-	font-size: 0.8em;
+	margin-top: 0.5em;
+	font-size: 0.65em;
 	display: block;
 	cursor: pointer;
 }
@@ -78,6 +79,7 @@
 	}
     .navbar__label{
         color: white;
+		font-size: 0.8rem;
     }
     .navbar__label:hover{
 		text-decoration: underline;

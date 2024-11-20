@@ -37,12 +37,10 @@
     overflow: scroll;
 }
 .not-found-message{
+	grid-column: span 10;
+	margin: 2rem auto;
 	text-align: center;
 	color: var(--text);
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	translate: -50% -50%;
 	max-width: 600px;
 }.not-found-message > a{
 	text-decoration: underline;

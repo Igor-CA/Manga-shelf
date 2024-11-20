@@ -97,7 +97,7 @@ export default function SeriesCardList({
 					.map((_, id) => {
 						return <SkeletonSeriesCard key={id}></SkeletonSeriesCard>;
 					})}
-			{showErrorComponent && errorComponent()}
+			{showErrorComponent && !loading && errorComponent()}
 		</div>
 	);
 }

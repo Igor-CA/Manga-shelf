@@ -64,7 +64,7 @@ export default function ImageModal({ closeModal }) {
 							className="modal__button"
 							onClick={closeModal}
 						>
-							<span className="sr-only">Close menu</span>
+							<span className="sr-only">Fechar aba</span>
 							<IoIosClose />
 						</button>
 						<ImageCropper

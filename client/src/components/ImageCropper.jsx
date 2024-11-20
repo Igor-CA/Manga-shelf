@@ -65,7 +65,7 @@ export default function ImageCropper({ closeModal, updateAvatar }) {
 	return (
 		<>
 			<label className="file-label">
-				<span className="sr-only">Choose profile photo</span>
+				<span className="sr-only">Escolha foto de perfil</span>
 				<input
 					type="file"
 					accept="image/*"
