@@ -1,6 +1,9 @@
 const User = require("../models/User");
 const Series = require("../models/Series");
-const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
+const {
+	getVolumeCoverURL,
+	getSeriesCoverURL,
+} = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
@@ -382,28 +385,83 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	if (targetUser) {
 		const page = parseInt(req.query.p) || 1;
 		const skip = ITEMS_PER_PAGE * (page - 1);
-		const user = await User.findOne(
-			{ username: targetUser },
-			{ userList: 1 }
-		)
-			.select({ userList: { $slice: [skip, ITEMS_PER_PAGE] } })
-			.populate({
-				path: "userList.Series",
-				select: "title",
-			})
+		const { publisher, genre } = req.query;
+		const title = req.query["search-bar"];
 
-			.exec();
+		const filter = {};
+		if (genre) filter["userList.Series.genres"] = { $in: [genre] };
+		if (publisher) filter["userList.Series.publisher"] = publisher;
+		if (title) {
+			filter.$or = [
+				{ "userList.Series.title": { $regex: title, $options: "i" } },
+				{
+					"userList.Series.synonyms": {
+						$regex: title,
+						$options: "i",
+					},
+				},
+				{ "userList.Series.authors": { $regex: title, $options: "i" } },
+			];
+		}
+
+		const sortOptions = {
+			title: "userList.Series.title",
+			publisher: "userList.Series.publisher",
+			volumes: "volumesLength",
+			status: "userList.completionPercentage",
+			timestamp: "userList.timestamp",
+		};
+		const ordering = req.query.ordering || "title";
+
+		const sortStage = {};
+			sortStage[sortOptions[ordering]] = 1;
+			sortStage["userList.Series.title"] = 1; 
+		
+
+		const user = await User.aggregate([
+			{ $match: { username: targetUser } },
+			{
+				$project: {
+					userList: {
+						$filter: {
+							input: "$userList",
+							as: "item",
+							cond: { $ne: ["$$item.Series", null] },
+						},
+					},
+				},
+			},
+			{ $unwind: "$userList" },
+			{
+				$lookup: {
+					from: "series",
+					localField: "userList.Series",
+					foreignField: "_id",
+					as: "userList.Series",
+				},
+			},
+			{ $unwind: "$userList.Series" },
+			{ $addFields: { volumesLength: { $size: "$userList.Series.volumes" } } },
+			{ $match: filter },
+			{ $sort: sortStage },
+			{
+				$project: {
+					_id: "$userList.Series._id",
+					title: "$userList.Series.title",
+					completionPercentage: "$userList.completionPercentage",
+				},
+			},
+			{ $skip: skip },
+			{ $limit: ITEMS_PER_PAGE },
+		]);
 		if (user) {
-			const filteredList = user.userList.map((series) => {
-				const { Series, completionPercentage } = series;
-				const seriesObj = Series.toObject();
-				const { seriesCover, ...seriesData } = seriesObj;
+			const filteredList = user.map((series) => {
 				return {
-					...seriesData,
-					image: seriesCover,
-					completionPercentage,
+					...series,
+					image: getSeriesCoverURL(series),
 				};
 			});
+
 			res.send(filteredList);
 		} else {
 			res.status(400).json({ msg: "User not found" });
@@ -619,7 +677,7 @@ exports.setUserName = [
 
 	asyncHandler(async (req, res, next) => {
 		if (req.headers.authorization !== process.env.API_KEY) {
-			return res.status(401).json({ msg: "Not authorized" });;
+			return res.status(401).json({ msg: "Not authorized" });
 		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
@@ -628,8 +686,7 @@ exports.setUserName = [
 		if (!req.isAuthenticated()) {
 			return res.status(401).json({ msg: "Usuário deve estar logado" });
 		}
-		
-		
+
 		const user = await User.findOne({ username: req.body.username });
 		if (user) {
 			return res.status(409).json({ msg: "Nome de usuário já existe" });
@@ -642,11 +699,10 @@ exports.setUserName = [
 	}),
 ];
 exports.changeProfilePicture = [
-
 	upload.single("file"),
 	asyncHandler(async (req, res, next) => {
 		if (req.headers.authorization !== process.env.API_KEY) {
-			return res.status(401).json({ msg: "Not authorized" });;
+			return res.status(401).json({ msg: "Not authorized" });
 		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
@@ -659,9 +715,7 @@ exports.changeProfilePicture = [
 		user.profileImageUrl = `/images/avatar/${req.file.filename}`;
 		await user.save();
 		res.status(201).json(user);
-		
 	}),
-
 ];
 
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
@@ -670,15 +724,13 @@ exports.getUserInfo = asyncHandler(async (req, res, next) => {
 		return;
 	}
 	const targetUser = req.params.username;
-	if(!targetUser) return res.send({msg:"Nenhum usuário informado"})
-	
+	if (!targetUser) return res.send({ msg: "Nenhum usuário informado" });
+
 	const user = await User.findOne(
 		{ username: targetUser },
-		{ profileImageUrl: 1, username:1 }
-	)
+		{ profileImageUrl: 1, username: 1 }
+	);
 	if (!user) return res.status(400).json({ msg: "User not found" });
 
 	res.send(user);
-	
-	
 });

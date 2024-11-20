@@ -1,6 +1,8 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
 import axios from "axios";
+import { useCallback, useMemo, useState } from "react";
+import debaunce from "../../utils/debaunce";
 
 const genreList = [
 	"Action",
@@ -11,6 +13,8 @@ const publishersList = [
 export default function UserCollection() {
 	const { username } = useParams();
 	const navigate = useNavigate();
+	const [params, setParams] = useState({});
+	const functionArguments = useMemo(() => [params], [params]);
 
 	const querryUserList = async (page) => {
 		try {
@@ -22,6 +26,7 @@ export default function UserCollection() {
 				},
 				params: {
 					p: page,
+					...params
 				},
 				url: `/api/data/user/${username}`,
 			});
@@ -50,23 +55,54 @@ export default function UserCollection() {
 		);
 	};
 
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		if (value.trim() !== "" || value === null) {
+			debouncedSearch(name, value);
+		} else {
+			setParams({ ...params, [name]: value });
+		}
+	};
+
+	const debouncedSearch = useCallback(
+		debaunce((name, value) => {
+			console.log(name, value)
+			setParams({ ...params, [name]: value });
+		}, 500),
+		[params]
+	);
 	return (
 		<div className="user-collection container">
 			<div className="filter">
 				<div className="filter__search">
 					<label htmlFor="search-bar" className="filter__label">
 						Buscar
-						<input type="text" name="search-bar" id="search-bar" autoComplete="off" placeholder="Buscar" className="form__input filter__input filter__input--grow " />
+						<input
+							type="text"
+							name="search-bar"
+							id="search-bar"
+							autoComplete="off"
+							placeholder="Buscar"
+							className="form__input filter__input filter__input--grow "
+							onChange={handleChange}
+						/>
 					</label>
 				</div>
 
 				<div className="filter__types">
-					<label htmlFor="genres" className="filter__label">
+					<label htmlFor="genre" className="filter__label">
 						Gêneros
-						<select name="genres" id="genres" className="form__input filter__input">
+						<select
+							name="genre"
+							id="genre"
+							className="form__input filter__input"
+							onChange={handleChange}
+							defaultValue={""}
+						>
+							<option value={""}>Selecionar</option>
 							{genreList.map((genre, id) => {
 								return (
-									<option value={id} key={id}>
+									<option value={genre} key={id}>
 										{genre}
 									</option>
 								);
@@ -75,10 +111,17 @@ export default function UserCollection() {
 					</label>
 					<label htmlFor="publisher" className="filter__label">
 						Editora
-						<select name="publisher" id="publisher" className="form__input filter__input">
+						<select
+							name="publisher"
+							id="publisher"
+							className="form__input filter__input"
+							onChange={handleChange}
+							defaultValue={""}
+						>
+							<option value="">Selecionar</option>
 							{publishersList.map((publisher, id) => {
 								return (
-									<option value={id} key={id}>
+									<option value={publisher} key={id}>
 										{publisher}
 									</option>
 								);
@@ -87,20 +130,27 @@ export default function UserCollection() {
 					</label>
 					<label htmlFor="ordering" className="filter__label">
 						Ordem
-						<select name="ordering" id="ordering" className="form__input filter__input">
-							<option value={1}>Alfabética</option>
-							<option value={2}>Adicionados</option>
-							<option value={3}>Tamanho</option>
-							<option value={4}>Editora</option>
-							<option value={5}>Status</option>
+						<select
+							name="ordering"
+							id="ordering"
+							className="form__input filter__input"
+							onChange={handleChange}
+						>
+							<option value={"title"}>Alfabética</option>
+							<option value={"added"}>Adicionados</option>
+							<option value={"volumes"}>Tamanho</option>
+							<option value={"publisher"}>Editora</option>
+							<option value={"status"}>Status</option>
 						</select>
 					</label>
+
 				</div>
 			</div>
 			<SeriesCardList
 				skeletonsCount={36}
 				fetchFunction={querryUserList}
 				errorComponent={EmptyListComponent}
+				functionArguments={functionArguments}
 			></SeriesCardList>
 		</div>
 	);
