@@ -15,14 +15,78 @@ import SeriesCardList from "../../components/SeriesCardList";
 
 const SKELETON_LOADING_COUNT = 12;
 
+const genreList = [
+	"Aventura",
+	"Ação",
+	"Comédia",
+	"Drama",
+	"Ecchi",
+	"Esportes",
+	"Fantasia",
+	"Ficção Científica",
+	"Garotas mágicas",
+	"Hentai",
+	"Mecha (Robôs gigantes)",
+	"Mistério",
+	"Música",
+	"Psicológico",
+	"Romance",
+	"Slice of Life",
+	"Sobrenatural",
+	"Suspense",
+	"Terror",
+];
+const publishersList = [
+	"Abril",
+	"Alta Geek",
+	"Alto Astral",
+	"Comix Zone",
+	"Conrad",
+	"Conrad / JBC",
+	"Darkside Books",
+	"Dealer",
+	"Devir",
+	"Escala",
+	"Excelsior",
+	"Galera Record",
+	"HQM",
+	"JBC",
+	"L&PM",
+	"MPEG",
+	"Morro Branco",
+	"Mythos",
+	"NewPOP",
+	"Nova Sampa",
+	"Novatec",
+	"Online",
+	"PNC",
+	"Panini",
+	"Pipoca & Nanquim",
+	"Savana",
+	"Skript",
+	"Todavia",
+	"Veneta",
+	"Zarabatana Books",
+];
+
 export default function BrowsePage() {
 	const [searchParams, setSearchParams] = useSearchParams();
-	const initialSearch = searchParams.get("q") || "";
-	const [searchBarValue, setSearchBarValue] = useState(initialSearch);
-	const [query, setQuery] = useState(initialSearch);
-	const functionArguments = useMemo(() => [query], [query]);
+	const urlSearch = searchParams.get("search-bar");
+	const urlGenre = searchParams.get("genre");
+	const urlPublisher = searchParams.get("publisher");
+	const urlOrder = searchParams.get("ordering");
+	const initialParams = {
+		...(urlSearch && { "search-bar": urlSearch }),
+		...(urlGenre && { genre: urlGenre }),
+		...(urlPublisher && { publisher: urlPublisher }),
+		...(urlOrder && { ordering: urlOrder }),
+	};
+	
+	const [searchBarValue, setSearchBarValue] = useState(urlSearch);
+	const [params, setParams] = useState(initialParams);
+	const functionArguments = useMemo(() => [params], [params]);
 
-	const fetchPage = async (page, query) => {
+	const fetchPage = async (page, params) => {
 		try {
 			const response = await axios({
 				method: "GET",
@@ -32,7 +96,7 @@ export default function BrowsePage() {
 				},
 				params: {
 					p: page,
-					q: query,
+					...params,
 				},
 				url: "/api/data/browse",
 			});
@@ -46,8 +110,8 @@ export default function BrowsePage() {
 	const ErrorComponent = () => {
 		return (
 			<p className="not-found-message">
-				Não encontramos nada para "{query}" verifique se você digitou
-				corretamente ou então{" "}
+				Não encontramos nada para "{params["search-bar"]}" verifique se
+				você digitou corretamente ou então{" "}
 				<Link to={"/feedback"}>
 					<strong>sugira sua obra para nós</strong>
 				</Link>{" "}
@@ -57,42 +121,103 @@ export default function BrowsePage() {
 	};
 
 	const handleChange = (e) => {
-		const inputValue = e.target.value;
-		setSearchBarValue(inputValue);
-		setSearchParams({ q: inputValue });
-		if (inputValue.trim() !== "") {
-			debouncedSearch(inputValue);
+		const { name, value } = e.target;
+		if (name === "search-bar") {
+			setSearchBarValue(value);
+		}
+		if (value.trim() !== "" || value === null) {
+			debouncedSearch(name, value);
 		} else {
-			setQuery("");
+			setParams({ ...params, [name]: value });
+			const { [name]: removed, ...copy } = params;
+			setSearchParams({ ...copy });
 		}
 	};
 
 	const debouncedSearch = useCallback(
-		debaunce((value) => {
-			setQuery(value);
+		debaunce((name, value) => {
+			setParams({ ...params, [name]: value });
+			setSearchParams({ ...params, [name]: value });
 		}, 500),
-		[]
+		[params]
 	);
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		setQuery(searchBarValue)
+		setParams(searchBarValue);
 	};
 
 	return (
 		<div className="browse-collection-page container page-content">
-			<form className="form" onSubmit={handleSubmit} >
-				<input
-					type="search"
-					name="search-bar"
-					id="search-bar"
-					className="form__input form__input__grow"
-					placeholder="Buscar "
-					onChange={handleChange}
-					value={searchBarValue}
-				/>
-					<label htmlFor="search-bar" className="form__input">
-							<FontAwesomeIcon icon={faMagnifyingGlass} size="xl" fixedWidth />
+			<form className="filter" onSubmit={handleSubmit}>
+				<div className="filter__search">
+					<label htmlFor="search-bar" className="filter__label">
+						Buscar
+						<input
+							type="text"
+							name="search-bar"
+							id="search-bar"
+							autoComplete="off"
+							placeholder="Buscar"
+							className="form__input filter__input filter__input--grow "
+							onChange={handleChange}
+						/>
 					</label>
+				</div>
+
+				<div className="filter__types">
+					<label htmlFor="genre" className="filter__label">
+						Gêneros
+						<select
+							name="genre"
+							id="genre"
+							className="form__input filter__input"
+							onChange={handleChange}
+							defaultValue={""}
+						>
+							<option value={""}>Selecionar</option>
+							{genreList.map((genre, id) => {
+								return (
+									<option value={genre} key={id}>
+										{genre}
+									</option>
+								);
+							})}
+						</select>
+					</label>
+					<label htmlFor="publisher" className="filter__label">
+						Editora
+						<select
+							name="publisher"
+							id="publisher"
+							className="form__input filter__input"
+							onChange={handleChange}
+							defaultValue={""}
+						>
+							<option value="">Selecionar</option>
+							{publishersList.map((publisher, id) => {
+								return (
+									<option value={publisher} key={id}>
+										{publisher}
+									</option>
+								);
+							})}
+						</select>
+					</label>
+					<label htmlFor="ordering" className="filter__label">
+						Ordem
+						<select
+							name="ordering"
+							id="ordering"
+							className="form__input filter__input"
+							onChange={handleChange}
+						>
+							<option value={"title"}>Alfabética</option>
+							{/* <option value={"date"}>Data</option> */}
+							<option value={"volumes"}>Tamanho</option>
+							<option value={"publisher"}>Editora</option>
+						</select>
+					</label>
+				</div>
 			</form>
 			<SeriesCardList
 				skeletonsCount={12}
