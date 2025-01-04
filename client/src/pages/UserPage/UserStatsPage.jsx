@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PieChartComponent from "../../components/PieChart";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import BarChartComponent from "../../components/BarChart";
 
 export default function UserStatsPage() {
 	const { username } = useParams();
@@ -42,16 +43,16 @@ export default function UserStatsPage() {
 							<div className="stats-highlight__label">Volumes no total</div>
 						</div>
 					</div>
-					{/*<PieChartComponent
-						chartTitle="Quantidade de volumes por gênero"
+					<BarChartComponent
+						chartTitle="Quantidade de coleções por gênero"
 						total={data.seriesCount}
 						data={data.genresBySeries}
-					></PieChartComponent>
-					<PieChartComponent
-						chartTitle="Quantidade de coleções por gênero"
+					></BarChartComponent>
+					<BarChartComponent
+						chartTitle="Quantidade de volumes por gênero"
 						total={data.volumesCount}
 						data={data.genresByVolume}
-					></PieChartComponent>*/}
+					></BarChartComponent>
 					<PieChartComponent
 						chartTitle="Quantidade de coleções por editora"
 						total={data.seriesCount}

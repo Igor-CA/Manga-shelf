@@ -4,9 +4,7 @@ import {
 	Pie,
 	Cell,
 	Tooltip,
-	ResponsiveContainer,
-	BarChart,
-	Bar,
+	ResponsiveContainer
 } from "recharts";
 
 const COLORS = [
@@ -19,12 +17,9 @@ const COLORS = [
 	"#D83034",
 ];
 
-//const COLORS = ["#003A7D", "#8B00B3", "#1F613A", "#EF8310", "#F9E858", "#D83034"];
-
 const MAX_SHOW = 4;
 
 export default function PieChartComponent({ chartTitle, data, total }) {
-	const dataSize = data.reduce((sum, value) => sum + value.count, 0);
 	return (
 		<div className="chart-container">
 			<div>
@@ -66,23 +61,6 @@ export default function PieChartComponent({ chartTitle, data, total }) {
 					</ResponsiveContainer>
 				</div>
 			</div>
-			{/*<BarChart width={300} height={100} data={data}>
-					<Bar dataKey="count" fill="#8884d8">
-						{data.map((entry, index) => (
-							<Cell
-								key={`cell-${index}`}
-								fill={
-									COLORS[
-										index < COLORS.length
-											? index % COLORS.length
-											: COLORS.length - 1
-									]
-								}
-							/>
-						))}
-					</Bar>
-					<Tooltip />
-				</BarChart>*/}
 			<ol className="pie-chart__subtitle-container">
 				{data.map((val, index) => {
 					return (
