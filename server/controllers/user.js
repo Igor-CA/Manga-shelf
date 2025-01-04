@@ -66,7 +66,10 @@ exports.signup = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (req.headers.authorization !== process.env.API_KEY) {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
 			res.status(401).json({ msg: "Not authorized" });
 			return;
 		}
@@ -127,7 +130,10 @@ exports.login = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (req.headers.authorization !== process.env.API_KEY) {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
 			res.status(401).json({ msg: "Not authorized" });
 			return;
 		}
@@ -164,7 +170,10 @@ exports.login = [
 ];
 
 exports.logout = (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -185,7 +194,10 @@ exports.sendResetEmail = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (req.headers.authorization !== process.env.API_KEY) {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
 			res.status(401).json({ msg: "Not authorized" });
 			return;
 		}
@@ -258,7 +270,10 @@ exports.resetPassword = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (req.headers.authorization !== process.env.API_KEY) {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
 			res.status(401).json({ msg: "Not authorized" });
 			return;
 		}
@@ -303,7 +318,10 @@ async function fetchUser(req) {
 }
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -320,7 +338,10 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeSeries = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -349,7 +370,10 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.getLoggedUser = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -377,7 +401,10 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -414,9 +441,8 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 		const ordering = req.query.ordering || "title";
 
 		const sortStage = {};
-			sortStage[sortOptions[ordering]] = 1;
-			sortStage["userList.Series.title"] = 1; 
-		
+		sortStage[sortOptions[ordering]] = 1;
+		sortStage["userList.Series.title"] = 1;
 
 		const user = await User.aggregate([
 			{ $match: { username: targetUser } },
@@ -472,7 +498,10 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 });
 
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -558,9 +587,7 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			{ $limit: ITEMS_PER_PAGE },
 		];
 
-		const missingVolumesList = await User.aggregate(
-			aggregationPipeline
-		).exec();
+		const missingVolumesList = await User.aggregate(aggregationPipeline).exec();
 		const listWithImages = missingVolumesList.map((volume) => {
 			const seriesObject = { title: volume.series };
 			return {
@@ -576,7 +603,10 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 });
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -608,8 +638,7 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 					id = volumesId.toString();
 					return user.ownedVolumes.includes(id);
 				});
-				const completePorcentage =
-					haveFromSeries.length / seriesList.length;
+				const completePorcentage = haveFromSeries.length / seriesList.length;
 
 				const seriesBeingAdded = user.userList[indexOfSeries];
 				seriesBeingAdded.completionPercentage = completePorcentage;
@@ -626,7 +655,10 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeVolume = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -649,8 +681,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 				id = volumesId.toString();
 				return user.ownedVolumes.includes(id);
 			});
-			const completePorcentage =
-				haveFromSeries.length / seriesList.length;
+			const completePorcentage = haveFromSeries.length / seriesList.length;
 
 			user.userList[0].completionPercentage = completePorcentage;
 
@@ -676,7 +707,10 @@ exports.setUserName = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (req.headers.authorization !== process.env.API_KEY) {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
 			return res.status(401).json({ msg: "Not authorized" });
 		}
 		const errors = validationResult(req);
@@ -701,7 +735,10 @@ exports.setUserName = [
 exports.changeProfilePicture = [
 	upload.single("file"),
 	asyncHandler(async (req, res, next) => {
-		if (req.headers.authorization !== process.env.API_KEY) {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
 			return res.status(401).json({ msg: "Not authorized" });
 		}
 		const errors = validationResult(req);
@@ -719,7 +756,10 @@ exports.changeProfilePicture = [
 ];
 
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}

@@ -4,7 +4,7 @@ const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
 const ITEMS_PER_PAGE = 10;
 exports.all = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (req.headers.authorization !== process.env.API_KEY && process.env.NODE_ENV === "production") {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -20,7 +20,7 @@ exports.all = asyncHandler(async (req, res, next) => {
 });
 
 exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY) {
+	if (req.headers.authorization !== process.env.API_KEY && process.env.NODE_ENV === "production") {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}

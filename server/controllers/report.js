@@ -26,7 +26,7 @@ exports.createReport = [
 	body("user").trim().escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (req.headers.authorization !== process.env.API_KEY) {
+		if (req.headers.authorization !== process.env.API_KEY && process.env.NODE_ENV === "production") {
 			res.status(401).json({ msg: "Not authorized" });
 			return;
 		}
