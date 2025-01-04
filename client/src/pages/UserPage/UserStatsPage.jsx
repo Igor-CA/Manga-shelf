@@ -1,0 +1,69 @@
+import { useEffect, useState } from "react";
+import PieChartComponent from "../../components/PieChart";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+
+export default function UserStatsPage() {
+	const { username } = useParams();
+	const [data, setData] = useState();
+	useEffect(() => {
+		const queryStats = async () => {
+			try {
+				const res = await axios({
+					method: "GET",
+					withCredentials: true,
+					headers: {
+						Authorization: process.env.REACT_APP_API_KEY,
+					},
+
+					url: `/api/data/user/stats/${username}`,
+				});
+				const result = res.data;
+				setData(result);
+			} catch (error) {
+				const errorType = error.response.status;
+				console.log(error);
+			}
+		};
+		queryStats();
+	}, []);
+
+	return (
+		data && (
+			<div className="container">
+				<div className="stats__container">
+					<div className="stats-highlights">
+						<div className="stats-highlight">
+							<div className="stats-highlight__value">{data.seriesCount}</div>
+							<div className="stats-highlight__label">Coleções diferentes</div>
+						</div>
+						<div className="stats-highlight">
+							<div className="stats-highlight__value">{data.volumesCount}</div>
+							<div className="stats-highlight__label">Volumes no total</div>
+						</div>
+					</div>
+					{/*<PieChartComponent
+						chartTitle="Quantidade de volumes por gênero"
+						total={data.seriesCount}
+						data={data.genresBySeries}
+					></PieChartComponent>
+					<PieChartComponent
+						chartTitle="Quantidade de coleções por gênero"
+						total={data.volumesCount}
+						data={data.genresByVolume}
+					></PieChartComponent>*/}
+					<PieChartComponent
+						chartTitle="Quantidade de coleções por editora"
+						total={data.seriesCount}
+						data={data.publisherBySeries}
+					></PieChartComponent>
+					<PieChartComponent
+						chartTitle="Quantidade de volumes por editora"
+						total={data.volumesCount}
+						data={data.publisherByVolume}
+					></PieChartComponent>
+				</div>
+			</div>
+		)
+	);
+}
