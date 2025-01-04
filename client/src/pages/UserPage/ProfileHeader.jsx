@@ -78,42 +78,44 @@ export default function ProfileHeader({ user }) {
 					</button>
 				</div>
 			</header>
-			<nav className="profile-header__navbar container">
-				<ul className="profile-header__navbar__list">
-					<li>
-						<Link
-							to={`/user/${user}`}
-							className={getStyle(activeLink === "")}
-						>
-							Estante
-						</Link>
-					</li>
-					<li>
-						<Link
-							to={`/user/${user}/missing`}
-							className={getStyle(activeLink === "/missing")}
-						>
-							Volumes faltosos
-						</Link>
-					</li>
-					<li>
-						<Link
-							to={`/user/${user}/stats`}
-							className={getStyle(activeLink === "/stats")}
-						>
-							Informações
-						</Link>
-					</li>
-					<li>
-						<Link
-							to={`/user/${user}/socials`}
-							className={getStyle(activeLink === "/socials")}
-						>
-							Social
-						</Link>
-					</li>
-				</ul>
-			</nav>
+			<div  className="profile-header__navbar">
+				<nav className="container">
+					<ul className="profile-header__navbar__list">
+						<li>
+							<Link
+								to={`/user/${user}`}
+								className={getStyle(activeLink === "")}
+							>
+								Estante
+							</Link>
+						</li>
+						<li>
+							<Link
+								to={`/user/${user}/missing`}
+								className={getStyle(activeLink === "/missing")}
+							>
+								Volumes faltosos
+							</Link>
+						</li>
+						<li>
+							<Link
+								to={`/user/${user}/stats`}
+								className={getStyle(activeLink === "/stats")}
+							>
+								Informações
+							</Link>
+						</li>
+						<li>
+							<Link
+								to={`/user/${user}/socials`}
+								className={getStyle(activeLink === "/socials")}
+							>
+								Social
+							</Link>
+						</li>
+					</ul>
+				</nav>
+			</div>
 		</div>
 	);
 }
