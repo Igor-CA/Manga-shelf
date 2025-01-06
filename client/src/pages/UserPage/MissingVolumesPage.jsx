@@ -12,12 +12,14 @@ export default function MissingVolumesPage() {
 				method: "GET",
 				withCredentials: true,
 				headers: {
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 				params: {
 					p: page,
 				},
-				url: `/api/data/user/${username}/missing`,
+				url: `${
+					import.meta.env.REACT_APP_HOST_ORIGIN
+				}/api/data/user/${username}/missing`,
 			});
 			const responseData = response.data;
 			return responseData;
@@ -36,7 +38,8 @@ export default function MissingVolumesPage() {
 	const EmptyListComponent = () => {
 		return (
 			<p className="not-found-message">
-				Esta conta não possuí nenhum volume faltando. Talvez seja a hora de começar uma nova coleção?
+				Esta conta não possuí nenhum volume faltando. Talvez seja a hora de
+				começar uma nova coleção?
 				<Link to={"/browse"}>
 					<strong>Busque novos títulos na nossa página de pesquisa</strong>
 				</Link>{" "}

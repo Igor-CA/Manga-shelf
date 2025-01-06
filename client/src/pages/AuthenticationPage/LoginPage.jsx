@@ -8,7 +8,7 @@ import { messageContext } from "../../components/messageStateProvider";
 export default function LoginPage() {
 	const navigate = useNavigate();
 	const [formData, setFormData] = useState({ login: "", password: "" });
-	const {addMessage} = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const [captchaVal, setCaptchaVal] = useState(null);
 
 	const handleChange = (e) => {
@@ -28,17 +28,19 @@ export default function LoginPage() {
 				data: formData,
 				withCredentials: true,
 				headers: {
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-				url: `/api/user/login`,
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/login`,
 			});
 			const userFetch = await axios({
 				method: "GET",
 				withCredentials: true,
 				headers: {
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-				url: `/api/data/user/logged-user`,
+				url: `${
+					import.meta.env.REACT_APP_HOST_ORIGIN
+				}/api/data/user/logged-user`,
 			});
 			navigate(`/user/${userFetch.data.username}`);
 			window.location.reload(true);
@@ -64,13 +66,13 @@ export default function LoginPage() {
 
 	const handleGoogleLogin = async () => {
 		try {
-			window.location.href = `${process.env.REACT_APP_HOST_ORIGIN}/api/user/login/auth/google`;
+			window.location.href = `${
+				import.meta.env.REACT_APP_HOST_ORIGIN
+			}/api/user/login/auth/google`;
 		} catch (error) {
 			console.error("Google login error:", error);
 		}
 	};
-
-	
 
 	return (
 		<div className="page-content">
@@ -122,7 +124,7 @@ export default function LoginPage() {
 					/>
 					<ReCAPTCHA
 						className="autentication-form__captcha"
-						sitekey={process.env.REACT_APP_CAPTCHA_KEY}
+						sitekey={import.meta.env.REACT_APP_CAPTCHA_KEY}
 						onChange={(val) => {
 							setCaptchaVal(val);
 						}}

@@ -5,11 +5,59 @@ import { useCallback, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
 
 const genreList = [
-	"Action",
+	"Aventura",
+	"Ação",
+	"Comédia",
+	"Drama",
+	"Ecchi",
+	"Esportes",
+	"Fantasia",
+	"Ficção Científica",
+	"Garotas mágicas",
+	"Hentai",
+	"Mecha (Robôs gigantes)",
+	"Mistério",
+	"Música",
+	"Psicológico",
+	"Romance",
+	"Slice of Life",
+	"Sobrenatural",
+	"Suspense",
+	"Terror",
 ];
 const publishersList = [
-	"Viz media",
+	"Abril",
+	"Alta Geek",
+	"Alto Astral",
+	"Comix Zone",
+	"Conrad",
+	"Conrad / JBC",
+	"Darkside Books",
+	"Dealer",
+	"Devir",
+	"Escala",
+	"Excelsior",
+	"Galera Record",
+	"HQM",
+	"JBC",
+	"L&PM",
+	"MPEG",
+	"Morro Branco",
+	"Mythos",
+	"NewPOP",
+	"Nova Sampa",
+	"Novatec",
+	"Online",
+	"PNC",
+	"Panini",
+	"Pipoca & Nanquim",
+	"Savana",
+	"Skript",
+	"Todavia",
+	"Veneta",
+	"Zarabatana Books",
 ];
+
 export default function UserCollection() {
 	const { username } = useParams();
 	const navigate = useNavigate();
@@ -22,13 +70,15 @@ export default function UserCollection() {
 				method: "GET",
 				withCredentials: true,
 				headers: {
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 				params: {
 					p: page,
-					...params
+					...params,
 				},
-				url: `/api/data/user/${username}`,
+				url: `${
+					import.meta.env.REACT_APP_HOST_ORIGIN
+				}/api/data/user/${username}`,
 			});
 			const result = res.data;
 			return result;
@@ -43,12 +93,11 @@ export default function UserCollection() {
 	const EmptyListComponent = () => {
 		return (
 			<p className="not-found-message">
-				Esta conta não possuí nenhuma coleção registrada. Caso essa seja
-				sua conta tente{" "}
+				Esta conta não possuí nenhuma coleção registrada. Caso essa seja sua
+				conta tente{" "}
 				<Link to={"/browse"}>
 					<strong>
-						adicionar suas coleções buscando em nossa página de
-						busca
+						adicionar suas coleções buscando em nossa página de busca
 					</strong>
 				</Link>{" "}
 			</p>
@@ -66,7 +115,7 @@ export default function UserCollection() {
 
 	const debouncedSearch = useCallback(
 		debaunce((name, value) => {
-			console.log(name, value)
+			console.log(name, value);
 			setParams({ ...params, [name]: value });
 		}, 500),
 		[params]
@@ -143,7 +192,6 @@ export default function UserCollection() {
 							<option value={"status"}>Status</option>
 						</select>
 					</label>
-
 				</div>
 			</div>
 			<SeriesCardList

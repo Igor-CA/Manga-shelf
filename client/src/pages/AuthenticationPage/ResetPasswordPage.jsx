@@ -6,7 +6,7 @@ import { messageContext } from "../../components/messageStateProvider";
 export default function ResetPasswordPage() {
 	const { userId, token } = useParams();
 	const [formData, setFormData] = useState({ email: "" });
-	const {addMessage} = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const navigate = useNavigate();
 
 	const handleChange = (e) => {
@@ -21,9 +21,9 @@ export default function ResetPasswordPage() {
 				data: { ...formData, userId, token },
 				withCredentials: true,
 				headers: {
-					Authorization:process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-				url: `/api/user/reset-password`,
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/reset-password`,
 			});
 			navigate("/login");
 		} catch (error) {

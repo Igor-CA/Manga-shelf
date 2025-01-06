@@ -14,10 +14,12 @@ export default function UserStatsPage() {
 					method: "GET",
 					withCredentials: true,
 					headers: {
-						Authorization: process.env.REACT_APP_API_KEY,
+						Authorization: import.meta.env.REACT_APP_API_KEY,
 					},
 
-					url: `/api/data/user/stats/${username}`,
+					url: `${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/api/data/user/stats/${username}`,
 				});
 				const result = res.data;
 				setData(result);

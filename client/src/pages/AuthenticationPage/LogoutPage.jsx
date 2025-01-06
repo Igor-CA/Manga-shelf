@@ -11,9 +11,9 @@ export default function LogoutPage() {
 					method: "GET",
 					withCredentials: true,
 					headers: {
-						Authorization: process.env.REACT_APP_API_KEY,
+						Authorization: import.meta.env.REACT_APP_API_KEY,
 					},
-					url: `/api/user/logout`,
+					url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/logout`,
 				});
 				setOutdated(true);
 				window.location.href = "/";

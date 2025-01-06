@@ -32,11 +32,14 @@ export default function SeriesPage() {
 	useEffect(() => {
 		const fetchSeriesData = async () => {
 			try {
-				const response = await axios.get(`/api/data/series/${id}`, {
-					headers: {
-						Authorization: process.env.REACT_APP_API_KEY,
-					},
-				});
+				const response = await axios.get(
+					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/series/${id}`,
+					{
+						headers: {
+							Authorization: import.meta.env.REACT_APP_API_KEY,
+						},
+					}
+				);
 				const responseData = response.data;
 				setSeries(responseData);
 			} catch (error) {
@@ -110,8 +113,8 @@ export default function SeriesPage() {
 	const addOrRemoveVolume = async (isAdding, idList) => {
 		try {
 			const url = isAdding
-				? `/api/user/add-volume`
-				: `/api/user/remove-volume`;
+				? `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/add-volume`
+				: `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/remove-volume`;
 
 			const amoutVolumesFromSeries = series.volumes.length;
 			await axios({
@@ -119,7 +122,7 @@ export default function SeriesPage() {
 				data: { idList: idList, amoutVolumesFromSeries, seriesId: id },
 				withCredentials: true,
 				headers: {
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 				url: url,
 			});
@@ -161,9 +164,7 @@ export default function SeriesPage() {
 					<SkeletonPage type="Series"></SkeletonPage>
 					<div
 						className={`series__volumes-container mobile-appearence ${
-							infoToShow !== "volumes"
-								? ""
-								: "mobile-appearence--show"
+							infoToShow !== "volumes" ? "" : "mobile-appearence--show"
 						}`}
 					>
 						<SkeletonVolumesList count={12}></SkeletonVolumesList>

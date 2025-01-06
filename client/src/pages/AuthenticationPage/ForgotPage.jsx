@@ -5,9 +5,8 @@ import { messageContext } from "../../components/messageStateProvider";
 
 export default function ForgotPage() {
 	const [formData, setFormData] = useState({ email: "" });
-	const {addMessage, setMessageType} = useContext(messageContext);
-	const [loading, setLoading] = useState(false)
-
+	const { addMessage, setMessageType } = useContext(messageContext);
+	const [loading, setLoading] = useState(false);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -17,19 +16,19 @@ export default function ForgotPage() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			setLoading(true)
+			setLoading(true);
 			await axios({
 				method: "POST",
 				data: formData,
 				withCredentials: true,
 				headers: {
-					Authorization:process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-				url: `/api/user/forgot`,
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/forgot`,
 			});
-			addMessage("Um link para mudar sua senha foi enviado")
-			setMessageType("Success")
-			setLoading(false)
+			addMessage("Um link para mudar sua senha foi enviado");
+			setMessageType("Success");
+			setLoading(false);
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			addMessage(customErrorMessage);
@@ -82,7 +81,12 @@ export default function ForgotPage() {
 					<Link to={"/login"} className="autentication-form__link">
 						Entrar
 					</Link>
-					<button className={`button ${loading?"button--disabled":""}`} disabled={loading} >Mudar senha</button>
+					<button
+						className={`button ${loading ? "button--disabled" : ""}`}
+						disabled={loading}
+					>
+						Mudar senha
+					</button>
 				</form>
 			</div>
 		</div>

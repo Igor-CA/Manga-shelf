@@ -13,11 +13,14 @@ export default function VolumePage() {
 	useEffect(() => {
 		const fetchVolumeData = async () => {
 			try {
-				const response = await axios.get(`/api/data/volume/${id}`, {
-					headers: {
-						Authorization: process.env.REACT_APP_API_KEY,
-					},
-				});
+				const response = await axios.get(
+					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/volume/${id}`,
+					{
+						headers: {
+							Authorization: import.meta.env.REACT_APP_API_KEY,
+						},
+					}
+				);
 				const responseData = response.data;
 				setVolumeData(responseData);
 			} catch (error) {

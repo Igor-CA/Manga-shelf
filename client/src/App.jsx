@@ -33,9 +33,11 @@ function App() {
 						method: "GET",
 						withCredentials: true,
 						headers: {
-							Authorization: process.env.REACT_APP_API_KEY,
+							Authorization: import.meta.env.REACT_APP_API_KEY,
 						},
-						url: `/api/data/user/logged-user`,
+						url: `${
+							import.meta.env.REACT_APP_HOST_ORIGIN
+						}/api/data/user/logged-user`,
 					});
 					if (res.data.msg) return;
 
@@ -54,9 +56,9 @@ function App() {
 			<BrowserRouter>
 				<NavBar></NavBar>
 				<ScrollToTop />
-				{user && user?.username === undefined &&
+				{user && user?.username === undefined && (
 					<UserNameModal>precisa setar nome</UserNameModal>
-				}
+				)}
 				<Routes>
 					<Route path="/" element={<Home />}></Route>
 					<Route path="/signup" element={<SignupPage />}></Route>
@@ -74,10 +76,7 @@ function App() {
 					<Route path="/about" element={<AboutPage />}></Route>
 					<Route path="/series/:id" element={<SeriesPage />}></Route>
 					<Route path="/volume/:id" element={<VolumePage />}></Route>
-					<Route
-						path="/user/:username/*"
-						element={<UserPage />}
-					></Route>
+					<Route path="/user/:username/*" element={<UserPage />}></Route>
 					<Route path="*" element={<NotFound />}></Route>
 				</Routes>
 
@@ -91,8 +90,6 @@ function App() {
 					<Link to="/donate">Apoie o projeto</Link>
 				</footer>
 				<MessageComponent></MessageComponent>
-				
-
 			</BrowserRouter>
 		</div>
 	);

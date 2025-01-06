@@ -16,27 +16,31 @@ export default function ProfileHeader({ user }) {
 
 	useEffect(() => {
 		const getProfilePicture = async (page) => {
-			setLoaded(false)
+			setLoaded(false);
 			try {
 				const res = await axios({
 					method: "GET",
 					withCredentials: true,
 					headers: {
-						Authorization: process.env.REACT_APP_API_KEY,
+						Authorization: import.meta.env.REACT_APP_API_KEY,
 					},
 					params: {
 						p: page,
 					},
-					url: `/api/data/get-user-info/${user}`,
+					url: `${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/api/data/get-user-info/${user}`,
 				});
 				avatarUrl.current = res.data?.profileImageUrl
-					? res.data.profileImageUrl
-					: "/images/deffault-profile-picture.webp";
-			} catch (error) {}
-			finally{setLoaded(true)}
+					? `${import.meta.env.REACT_APP_HOST_ORIGIN}${res.data.profileImageUrl}`
+					: `${import.meta.env.REACT_APP_HOST_ORIGIN}/images/deffault-profile-picture.webp`;
+			} catch (error) {
+			} finally {
+				setLoaded(true);
+			}
 		};
 		getProfilePicture();
-	},[user]);
+	}, [user]);
 
 	useEffect(() => {
 		setActiveLink(location.pathname.replace(`/user/${user}`, ""));
@@ -73,12 +77,10 @@ export default function ProfileHeader({ user }) {
 					</div>
 					<h1 className="user-name">{user}</h1>
 
-					<button className="button profile-header__button">
-						Seguir
-					</button>
+					<button className="button profile-header__button">Seguir</button>
 				</div>
 			</header>
-			<div  className="profile-header__navbar">
+			<div className="profile-header__navbar">
 				<nav className="container">
 					<ul className="profile-header__navbar__list">
 						<li>

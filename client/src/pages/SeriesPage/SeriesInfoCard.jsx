@@ -45,15 +45,15 @@ export default function SeriesInfoCard({
 	const addOrRemoveSeries = async (isAdding) => {
 		try {
 			const url = isAdding
-				? `/api/user/add-series`
-				: `/api/user/remove-series`;
+				? `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/add-series`
+				: `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/remove-series`;
 
 			await axios({
 				method: "POST",
 				data: { id },
 				withCredentials: true,
 				headers: {
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 				url: url,
 			});
@@ -98,19 +98,18 @@ export default function SeriesInfoCard({
 		<div className="series">
 			<div className="series__image-wrapper">
 				<div className="series-card__image-container">
-					
 					<img
-						src={`/images/medium/${seriesCover}`}
+						src={`${
+							import.meta.env.REACT_APP_HOST_ORIGIN
+						}/images/medium/${seriesCover}`}
 						srcSet={`
-							/images/small/${seriesCover} 100w,
-							/images/medium/${seriesCover} 400w, 
-							/images/large/${seriesCover} 700w,
-							/images/extralarge/${seriesCover} 1000w,`
-						}
+							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/small/${seriesCover} 100w,
+							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/medium/${seriesCover} 400w, 
+							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/large/${seriesCover} 700w,
+							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/extralarge/${seriesCover} 1000w,`}
 						sizes=" (min-width: 768px) 360px, 
 								(max-width: 768px) 100vw,"
 						loading="lazy"
-
 						alt={`cover volume ${title}`}
 						className={`series-card__img ${
 							!loaded && "series-card__img--loading"
@@ -121,13 +120,9 @@ export default function SeriesInfoCard({
 				<div className="series_main-info">
 					{
 						<div className="series__butons-containers">
-							<label
-								htmlFor="select-all-check-mark"
-								className="button"
-							>
+							<label htmlFor="select-all-check-mark" className="button">
 								<strong>
-									{user &&
-									getCompletionPercentage(user, id) === 1
+									{user && getCompletionPercentage(user, id) === 1
 										? "Remover todos"
 										: "Adicionar todos"}
 								</strong>
@@ -138,8 +133,7 @@ export default function SeriesInfoCard({
 									className="checkmark invisible"
 									disabled={user ? false : true}
 									checked={
-										user &&
-										getCompletionPercentage(user, id) === 1
+										user && getCompletionPercentage(user, id) === 1
 											? true
 											: false
 									}
@@ -197,8 +191,7 @@ export default function SeriesInfoCard({
 					)}
 					{dimmensions?.length > 0 && (
 						<li className="series__details">
-							<strong>Formato:</strong>{" "}
-							{dimmensions.join("cm x ") + "cm"}
+							<strong>Formato:</strong> {dimmensions.join("cm x ") + "cm"}
 						</li>
 					)}
 					{genres?.length > 0 && (
@@ -207,17 +200,12 @@ export default function SeriesInfoCard({
 						</li>
 					)}
 					{summary?.length > 0 && (
-						<li
-							className="series__details"
-							style={{ paddingBottom: "0px" }}
-						>
+						<li className="series__details" style={{ paddingBottom: "0px" }}>
 							<strong>Sinopse:</strong>
 							<div
 								ref={seriesSummarry}
 								className={`series__summary ${
-									showingMore
-										? "series__summary--show-full"
-										: ""
+									showingMore ? "series__summary--show-full" : ""
 								}`}
 							>
 								{summary.map((paragraph, i) => {

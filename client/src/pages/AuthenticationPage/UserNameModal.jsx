@@ -4,11 +4,10 @@ import { messageContext } from "../../components/messageStateProvider";
 import { UserContext } from "../../components/userProvider";
 
 export default function UserNameModal() {
-    const { setOutdated } = useContext(UserContext);
+	const { setOutdated } = useContext(UserContext);
 	const [formData, setFormData] = useState();
-	const {addMessage, setMessageType} = useContext(messageContext);
-	const [loading, setLoading] = useState(false)
-
+	const { addMessage, setMessageType } = useContext(messageContext);
+	const [loading, setLoading] = useState(false);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -18,25 +17,25 @@ export default function UserNameModal() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			setLoading(true)
+			setLoading(true);
 			await axios({
 				method: "PUT",
 				data: formData,
 				withCredentials: true,
 				headers: {
-					Authorization:process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-				url: `/api/user/set-username`,
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/set-username`,
 			});
-			addMessage("Seu nome de usuário foi atualizado com sucesso")
-			setMessageType("Success")
-            setOutdated(true);
-            window.location.href = "/";
-			setLoading(false)
+			addMessage("Seu nome de usuário foi atualizado com sucesso");
+			setMessageType("Success");
+			setOutdated(true);
+			window.location.href = "/";
+			setLoading(false);
 		} catch (error) {
 			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
-			setLoading(false)
+			setLoading(false);
 		}
 	};
 
@@ -53,13 +52,8 @@ export default function UserNameModal() {
 			},
 		};
 
-		const validationTypes = [
-			"patternMismatch",
-			"valueMissing",
-		];
-		const inputValidity = validationTypes.find(
-			(type) => input.validity[type]
-		);
+		const validationTypes = ["patternMismatch", "valueMissing"];
+		const inputValidity = validationTypes.find((type) => input.validity[type]);
 
 		const customErrorMessage = validationMessages[inputName][inputValidity];
 
@@ -69,8 +63,17 @@ export default function UserNameModal() {
 	return (
 		<div className="page-content--modal">
 			<div className="form-container">
-				<h1 className="form-title">Bem vindo ao Mangashelf! <br /><br />Informe seu nome de usuário</h1>
-                <p>Obs: Sua senha também ainda não foi configurada mas ainda é possível entrar na sua conta com google. Caso queira basta configurar a senha na área de configurações. Do contrário só será possivel logar na sua conta via google.</p>
+				<h1 className="form-title">
+					Bem vindo ao Mangashelf! <br />
+					<br />
+					Informe seu nome de usuário
+				</h1>
+				<p>
+					Obs: Sua senha também ainda não foi configurada mas ainda é possível
+					entrar na sua conta com google. Caso queira basta configurar a senha
+					na área de configurações. Do contrário só será possivel logar na sua
+					conta via google.
+				</p>
 				<form
 					method="post"
 					className="autentication-form"
@@ -78,10 +81,7 @@ export default function UserNameModal() {
 						handleSubmit(e);
 					}}
 				>
-					<label
-						htmlFor="username"
-						className="autentication-form__label"
-					>
+					<label htmlFor="username" className="autentication-form__label">
 						User name:{" "}
 					</label>
 					<input
@@ -100,7 +100,12 @@ export default function UserNameModal() {
 						pattern="^[A-Za-z0-9]{3,16}$"
 						maxLength="16"
 					/>
-					<button className={`button ${loading?"button--disabled":""}`} disabled={loading} >Salvar</button>
+					<button
+						className={`button ${loading ? "button--disabled" : ""}`}
+						disabled={loading}
+					>
+						Salvar
+					</button>
 				</form>
 			</div>
 		</div>

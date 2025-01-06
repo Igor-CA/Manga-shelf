@@ -18,13 +18,14 @@ export default function VolumeItem({
 				className="series__volume__image-wrapper"
 			>
 				<img
-					src={`/images/medium/${image}`}
+					src={`${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/images/medium/${image}`}
 					srcSet={`
-						/images/small/${image} 100w,
-						/images/medium/${image} 400w, 
-						/images/large/${image} 700w,
-						/images/extralarge/${image} 1000w,`
-					}
+						${import.meta.env.REACT_APP_HOST_ORIGIN}/images/small/${image} 100w,
+						${import.meta.env.REACT_APP_HOST_ORIGIN}/images/medium/${image} 400w, 
+						${import.meta.env.REACT_APP_HOST_ORIGIN}/images/large/${image} 700w,
+						${import.meta.env.REACT_APP_HOST_ORIGIN}/images/extralarge/${image} 1000w,`}
 					sizes=" (min-width: 1024px) 15vw,
 							(min-width: 768px) 20vw, 
 							(max-width: 768px) 20vw, "
@@ -38,9 +39,7 @@ export default function VolumeItem({
 			</Link>
 			<div className="series__volume__checkmark-container">
 				<label htmlFor={`have-volume-check-mark-${volumeId}`}>
-					<strong className="checkmark-label">
-						Volume {volumeNumber}
-					</strong>
+					<strong className="checkmark-label">Volume {volumeNumber}</strong>
 					<input
 						type="checkbox"
 						name={`have-volume-check-mark-${volumeId}`}

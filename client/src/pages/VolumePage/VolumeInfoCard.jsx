@@ -24,8 +24,8 @@ export default function VolumeInfoCard({ volumeData }) {
 			if (!volumeData) return;
 
 			const url = isAdding
-				? `/api/user/add-volume`
-				: `/api/user/remove-volume`;
+				? `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/add-volume`
+				: `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/remove-volume`;
 
 			const amoutVolumesFromSeries = volumeData.serie.volumes.length;
 			await axios({
@@ -36,7 +36,7 @@ export default function VolumeInfoCard({ volumeData }) {
 					seriesId: volumeData.serie.id,
 				},
 				headers: {
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 				withCredentials: true,
 				url: url,
@@ -60,13 +60,14 @@ export default function VolumeInfoCard({ volumeData }) {
 			<div className="volume__cover-wrapper">
 				<div className="series-card__image-container">
 					<img
-						src={`/images/medium/${image}`}
+						src={`${
+							import.meta.env.REACT_APP_HOST_ORIGIN
+						}/images/medium/${image}`}
 						srcSet={`
-							/images/small/${image} 100w,
-							/images/medium/${image} 400w, 
-							/images/large/${image} 700w,
-							/images/extralarge/${image} 1000w,`
-						}
+							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/small/${image} 100w,
+							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/medium/${image} 400w, 
+							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/large/${image} 700w,
+							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/extralarge/${image} 1000w,`}
 						alt={`cover ${serie.title} volume ${number}`}
 						loading="lazy"
 						className={`series-card__img ${

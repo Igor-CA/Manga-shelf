@@ -81,7 +81,7 @@ export default function BrowsePage() {
 		...(urlPublisher && { publisher: urlPublisher }),
 		...(urlOrder && { ordering: urlOrder }),
 	};
-	
+
 	const [searchBarValue, setSearchBarValue] = useState(urlSearch);
 	const [params, setParams] = useState(initialParams);
 	const functionArguments = useMemo(() => [params], [params]);
@@ -92,13 +92,13 @@ export default function BrowsePage() {
 				method: "GET",
 				withCredentials: true,
 				headers: {
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 				params: {
 					p: page,
 					...params,
 				},
-				url: "/api/data/browse",
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/browse`,
 			});
 			const resultList = response.data;
 			return resultList;
@@ -110,8 +110,8 @@ export default function BrowsePage() {
 	const ErrorComponent = () => {
 		return (
 			<p className="not-found-message">
-				Não encontramos nada para "{params["search-bar"]}" verifique se
-				você digitou corretamente ou então{" "}
+				Não encontramos nada para "{params["search-bar"]}" verifique se você
+				digitou corretamente ou então{" "}
 				<Link to={"/feedback"}>
 					<strong>sugira sua obra para nós</strong>
 				</Link>{" "}

@@ -10,7 +10,7 @@ export default function ReportProblem() {
 		page: "",
 		user: "",
 	});
-	const {addMessage, setMessageType} = useContext(messageContext);
+	const { addMessage, setMessageType } = useContext(messageContext);
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
@@ -23,9 +23,9 @@ export default function ReportProblem() {
 				data: { ...formData },
 				withCredentials: true,
 				headers: {
-					Authorization:process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-				url: `/api/user/report`,
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/report`,
 			});
 			setFormData({
 				type: "",
@@ -36,7 +36,7 @@ export default function ReportProblem() {
 			});
 			const customErrorMessage = response.data.message;
 			addMessage(customErrorMessage);
-			setMessageType("Success")
+			setMessageType("Success");
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
 			addMessage(customErrorMessage);

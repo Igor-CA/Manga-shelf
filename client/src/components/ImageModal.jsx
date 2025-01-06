@@ -18,11 +18,10 @@ function dataURLtoFile(dataurl, filename) {
 	return new File([u8dataArray], filename, { type: mime });
 }
 
-
 export default function ImageModal({ closeModal }) {
 	const avatarUrl = useRef("");
-	const {user} = useContext(UserContext);
-	const {addMessage, setMessageType} = useContext(messageContext);
+	const { user } = useContext(UserContext);
+	const { addMessage, setMessageType } = useContext(messageContext);
 	const uploadImage = async () => {
 		try {
 			const formData = new FormData();
@@ -31,22 +30,20 @@ export default function ImageModal({ closeModal }) {
 			await axios({
 				method: "PUT",
 				withCredentials: true,
-				url: "/api/user/change-profile-pic",
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-pic`,
 				data: formData,
 				headers: {
 					"Content-Type": "multipart/form-data",
-					Authorization: process.env.REACT_APP_API_KEY,
+					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-			})
-			addMessage("Sua foto de perfil foi alterada com sucesso")
-			setMessageType("Success")
+			});
+			addMessage("Sua foto de perfil foi alterada com sucesso");
+			setMessageType("Success");
 			window.location.href = `/user/${user.username}`;
-			
 		} catch (error) {
 			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
 		}
-
 	};
 
 	const updateAvatar = (imgSrc) => {
@@ -67,10 +64,7 @@ export default function ImageModal({ closeModal }) {
 							<span className="sr-only">Fechar aba</span>
 							<IoIosClose />
 						</button>
-						<ImageCropper
-							updateAvatar={updateAvatar}
-							closeModal={closeModal}
-						/>
+						<ImageCropper updateAvatar={updateAvatar} closeModal={closeModal} />
 					</div>
 				</div>
 			</div>
