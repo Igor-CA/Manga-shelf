@@ -65,6 +65,7 @@ export default function PieChartComponent({ chartTitle, data, total }) {
 				{data.map((val, index) => {
 					return (
 						<li
+							key={index}
 							className="pie-chart__subtitle"
 							style={{
 								backgroundColor:

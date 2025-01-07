@@ -51,9 +51,10 @@ export default function BarChartComponent({ chartTitle, data, total }) {
 							<XAxis
 								dataKey="name"
 								tick={(props) => {
+									const { verticalAnchor, visibleTicksCount, tickFormatter, ...restProps } = props;
 									return (
 										<text
-											{...props}
+											{...restProps}
 											className="bar-chart__x_axis"
 											textAnchor="middle"
 											dominantBaseline="central"
