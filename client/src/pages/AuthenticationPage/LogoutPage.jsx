@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useContext, useEffect } from "react";
 import { UserContext } from "../../components/userProvider";
-
+import "../404Page/NotFound.css";
 export default function LogoutPage() {
 	const { user, setOutdated } = useContext(UserContext);
 	useEffect(() => {

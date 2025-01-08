@@ -2,6 +2,7 @@ import axios from "axios";
 import { useContext, useState } from "react";
 import { messageContext } from "../../components/messageStateProvider";
 
+import "../AuthenticationPage/Authentication.css";
 export default function ReportProblem() {
 	const [formData, setFormData] = useState({
 		type: "",

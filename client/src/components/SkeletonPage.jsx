@@ -1,3 +1,6 @@
+
+import "../components/SeriesCard.css";
+import "../pages/VolumePage/VolumePage.css";
 export default function SkeletonPage({ type = "Volume" }) {
 	return (
 		<div className="volume">

@@ -1,9 +1,11 @@
 import { Route, Routes, useParams } from "react-router-dom";
-import UserCollection from "./UserCollection";
 import "./UserPage.css";
-import ProfileHeader from "./ProfileHeader";
-import MissingVolumesPage from "./MissingVolumesPage";
-import UserStatsPage from "./UserStatsPage";
+import { lazy } from "react";
+
+const UserCollection = lazy(() => import("./UserCollection"));
+const ProfileHeader = lazy(() => import("./ProfileHeader"));
+const MissingVolumesPage = lazy(() => import("./MissingVolumesPage"));
+const UserStatsPage = lazy(() => import("./UserStatsPage"));
 
 export default function UserPage() {
 	const { username } = useParams();

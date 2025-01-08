@@ -3,6 +3,7 @@ import { useContext, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { messageContext } from "../../components/messageStateProvider";
 
+import "./Authentication.css";
 export default function ResetPasswordPage() {
 	const { userId, token } = useParams();
 	const [formData, setFormData] = useState({ email: "" });

@@ -2,9 +2,7 @@
 	position: relative;
 	background-color: var(--background);
 }
-::-webkit-scrollbar {
-	display: none;
-}
+
 .series__title {
 	padding: 10px;
 }

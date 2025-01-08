@@ -8,6 +8,7 @@ import {
 } from "./utils";
 import AddOrRemoveButton from "./AddRemoveButton";
 
+import "../../components/SeriesCard.css";
 export default function SeriesInfoCard({
 	seriesInfo,
 	addOrRemoveVolume,
@@ -106,7 +107,9 @@ export default function SeriesInfoCard({
 							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/small/${seriesCover} 100w,
 							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/medium/${seriesCover} 400w, 
 							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/large/${seriesCover} 700w,
-							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/extralarge/${seriesCover} 1000w,`}
+							${
+								import.meta.env.REACT_APP_HOST_ORIGIN
+							}/images/extralarge/${seriesCover} 1000w,`}
 						sizes=" (min-width: 768px) 360px, 
 								(max-width: 768px) 100vw,"
 						loading="lazy"
