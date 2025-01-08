@@ -161,6 +161,7 @@ export default function BrowsePage() {
 							placeholder="Buscar"
 							className="form__input filter__input filter__input--grow "
 							onChange={handleChange}
+							value={searchBarValue}
 						/>
 					</label>
 				</div>
