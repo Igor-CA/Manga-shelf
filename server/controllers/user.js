@@ -783,10 +783,13 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 		return;
 	}
 	const regex = new RegExp(req.query.q, "i");
+	const page = parseInt(req.query.p) || 1;
+	const users_per_page = 12
+	const skip = users_per_page * (page - 1);
 	const user = await User.find(
 		{ username: regex },
 		{ profileImageUrl: 1, username: 1 }
-	);
+	).skip(skip).limit(users_per_page);
 	if (!user) return res.status(400).json({ msg: "User not found" });
 
 	res.send(user);
