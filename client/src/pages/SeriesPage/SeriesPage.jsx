@@ -113,8 +113,8 @@ export default function SeriesPage() {
 	const addOrRemoveVolume = async (isAdding, idList) => {
 		try {
 			const url = isAdding
-				? `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/add-volume`
-				: `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/remove-volume`;
+				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-volume`
+				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-volume`;
 
 			const amoutVolumesFromSeries = series.volumes.length;
 			await axios({

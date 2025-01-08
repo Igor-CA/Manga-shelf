@@ -15,7 +15,9 @@ const LoginPage = lazy(() => import("./pages/AuthenticationPage/LoginPage"));
 const UserPage = lazy(() => import("./pages/UserPage/UserPage"));
 const BrowsePage = lazy(() => import("./pages/BrowsePage/BrowsePage"));
 const ForgotPage = lazy(() => import("./pages/AuthenticationPage/ForgotPage"));
-const ResetPasswordPage = lazy(() => import("./pages/AuthenticationPage/ResetPasswordPage"));
+const ResetPasswordPage = lazy(() =>
+	import("./pages/AuthenticationPage/ResetPasswordPage")
+);
 const ReportProblem = lazy(() => import("./pages/ReportPoblem/ReportProblem"));
 const Home = lazy(() => import("./pages/Home/Home"));
 const DonatePage = lazy(() => import("./pages/Donate/DonatePage"));
@@ -23,8 +25,18 @@ const AboutPage = lazy(() => import("./pages/About/AboutPage"));
 const NotFound = lazy(() => import("./pages/404Page/NotFound"));
 const ToSPage = lazy(() => import("./pages/Tos/ToSPage"));
 const LogoutPage = lazy(() => import("./pages/AuthenticationPage/LogoutPage"));
-const UserNameModal = lazy(() => import("./pages/AuthenticationPage/UserNameModal"));
-const BrowseUser = lazy(() => import("./pages/BrowsePage/BrowseUser"))
+const UserNameModal = lazy(() =>
+	import("./pages/AuthenticationPage/UserNameModal")
+);
+const BrowseUser = lazy(() => import("./pages/BrowsePage/BrowseUser"));
+
+const LoadingPageComponent = () => {
+	return (
+		<div className="page-content">
+			<div className="loading-page__bar"></div>
+		</div>
+	);
+};
 
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
@@ -68,7 +80,7 @@ function App() {
 				{user && user?.username === undefined && (
 					<UserNameModal>precisa setar nome</UserNameModal>
 				)}
-				<Suspense fallback={<h1>Loading...</h1>}>
+				<Suspense fallback={<LoadingPageComponent />}>
 					<Routes>
 						<Route path="/" element={<Home />}></Route>
 						<Route path="/signup" element={<SignupPage />}></Route>

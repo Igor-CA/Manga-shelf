@@ -46,8 +46,8 @@ export default function SeriesInfoCard({
 	const addOrRemoveSeries = async (isAdding) => {
 		try {
 			const url = isAdding
-				? `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/add-series`
-				: `${import.meta.env.REACT_APP_HOST_ORIGIN}api/user/remove-series`;
+				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-series`
+				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-series`;
 
 			await axios({
 				method: "POST",

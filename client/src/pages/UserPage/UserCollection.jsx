@@ -115,7 +115,6 @@ export default function UserCollection() {
 
 	const debouncedSearch = useCallback(
 		debaunce((name, value) => {
-			console.log(name, value);
 			setParams({ ...params, [name]: value });
 		}, 500),
 		[params]

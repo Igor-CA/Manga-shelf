@@ -83,7 +83,7 @@ export default function BrowsePage() {
 		...(urlOrder && { ordering: urlOrder }),
 	};
 
-	const [searchBarValue, setSearchBarValue] = useState(urlSearch);
+	const [searchBarValue, setSearchBarValue] = useState(urlSearch || "");
 	const [params, setParams] = useState(initialParams);
 	const functionArguments = useMemo(() => [params], [params]);
 
