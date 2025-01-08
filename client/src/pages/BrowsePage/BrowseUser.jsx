@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
 import axios from "axios";
 import UserCard from "../../components/UserCard";
-
+import UserCardsList from "../../components/UserCardsList";
+import TogglePageButton from "../../components/TogglePageButton";
 
 export default function BrowseUser() {
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -13,31 +14,28 @@ export default function BrowseUser() {
 	const [searchBarValue, setSearchBarValue] = useState(initialSearch);
 	const [query, setQuery] = useState(initialSearch);
 
-	const [searchResults, setSearchResults] = useState([]);
+	const functionArguments = useMemo(() => [query], [query]);
 
-	useEffect(() => {
-		const fetchPage = async (page, params) => {
-			try {
-				const response = await axios({
-					method: "GET",
-					withCredentials: true,
-					headers: {
-						Authorization: import.meta.env.REACT_APP_API_KEY,
-					},
-					params: {
-						p: page,
-						q: query,
-					},
-					url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/search-user`,
-				});
-				const resultList = response.data;
-				setSearchResults(resultList);
-			} catch (error) {
-				console.error("Error fetching series list:", error);
-			}
-		};
-		fetchPage(1, query);
-	}, [query]);
+	const fetchPage = async (page) => {
+		try {
+			const response = await axios({
+				method: "GET",
+				withCredentials: true,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				params: {
+					p: page,
+					q: query,
+				},
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/search-user`,
+			});
+			const resultList = response.data;
+			return resultList;
+		} catch (error) {
+			console.error("Error fetching series list:", error);
+		}
+	};
 
 	const ErrorComponent = () => {
 		return (
@@ -71,7 +69,7 @@ export default function BrowseUser() {
 
 	return (
 		<div className="browse-collection-page container page-content">
-			
+			<TogglePageButton></TogglePageButton>
 			<form className="filter" onSubmit={handleSubmit}>
 				<div className="filter__search">
 					<label htmlFor="search-bar" className="filter__label">
@@ -89,15 +87,13 @@ export default function BrowseUser() {
 					</label>
 				</div>
 			</form>
-			{searchResults.length > 0 ? (
-				<div className="users-container">
-					{searchResults.map((user) => (
-						<UserCard user={user}></UserCard>
-					))}
-				</div>
-			) : (
-				ErrorComponent()
-			)}
+			
+			<UserCardsList
+				skeletonsCount={12}
+				fetchFunction={fetchPage}
+				functionArguments={functionArguments}
+				errorComponent={ErrorComponent}
+			></UserCardsList>
 		</div>
 	);
 }

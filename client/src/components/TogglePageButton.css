@@ -53,5 +53,6 @@
     transition: 200ms;
 }
 .toggle-page__options-container--hidden{
+	pointer-events: none;
     opacity: 0;
 }
