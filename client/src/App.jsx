@@ -22,6 +22,7 @@ import ScrollToTop from "./utils/ScrollToTop";
 import LogoutPage from "./pages/AuthenticationPage/LogoutPage";
 import MessageComponent from "./components/MessageComponent";
 import UserNameModal from "./pages/AuthenticationPage/UserNameModal";
+import BrowseUser from "./pages/BrowsePage/BrowseUser";
 function App() {
 	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
 
@@ -53,7 +54,12 @@ function App() {
 
 	return (
 		<div className="App">
-			<BrowserRouter>
+			<BrowserRouter
+				future={{
+					v7_startTransition: true,
+					v7_relativeSplatPath: true,
+				}}
+			>
 				<NavBar></NavBar>
 				<ScrollToTop />
 				{user && user?.username === undefined && (
@@ -72,6 +78,7 @@ function App() {
 					></Route>
 					<Route path="/feedback" element={<ReportProblem />}></Route>
 					<Route path="/browse" element={<BrowsePage />}></Route>
+					<Route path="/browse/user" element={<BrowseUser />}></Route>
 					<Route path="/donate" element={<DonatePage />}></Route>
 					<Route path="/about" element={<AboutPage />}></Route>
 					<Route path="/series/:id" element={<SeriesPage />}></Route>

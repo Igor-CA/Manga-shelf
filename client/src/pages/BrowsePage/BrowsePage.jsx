@@ -1,17 +1,18 @@
 import React, {
 	useState,
-	useEffect,
 	useCallback,
-	useRef,
 	useMemo,
 } from "react";
 import axios from "axios";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { Link, useSearchParams } from "react-router-dom";
+
+import {
+	Link,
+	useSearchParams,
+} from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
+import TogglePageButton from "../../components/TogglePageButton";
 
 const SKELETON_LOADING_COUNT = 12;
 
@@ -145,9 +146,9 @@ export default function BrowsePage() {
 		e.preventDefault();
 		setParams(searchBarValue);
 	};
-
 	return (
 		<div className="browse-collection-page container page-content">
+			<TogglePageButton></TogglePageButton>
 			<form className="filter" onSubmit={handleSubmit}>
 				<div className="filter__search">
 					<label htmlFor="search-bar" className="filter__label">

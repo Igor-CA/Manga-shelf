@@ -1,0 +1,57 @@
+.toggle-page__container {
+	display: flex;
+    flex-wrap: wrap;
+	align-items: baseline;
+	gap: 10px;
+    padding: 10px;
+}
+.toggle-page__label {
+	color: var(--text);
+	font-weight: bold;
+	font-size: 2rem;
+}
+.toggle-page__input {
+	color: var(--text);
+	font-weight: bold;
+	padding: 10px;
+	font-size: 1.5rem;
+	border-radius: 5px;
+	background-color: var(--foreground);
+	width: fit-content;
+	position: relative;
+	box-shadow: 0 14px 30px rgba(0,0,0,.15),0 4px 4px rgba(0,0,0,.05);
+}
+.toggle-page__input:hover {
+	cursor: pointer;
+}
+.toggle-page__input__selected {
+	display: flex;
+	align-items: center;
+}
+.toggle-page__option {
+	padding: 10px;
+	font-weight: bold;
+	font-size: 1rem;
+	display: inline-block;
+	width: 100%;
+}
+.toggle-page__option:hover {
+	color: var(--accent);
+	cursor: pointer;
+}
+.toggle-page__options-container {
+	position: absolute;
+	background-color: var(--foreground);
+	bottom: -10px;
+	left: 0;
+	translate: 0 100%;
+	border-radius: 5px;
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15),
+		0 4px 4px rgba(0, 0, 0, 0.15);
+	z-index: 999;
+    opacity: 1;
+    transition: 200ms;
+}
+.toggle-page__options-container--hidden{
+    opacity: 0;
+}

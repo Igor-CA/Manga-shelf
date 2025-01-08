@@ -2,12 +2,6 @@
 	background-color: var(--background);
 	min-height: 100vh;
 }
-.form {
-	width: 100%;
-	padding: 10px;
-	display: flex;
-
-}
 .form__input {
 	background-color: var(--foreground);
 	color: var(--text);
@@ -16,8 +10,9 @@
 	border-radius: 3px;
 	border: none;
 	outline: none;
+	box-shadow: 0 14px 30px rgba(0,0,0,.15),0 4px 4px rgba(0,0,0,.05);
 }
-.form__input::placeholder{
+.form__input::placeholder {
 	font-weight: normal;
 }
 .form__input__grow {
@@ -34,32 +29,45 @@
 	grid-template-columns: repeat(3, 1fr);
 	justify-content: space-evenly;
 	gap: 20px 10px;
-    overflow: scroll;
+	overflow: scroll;
 }
-.not-found-message{
+.not-found-message {
 	grid-column: span 10;
 	margin: 2rem auto;
 	text-align: center;
 	color: var(--text);
 	max-width: 600px;
-}.not-found-message > a{
+	padding: 0 10px;
+}
+.not-found-message > a {
 	text-decoration: underline;
 }
+
 @media only screen and (max-width: 320px) {
-    .collection-container{
-        grid-template-columns: repeat(2, 1fr);
-    }
+	.collection-container {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }
 
-
 @media only screen and (min-width: 768px) {
-    .collection-container{
-        grid-template-columns: repeat(4, 1fr);
-    }
+	.collection-container {
+		grid-template-columns: repeat(4, 1fr);
+	}
+	.users-container{
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.user-card__username{
+		font-size: 1.75rem;
+	}
 }
 
 @media only screen and (min-width: 1024px) {
-    .collection-container{
-        grid-template-columns: repeat(6, 1fr);
-    }
+	.collection-container {
+		grid-template-columns: repeat(6, 1fr);
+	}
+	.users-container{
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+	}
 }

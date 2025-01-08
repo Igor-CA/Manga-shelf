@@ -774,6 +774,23 @@ exports.getUserInfo = asyncHandler(async (req, res, next) => {
 
 	res.send(user);
 });
+exports.searchUser = asyncHandler(async (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+	const regex = new RegExp(req.query.q, "i");
+	const user = await User.find(
+		{ username: regex },
+		{ profileImageUrl: 1, username: 1 }
+	);
+	if (!user) return res.status(400).json({ msg: "User not found" });
+
+	res.send(user);
+});
 
 exports.getUserStats = asyncHandler(async (req, res, next) => {
 	if (

@@ -10,6 +10,7 @@ router.get("/user/logged-user", userController.getLoggedUser);
 router.get("/user/:username", userController.getUserCollection);
 router.get("/user/:username/missing", userController.getMissingPage);
 router.get("/user/stats/:username", userController.getUserStats)
+router.get("/search-user/", userController.searchUser)
 router.get("/get-user-info/:username", userController.getUserInfo)
 //Collection page api
 router.get("/browse", seriesController.browse);

@@ -1,0 +1,39 @@
+
+
+.users-container {
+	padding: 10px;
+	display: grid;
+	grid-template-columns: repeat(1, 1fr);
+	justify-content: space-evenly;
+	gap: 20px 10px;
+}
+.user-card {
+	border-radius: 15px;
+	overflow: hidden;
+	background-color: var(--foreground);
+	box-shadow: 0 14px 30px rgba(0,0,0,.15),0 4px 4px rgba(0,0,0,.05);
+}.user-card__images-container{
+	position: relative;
+
+}.user-card__header{
+	background: linear-gradient(var(--secundary), var(--primary));
+	min-height: 200px;
+}.user-card__profile-picture{
+	max-width: 160px;
+	width: 50%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	position: absolute;
+	translate: -50% -50%;
+	top: 50%;
+	left: 50%;
+	box-shadow: 0px 5px 20px -5px rgb(0 0 0 / 0.3);
+}
+.user-card__username{
+	font-size: 2rem;
+	color: var(--accent);
+	text-align: center;
+	padding: 1.25rem 0;
+}.user-card__username:hover{
+	text-decoration: underline;
+}
