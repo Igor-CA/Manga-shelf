@@ -30,7 +30,7 @@ const UserNameModal = lazy(() =>
 );
 const BrowseUser = lazy(() => import("./pages/BrowsePage/BrowseUser"));
 
-const LoadingPageComponent = () => {
+export const LoadingPageComponent = () => {
 	return (
 		<div className="page-content">
 			<div className="loading-page__bar"></div>
