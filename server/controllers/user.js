@@ -770,9 +770,11 @@ exports.getUserInfo = asyncHandler(async (req, res, next) => {
 		{ username: targetUser },
 		{ profileImageUrl: 1, username: 1 }
 	);
+	const following = (req.user?.following.includes(user._id))
+	const userInfo = {...user._doc, following}
 	if (!user) return res.status(400).json({ msg: "User not found" });
-
-	res.send(user);
+	
+	res.send(userInfo);
 });
 exports.searchUser = asyncHandler(async (req, res, next) => {
 	if (
@@ -784,12 +786,19 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 	}
 	const regex = new RegExp(req.query.q, "i");
 	const page = parseInt(req.query.p) || 1;
-	const users_per_page = 12
+	const users_per_page = 12;
 	const skip = users_per_page * (page - 1);
-	const user = await User.find(
-		{ username: regex },
-		{ profileImageUrl: 1, username: 1 }
-	).skip(skip).limit(users_per_page);
+	const user = await User.aggregate([
+		{ $match: { username: regex } },
+		{
+			$addFields: {
+				followersCount: { $size: { $ifNull: ["$followers", []] } },
+			},
+		},
+		{ $sort: { followersCount: -1, username: 1 } },
+		{ $skip: skip },
+		{ $limit: users_per_page },
+	]).collation({ locale: "en", strength: 2 });
 	if (!user) return res.status(400).json({ msg: "User not found" });
 
 	res.send(user);
@@ -974,4 +983,131 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 	} else {
 		res.send();
 	}
+});
+
+exports.followUser = asyncHandler(async (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+
+	if (!req.isAuthenticated()) {
+		res.status(400).json({ msg: "User not authenticated" });
+		return;
+	}
+
+	const userId = req.user._id;
+	const targetUserName = req.body.targetUser;
+	//console.log({ userId, targetUserName });
+
+	if (!targetUserName) {
+		return res.status(400).json({ msg: "No user selected" });
+	}
+	const user = await User.findById(userId);
+	const targetUser = await User.findOne({ username: targetUserName });
+
+	//console.log({ user, targetUser });
+	if (!targetUser) {
+		res.send({ msg: "No user selected" });
+		return;
+	}
+	if (!user) {
+		res.status(400).json({ msg: "User not found" });
+		return;
+	}
+	if(user._id.toString() === targetUser._id.toString()){
+		res.status(400).json({ msg: "Can't follow yourself" });
+		return;
+	}
+	if (!user.following.includes(targetUser._id)) {
+		user.following.push(targetUser._id);
+	}
+	if (!targetUser.followers.includes(userId)) {
+		targetUser.followers.push(userId);
+	}
+	user.save();
+	targetUser.save();
+	res.send({ msg: "Followed Successfuly" });
+});
+exports.unfollowUser = asyncHandler(async (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+
+	if (!req.isAuthenticated()) {
+		res.status(400).json({ msg: "User not authenticated" });
+		return;
+	}
+
+	const userId = req.user._id;
+	const targetUserName = req.body.targetUser;
+	//console.log({ userId, targetUserName });
+
+	if (!targetUserName) {
+		return res.status(400).json({ msg: "No user selected" });
+	}
+	const user = await User.findById(userId);
+	const targetUser = await User.findOne({ username: targetUserName });
+
+	//console.log({ user, targetUser });
+	if (!targetUser) {
+		res.send({ msg: "No user selected" });
+		return;
+	}
+	if (!user) {
+		res.status(400).json({ msg: "User not found" });
+		return;
+	}
+	if(user._id.toString() === targetUser._id.toString()){
+		res.status(400).json({ msg: "Can't unfollow yourself" });
+		return;
+	}
+	if (user.following.includes(targetUser._id)) {
+		user.following.pop(targetUser._id);
+	}
+	if (targetUser.followers.includes(userId)) {
+		targetUser.followers.pop(userId);
+	}
+	user.save();
+	targetUser.save();
+	res.send({ msg: "Unfollowed Successfuly" });
+});
+
+exports.getFollowing = asyncHandler(async (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+	const username = req.params.username;
+	const result = await User.findOne(
+		{ username },
+		{ following: 1}
+	).populate("following", { _id: 1, username: 1, profileImageUrl: 1 });
+	res.send(result.following);
+});
+
+exports.getFollowers = asyncHandler(async (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+	const username = req.params.username;
+	const result = await User.findOne(
+		{ username },
+		{ followers: 1}
+	).populate("followers", { _id: 1, username: 1, profileImageUrl: 1 });
+	res.send(result.followers);
 });

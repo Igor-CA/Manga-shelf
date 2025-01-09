@@ -17,6 +17,7 @@ const UserSchema = new Schema({
 	],
 	ownedVolumes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Volume" }],
 	following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+	followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	tokenTimestamp: { type: Date },
 	token: { type: String },
 	TOSAcceptedAt: { type: Date },

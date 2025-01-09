@@ -184,6 +184,27 @@
 }.bar-chart__bar{
 	fill: var(--accent);
 }
+.options-container {
+	margin: 0px 10px;
+	margin-top: 10px;
+	display: flex;
+	justify-content: space-evenly;
+	border: 1px solid currentColor;
+	border-radius: 5px;
+	color: var(--text);
+	background-color: var(--foreground);
+}
+.options {
+	cursor: pointer;
+	text-align: center;
+	flex-grow: 1;
+	padding: 10px;
+}
+.options--selected {
+	background-color: var(--text);
+	color: var(--background);
+	border: none;
+}
 @media only screen and (min-width: 768px) {
 	.profile-header__navbar__list {
 		justify-content: space-evenly;

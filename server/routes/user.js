@@ -17,6 +17,8 @@ router.post("/remove-series", userController.removeSeries);
 router.post("/remove-volume", userController.removeVolume);
 router.put("/set-username", userController.setUserName);
 router.put("/change-profile-pic", userController.changeProfilePicture);
+router.put("/follow", userController.followUser);
+router.put("/unfollow", userController.unfollowUser);
 router.get(
 	"/login/auth/google",
 	passport.authenticate("google", { scope: ["profile", "email"] })
