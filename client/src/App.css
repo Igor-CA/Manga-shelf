@@ -67,8 +67,7 @@ body {
 	min-width: 100vw;
 	position: fixed;
 	top: 0;
-	padding-top: 80px;
-	z-index: 99999;
+	z-index: 100;
 	background: rgba(0, 0, 0, 0.5);
 }
 
@@ -182,7 +181,6 @@ body {
 .filter__types {
 	display: flex;
 	flex-direction: row;
-	overflow: scroll;
 	gap: 10px;
 }
 .filter__input {

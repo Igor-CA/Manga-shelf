@@ -3,6 +3,8 @@ import { useContext, useState } from "react";
 import { messageContext } from "../../components/messageStateProvider";
 import { UserContext } from "../../components/userProvider";
 
+import "./Authentication.css";
+
 export default function UserNameModal() {
 	const { setOutdated } = useContext(UserContext);
 	const [formData, setFormData] = useState();

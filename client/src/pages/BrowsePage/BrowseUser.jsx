@@ -3,7 +3,6 @@ import "./BrowsePage.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
 import axios from "axios";
-import UserCard from "../../components/UserCard";
 import UserCardsList from "../../components/UserCardsList";
 import TogglePageButton from "../../components/TogglePageButton";
 

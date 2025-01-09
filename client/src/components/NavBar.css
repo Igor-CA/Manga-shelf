@@ -79,7 +79,7 @@
 	}
     .navbar__label{
         color: white;
-		font-size: 0.8rem;
+		font-size: 1rem;
     }
     .navbar__label:hover{
 		text-decoration: underline;
