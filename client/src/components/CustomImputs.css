@@ -1,0 +1,93 @@
+.custom-checkbox {
+	--checkbox-size: 1rem;
+	--checkbox-color: var(--accent);
+
+	position: relative;
+	cursor: pointer;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.custom-checkbox input {
+	display: none;
+}
+
+.checkbox-wrapper {
+	position: relative;
+	width: var(--checkbox-size);
+	height: var(--checkbox-size);
+	border-radius: 4px;
+	transition: transform 0.2s ease;
+	display: inline-block;
+	margin-right: 0.5rem;
+}
+
+.checkbox-bg {
+	position: absolute;
+	inset: 0;
+	border-radius: 4px;
+	border: 2px solid var(--checkbox-color);
+	background: var(--background);
+	transition: all 0.2s ease;
+}
+
+.checkbox-icon {
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	width: 80%;
+	height: 80%;
+	color: white;
+	transform: scale(0);
+	transition: all 0.2s ease;
+}
+
+.check-path {
+	stroke-dasharray: 40;
+	stroke-dashoffset: 40;
+	transition: stroke-dashoffset 0.3s ease 0.1s;
+}
+
+/* Checked State */
+.custom-checkbox input:checked + .checkbox-wrapper .checkbox-bg {
+	background: var(--checkbox-color);
+	border-color: var(--checkbox-color);
+}
+
+.custom-checkbox input:checked + .checkbox-wrapper .checkbox-icon {
+	transform: scale(1);
+}
+
+.custom-checkbox input:checked + .checkbox-wrapper .check-path {
+	stroke-dashoffset: 0;
+}
+
+/* Hover Effects */
+.custom-checkbox:hover .checkbox-wrapper {
+	transform: scale(1.05);
+}
+
+/* Active Animation */
+.custom-checkbox:active .checkbox-wrapper {
+	transform: scale(0.95);
+}
+
+/* Focus Styles */
+.custom-checkbox input:focus + .checkbox-wrapper .checkbox-bg {
+	box-shadow: 0 0 0 4px var(--checkbox-color);
+}
+
+/* Animation */
+@keyframes bounce {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.1);
+	}
+}
+
+.custom-checkbox input:checked + .checkbox-wrapper {
+	animation: bounce 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

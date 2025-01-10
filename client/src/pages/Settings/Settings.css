@@ -1,0 +1,139 @@
+.settings-container {
+	padding: 20px;
+	background-color: var(--background);
+	color: var(--text);
+    flex-grow: 1;
+
+}
+.settings__aside {
+	position: sticky;
+	top: 5rem;
+	display: grid;
+	align-self: start;
+	justify-self: end;
+	width: 20rem;
+}
+.settings__navbar-container {
+	display: none;
+	gap: 1rem;
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+}
+.settings__navbar-container ul {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+
+	gap: 0.5rem;
+}
+.settings__navbar-title {
+	font-size: 1.25rem;
+	line-height: 1.75rem;
+	font-weight: bold;
+	color: var(--text); 
+}
+.settings__navbar__link {
+	color: var(--text);
+	width: 100%;
+	display: block;
+	padding: 0.5rem;
+    border-radius: 0.25rem;
+}
+.settings__navbar__link:hover {
+	color: var(--accent);
+}
+.settings__navbar__link--active {
+    color: var(--accent);
+	background-color: var(--foreground);
+}
+.settings__navbar-item {
+	padding: 0.25rem 0;
+}
+.settings-group {
+	background-color: var(--foreground);
+	padding: 20px;
+	margin-bottom: 20px;
+	border-radius: 10px;
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.05);
+}
+.settings-group__title {
+	font-size: 1.5em;
+	color: var(--text);
+}
+.input_label {
+	font-weight: bold;
+	color: var(--text);
+	display: block;
+	margin: 1rem 0;
+}
+.input {
+	background-color: var(--background);
+	color: var(--text);
+	font-weight: bold;
+	padding: 10px;
+	border-radius: 3px;
+	border: none;
+	width: 100%;
+	resize: none;
+	margin-top: 0.7rem;
+}
+.input_obs {
+	font-weight: normal;
+	font-size: 0.75rem;
+	margin-top: 0.5rem;
+}
+.settings__picture-container {
+	position: relative;
+	overflow: hidden;
+	background-color: rgba(var(--gray));
+	max-width: 250px;
+	max-height: 250px;
+	aspect-ratio: 1;
+	border-radius: 1rem;
+	margin-bottom: 1rem;
+}
+.settings__picture-container--banner {
+	max-width: 100%;
+	max-height: none;
+	aspect-ratio: 3/1;
+	border-radius: 0.25rem;
+	background: linear-gradient(var(--secundary), var(--primary));
+}
+.settings__picture {
+	position: absolute;
+	left: 50%;
+	z-index: 0;
+	translate: -50%;
+	width: auto;
+	min-width: 100%;
+	height: 100%;
+	transition: opacity 0.3s ease-in-out;
+	opacity: 1;
+}
+.settings__picture--loading {
+	opacity: 0;
+}
+.settings__change-picture-button {
+	position: absolute;
+	border: none;
+	outline: none;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.6);
+	font-weight: bold;
+	color: white;
+	font-size: 1rem;
+	padding: 1rem;
+	transition: 200ms;
+	cursor: pointer;
+}
+
+
+@media only screen and (min-width: 1040px) {
+	.settings-page {
+		display: flex;
+	}
+	.settings__navbar-container {
+		display: block;
+	}
+}

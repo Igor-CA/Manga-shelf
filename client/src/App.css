@@ -220,6 +220,23 @@ body {
 .form__label {
 	display: none;
 }
+.form-title{
+	font-size: 1.5em;
+	padding-top: 15px;
+	padding-bottom: 30px;
+    color: var(--text);
+    text-align: center;
+}
+.form-container {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	background-color: var(--foreground);
+	color: var(--text);
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px;
+}
 
 .not-found-message {
 	grid-column: span 10;
@@ -242,8 +259,17 @@ body {
 	.collection-container {
 		grid-template-columns: repeat(4, 1fr);
 	}
+	
+	.form-container {
+		max-width: 400px;
+		margin: auto;
+		margin-top: 40px;
+		height: auto;
+		min-height: auto;
+		border-radius: 4px;
+		box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+	}
 }
-
 @media only screen and (min-width: 1024px) {
 	.collection-container {
 		grid-template-columns: repeat(6, 1fr);

@@ -390,6 +390,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 				username: user.username,
 				userList: user.userList,
 				ownedVolumes: user.ownedVolumes,
+				profileImageUrl: user.profileImageUrl
 			};
 			res.send(userInfo);
 		} else {

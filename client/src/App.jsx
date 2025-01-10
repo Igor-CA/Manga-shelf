@@ -29,6 +29,7 @@ const UserNameModal = lazy(() =>
 	import("./pages/AuthenticationPage/UserNameModal")
 );
 const BrowseUser = lazy(() => import("./pages/BrowsePage/BrowseUser"));
+const SettingsPage = lazy(() => import("./pages/Settings/SettingsPage"));
 
 export const LoadingPageComponent = () => {
 	return (
@@ -100,6 +101,7 @@ function App() {
 						<Route path="/series/:id" element={<SeriesPage />}></Route>
 						<Route path="/volume/:id" element={<VolumePage />}></Route>
 						<Route path="/user/:username/*" element={<UserPage />}></Route>
+						<Route path="/settings" element={<SettingsPage />}></Route>
 						<Route path="*" element={<NotFound />}></Route>
 					</Routes>
 				</Suspense>
