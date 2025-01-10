@@ -10,20 +10,38 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { body, validationResult } = require("express-validator");
 const ITEMS_PER_PAGE = 36;
+const path = require("path");
 
 const multer = require("multer");
-const storage = multer.diskStorage({
-	destination: function (req, file, cb) {
-		cb(null, "public/images/avatar");
-	},
-	filename: function (req, file, cb) {
+function configureMulter(folder, getFilename) {
+	const storage = multer.diskStorage({
+		destination: function (req, file, cb) {
+			cb(null, path.resolve(folder));
+		},
+		filename: function (req, file, cb) {
+			const filename = getFilename(req, file);
+			cb(null, filename);
+		},
+	});
+
+	return multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+}
+const profilePictureUploader = configureMulter(
+	"public/images/avatar",
+	(req, file) => {
 		const userId = req.user._id;
 		const fileExtension = file.originalname.split(".").pop();
-		const filename = `${userId}.${fileExtension}`;
-		cb(null, filename);
-	},
-});
-const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+		return `${userId}.${fileExtension}`;
+	}
+);
+const profileBannerUploader = configureMulter(
+	"public/images/banner",
+	(req, file) => {
+		const userId = req.user._id;
+		const fileExtension = file.originalname.split(".").pop();
+		return `${userId}.${fileExtension}`;
+	}
+);
 
 exports.signup = [
 	body("username")
@@ -390,7 +408,8 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 				username: user.username,
 				userList: user.userList,
 				ownedVolumes: user.ownedVolumes,
-				profileImageUrl: user.profileImageUrl
+				profileImageUrl: user.profileImageUrl,
+				profileBannerUrl: user.profileBannerUrl,
 			};
 			res.send(userInfo);
 		} else {
@@ -734,7 +753,7 @@ exports.setUserName = [
 	}),
 ];
 exports.changeProfilePicture = [
-	upload.single("file"),
+	profilePictureUploader.single("file"),
 	asyncHandler(async (req, res, next) => {
 		if (
 			req.headers.authorization !== process.env.API_KEY &&
@@ -755,6 +774,28 @@ exports.changeProfilePicture = [
 		res.status(201).json(user);
 	}),
 ];
+exports.changeProfileBanner = [
+	profileBannerUploader.single("file"),
+	asyncHandler(async (req, res, next) => {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
+			return res.status(401).json({ msg: "Not authorized" });
+		}
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ message: errors.array() });
+		}
+		if (!req.isAuthenticated()) {
+			return res.status(401).json({ msg: "Usuário deve estar logado" });
+		}
+		const user = await User.findById(req.user._id);
+		user.profileBannerUrl = `/images/banner/${req.file.filename}`;
+		await user.save();
+		res.status(201).json(user);
+	}),
+];
 
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
 	if (
@@ -769,12 +810,12 @@ exports.getUserInfo = asyncHandler(async (req, res, next) => {
 
 	const user = await User.findOne(
 		{ username: targetUser },
-		{ profileImageUrl: 1, username: 1 }
+		{ profileImageUrl: 1, username: 1, profileBannerUrl: 1 }
 	);
-	const following = (req.user?.following.includes(user._id))
-	const userInfo = {...user._doc, following}
+	const following = req.user?.following.includes(user._id);
+	const userInfo = { ...user._doc, following };
 	if (!user) return res.status(400).json({ msg: "User not found" });
-	
+
 	res.send(userInfo);
 });
 exports.searchUser = asyncHandler(async (req, res, next) => {

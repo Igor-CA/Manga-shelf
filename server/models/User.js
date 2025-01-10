@@ -23,6 +23,7 @@ const UserSchema = new Schema({
 	TOSAcceptedAt: { type: Date },
 	TOSAccepted: { type: Boolean }, // To fit users created before adding of TOSAcceptedAt
 	profileImageUrl: { type: String },
+	profileBannerUrl: { type: String },
 });
 
 module.exports = mongoose.model("User", UserSchema);
