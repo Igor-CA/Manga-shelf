@@ -3,12 +3,26 @@
 	gap: 10px;
 	display: flex;
 	flex-direction: column;
-
 	background: linear-gradient(var(--secundary), var(--primary));
-	min-height: 240px;
+	height: 240px;
 	align-items: center;
 	justify-content: flex-end;
 	color: white;
+	background-size: cover;
+	background-position: center center;
+	position: relative;
+}
+.profile-header__shadow {
+	background: linear-gradient(
+		180deg,
+		rgba(6, 13, 34, 0) 40%,
+		rgba(6, 13, 34, 0.6)
+	);
+	height: 100%;
+	left: 0;
+	position: absolute;
+	top: 0;
+	width: 100%;
 }
 .user-collection {
 	position: relative;
@@ -21,6 +35,7 @@
 	width: 100%;
 	gap: 1em;
 	margin-bottom: 0;
+	z-index: 5;
 }
 .user-name {
 	padding-bottom: 10px;
@@ -173,15 +188,17 @@
 	border-radius: 4px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 	color: var(--text);
-}.bar-chart__x_axis{
+}
+.bar-chart__x_axis {
 	fill: var(--text);
 	font-size: 0.9rem;
 	font-weight: bold;
-	width: 10px;  
-	white-space: nowrap; 
-	overflow: hidden;  
-	text-overflow: ellipsis; 
-}.bar-chart__bar{
+	width: 10px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.bar-chart__bar {
 	fill: var(--accent);
 }
 .options-container {
@@ -209,15 +226,17 @@
 	.profile-header__navbar__list {
 		justify-content: space-evenly;
 	}
-	.profile-header__picture {
+	.profile-header__picture-container {
 		max-width: 160px;
 		max-height: 160px;
 	}
-	.stats-highlights{
+	.profile-header{
+		height: 300px;
+	} .stats-highlights {
 		grid-column-start: 1;
 		grid-column-end: 3;
 	}
-	.chart-container--grow{
+	.chart-container--grow {
 		grid-column-start: 1;
 		grid-column-end: 3;
 	}
@@ -226,7 +245,6 @@
 	}
 }
 @media only screen and (min-width: 1024px) {
-	
 	.chart-container {
 		display: flex;
 		flex-direction: row;

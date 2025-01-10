@@ -141,9 +141,10 @@ function AccountSettings() {
 
 function ProfileSettings() {
 	const [loadedProfile, setLoadedProfile] = useState(false);
-	const [loadedBanner, setLoadedBanner] = useState(false);
 	const { user } = useContext(UserContext);
 	const [showModal, setShowModal] = useState(false);
+	const [cropperAspectRatio, setCropperAspectRatio] = useState(1);
+	const [cropperApiRoute, setCropperApiRoute] = useState("");
 
 	const toggleModal = () => {
 		setShowModal((prev) => !prev);
@@ -152,18 +153,28 @@ function ProfileSettings() {
 	const handleLoadedProfile = () => {
 		setLoadedProfile(true);
 	};
-	const handleLoadedBanner = () => {
-		setLoadedBanner(true);
+
+	const configureCropToPic = () => {
+		setCropperAspectRatio(1);
+		setCropperApiRoute(
+			`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-pic`
+		);
+		toggleModal();
+	};
+	const configureCropToBanner = () => {
+		setCropperAspectRatio(3);
+		setCropperApiRoute(
+			`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-banner`
+		);
+		toggleModal();
 	};
 	return (
 		<div className="settings-group">
 			{showModal && (
 				<ImageModal
 					closeModal={toggleModal}
-					apiUrl={`${
-						import.meta.env.REACT_APP_HOST_ORIGIN
-					}/api/user/change-profile-pic`}
-					aspectRatio={1}
+					apiUrl={cropperApiRoute}
+					aspectRatio={cropperAspectRatio}
 				></ImageModal>
 			)}
 
@@ -186,24 +197,26 @@ function ProfileSettings() {
 				></img>
 				<button
 					className="settings__change-picture-button"
-					onClick={toggleModal}
+					onClick={() => {
+						configureCropToPic();
+					}}
 				>
 					Clique aqui para selecionar uma nova foto de perfil
 				</button>
 			</div>
 			<p className="input_label">Mudar foto de fundo:</p>
 			<div className="settings__picture-container settings__picture-container--banner">
-				<img
-					src=""
-					alt="Imagem de fundo do perfil"
-					className={`settings__picture ${
-						!loadedBanner && "settings__picture--loading"
-					}`}
-					onLoad={handleLoadedBanner}
-				></img>
+				<div
+					className="settings__picture settings__picture--banner"
+					style={{
+						backgroundImage: `url(${import.meta.env.REACT_APP_HOST_ORIGIN}/${user?.profileBannerUrl})`,
+					}}
+				></div>
 				<button
 					className="settings__change-picture-button"
-					/*onClick={toggleModal}*/
+					onClick={() => {
+						configureCropToBanner();
+					}}
 				>
 					Clique aqui para selecionar uma nova foto de fundo
 				</button>

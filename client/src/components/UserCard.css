@@ -19,6 +19,8 @@
 
 }.user-card__header{
 	background: linear-gradient(var(--secundary), var(--primary));
+	background-size: cover;
+	background-position: center center;
 	min-height: 200px;
 }
 .user-card__picture-container{

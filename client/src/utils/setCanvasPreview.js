@@ -1,9 +1,10 @@
-const DESIRED_IMAGE_SIZE = 512; //PX
+const DESIRED_IMAGE_SIZE_HEIGHT = 512; //PX
 
-export default function setCanvasPreview(
+export default function r(
 	image, // HTMLImageElement
 	canvas, // HTMLCanvasElement
-	crop // PixelCrop
+	crop, // PixelCrop
+	aspecRatio
 ) {
 	const ctx = canvas.getContext("2d");
 	if (!ctx) {
@@ -14,8 +15,8 @@ export default function setCanvasPreview(
 	const scaleX = image.naturalWidth / image.width;
 	const scaleY = image.naturalHeight / image.height;
 
-	canvas.width = DESIRED_IMAGE_SIZE;
-	canvas.height = DESIRED_IMAGE_SIZE;
+	canvas.width = DESIRED_IMAGE_SIZE_HEIGHT * aspecRatio;
+	canvas.height = DESIRED_IMAGE_SIZE_HEIGHT;
 
 	ctx.scale(pixelRatio, pixelRatio);
 	ctx.imageSmoothingQuality = "high";

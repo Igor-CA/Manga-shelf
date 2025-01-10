@@ -102,7 +102,8 @@ export default function ImageCropper({ closeModal, updateAvatar, aspectRatio = 1
 									crop,
 									imgRef.current.width,
 									imgRef.current.height
-								)
+								),
+								aspectRatio
 							);
 							const dataUrl = previewCanvasRef.current.toDataURL(
 								"image/webp",

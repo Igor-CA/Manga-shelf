@@ -13,6 +13,7 @@ export default function ProfileHeader({ user }) {
 		location.pathname.replace(`/user/${user}`, "")
 	);
 	const [following, setFollowing] = useState(false);
+	const [banner, setBanner] = useState();
 	const avatarUrl = useRef("");
 
 	useEffect(() => {
@@ -41,6 +42,7 @@ export default function ProfileHeader({ user }) {
 					  }/images/deffault-profile-picture.webp`;
 
 				setFollowing(res.data.following);
+				setBanner(res.data.profileBannerUrl);
 			} catch (error) {
 			} finally {
 				setLoaded(true);
@@ -59,7 +61,6 @@ export default function ProfileHeader({ user }) {
 	const handleLoading = () => {
 		setLoaded(true);
 	};
-
 	const followUser = async () => {
 		const route = following ? "unfollow" : "follow";
 		try {
@@ -89,7 +90,15 @@ export default function ProfileHeader({ user }) {
 					}/api/user/change-profile-pic`}
 				></ImageModal>
 			)}
-			<header className="profile-header">
+			<header
+				className="profile-header"
+				style={
+					banner
+						? { backgroundImage: `url(${import.meta.env.REACT_APP_HOST_ORIGIN}/${banner})` }
+						: undefined
+				}
+			>
+				<div className="profile-header__shadow"></div>
 				<div className="container profile-header__info">
 					<div className="profile-header__picture-container">
 						<img

@@ -7,12 +7,16 @@ export default function UserCard({ user }) {
 		setLoaded(true);
 	};
 	return (
-		<Link
-			to={`/user/${user.username}`}
-			key={user._id}
-		>
+		<Link to={`/user/${user.username}`} key={user._id}>
 			<div className="user-card__images-container">
-				<div className="user-card__header"></div>
+				<div
+					className="user-card__header"
+					style={
+						user.profileBannerUrl
+							? { backgroundImage: `url(${import.meta.env.REACT_APP_HOST_ORIGIN}/${user.profileBannerUrl})` }
+							: undefined
+					}
+				></div>
 				<div className="user-card__picture-container">
 					<img
 						src={`${import.meta.env.REACT_APP_HOST_ORIGIN}${
