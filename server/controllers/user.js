@@ -1060,7 +1060,7 @@ exports.followUser = asyncHandler(async (req, res, next) => {
 		res.status(400).json({ msg: "User not found" });
 		return;
 	}
-	if(user._id.toString() === targetUser._id.toString()){
+	if (user._id.toString() === targetUser._id.toString()) {
 		res.status(400).json({ msg: "Can't follow yourself" });
 		return;
 	}
@@ -1107,15 +1107,18 @@ exports.unfollowUser = asyncHandler(async (req, res, next) => {
 		res.status(400).json({ msg: "User not found" });
 		return;
 	}
-	if(user._id.toString() === targetUser._id.toString()){
-		res.status(400).json({ msg: "Can't unfollow yourself" });
-		return;
-	}
+
 	if (user.following.includes(targetUser._id)) {
-		user.following.pop(targetUser._id);
+		const elementToRemove = targetUser._id.toString();
+		user.following = user.following.filter(
+			(el) => el.toString() !== elementToRemove
+		);
 	}
-	if (targetUser.followers.includes(userId)) {
-		targetUser.followers.pop(userId);
+	if (targetUser.followers.includes(user._id)) {
+		const elementToRemove = user._id.toString();
+		targetUser.followers = targetUser.followers.filter(
+			(el) => el.toString() !== elementToRemove
+		);
 	}
 	user.save();
 	targetUser.save();
@@ -1131,10 +1134,10 @@ exports.getFollowing = asyncHandler(async (req, res, next) => {
 		return;
 	}
 	const username = req.params.username;
-	const result = await User.findOne(
-		{ username },
-		{ following: 1}
-	).populate("following", { _id: 1, username: 1, profileImageUrl: 1 });
+	const result = await User.findOne({ username }, { following: 1 }).populate(
+		"following",
+		{ _id: 1, username: 1, profileImageUrl: 1, profileBannerUrl: 1 }
+	);
 	res.send(result.following);
 });
 
@@ -1147,9 +1150,9 @@ exports.getFollowers = asyncHandler(async (req, res, next) => {
 		return;
 	}
 	const username = req.params.username;
-	const result = await User.findOne(
-		{ username },
-		{ followers: 1}
-	).populate("followers", { _id: 1, username: 1, profileImageUrl: 1 });
+	const result = await User.findOne({ username }, { followers: 1 }).populate(
+		"followers",
+		{ _id: 1, username: 1, profileImageUrl: 1, profileBannerUrl: 1 }
+	);
 	res.send(result.followers);
 });
