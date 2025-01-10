@@ -8,11 +8,10 @@ import setCanvasPreview from "../utils/setCanvasPreview";
 import "./ImageModal.css"
 import "react-image-crop/dist/ReactCrop.css";
 
-const ASPECT_RATIO = 1;
 const MIN_DIMENSION = 150;
 
 
-export default function ImageCropper({ closeModal, updateAvatar }) {
+export default function ImageCropper({ closeModal, updateAvatar, aspectRatio = 1 }) {
 	const imgRef = useRef(null);
 	const previewCanvasRef = useRef(null);
 	const [imgSrc, setImgSrc] = useState("");
@@ -36,7 +35,7 @@ export default function ImageCropper({ closeModal, updateAvatar }) {
 					naturalWidth < MIN_DIMENSION ||
 					naturalHeight < MIN_DIMENSION
 				) {
-					setError("Image must be at least 150 x 150 pixels.");
+					setError(`Image must be at least ${150} x ${150} pixels.`);
 					return setImgSrc("");
 				}
 			});
@@ -54,7 +53,7 @@ export default function ImageCropper({ closeModal, updateAvatar }) {
 				unit: "%",
 				width: cropWidthInPercent,
 			},
-			ASPECT_RATIO,
+			aspectRatio,
 			width,
 			height
 		);
@@ -82,7 +81,7 @@ export default function ImageCropper({ closeModal, updateAvatar }) {
 							setCrop(percentCrop)
 						}
 						keepSelection
-						aspect={ASPECT_RATIO}
+						aspect={aspectRatio}
 						minWidth={MIN_DIMENSION}
 					>
 						<img
@@ -126,8 +125,8 @@ export default function ImageCropper({ closeModal, updateAvatar }) {
 						display: "none",
 						border: "1px solid black",
 						objectFit: "contain",
-						width: 150,
-						height: 150,
+						width: MIN_DIMENSION,
+						height: MIN_DIMENSION,
 					}}
 				/>
 			)}

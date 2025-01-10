@@ -12,7 +12,7 @@ export default function ProfileHeader({ user }) {
 	const [activeLink, setActiveLink] = useState(
 		location.pathname.replace(`/user/${user}`, "")
 	);
-	const [following, setFollowing] = useState(false)
+	const [following, setFollowing] = useState(false);
 	const avatarUrl = useRef("");
 
 	useEffect(() => {
@@ -39,10 +39,8 @@ export default function ProfileHeader({ user }) {
 					: `${
 							import.meta.env.REACT_APP_HOST_ORIGIN
 					  }/images/deffault-profile-picture.webp`;
-					  
-				setFollowing(res.data.following)
-					
-				
+
+				setFollowing(res.data.following);
 			} catch (error) {
 			} finally {
 				setLoaded(true);
@@ -63,7 +61,7 @@ export default function ProfileHeader({ user }) {
 	};
 
 	const followUser = async () => {
-		const route = following?"unfollow":"follow"
+		const route = following ? "unfollow" : "follow";
 		try {
 			await axios({
 				method: "PUT",
@@ -76,14 +74,21 @@ export default function ProfileHeader({ user }) {
 				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/${route}`,
 			});
-			setFollowing(prev => !prev)
+			setFollowing((prev) => !prev);
 		} catch (error) {
 			console.log("Error", error);
 		}
 	};
 	return (
 		<div>
-			{showModal && <ImageModal closeModal={toggleModal}></ImageModal>}
+			{showModal && (
+				<ImageModal
+					closeModal={toggleModal}
+					apiUrl={`${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/api/user/change-profile-pic`}
+				></ImageModal>
+			)}
 			<header className="profile-header">
 				<div className="container profile-header__info">
 					<div className="profile-header__picture-container">
@@ -111,7 +116,7 @@ export default function ProfileHeader({ user }) {
 							className="button profile-header__button"
 							onClick={followUser}
 						>
-							{following?"Deixar de seguir":"Seguir"}
+							{following ? "Deixar de seguir" : "Seguir"}
 						</button>
 					)}
 				</div>

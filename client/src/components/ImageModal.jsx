@@ -18,7 +18,7 @@ function dataURLtoFile(dataurl, filename) {
 	return new File([u8dataArray], filename, { type: mime });
 }
 
-export default function ImageModal({ closeModal }) {
+export default function ImageModal({ closeModal, apiUrl, aspectRatio=1 }) {
 	const avatarUrl = useRef("");
 	const { user } = useContext(UserContext);
 	const { addMessage, setMessageType } = useContext(messageContext);
@@ -30,7 +30,7 @@ export default function ImageModal({ closeModal }) {
 			await axios({
 				method: "PUT",
 				withCredentials: true,
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-pic`,
+				url: apiUrl,
 				data: formData,
 				headers: {
 					"Content-Type": "multipart/form-data",
@@ -64,7 +64,7 @@ export default function ImageModal({ closeModal }) {
 							<span className="sr-only">Fechar aba</span>
 							<IoIosClose />
 						</button>
-						<ImageCropper updateAvatar={updateAvatar} closeModal={closeModal} />
+						<ImageCropper updateAvatar={updateAvatar} closeModal={closeModal} aspectRatio={aspectRatio} />
 					</div>
 				</div>
 			</div>
