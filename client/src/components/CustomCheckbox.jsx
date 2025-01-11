@@ -1,5 +1,5 @@
 import "./CustomImputs.css"
-export default function CustomCheckbox({htmlId, label}) {
+export default function CustomCheckbox({ htmlId, label, defaultValue = true }) {
 	return (
 		<label htmlFor={htmlId} className="input_label custom-checkbox">
 			<input
@@ -7,6 +7,7 @@ export default function CustomCheckbox({htmlId, label}) {
 				name={htmlId}
 				id={htmlId}
 				className="input--checkbox"
+				defaultChecked={defaultValue}
 			/>
 			<div className="checkbox-wrapper">
 				<div className="checkbox-bg"></div>

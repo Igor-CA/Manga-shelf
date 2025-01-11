@@ -1,10 +1,12 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import "../AuthenticationPage/Authentication.css";
 import "./Settings.css";
 import CustomCheckbox from "../../components/CustomCheckbox";
 import useActiveHeader from "../../utils/useActiveHeading";
 import ImageModal from "../../components/ImageModal";
 import { UserContext } from "../../components/userProvider";
+import axios from "axios";
+import { messageContext } from "../../components/messageStateProvider";
 export default function SettingsPage() {
 	return (
 		<div className="container page-content settings-page">
@@ -134,6 +136,7 @@ function AccountSettings() {
 			<CustomCheckbox
 				htmlId={"adult"}
 				label={"Permitir conteúdo adulto (+18)"}
+				defaultValue={false}
 			></CustomCheckbox>
 		</div>
 	);
@@ -162,7 +165,7 @@ function ProfileSettings() {
 		toggleModal();
 	};
 	const configureCropToBanner = () => {
-		setCropperAspectRatio(3);
+		setCropperAspectRatio(4);
 		setCropperApiRoute(
 			`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-banner`
 		);
@@ -182,6 +185,7 @@ function ProfileSettings() {
 				Perfil
 			</h2>
 			<p className="input_label">Mudar foto de perfil:</p>
+			
 			<div className="settings__picture-container">
 				<img
 					src={`http://localhost:3001${
@@ -209,7 +213,9 @@ function ProfileSettings() {
 				<div
 					className="settings__picture settings__picture--banner"
 					style={{
-						backgroundImage: `url(${import.meta.env.REACT_APP_HOST_ORIGIN}/${user?.profileBannerUrl})`,
+						backgroundImage: `url(${import.meta.env.REACT_APP_HOST_ORIGIN}/${
+							user?.profileBannerUrl
+						})`,
 					}}
 				></div>
 				<button
@@ -226,35 +232,83 @@ function ProfileSettings() {
 }
 
 function NotificationSettings() {
+	const { addMessage, setMessageType } = useContext(messageContext);
+	const { user, setOutdated } = useContext(UserContext);
+	const [userNotifications, setUserNotification] = useState(
+		user?.settings?.notifications
+	);
+
+	useEffect(() => {
+		setUserNotification(user?.settings?.notifications);
+	}, [user]);
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		try {
+			const form = e.target;
+			const formData = new FormData(form);
+			const formDataObj = Object.fromEntries(formData.entries());
+
+			await axios({
+				method: "PUT",
+				withCredentials: true,
+				url: `${
+					import.meta.env.REACT_APP_HOST_ORIGIN
+				}/api/user/set-notifications`,
+				data: formDataObj,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+			});
+			addMessage("Configurações alteradas com sucesso");
+			setMessageType("Success");
+			setOutdated(true)
+		} catch (error) {
+			const customErrorMessage = error.response.data.msg;
+			addMessage(customErrorMessage);
+		}
+	};
+
 	return (
-		<div className="settings-group">
-			<h2 className="settings-group__title" id="notification">
-				Notificações
-			</h2>
-			<CustomCheckbox
-				htmlId={"enable"}
-				label={"Permitir notificaçoes"}
-			></CustomCheckbox>
-			<CustomCheckbox
-				htmlId={"volumes"}
-				label={"Notificar novos volumes na sua coleção"}
-			></CustomCheckbox>
-			<CustomCheckbox
-				htmlId={"followers"}
-				label={"Notificar novos seguidores"}
-			></CustomCheckbox>
-			<CustomCheckbox
-				htmlId={"updates"}
-				label={"Notificar atualizações no site"}
-			></CustomCheckbox>
-			<CustomCheckbox
-				htmlId={"email-notification"}
-				label={"Enviar notificações por email"}
-			></CustomCheckbox>
-			<CustomCheckbox
-				htmlId={"site-notification"}
-				label={"Enviar notificações pelo site"}
-			></CustomCheckbox>
-		</div>
+		<form className="settings-group" onSubmit={handleSubmit}>
+			{userNotifications && (
+				<>
+					<h2 className="settings-group__title" id="notification">
+						Notificações
+					</h2>
+					<CustomCheckbox
+						htmlId={"enable"}
+						label={"Permitir notificaçoes"}
+						defaultValue={userNotifications?.allow}
+					></CustomCheckbox>
+					<CustomCheckbox
+						htmlId={"volumes"}
+						label={"Notificar novos volumes na sua coleção"}
+						defaultValue={userNotifications?.volumes}
+					></CustomCheckbox>
+					<CustomCheckbox
+						htmlId={"followers"}
+						label={"Notificar novos seguidores"}
+						defaultValue={userNotifications?.followers}
+					></CustomCheckbox>
+					<CustomCheckbox
+						htmlId={"updates"}
+						label={"Notificar atualizações no site"}
+						defaultValue={userNotifications?.updates}
+					></CustomCheckbox>
+					<CustomCheckbox
+						htmlId={"site-notification"}
+						label={"Enviar notificações pelo site"}
+						defaultValue={userNotifications?.site}
+					></CustomCheckbox>
+					<CustomCheckbox
+						htmlId={"email-notification"}
+						label={"Enviar notificações por email"}
+						defaultValue={userNotifications?.email}
+					></CustomCheckbox>
+					<button className="button">Salvar Configurações</button>
+				</>
+			)}
+		</form>
 	);
 }

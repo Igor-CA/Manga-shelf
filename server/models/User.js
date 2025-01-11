@@ -24,6 +24,18 @@ const UserSchema = new Schema({
 	TOSAccepted: { type: Boolean }, // To fit users created before adding of TOSAcceptedAt
 	profileImageUrl: { type: String },
 	profileBannerUrl: { type: String },
+	isAdult: { type: Boolean, default: 0 },
+	isAdultAt: { type: Date }, 
+	settings: {
+		notifications: {
+			allow: { type: Boolean, default: 1 },
+			volumes: { type: Boolean, default: 1 },
+			followers: { type: Boolean, default: 1 },
+			updates: { type: Boolean, default: 1 },
+			site: { type: Boolean, default: 1 },
+			email: { type: Boolean, default: 1 },
+		},
+	},
 });
 
 module.exports = mongoose.model("User", UserSchema);

@@ -410,6 +410,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 				ownedVolumes: user.ownedVolumes,
 				profileImageUrl: user.profileImageUrl,
 				profileBannerUrl: user.profileBannerUrl,
+				settings: user.settings,
 			};
 			res.send(userInfo);
 		} else {
@@ -1155,4 +1156,32 @@ exports.getFollowers = asyncHandler(async (req, res, next) => {
 		{ _id: 1, username: 1, profileImageUrl: 1, profileBannerUrl: 1 }
 	);
 	res.send(result.followers);
+});
+
+exports.setUserNotifications = asyncHandler(async (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		return res.status(401).json({ msg: "Not authorized" });
+	}
+	if (!req.isAuthenticated()) {
+		return res.status(401).json({ msg: "Usuário deve estar logado" });
+	}
+	const user = await User.findByIdAndUpdate(req.user._id, {
+		username: req.body.username,
+	});
+
+	console.log(req.body)
+	user.settings.notifications = {
+		allow: req.body.enable === "on",
+		volumes: req.body.volumes === "on",
+		followers: req.body.followers === "on",
+		updates: req.body.updates === "on",
+		email: req.body["email-notification"] === "on",
+		site: req.body["site-notification"] === "on",
+	};
+
+	user.save()
+	res.send({ msg: "Atualizado com sucesso" });
 });
