@@ -20,6 +20,7 @@ router.put("/change-profile-pic", userController.changeProfilePicture);
 router.put("/change-profile-banner", userController.changeProfileBanner);
 router.put("/follow", userController.followUser);
 router.put("/unfollow", userController.unfollowUser);
+router.put("/set-notifications", userController.setUserNotifications);
 router.get(
 	"/login/auth/google",
 	passport.authenticate("google", { scope: ["profile", "email"] })
