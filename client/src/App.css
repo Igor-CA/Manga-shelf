@@ -36,6 +36,7 @@ body {
 }
 .App {
 	background-color: var(--background);
+	position: relative;
 }
 .loading-page__bar {
 	background-color: var(--accent);

@@ -95,7 +95,7 @@
 .settings__picture-container--banner {
 	max-width: 100%;
 	max-height: none;
-	aspect-ratio: 3/1;
+	aspect-ratio: 5/1;
 	border-radius: 0.25rem;
 	background: linear-gradient(var(--secundary), var(--primary));
 }
