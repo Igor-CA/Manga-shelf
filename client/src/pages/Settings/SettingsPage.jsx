@@ -7,16 +7,30 @@ import ImageModal from "../../components/ImageModal";
 import { UserContext } from "../../components/userProvider";
 import axios from "axios";
 import { messageContext } from "../../components/messageStateProvider";
+import { customWindowConfirm } from "../SeriesPage/utils";
+import PromptConfirm from "../../components/PromptConfirm";
+import { useNavigate } from "react-router-dom";
+
 export default function SettingsPage() {
+	const { user, isFetching } = useContext(UserContext);
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (!isFetching && !user) {
+		  navigate("/");
+		}
+	  }, [isFetching, user, navigate]);
+	
 	return (
 		<div className="container page-content settings-page">
-			<NavBar />
-
-			<div className="settings-container">
-				<AccountSettings />
-				<ProfileSettings />
-				<NotificationSettings />
-			</div>
+			{user && <>
+				<NavBar />
+				<div className="settings-container">
+					<AccountSettings />
+					<ProfileSettings />
+					<NotificationSettings />
+				</div>
+			</>}
 		</div>
 	);
 }
@@ -84,8 +98,159 @@ function NavBar() {
 }
 
 function AccountSettings() {
+	const { addMessage, setMessageType } = useContext(messageContext);
+	const { user, setOutdated } = useContext(UserContext);
+	const [username, setUserName] = useState("");
+	const [nameButtonVisible, setNameButtonVisible] = useState(false);
+	const [email, setEmail] = useState("");
+	const [emailButtonVisible, setEmailButtonVisible] = useState(false);
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+	const [passwordButtonVisible, setPasswordButtonVisible] = useState(false);
+	const [adultAllowed, setadultAllowed] = useState();
+	const [url, setUrl] = useState("");
+	const [showConfirmation, setShowConfirmation] = useState(false);
+	const [confirmationMessage, setConfirmationMessage] = useState("");
+	const [onConfirm, setOnConfirm] = useState(null);
+	const [onCancel, setOnCancel] = useState(null);
+
+	const setters = [
+		setOnConfirm,
+		setOnCancel,
+		setConfirmationMessage,
+		setShowConfirmation,
+	];
+
+	useEffect(() => {
+		setUserName(user?.username || "");
+		setEmail(user?.email || "");
+		setadultAllowed(user?.allowAdult);
+	}, [user]);
+	const handleUserNameChange = (e) => {
+		setUserName(e.target.value);
+		if (e.target.value.trim() === "") return;
+		setNameButtonVisible(true);
+	};
+	const handleEmailChange = (e) => {
+		setEmail(e.target.value);
+		if (e.target.value.trim() === "") return;
+		setEmailButtonVisible(true);
+	};
+
+	const handlePasswordChange = (e) => {
+		setPassword(e.target.value);
+		if (e.target.value.trim() === "" || confirmPassword.trim() === "") return;
+		setPasswordButtonVisible(true);
+	};
+	const handleConfirmPasswordChange = (e) => {
+		setConfirmPassword(e.target.value);
+		if (e.target.value.trim() === "" || password.trim() === "") return;
+		setPasswordButtonVisible(true);
+	};
+
+	const handleInvalid = (e) => {
+		e.preventDefault();
+		const inputName = e.target.name;
+		const input = e.target;
+
+		const validationMessages = {
+			email: {
+				typeMismatch: "O email inserido não é um email válido",
+			},
+			username: {
+				patternMismatch:
+					"O nome de usuário não pode ter caracteres especiais (!@#$%^&*) e deve ter entre 3 e 16 caracteres.",
+			},
+			password: {
+				patternMismatch:
+					"A senha deve conter pelo menos uma letra, número e caractere especial(!@#$%^&*)",
+				tooShort: "A senha precisa de pelo menos 8 caracteres",
+			},
+			"confirm-password": {
+				patternMismatch: "As senhas devem coincidir",
+			},
+		};
+
+		const validationTypes = ["tooShort", "patternMismatch", "typeMismatch"];
+		const inputValidity = validationTypes.find((type) => input.validity[type]);
+
+		const customErrorMessage = validationMessages[inputName][inputValidity];
+
+		addMessage(customErrorMessage);
+	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		const formData = {
+			username,
+			email,
+			password,
+			"confirm-password": confirmPassword,
+		};
+		try {
+			const response = await axios({
+				method: "PUT",
+				data: formData,
+				withCredentials: true,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/${url}`,
+			});
+			addMessage(response.data.message);
+			setMessageType("Success");
+			setOutdated(true);
+		} catch (error) {
+			const customErrorMessage = error.response.data.message;
+			addMessage(customErrorMessage);
+		}
+	};
+
+	const handleAdultContent = (e) => {
+		const value = e.target.checked;
+		if (!value) {
+			allowAdult(false);
+			return
+		}
+
+		customWindowConfirm(
+			setters,
+			"Ao permitir a visualização de conteúdo +18 você confirma ter mais de 18 anos e assumir total resposabilidade sobre a visualização destes conteúdos?",
+			() => allowAdult(true),
+			null
+		);
+	};
+
+	const allowAdult = async (value) => {
+		try {
+			const response = await axios({
+				method: "PUT",
+				data: { allow: value },
+				withCredentials: true,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/allow-adult`,
+			});
+			addMessage(response.data.message);
+			setMessageType("Success");
+			setOutdated(true);
+		} catch (error) {
+			const customErrorMessage = error.response.data.message;
+			addMessage(customErrorMessage);
+		}
+	};
+
 	return (
-		<div className="settings-group">
+		<form className="settings-group" onSubmit={handleSubmit}>
+			{showConfirmation && (
+				<PromptConfirm
+					message={confirmationMessage}
+					onConfirm={onConfirm}
+					onCancel={onCancel}
+					hidePrompt={setShowConfirmation}
+				></PromptConfirm>
+			)}
 			<h2 className="settings-group__title" id="account">
 				Informações da conta
 			</h2>
@@ -101,8 +266,46 @@ function AccountSettings() {
 					name="username"
 					id="username"
 					className="input"
+					value={username}
+					onChange={handleUserNameChange}
+					onInvalid={handleInvalid}
+					pattern="^[A-Za-z0-9]{3,16}$"
+					maxLength="16"
 				/>
 			</label>
+			{nameButtonVisible && (
+				<button
+					className="button"
+					onClick={() => {
+						setUrl("change-username");
+					}}
+				>
+					Salvar nome
+				</button>
+			)}
+			<label htmlFor="email" className="input_label">
+				Email
+				<input
+					placeholder="Novo email"
+					type="email"
+					name="email"
+					id="email"
+					className="input"
+					value={email}
+					onChange={handleEmailChange}
+					onInvalid={handleInvalid}
+				/>
+			</label>
+			{emailButtonVisible && (
+				<button
+					className="button"
+					onClick={() => {
+						setUrl("change-email");
+					}}
+				>
+					Salvar email
+				</button>
+			)}
 			<label htmlFor="password" className="input_label">
 				Senha
 				<input
@@ -111,6 +314,11 @@ function AccountSettings() {
 					name="password"
 					id="password"
 					className="input"
+					value={password}
+					onChange={handlePasswordChange}
+					onInvalid={handleInvalid}
+					pattern="^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$"
+					minLength="8"
 				/>
 			</label>
 			<label htmlFor="confirm-password" className="input_label">
@@ -121,24 +329,31 @@ function AccountSettings() {
 					name="confirm-password"
 					id="confirm-password"
 					className="input"
+					value={confirmPassword}
+					onChange={handleConfirmPasswordChange}
+					onInvalid={handleInvalid}
+					pattern={password}
 				/>
 			</label>
-			<label htmlFor="email" className="input_label">
-				Email
-				<input
-					placeholder="Novo email"
-					type="email"
-					name="email"
-					id="email"
-					className="input"
-				/>
-			</label>
-			<CustomCheckbox
-				htmlId={"adult"}
-				label={"Permitir conteúdo adulto (+18)"}
-				defaultValue={false}
-			></CustomCheckbox>
-		</div>
+			{passwordButtonVisible && (
+				<button
+					className="button"
+					onClick={() => {
+						setUrl("change-password");
+					}}
+				>
+					Salva senha
+				</button>
+			)}
+			{typeof adultAllowed !== "undefined" && (
+				<CustomCheckbox
+					htmlId={"adult"}
+					label={"Permitir conteúdo adulto (+18)"}
+					defaultValue={adultAllowed}
+					handleChange={handleAdultContent}
+				></CustomCheckbox>
+			)}
+		</form>
 	);
 }
 
@@ -165,7 +380,7 @@ function ProfileSettings() {
 		toggleModal();
 	};
 	const configureCropToBanner = () => {
-		setCropperAspectRatio(4);
+		setCropperAspectRatio(5);
 		setCropperApiRoute(
 			`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-banner`
 		);
@@ -185,7 +400,7 @@ function ProfileSettings() {
 				Perfil
 			</h2>
 			<p className="input_label">Mudar foto de perfil:</p>
-			
+
 			<div className="settings__picture-container">
 				<img
 					src={`http://localhost:3001${
@@ -262,7 +477,7 @@ function NotificationSettings() {
 			});
 			addMessage("Configurações alteradas com sucesso");
 			setMessageType("Success");
-			setOutdated(true)
+			setOutdated(true);
 		} catch (error) {
 			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);

@@ -411,6 +411,8 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 				profileImageUrl: user.profileImageUrl,
 				profileBannerUrl: user.profileBannerUrl,
 				settings: user.settings,
+				email: user.email,
+				allowAdult: user.allowAdult,
 			};
 			res.send(userInfo);
 		} else {
@@ -1168,11 +1170,8 @@ exports.setUserNotifications = asyncHandler(async (req, res, next) => {
 	if (!req.isAuthenticated()) {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
 	}
-	const user = await User.findByIdAndUpdate(req.user._id, {
-		username: req.body.username,
-	});
+	const user = await User.findById(req.user._id);
 
-	console.log(req.body)
 	user.settings.notifications = {
 		allow: req.body.enable === "on",
 		volumes: req.body.volumes === "on",
@@ -1182,6 +1181,167 @@ exports.setUserNotifications = asyncHandler(async (req, res, next) => {
 		site: req.body["site-notification"] === "on",
 	};
 
-	user.save()
+	user.save();
 	res.send({ msg: "Atualizado com sucesso" });
+});
+
+exports.changeUsername = [
+	body("username")
+		.trim()
+		.notEmpty()
+		.withMessage("User name must be specified.")
+		.matches(/^[A-Za-z0-9]{3,16}$/)
+		.withMessage(
+			"The username must be alphanumeric and between 3 and 16 characters."
+		)
+		.escape(),
+
+	asyncHandler(async (req, res, next) => {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
+			res.status(401).json({ msg: "Not authorized" });
+			return;
+		}
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ message: errors.array() });
+		}
+
+		if (!req.isAuthenticated()) {
+			return res.status(401).json({ msg: "Usuário deve estar logado" });
+		}
+
+		const { username } = req.body;
+
+		const user = await User.findOne({ username });
+
+		if (user) {
+			return res
+				.status(409)
+				.json({ message: "Nome de usuário já esta em uso" });
+		}
+
+		await User.findByIdAndUpdate(req.user._id, {
+			username: req.body.username,
+		});
+
+		res.status(201).json({ message: "Nome atualizado com sucesso" });
+	}),
+];
+
+exports.changePassword = [
+	body("password")
+		.trim()
+		.notEmpty()
+		.withMessage("Password must be specified.")
+		.matches(
+			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
+		)
+		.withMessage(
+			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
+		)
+		.escape(),
+	body("confirm-password")
+		.trim()
+		.notEmpty()
+		.withMessage("Password must be specified.")
+		.matches(
+			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
+		)
+		.withMessage(
+			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
+		)
+		.escape(),
+
+	asyncHandler(async (req, res, next) => {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
+			res.status(401).json({ msg: "Not authorized" });
+			return;
+		}
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ message: errors.array() });
+		}
+		if (!req.isAuthenticated()) {
+			return res.status(401).json({ msg: "Usuário deve estar logado" });
+		}
+
+		const { password, ["confirm-password"]: confirmPassword } = req.body;
+
+		if (password !== confirmPassword) {
+			return res.status(409).json({ message: "Senhas não combinam" });
+		}
+
+		const hashedPassword = await bcrypt.hash(password, 10);
+		await User.findByIdAndUpdate(req.user._id, {
+			password: hashedPassword,
+		});
+		res.status(201).json({ message: "Senha atualizada com sucesso" });
+	}),
+];
+
+exports.changeEmail = [
+	body("email")
+		.trim()
+		.notEmpty()
+		.withMessage("Email must be specified.")
+		.isEmail()
+		.withMessage("Invalid email format.")
+		.escape(),
+
+	asyncHandler(async (req, res, next) => {
+		if (
+			req.headers.authorization !== process.env.API_KEY &&
+			process.env.NODE_ENV === "production"
+		) {
+			res.status(401).json({ msg: "Not authorized" });
+			return;
+		}
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({ message: errors.array() });
+		}
+		if (!req.isAuthenticated()) {
+			return res.status(401).json({ msg: "Usuário deve estar logado" });
+		}
+		const { email } = req.body;
+
+		const user = await User.findOne({ email });
+
+		if (user) {
+			return res.status(409).json({ message: "Email já está em uso" });
+		}
+		await User.findByIdAndUpdate(req.user._id, {
+			email,
+		});
+		res.status(201).json({ message: "Email atualizado com sucesso" });
+	}),
+];
+
+exports.allowAdultContent = asyncHandler(async (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+	if (!req.isAuthenticated()) {
+		return res.status(401).json({ msg: "Usuário deve estar logado" });
+	}
+	if (!req.body.allow) {
+		await User.findByIdAndUpdate(req.user._id, {
+			allowAdult: false,
+		});
+	}
+	await User.findByIdAndUpdate(req.user._id, {
+		allowAdult: req.body.allow,
+		allowedAdultAt: new Date(),
+	});
+	res.status(201).json({ message: "Atualizado com sucesso" });
 });

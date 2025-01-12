@@ -24,8 +24,8 @@ const UserSchema = new Schema({
 	TOSAccepted: { type: Boolean }, // To fit users created before adding of TOSAcceptedAt
 	profileImageUrl: { type: String },
 	profileBannerUrl: { type: String },
-	isAdult: { type: Boolean, default: 0 },
-	isAdultAt: { type: Date }, 
+	allowAdult: { type: Boolean, default: 0 },
+	allowedAdultAt: { type: Date }, 
 	settings: {
 		notifications: {
 			allow: { type: Boolean, default: 1 },
