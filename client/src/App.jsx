@@ -40,33 +40,7 @@ export const LoadingPageComponent = () => {
 };
 
 function App() {
-	const { user, setUser, outdated, setOutdated } = useContext(UserContext);
-
-	useEffect(() => {
-		if (outdated) {
-			const querryUser = async () => {
-				try {
-					const res = await axios({
-						method: "GET",
-						withCredentials: true,
-						headers: {
-							Authorization: import.meta.env.REACT_APP_API_KEY,
-						},
-						url: `${
-							import.meta.env.REACT_APP_HOST_ORIGIN
-						}/api/data/user/logged-user`,
-					});
-					if (res.data.msg) return;
-
-					setUser(res.data);
-					setOutdated(false);
-				} catch (error) {
-					console.log(error);
-				}
-			};
-			querryUser();
-		}
-	}, [outdated]);
+	const { user } = useContext(UserContext);
 
 	return (
 		<div className="App">
