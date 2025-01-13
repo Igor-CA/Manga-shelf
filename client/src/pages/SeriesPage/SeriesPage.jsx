@@ -13,7 +13,7 @@ import SkeletonVolumesList from "./SkeletonVolumesList";
 export default function SeriesPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
-	const { user, setOutdated } = useContext(UserContext);
+	const { user, setOutdated, isFetching } = useContext(UserContext);
 	const [series, setSeries] = useState();
 	const [localVolumeState, setLocalVolumeState] = useState();
 	const [infoToShow, setInfoToShow] = useState("details");
@@ -21,6 +21,14 @@ export default function SeriesPage() {
 	const [confirmationMessage, setConfirmationMessage] = useState("");
 	const [onConfirm, setOnConfirm] = useState(null);
 	const [onCancel, setOnCancel] = useState(null);
+
+
+	useEffect(() => {
+		if (!isFetching && !user?.allowAdult) {
+		  navigate("/");
+		}
+	  }, [isFetching, user, navigate]);
+	
 
 	const setters = [
 		setOnConfirm,

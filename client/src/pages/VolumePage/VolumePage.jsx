@@ -1,14 +1,24 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./VolumePage.css";
 import SkeletonPage from "../../components/SkeletonPage";
 import VolumeInfoCard from "./VolumeInfoCard";
+import { UserContext } from "../../components/userProvider";
 
 export default function VolumePage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const [volumeData, setVolumeData] = useState();
+	const { user, isFetching } = useContext(UserContext);
+
+	useEffect(() => {
+		if (!isFetching && !user?.allowAdult) {
+		  navigate("/");
+		}
+	  }, [isFetching, user, navigate]);
+	
+
 
 	useEffect(() => {
 		const fetchVolumeData = async () => {

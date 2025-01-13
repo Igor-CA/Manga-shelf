@@ -185,6 +185,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		volumeId: volume._id,
 		volumeNumber: volume.number,
 		image: getVolumeCoverURL(desiredSeries, volume.number),
+		isAdult: desiredSeries.isAdult
 	}));
 
 	const {

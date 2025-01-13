@@ -74,6 +74,7 @@ export default function VolumeInfoCard({ volumeData }) {
 						}`}
 						onLoad={handleLoading}
 					/>
+					{serie.isAdult && <div className="series-card__adult-indicator">+18</div>}
 				</div>
 				<div className="volume__main-info">
 					<div className="volume__functions">

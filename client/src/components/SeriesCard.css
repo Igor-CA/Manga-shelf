@@ -64,6 +64,19 @@
 .series-card__img--loading{
 	opacity: 0;
 }
+.series-card__adult-indicator{
+	position: absolute;
+	background-color: black;
+	color: white;
+	border: 1px solid white;
+	font-weight: bold;
+	padding: 0.5rem 1rem ;
+	border-radius: 0.25rem;
+	z-index: 1;
+	bottom: 0.5rem;
+	right: 0.5rem;
+	box-shadow: 0 14px 30px rgba(0,0,0,.15),0 4px 4px rgba(0,0,0,.05);
+}
 .series-card__bar {
 	position: absolute;
 	z-index: 1;

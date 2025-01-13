@@ -41,6 +41,7 @@ export default function SeriesInfoCard({
 		dimmensions,
 		summary,
 		genres,
+		isAdult
 	} = seriesInfo;
 
 	const addOrRemoveSeries = async (isAdding) => {
@@ -119,6 +120,8 @@ export default function SeriesInfoCard({
 						}`}
 						onLoad={handleLoading}
 					/>
+					{isAdult && <div className="series-card__adult-indicator">+18</div>}
+
 				</div>
 				<div className="series_main-info">
 					{
