@@ -9,7 +9,10 @@ const asyncHandler = require("express-async-handler");
 const ITEMS_PER_PAGE = 24;
 
 exports.browse = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY && process.env.NODE_ENV === "production") {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}
@@ -33,7 +36,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	const ordering = req.query.ordering || "title";
 	const sortStage = {};
 	sortStage[sortOptions[ordering]] = 1;
-	sortStage["userList.Series.title"] = 1;
+	sortStage["title"] = 1;
 
 	const isValidSearch = search && search.trim() !== "";
 
@@ -99,21 +102,26 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		},
 		{
 			$lookup: {
-			  from: "volumes",           
-			  localField: "firstVolume",      
-			  foreignField: "_id",       
-			  as: "firstVolume",             
+				from: "volumes",
+				localField: "firstVolume",
+				foreignField: "_id",
+				as: "firstVolume",
 			},
-		  },
+		},
 		{
 			$addFields: {
-				releaseDate: {$arrayElemAt: ["$firstVolume.date", 0]},
+				releaseDate: { $arrayElemAt: ["$firstVolume.date", 0] },
 			},
 		},
 		{ $match: filter },
 		{ $sort: sortStage }
 	);
-	
+	const allowAdultContent = req.user?.allowAdult || false;
+	if (!allowAdultContent) {
+		pipeline.push({ $match: { "isAdult": false } });
+	}
+
+
 	if (isValidSearch) {
 		pipeline.push(
 			{
@@ -129,7 +137,6 @@ exports.browse = asyncHandler(async (req, res, next) => {
 			{ $sort: { score: -1, ...sortStage } }
 		);
 	}
-	
 	pipeline.push(
 		{
 			$project: {
@@ -147,13 +154,14 @@ exports.browse = asyncHandler(async (req, res, next) => {
 			...serie,
 			image: getSeriesCoverURL(serie),
 		}))
-		.filter((series) => series.isAdult === false);
-
 	res.send(searchResults);
 });
 
 exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
-	if (req.headers.authorization !== process.env.API_KEY && process.env.NODE_ENV === "production") {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
 		res.status(401).json({ msg: "Not authorized" });
 		return;
 	}

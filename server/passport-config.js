@@ -62,7 +62,8 @@ module.exports = function (passport) {
 			const userInfo = {
 				_id: user._id,
 				username: user.username,
-				following: user.following
+				following: user.following,
+				allowAdult: user.allowAdult,
 			};
 			done(null, userInfo);
 		})

@@ -466,8 +466,7 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 		const sortStage = {};
 		sortStage[sortOptions[ordering]] = 1;
 		sortStage["userList.Series.title"] = 1;
-
-		const user = await User.aggregate([
+		const pipeline = [
 			{ $match: { username: targetUser } },
 			{
 				$project: {
@@ -489,6 +488,13 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 					as: "userList.Series",
 				},
 			},
+		];
+		const allowAdult = req.user?.allowAdult || false;
+
+		if (!allowAdult) {
+			pipeline.push({ $match: { "userList.Series.isAdult": false } });
+		}
+		pipeline.push(
 			{ $unwind: "$userList.Series" },
 			{ $addFields: { volumesLength: { $size: "$userList.Series.volumes" } } },
 			{ $match: filter },
@@ -498,11 +504,13 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 					_id: "$userList.Series._id",
 					title: "$userList.Series.title",
 					completionPercentage: "$userList.completionPercentage",
+					isAdult: "$userList.Series.isAdult",
 				},
 			},
 			{ $skip: skip },
-			{ $limit: ITEMS_PER_PAGE },
-		]);
+			{ $limit: ITEMS_PER_PAGE }
+		);
+		const user = await User.aggregate(pipeline);
 		if (user) {
 			const filteredList = user.map((series) => {
 				return {
