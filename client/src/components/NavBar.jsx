@@ -10,6 +10,8 @@ import {
 	faUser,
 	faList,
 	faHouse,
+	faGear,
+	faBell,
 } from "@fortawesome/free-solid-svg-icons";
 import "./NavBar.css";
 import { useContext, useEffect, useState } from "react";
@@ -72,11 +74,7 @@ export default function NavBar() {
 					setMenuVisibility(false);
 				}}
 			>
-				<ul
-					className={`navbar ${
-						menuVisibility ? "mobile--visible" : ""
-					}`}
-				>
+				<ul className={`navbar ${menuVisibility ? "mobile--visible" : ""}`}>
 					<li className="navbar__button">
 						<NavLink
 							to={user ? `/user/${user.username}` : "/login"}
@@ -86,39 +84,40 @@ export default function NavBar() {
 					</li>
 					<li className="navbar__button">
 						<NavLink
-							to={
-								user
-									? `/user/${user.username}/missing`
-									: "/signup"
-							}
+							to={user ? `/user/${user.username}/missing` : "/signup"}
 							icon={user ? faList : faUserPlus}
 							label={user ? "Faltando" : "Criar conta"}
 						/>
 					</li>
 					<li className="navbar__button">
-						<NavLink
-							to={"/browse"}
-							icon={faMagnifyingGlass}
-							label="Buscar"
-						/>
+						<NavLink to={"/browse"} icon={faMagnifyingGlass} label="Buscar" />
 					</li>
 					<li className="navbar__button">
-						<NavLink
-							to={"/feedback"}
-							icon={faComment}
-							label="Sugestões"
-						/>
+						<NavLink to={"/feedback"} icon={faComment} label="Sugestões" />
 					</li>
-					<li className="navbar__button">
-						<NavLink
-							to={user ? "/logout" : "/"}
-							icon={user ? faRightToBracket : faHouse}
-							label={user ? "Sair" : "Início"}
-						/>
-					</li>
-					<li className="navbar__button navbar__button--theme" onClick={toggleTheme}>
-						{theme === "light" ? <LuMoonStar className="navbar__icon--theme"/> : <LuSunDim className="navbar__icon--theme"/>}
-						<span className="navbar__label navbar__label--theme">{theme === "light" ? "Tema escuro": "Tema claro"}</span>
+
+					{user && (
+						<li className="navbar__button">
+							<NavLink to={"/settings"} icon={faGear} label="Configurações" />
+						</li>
+					)}
+					{user && (
+						<li className="navbar__button">
+							<NavLink to={"/notifications"} icon={faBell} label="Notificações" />
+						</li>
+					)}
+					<li
+						className="navbar__button navbar__button--theme"
+						onClick={toggleTheme}
+					>
+						{theme === "light" ? (
+							<LuMoonStar className="navbar__icon--theme" />
+						) : (
+							<LuSunDim className="navbar__icon--theme" />
+						)}
+						<span className="navbar__label navbar__label--theme">
+							{theme === "light" ? "Tema escuro" : "Tema claro"}
+						</span>
 					</li>
 					{/*Close icon that appears only when on mobile device*/}
 					<li className="navbar__button navbar__icon">
