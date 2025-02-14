@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import "../AuthenticationPage/Authentication.css";
 import "./Settings.css";
 import CustomCheckbox from "../../components/CustomCheckbox";
-import useActiveHeader from "../../utils/useActiveHeading";
 import ImageModal from "../../components/ImageModal";
 import { UserContext } from "../../components/userProvider";
 import axios from "axios";
@@ -10,92 +9,48 @@ import { messageContext } from "../../components/messageStateProvider";
 import { customWindowConfirm } from "../SeriesPage/utils";
 import PromptConfirm from "../../components/PromptConfirm";
 import { useNavigate } from "react-router-dom";
+import SideNavbar from "../../components/SideNavbar";
 
+const navbarOptions = [
+	{
+		label: "Conta",
+		id: "account",
+	},
+	{
+		label: "Perfil",
+		id: "profile",
+	},
+	{
+		label: "Notificações",
+		id: "notification",
+	},
+];
 export default function SettingsPage() {
 	const { user, isFetching } = useContext(UserContext);
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (!isFetching && !user) {
-		  navigate("/");
+			navigate("/");
 		}
-	  }, [isFetching, user, navigate]);
-	
+	}, [isFetching, user, navigate]);
+
 	return (
 		<div className="container page-content settings-page">
-			{user && <>
-				<NavBar />
-				<div className="settings-container">
-					<AccountSettings />
-					<ProfileSettings />
-					<NotificationSettings />
-				</div>
-			</>}
+			{user && (
+				<>
+					<SideNavbar title={"Configurações"} options={navbarOptions} />
+					<div className="settings-container">
+						<AccountSettings />
+						<ProfileSettings />
+						<NotificationSettings />
+					</div>
+				</>
+			)}
 		</div>
 	);
 }
 
-function NavBar() {
-	const activeId = useActiveHeader();
-
-	const handleClick = (e, id) => {
-		e.preventDefault();
-		document.querySelector(`#${id}`).scrollIntoView({
-			behavior: "smooth",
-		});
-	};
-
-	const getStyle = (activeId, id) => {
-		const activeStyle = "settings__navbar__link settings__navbar__link--active";
-		const inactiveStyle = "settings__navbar__link";
-		return activeId === id ? activeStyle : inactiveStyle;
-	};
-
-	return (
-		<aside className="settings__aside">
-			<section className="settings__navbar-container">
-				<p className="settings__navbar-title">Configurações</p>
-				<nav>
-					<ul>
-						<li className="settings__navbar-item">
-							<a
-								className={getStyle(activeId, "account")}
-								href="#account"
-								onClick={(e) => {
-									handleClick(e, "account");
-								}}
-							>
-								Conta
-							</a>
-						</li>
-						<li className="settings__navbar-item">
-							<a
-								className={getStyle(activeId, "profile")}
-								href={"profile"}
-								onClick={(e) => {
-									handleClick(e, "profile");
-								}}
-							>
-								Perfil
-							</a>
-						</li>
-						<li className="settings__navbar-item">
-							<a
-								className={getStyle(activeId, "notification")}
-								href={"notification"}
-								onClick={(e) => {
-									handleClick(e, "notification");
-								}}
-							>
-								Notificações
-							</a>
-						</li>
-					</ul>
-				</nav>
-			</section>
-		</aside>
-	);
-}
 
 function AccountSettings() {
 	const { addMessage, setMessageType } = useContext(messageContext);
@@ -139,7 +94,8 @@ function AccountSettings() {
 
 	const handlePasswordChange = (e) => {
 		setPassword(e.target.value);
-		if (e.target.value.trim() === "" || confirmPassword.trim() === "") return;
+		if (e.target.value.trim() === "" || confirmPassword.trim() === "")
+			return;
 		setPasswordButtonVisible(true);
 	};
 	const handleConfirmPasswordChange = (e) => {
@@ -172,7 +128,9 @@ function AccountSettings() {
 		};
 
 		const validationTypes = ["tooShort", "patternMismatch", "typeMismatch"];
-		const inputValidity = validationTypes.find((type) => input.validity[type]);
+		const inputValidity = validationTypes.find(
+			(type) => input.validity[type]
+		);
 
 		const customErrorMessage = validationMessages[inputName][inputValidity];
 
@@ -210,7 +168,7 @@ function AccountSettings() {
 		const value = e.target.checked;
 		if (!value) {
 			allowAdult(false);
-			return
+			return;
 		}
 
 		customWindowConfirm(
@@ -230,7 +188,9 @@ function AccountSettings() {
 				headers: {
 					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/allow-adult`,
+				url: `${
+					import.meta.env.REACT_APP_HOST_ORIGIN
+				}/api/user/allow-adult`,
 			});
 			addMessage(response.data.message);
 			setMessageType("Success");
@@ -257,8 +217,8 @@ function AccountSettings() {
 			<label htmlFor="username" className="input_label">
 				<p>Nome de usuário</p>
 				<p className="input_obs">
-					Obs: Ao mudar o nome de usuario todos os links que levam ao seu
-					usuário irão para de funcionar
+					Obs: Ao mudar o nome de usuario todos os links que levam ao
+					seu usuário irão para de funcionar
 				</p>
 				<input
 					placeholder="Novo nome"
@@ -375,14 +335,18 @@ function ProfileSettings() {
 	const configureCropToPic = () => {
 		setCropperAspectRatio(1);
 		setCropperApiRoute(
-			`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-pic`
+			`${
+				import.meta.env.REACT_APP_HOST_ORIGIN
+			}/api/user/change-profile-pic`
 		);
 		toggleModal();
 	};
 	const configureCropToBanner = () => {
 		setCropperAspectRatio(5);
 		setCropperApiRoute(
-			`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-banner`
+			`${
+				import.meta.env.REACT_APP_HOST_ORIGIN
+			}/api/user/change-profile-banner`
 		);
 		toggleModal();
 	};
@@ -428,9 +392,9 @@ function ProfileSettings() {
 				<div
 					className="settings__picture settings__picture--banner"
 					style={{
-						backgroundImage: `url(${import.meta.env.REACT_APP_HOST_ORIGIN}/${
-							user?.profileBannerUrl
-						})`,
+						backgroundImage: `url(${
+							import.meta.env.REACT_APP_HOST_ORIGIN
+						}/${user?.profileBannerUrl})`,
 					}}
 				></div>
 				<button
