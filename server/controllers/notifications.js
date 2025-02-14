@@ -1,5 +1,6 @@
 const Notification = require("../models/Notification");
 const asyncHandler = require("express-async-handler");
+const Volume = require("../models/volume");
 const User = require("../models/User");
 
 
@@ -17,9 +18,9 @@ exports.getUserNotifications = asyncHandler(async (req, res, next) => {
 	const user = await User.findById(req.user._id, "notifications").populate({
 		path: "notifications.notification",
 	});
-	
+
 	if (!user) return res.status(400).json({ msg: "User not found" });
-	
+
 	const { type, page } = req.query;
 	if (!type) {
 		const notifications = await getAllNotifications(req.user._id, {
@@ -31,11 +32,15 @@ exports.getUserNotifications = asyncHandler(async (req, res, next) => {
 			updatesLimit: 10,
 		});
 		res.send(notifications);
-	}else{
-		const notifications = await getTypeNotifications(req.user._id, {
-			page: page || 1,
-			limit: 10
-		}, type);
+	} else {
+		const notifications = await getTypeNotifications(
+			req.user._id,
+			{
+				page: page || 1,
+				limit: 10,
+			},
+			type
+		);
 		res.send(notifications);
 	}
 });
@@ -81,7 +86,7 @@ async function getAllNotifications(userId, paginationOptions) {
 					{ $limit: followersLimit },
 				],
 				volumes: [
-					{ $match: { type: "volumes" } },
+					{ $match: { type: "volume" } },
 					{ $sort: { _id: 1 } },
 					{ $skip: (volumesPage - 1) * volumesLimit },
 					{ $limit: volumesLimit },
@@ -99,10 +104,7 @@ async function getAllNotifications(userId, paginationOptions) {
 	return results[0];
 }
 async function getTypeNotifications(userId, paginationOptions, type) {
-	const {
-		page = 1,
-		limit = 10,
-	} = paginationOptions;
+	const { page = 1, limit = 10 } = paginationOptions;
 
 	const results = await User.aggregate([
 		{ $match: { _id: userId } },
@@ -130,12 +132,37 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 		{ $sort: { _id: 1 } },
 		{ $skip: (page - 1) * limit },
 		{ $limit: limit },
-		
 	]);
 
 	return results;
 }
 
+async function createNewVolumeNotification(volumeId) {
+	const [existingNotification, volume] = await Promise.all([
+		Notification.findOne({
+			type: "volume",
+			associatedObject: volumeId,
+			objectType: "Volume",
+		}),
+		Volume.findById(volumeId).populate({ path: "serie" }),
+	]);
+	if (existingNotification) return existingNotification;
+	if (!volume) return;
+
+	const newNotification = new Notification({
+		type: "volume",
+		text: `Um novo volume de ${volume.serie.title} foi adicionado ao site`,
+		imageUrl: getVolumeCoverURL(volume.serie, volume.number),
+		associatedObject: volumeId,
+		objectType: "Volume",
+	});
+	await newNotification.save();
+	return newNotification;
+}
+async function sendNewVolumeNotification(volumeId, targetUserId) {
+	const notification = await createNewVolumeNotification(volumeId);
+	return sendNotification(notification, targetUserId, "volumes")
+}
 async function createFollowingNotification(userId) {
 	const [existingNotification, user] = await Promise.all([
 		Notification.findOne({
@@ -160,17 +187,7 @@ async function createFollowingNotification(userId) {
 }
 async function sendNewFollowerNotification(followerID, followedID) {
 	const notification = await createFollowingNotification(followerID);
-	const { allowNotifications, allowType, allowEmail, allowSite } =
-		await checkNotificationSettings(followedID, "followers");
-
-	if (!allowNotifications || !allowType) return;
-	if (allowEmail) {
-		sendEmailNotification(followedID);
-	}
-	if (allowSite) {
-		await sendSiteNotification(notification, followedID);
-	}
-	return notification;
+	return sendNotification(notification, followedID, "followers")
 }
 async function checkNotificationSettings(userId, type) {
 	const user = await User.findById(userId);
@@ -192,6 +209,15 @@ async function sendSiteNotification(notificationId, targetUserId) {
 	);
 	return;
 }
-function sendNotification(userID) {
-	return;
+async function sendNotification(notification, targetUserId, type) {
+	const { allowNotifications, allowType, allowEmail, allowSite } =
+		await checkNotificationSettings(targetUserId, type);
+	if (!allowNotifications || !allowType) return;
+	if (allowEmail) {
+		sendEmailNotification(targetUserId);
+	}
+	if (allowSite) {
+		sendSiteNotification(notification, targetUserId);
+	}
+	return notification;
 }
