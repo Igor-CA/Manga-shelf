@@ -25,7 +25,7 @@ const UserSchema = new Schema({
 	profileImageUrl: { type: String },
 	profileBannerUrl: { type: String },
 	allowAdult: { type: Boolean, default: 0 },
-	allowedAdultAt: { type: Date }, 
+	allowedAdultAt: { type: Date },
 	settings: {
 		notifications: {
 			allow: { type: Boolean, default: 1 },
@@ -36,6 +36,16 @@ const UserSchema = new Schema({
 			email: { type: Boolean, default: 1 },
 		},
 	},
+	notifications: [
+		{
+			notification: {
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Notifications",
+			},
+			seen: { type: Boolean, default: 0 },
+			date: {type: Date, default: new Date()}
+		},
+	],
 });
 
 module.exports = mongoose.model("User", UserSchema);
