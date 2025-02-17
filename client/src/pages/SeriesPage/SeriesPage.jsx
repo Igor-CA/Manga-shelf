@@ -24,7 +24,7 @@ export default function SeriesPage() {
 
 
 	useEffect(() => {
-		if (!isFetching && !user?.allowAdult) {
+		if (!isFetching && (!user?.allowAdult && series?.isAdult)) {
 		  navigate("/");
 		}
 	  }, [isFetching, user, navigate]);
