@@ -5,7 +5,6 @@ import NavBar from "./components/NavBar";
 import ScrollToTop from "./utils/ScrollToTop";
 import MessageComponent from "./components/MessageComponent";
 import "./App.css";
-import axios from "axios";
 
 // Lazy-loaded page components
 const SeriesPage = lazy(() => import("./pages/SeriesPage/SeriesPage"));
@@ -30,6 +29,7 @@ const UserNameModal = lazy(() =>
 );
 const BrowseUser = lazy(() => import("./pages/BrowsePage/BrowseUser"));
 const SettingsPage = lazy(() => import("./pages/Settings/SettingsPage"));
+const NotificationsPage = lazy(() => import("./pages/Notifications/NotificationsPage"));
 
 export const LoadingPageComponent = () => {
 	return (
@@ -76,6 +76,7 @@ function App() {
 						<Route path="/volume/:id" element={<VolumePage />}></Route>
 						<Route path="/user/:username/*" element={<UserPage />}></Route>
 						<Route path="/settings" element={<SettingsPage />}></Route>
+						<Route path="/notifications" element={<NotificationsPage />}></Route>
 						<Route path="*" element={<NotFound />}></Route>
 					</Routes>
 				</Suspense>
