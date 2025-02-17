@@ -18,16 +18,32 @@ import { useContext, useEffect, useState } from "react";
 import { UserContext } from "./userProvider";
 import { LuMoonStar, LuSunDim } from "react-icons/lu";
 
-function NavLink({ to, icon, label }) {
+function NavLink({ to, icon, label, notification = 0 }) {
 	return (
-		<Link to={to} className="navbar__link">
+		<Link
+			to={to}
+			className={`navbar__link ${notification && "navbar__link--active"}`}
+		>
 			<FontAwesomeIcon
 				icon={icon}
 				size="lg"
 				fixedWidth
 				className="navbar__icon"
 			/>
-			<span className="navbar__label">{label}</span>
+			<span
+				className={`navbar__label ${
+					notification && "navbar__link--active"
+				}`}
+			>
+				{label}{" "}
+				{notification > 0 && (
+					<div className="navbar__link__count__container">
+						<span className="navbar__link__count">
+							{notification}
+						</span>
+					</div>
+				)}
+			</span>
 		</Link>
 	);
 }
@@ -74,7 +90,11 @@ export default function NavBar() {
 					setMenuVisibility(false);
 				}}
 			>
-				<ul className={`navbar ${menuVisibility ? "mobile--visible" : ""}`}>
+				<ul
+					className={`navbar ${
+						menuVisibility ? "mobile--visible" : ""
+					}`}
+				>
 					<li className="navbar__button">
 						<NavLink
 							to={user ? `/user/${user.username}` : "/login"}
@@ -84,26 +104,47 @@ export default function NavBar() {
 					</li>
 					<li className="navbar__button">
 						<NavLink
-							to={user ? `/user/${user.username}/missing` : "/signup"}
+							to={
+								user
+									? `/user/${user.username}/missing`
+									: "/signup"
+							}
 							icon={user ? faList : faUserPlus}
 							label={user ? "Faltando" : "Criar conta"}
 						/>
 					</li>
 					<li className="navbar__button">
-						<NavLink to={"/browse"} icon={faMagnifyingGlass} label="Buscar" />
+						<NavLink
+							to={"/browse"}
+							icon={faMagnifyingGlass}
+							label="Buscar"
+						/>
 					</li>
 					<li className="navbar__button">
-						<NavLink to={"/feedback"} icon={faComment} label="Sugestões" />
+						<NavLink
+							to={"/feedback"}
+							icon={faComment}
+							label="Sugestões"
+						/>
 					</li>
 
 					{user && (
 						<li className="navbar__button">
-							<NavLink to={"/settings"} icon={faGear} label="Configurações" />
+							<NavLink
+								to={"/settings"}
+								icon={faGear}
+								label="Configurações"
+							/>
 						</li>
 					)}
 					{user && (
 						<li className="navbar__button">
-							<NavLink to={"/notifications"} icon={faBell} label="Notificações" />
+							<NavLink
+								to={"/notifications"}
+								icon={faBell}
+								label="Notificações"
+								notification={user?.notificationCount}
+							/>
 						</li>
 					)}
 					<li

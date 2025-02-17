@@ -59,6 +59,12 @@
 .navbar__link--active{
 	color: var(--accent);
 }
+.navbar__link__count__container{
+	display: none;
+}
+.navbar__link__count{
+	display: none
+}
 
 
 
@@ -132,7 +138,7 @@
 		font-size: 1rem;
     }
 	.navbar__link--active{
-		color: var(--accent);
+		color: white
 	}
     .navbar__label:hover{
 		text-decoration: underline;
@@ -152,10 +158,23 @@
 		padding-bottom: 1px;
 		border-radius: 5px;
 	}
-	.navbar__button--notification-on{
-		color: var(--accent);
+	.navbar__link__count__container{
+		display: block;
+		position: absolute;
+		background-color: var(--red);
+		color: white;
+		padding: 0.3rem;
+		width: auto;
+		height: 100%;
+		aspect-ratio: 1;
+		border-radius: 5rem;
+		top: -10%;
+		left: 105%;
 	}
-
+	.navbar__link__count{
+		display: block
+	}
+	
 	.side-navbar-container {
 		display: block;
 	}
