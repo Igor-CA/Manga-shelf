@@ -404,6 +404,11 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 			})
 			.exec();
 		if (user) {
+			const notificationCount = user.notifications?.reduce((count, currentNotification) => {
+				if(!currentNotification.seen) return (count + 1)
+				return count
+			},0)
+
 			const userInfo = {
 				_id: user._id,
 				username: user.username,
@@ -414,6 +419,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 				settings: user.settings,
 				email: user.email,
 				allowAdult: user.allowAdult,
+				notificationCount
 			};
 			res.send(userInfo);
 		} else {
