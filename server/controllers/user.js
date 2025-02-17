@@ -13,6 +13,7 @@ const ITEMS_PER_PAGE = 36;
 const path = require("path");
 
 const multer = require("multer");
+const { sendNewFollowerNotification } = require("./notifications");
 function configureMulter(folder, getFilename) {
 	const storage = multer.diskStorage({
 		destination: function (req, file, cb) {
@@ -1083,6 +1084,8 @@ exports.followUser = asyncHandler(async (req, res, next) => {
 	}
 	user.save();
 	targetUser.save();
+
+	sendNewFollowerNotification(user._id, targetUser._id)
 	res.send({ msg: "Followed Successfuly" });
 });
 exports.unfollowUser = asyncHandler(async (req, res, next) => {

@@ -3,6 +3,23 @@ const asyncHandler = require("express-async-handler");
 const Volume = require("../models/volume");
 const User = require("../models/User");
 
+const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
+
+exports.testNotification = asyncHandler(async (req, res, next) => {
+
+	// const notification = await sendNewFollowerNotification(
+	// 	req.body.follower,
+	// 	req.body.followed
+	// );
+	
+	const notification = await sendNewVolumeNotification(
+		req.body.volume,
+		req.body.targetUser
+	);
+	
+	//const notification = await createNewVolumeNotification(req.body.volume);
+	res.status(201).json({ notification });
+});
 
 exports.getUserNotifications = asyncHandler(async (req, res, next) => {
 	if (
@@ -159,7 +176,7 @@ async function createNewVolumeNotification(volumeId) {
 	await newNotification.save();
 	return newNotification;
 }
-async function sendNewVolumeNotification(volumeId, targetUserId) {
+exports.sendNewVolumeNotification = async (volumeId, targetUserId) => {
 	const notification = await createNewVolumeNotification(volumeId);
 	return sendNotification(notification, targetUserId, "volumes")
 }
@@ -185,7 +202,7 @@ async function createFollowingNotification(userId) {
 	await newNotification.save();
 	return newNotification;
 }
-async function sendNewFollowerNotification(followerID, followedID) {
+exports.sendNewFollowerNotification = async(followerID, followedID) =>  {
 	const notification = await createFollowingNotification(followerID);
 	return sendNotification(notification, followedID, "followers")
 }
