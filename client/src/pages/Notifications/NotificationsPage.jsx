@@ -118,12 +118,18 @@ export default function NotificationsPage() {
 									}
 								)}
 							</ul>
-							<button
-								className="button"
-								onClick={handleMoreVolumes}
-							>
-								Mostrar mais
-							</button>
+							{volumesNotifications.length === 0 ? (
+								<p className="notification-missing">
+									Nenhuma notificação desse tipo no momento
+								</p>
+							) : (
+								<button
+									className="button"
+									onClick={handleMoreVolumes}
+								>
+									Mostrar mais
+								</button>
+							)}
 						</div>
 
 						<div className="notifications-group">
@@ -145,12 +151,18 @@ export default function NotificationsPage() {
 									}
 								)}
 							</ul>
-							<button
-								className="button"
-								onClick={handleMoreFollowers}
-							>
-								Mostrar mais
-							</button>
+							{followersNotifications.length === 0 ? (
+								<p className="notification-missing">
+									Nenhuma notificação desse tipo no momento
+								</p>
+							) : (
+								<button
+									className="button"
+									onClick={handleMoreVolumes}
+								>
+									Mostrar mais
+								</button>
+							)}
 						</div>
 
 						<div className="notifications-group">
@@ -172,9 +184,18 @@ export default function NotificationsPage() {
 									}
 								)}
 							</ul>
-							<button className="button" onClick={handleMoreSite}>
-								Mostrar mais
-							</button>
+							{siteNotifications.length === 0 ? (
+								<p className="notification-missing">
+									Nenhuma notificação desse tipo no momento
+								</p>
+							) : (
+								<button
+									className="button"
+									onClick={handleMoreSite}
+								>
+									Mostrar mais
+								</button>
+							)}
 						</div>
 					</div>
 				</>
@@ -184,7 +205,7 @@ export default function NotificationsPage() {
 }
 
 function Notification({ notification }) {
-	const { type, text, imageUrl, associatedObject, date } = notification;
+	const { type, text, imageUrl, associatedObject, date, seen } = notification;
 
 	const NotificationImage = ({
 		imageUrl,
@@ -309,6 +330,7 @@ function Notification({ notification }) {
 					{time}
 				</time>
 			</div>
+			{!seen && (<div className="notification-not-seen"></div>)}
 		</li>
 	);
 }
