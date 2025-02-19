@@ -158,7 +158,7 @@ export default function NotificationsPage() {
 							) : (
 								<button
 									className="button"
-									onClick={handleMoreVolumes}
+									onClick={handleMoreFollowers}
 								>
 									Mostrar mais
 								</button>
@@ -205,7 +205,33 @@ export default function NotificationsPage() {
 }
 
 function Notification({ notification }) {
-	const { type, text, imageUrl, associatedObject, date, seen } = notification;
+	const { type, text, imageUrl, associatedObject, date, seen, _id } =
+	notification;
+	const [seenState, setSeenState] = useState(seen)
+	const {setOutdated} = useContext(UserContext)
+
+	const markAsSeen = async (id) => {
+		setSeenState(true)
+		try {
+			await axios({
+				method: "PUT",
+				withCredentials: true,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				data: {
+					notification:id
+				},
+				url: `${
+					import.meta.env.REACT_APP_HOST_ORIGIN
+				}/api/user//mark-notification-seen`,
+			});
+			setOutdated(true)
+		} catch (error) {
+			setSeenState(seen)
+			console.error("Error fetching series list:", error);
+		}
+	};
 
 	const NotificationImage = ({
 		imageUrl,
@@ -274,7 +300,6 @@ function Notification({ notification }) {
 		const now = new Date();
 		const givenDate = new Date(date);
 		const diff = Math.floor((now - givenDate) / 1000); // Difference in seconds
-		console.log({ now, givenDate, diff });
 
 		const intervals = [
 			{ label: "ano", seconds: 31536000 },
@@ -301,7 +326,7 @@ function Notification({ notification }) {
 	const textList = extractParts(text);
 	const time = timeAgo(date);
 	return (
-		<li className="notification">
+		<li className="notification" onClick={() => markAsSeen(_id)}>
 			<NotificationImage
 				imageUrl={imageUrl}
 				type={type}
@@ -326,11 +351,11 @@ function Notification({ notification }) {
 			</p>
 
 			<div className="notification-date-container">
-				<time className="notification-date" datetime={date}>
+				<time className="notification-date" dateTime={date}>
 					{time}
 				</time>
 			</div>
-			{!seen && (<div className="notification-not-seen"></div>)}
+			{!seen && !seenState && <div className="notification-not-seen"></div>}
 		</li>
 	);
 }

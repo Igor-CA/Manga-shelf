@@ -4,6 +4,7 @@ const passport = require("passport");
 
 const userController = require("../controllers/user");
 const reportController = require("../controllers/report");
+const notificationsController = require("../controllers/notifications");
 
 router.post("/signup", userController.signup);
 router.post("/login", userController.login);
@@ -25,6 +26,7 @@ router.put("/change-email", userController.changeEmail);
 router.put("/follow", userController.followUser);
 router.put("/unfollow", userController.unfollowUser);
 router.put("/set-notifications", userController.setUserNotifications);
+router.put("/mark-notification-seen", notificationsController.setNotificationAsSeen);
 router.get(
 	"/login/auth/google",
 	passport.authenticate("google", { scope: ["profile", "email"] })

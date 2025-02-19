@@ -21,6 +21,26 @@ exports.testNotification = asyncHandler(async (req, res, next) => {
 	res.status(201).json({ notification });
 });
 
+exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		res.status(401).json({ msg: "Not authorized" });
+		return;
+	}
+	if (!req.isAuthenticated()) {
+		return res.status(401).json({ msg: "Usuário deve estar logado" });
+	}
+	const seenNotification = req.body.notification;
+	await User.findOneAndUpdate(
+		{ _id: req.user._id, "notifications.notification": seenNotification },
+		{ $set: { "notifications.$.seen": true } },
+		{ new: true }
+	);
+	res.send({msg:"Updated"})
+});
+
 exports.getUserNotifications = asyncHandler(async (req, res, next) => {
 	if (
 		req.headers.authorization !== process.env.API_KEY &&
