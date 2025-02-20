@@ -118,19 +118,19 @@ async function getAllNotifications(userId, paginationOptions) {
 			$facet: {
 				followers: [
 					{ $match: { type: "followers" } },
-					{ $sort: { _id: 1 } },
+					{ $sort: { date: -1 } },
 					{ $skip: (followersPage - 1) * followersLimit },
 					{ $limit: followersLimit },
 				],
 				volumes: [
 					{ $match: { type: "volume" } },
-					{ $sort: { _id: 1 } },
+					{ $sort: { date: 1 } },
 					{ $skip: (volumesPage - 1) * volumesLimit },
 					{ $limit: volumesLimit },
 				],
 				updates: [
 					{ $match: { type: "site" } },
-					{ $sort: { _id: 1 } },
+					{ $sort: { date: 1 } },
 					{ $skip: (updatesPage - 1) * updatesLimit },
 					{ $limit: updatesLimit },
 				],
@@ -166,7 +166,7 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 			$replaceRoot: { newRoot: "$notificationDetails" },
 		},
 		{ $match: { type } },
-		{ $sort: { _id: 1 } },
+		{ $sort: { date: 1 } },
 		{ $skip: (page - 1) * limit },
 		{ $limit: limit },
 	]);
