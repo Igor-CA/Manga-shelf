@@ -14,6 +14,7 @@ const path = require("path");
 
 const multer = require("multer");
 const { sendNewFollowerNotification } = require("./notifications");
+const { sendEmail } = require("../Utils/sendEmail");
 function configureMulter(folder, getFilename) {
 	const storage = multer.diskStorage({
 		destination: function (req, file, cb) {
@@ -237,27 +238,15 @@ exports.sendResetEmail = [
 			user.tokenTimestamp = timestamp;
 			user.token = token;
 			user.save();
+			const emailTo =
+				process.env.NODE_ENV === "production" ? user.email : process.env.EMAIL;
 
-			const transporter = nodemailer.createTransport({
-				service: "gmail",
-				auth: {
-					user: process.env.EMAIL,
-					pass: process.env.APP_PASSWORD,
-				},
-			});
-			const mailOptions = {
-				from: `Change your manga shelf password accout<${process.env.EMAIL}>`,
-				to: user.email,
-				subject: "Change your password",
-				text: `${process.env.CLIENT_HOST_ORIGIN}/reset/${urlCode}`,
-				html: `<a href="${process.env.CLIENT_HOST_ORIGIN}/reset/${urlCode}">Click here to change your password</a>`,
-			};
-
-			transporter
-				.sendMail(mailOptions)
+			sendEmail(emailTo, "Change password", "forgotEmail", {
+				username: user.username,
+				link: `${process.env.CLIENT_HOST_ORIGIN}/reset/${urlCode}`,
+			})
 				.then(() => res.send({ msg: "Email sent" }))
 				.catch((error) => res.send(error));
-
 			return;
 		}
 		res.status(401).json({ message: "No user with this email" });
@@ -404,10 +393,13 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 			})
 			.exec();
 		if (user) {
-			const notificationCount = user.notifications?.reduce((count, currentNotification) => {
-				if(!currentNotification.seen) return (count + 1)
-				return count
-			},0)
+			const notificationCount = user.notifications?.reduce(
+				(count, currentNotification) => {
+					if (!currentNotification.seen) return count + 1;
+					return count;
+				},
+				0
+			);
 
 			const userInfo = {
 				_id: user._id,
@@ -419,7 +411,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 				settings: user.settings,
 				email: user.email,
 				allowAdult: user.allowAdult,
-				notificationCount
+				notificationCount,
 			};
 			res.send(userInfo);
 		} else {
@@ -1091,7 +1083,7 @@ exports.followUser = asyncHandler(async (req, res, next) => {
 	user.save();
 	targetUser.save();
 
-	sendNewFollowerNotification(user._id, targetUser._id)
+	sendNewFollowerNotification(user._id, targetUser._id);
 	res.send({ msg: "Followed Successfuly" });
 });
 exports.unfollowUser = asyncHandler(async (req, res, next) => {
