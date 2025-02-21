@@ -4,22 +4,8 @@ const Volume = require("../models/volume");
 const User = require("../models/User");
 
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
+const { sendEmail } = require("../Utils/sendEmail");
 
-exports.testNotification = asyncHandler(async (req, res, next) => {
-
-	// const notification = await sendNewFollowerNotification(
-	// 	req.body.follower,
-	// 	req.body.followed
-	// );
-	
-	const notification = await sendNewVolumeNotification(
-		req.body.volume,
-		req.body.targetUser
-	);
-	
-	//const notification = await createNewVolumeNotification(req.body.volume);
-	res.status(201).json({ notification });
-});
 
 exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 	if (
@@ -162,6 +148,7 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 			$addFields: {
 				"notificationDetails.seen": "$notifications.seen",
 				"notificationDetails.date": "$notifications.date",
+				"notificationDetails.id": "$notifications._id",
 			},
 		},
 		{
@@ -176,31 +163,29 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 	return results;
 }
 
-async function createNewVolumeNotification(volumeId) {
-	const [existingNotification, volume] = await Promise.all([
-		Notification.findOne({
-			type: "volume",
-			associatedObject: volumeId,
-			objectType: "Volume",
-		}),
-		Volume.findById(volumeId).populate({ path: "serie" }),
-	]);
+
+async function createNewVolumeNotification(newVolume) {
+	const existingNotification = await Notification.findOne({
+		type: "volumes",
+		associatedObject: newVolume._id,
+		objectType: "Volume",
+	});
 	if (existingNotification) return existingNotification;
-	if (!volume) return;
+	if (!newVolume) return;
 
 	const newNotification = new Notification({
-		type: "volume",
-		text: `Um novo volume de ${volume.serie.title} foi adicionado ao site`,
-		imageUrl: getVolumeCoverURL(volume.serie, volume.number),
-		associatedObject: volumeId,
+		type: "volumes",
+		text: `Um novo volume de ${newVolume.serie.title} foi adicionado ao site`,
+		imageUrl: getVolumeCoverURL(newVolume.serie, newVolume.number),
+		associatedObject: newVolume._id,
 		objectType: "Volume",
 	});
 	await newNotification.save();
 	return newNotification;
 }
-exports.sendNewVolumeNotification = async (volumeId, targetUserId) => {
-	const notification = await createNewVolumeNotification(volumeId);
-	return sendNotification(notification, targetUserId, "volumes")
+exports.sendNewVolumeNotification = async (volume, targetUserId) => {
+	const notification = await createNewVolumeNotification(volume);
+	return sendNotification(notification, targetUserId)
 }
 async function createFollowingNotification(userId) {
 	const [existingNotification, user] = await Promise.all([
@@ -226,8 +211,8 @@ async function createFollowingNotification(userId) {
 }
 exports.sendNewFollowerNotification = async(followerID, followedID) =>  {
 	const notification = await createFollowingNotification(followerID);
-	return sendNotification(notification, followedID, "followers")
-}
+	return sendNotification(notification, followedID);
+};
 async function checkNotificationSettings(userId, type) {
 	const user = await User.findById(userId);
 	const allowNotifications = user.settings.notifications.allow;
@@ -237,23 +222,85 @@ async function checkNotificationSettings(userId, type) {
 	const allowSite = user.settings.notifications.site;
 	return { allowNotifications, allowType, allowEmail, allowSite };
 }
-function sendEmailNotification(userId) {
+async function sendEmailNotification(notification, targetUserId) {
+	const targetUser = await User.findById(targetUserId);
+
+	const emailTo =
+		process.env.NODE_ENV === "production"
+			? targetUser.email
+			: process.env.EMAIL;
+
+	if (notification.type === "followers") {
+		const followedUser = await User.findById(notification.associatedObject);
+		sendEmail(
+			emailTo,
+			"New follower",
+			"newFollower",
+			{
+				username: targetUser.username,
+				newFollower: followedUser.username,
+				imageName: "img1.webp",
+			},
+			[
+				{
+					filename: notification.imageUrl,
+					path: `${process.env.HOST_ORIGIN}/${
+						notification.imageUrl
+							? notification.imageUrl
+							: "/images/deffault-profile-picture.webp"
+					}`,
+					contentDisposition: "inline",
+					cid: "img1.webp",
+					contentType: "img/webp",
+				},
+			]
+		);
+	}
+	if (notification.type === "volumes") {
+		const volume = await Volume.findById(
+			notification.associatedObject
+		).populate({
+			path: "serie",
+		});
+		sendEmail(
+			emailTo,
+			"New Volumes",
+			"newVolumes",
+			{
+				username: targetUser.username,
+				series: volume.serie.title,
+				volumeId: notification.associatedObject,
+				imageName: "img1.webp",
+				volumeNumber: volume.number,
+			},
+			[
+				{
+					filename: notification.imageUrl,
+					path: `${process.env.HOST_ORIGIN}/images/large/${notification.imageUrl}`,
+					contentDisposition: "inline",
+					cid: "img1.webp",
+					contentType: "img/webp",
+				},
+			]
+		);
+	}
+
 	return;
 }
 async function sendSiteNotification(notificationId, targetUserId) {
-	const updatedUser = await User.findByIdAndUpdate(
+	await User.findByIdAndUpdate(
 		targetUserId,
 		{ $push: { notifications: { notification: notificationId } } },
 		{ new: true }
 	);
 	return;
 }
-async function sendNotification(notification, targetUserId, type) {
+async function sendNotification(notification, targetUserId) {
 	const { allowNotifications, allowType, allowEmail, allowSite } =
-		await checkNotificationSettings(targetUserId, type);
+		await checkNotificationSettings(targetUserId, notification.type);
 	if (!allowNotifications || !allowType) return;
 	if (allowEmail) {
-		sendEmailNotification(targetUserId);
+		sendEmailNotification(notification, targetUserId);
 	}
 	if (allowSite) {
 		sendSiteNotification(notification, targetUserId);

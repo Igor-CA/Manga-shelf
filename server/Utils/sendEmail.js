@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 	},
 });
 
-async function sendEmail(to, subject, template, data) {
+async function sendEmail(to, subject, template, data, attachments) {
 	try {
 		const html = await ejs.renderFile(
 			path.join(__dirname, "..", "views", `${template}.ejs`),
@@ -25,6 +25,7 @@ async function sendEmail(to, subject, template, data) {
 			to,
 			subject,
 			html,
+			attachments
 		};
 
 		await transporter.sendMail(mailOptions);

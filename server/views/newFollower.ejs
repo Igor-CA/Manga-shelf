@@ -1,0 +1,41 @@
+<div style="background-color: #fafafa">
+	<%- await include('./header.ejs') %>
+
+	<div
+		style="
+			margin: 0 auto;
+			max-width: 720px;
+			padding: 30px 0;
+			font-family: Arial;
+			color: #3d4e66;
+		"
+	>
+		<h2>Hello, <%= username %></h2>
+		<p>
+			<%= newFollower %> started to follow you. Click
+			<a
+				href="<%= process.env.CLIENT_HOST_ORIGIN%>/user/<%= newFollower %>"
+				>here</a
+			>
+			to see their profile
+		</p>
+
+      <a
+        href="<%= process.env.CLIENT_HOST_ORIGIN%>/user/<%= newFollower %>"
+        style="
+          margin: 0 auto;
+          display: block;
+          width: 200px;
+          height: 200px;
+          background-image: url('cid:<%= imageName %>');
+          background-size: cover;
+          background-position: center;
+          border-radius: 5px;
+          border: 1px solid  #3d4e66;
+          overflow: hidden;
+          text-align: center;
+        "
+      ></a>
+	</div>
+	<%- await include('./footer.ejs') %>
+</div>
