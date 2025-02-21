@@ -13,6 +13,10 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendEmail(to, subject, template, data, attachments) {
+	const emailTo =
+		process.env.NODE_ENV === "production"
+			? to
+			: process.env.EMAIL;
 	try {
 		const html = await ejs.renderFile(
 			path.join(__dirname, "..", "views", `${template}.ejs`),
@@ -22,7 +26,7 @@ async function sendEmail(to, subject, template, data, attachments) {
 
 		const mailOptions = {
 			from: `Manga Shelf<${process.env.EMAIL}>`,
-			to,
+			to:emailTo,
 			subject,
 			html,
 			attachments

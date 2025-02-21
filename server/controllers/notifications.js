@@ -225,15 +225,10 @@ async function checkNotificationSettings(userId, type) {
 async function sendEmailNotification(notification, targetUserId) {
 	const targetUser = await User.findById(targetUserId);
 
-	const emailTo =
-		process.env.NODE_ENV === "production"
-			? targetUser.email
-			: process.env.EMAIL;
-
 	if (notification.type === "followers") {
 		const followedUser = await User.findById(notification.associatedObject);
 		sendEmail(
-			emailTo,
+			targetUser.email,
 			"New follower",
 			"newFollower",
 			{
@@ -263,7 +258,7 @@ async function sendEmailNotification(notification, targetUserId) {
 			path: "serie",
 		});
 		sendEmail(
-			emailTo,
+			targetUser.email,
 			"New Volumes",
 			"newVolumes",
 			{
