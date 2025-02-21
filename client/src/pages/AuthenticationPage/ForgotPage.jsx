@@ -27,7 +27,7 @@ export default function ForgotPage() {
 				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/forgot`,
 			});
-			addMessage("Um link para mudar sua senha foi enviado");
+			addMessage("Um link para mudar sua senha foi enviado ao seu email");
 			setMessageType("Success");
 			setLoading(false);
 		} catch (error) {

@@ -30,6 +30,7 @@
 	overflow: hidden;
 	align-items: center;
 	position: relative;
+	cursor: pointer;
 }
 
 .notification-image-container {

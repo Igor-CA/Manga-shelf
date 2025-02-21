@@ -7,6 +7,7 @@ import { messageContext } from "../../components/messageStateProvider";
 export default function SignupPage() {
 	const navigate = useNavigate();
 	const { addMessage } = useContext(messageContext);
+	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		username: "",
 		password: "",
@@ -22,6 +23,7 @@ export default function SignupPage() {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
+			setLoading(true);
 			await axios({
 				method: "POST",
 				data: formData,
@@ -31,6 +33,7 @@ export default function SignupPage() {
 				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/signup`,
 			});
+			setLoading(false);
 			navigate("/login");
 		} catch (error) {
 			const customErrorMessage = error.response.data.message;
@@ -73,7 +76,9 @@ export default function SignupPage() {
 			"typeMismatch",
 			"valueMissing",
 		];
-		const inputValidity = validationTypes.find((type) => input.validity[type]);
+		const inputValidity = validationTypes.find(
+			(type) => input.validity[type]
+		);
 
 		const customErrorMessage = validationMessages[inputName][inputValidity];
 
@@ -91,7 +96,10 @@ export default function SignupPage() {
 						handleSubmit(e);
 					}}
 				>
-					<label htmlFor="email" className="autentication-form__label">
+					<label
+						htmlFor="email"
+						className="autentication-form__label"
+					>
 						Email:
 					</label>
 					<input
@@ -108,7 +116,10 @@ export default function SignupPage() {
 						}}
 						required
 					/>
-					<label htmlFor="username" className="autentication-form__label">
+					<label
+						htmlFor="username"
+						className="autentication-form__label"
+					>
 						User name:{" "}
 					</label>
 					<input
@@ -127,7 +138,10 @@ export default function SignupPage() {
 						pattern="^[A-Za-z0-9]{3,16}$"
 						maxLength="16"
 					/>
-					<label htmlFor="password" className="autentication-form__label">
+					<label
+						htmlFor="password"
+						className="autentication-form__label"
+					>
 						Password:
 					</label>
 					<input
@@ -167,7 +181,10 @@ export default function SignupPage() {
 						required
 						pattern={formData.password}
 					/>
-					<label htmlFor="tos-checkbox" className="form__label--visible">
+					<label
+						htmlFor="tos-checkbox"
+						className="form__label--visible"
+					>
 						<input
 							type="checkbox"
 							name="tos-checkbox"
@@ -186,7 +203,14 @@ export default function SignupPage() {
 							termos e condições
 						</Link>
 					</label>
-					<button className="button">Criar conta</button>
+					<button
+						className={`button ${
+							loading ? "button--disabled" : ""
+						}`}
+						disabled={loading}
+					>
+						Criar conta
+					</button>
 					<Link to={"/login"} className="autentication-form__link">
 						Já tem conta?
 					</Link>

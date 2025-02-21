@@ -224,7 +224,7 @@ function Notification({ notification }) {
 				},
 				url: `${
 					import.meta.env.REACT_APP_HOST_ORIGIN
-				}/api/user//mark-notification-seen`,
+				}/api/user/mark-notification-seen`,
 			});
 			setOutdated(true)
 		} catch (error) {
