@@ -21,7 +21,7 @@ const UserSchema = new Schema({
 	tokenTimestamp: { type: Date },
 	token: { type: String },
 	TOSAcceptedAt: { type: Date },
-	TOSAccepted: { type: Boolean }, // To fit users created before adding of TOSAcceptedAt
+	TOSAccepted: { type: Boolean, default: 1 }, // To fit users created before adding of TOSAcceptedAt
 	profileImageUrl: { type: String },
 	profileBannerUrl: { type: String },
 	allowAdult: { type: Boolean, default: 0 },
@@ -33,7 +33,7 @@ const UserSchema = new Schema({
 			followers: { type: Boolean, default: 1 },
 			updates: { type: Boolean, default: 1 },
 			site: { type: Boolean, default: 1 },
-			email: { type: Boolean, default: 1 },
+			email: { type: Boolean, default: 0 },
 		},
 	},
 	notifications: [
@@ -43,7 +43,7 @@ const UserSchema = new Schema({
 				ref: "Notifications",
 			},
 			seen: { type: Boolean, default: 0 },
-			date: {type: Date, default: new Date()}
+			date: {type: Date, default: Date.now }
 		},
 	],
 });
