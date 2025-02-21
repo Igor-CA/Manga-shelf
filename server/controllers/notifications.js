@@ -33,12 +33,13 @@ exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
 	}
 	const seenNotification = req.body.notification;
-	await User.findOneAndUpdate(
-		{ _id: req.user._id, "notifications.notification": seenNotification },
+	User.findOneAndUpdate(
+		{ _id: req.user._id, "notifications._id": seenNotification },
 		{ $set: { "notifications.$.seen": true } },
 		{ new: true }
-	);
-	res.send({msg:"Updated"})
+	)
+		.then(() => res.send({ msg: "Updated" }))
+		.catch((error) => res.send(error));
 });
 
 exports.getUserNotifications = asyncHandler(async (req, res, next) => {
@@ -109,6 +110,7 @@ async function getAllNotifications(userId, paginationOptions) {
 			$addFields: {
 				"notificationDetails.seen": "$notifications.seen",
 				"notificationDetails.date": "$notifications.date",
+				"notificationDetails.id": "$notifications._id",
 			},
 		},
 		{
@@ -123,14 +125,14 @@ async function getAllNotifications(userId, paginationOptions) {
 					{ $limit: followersLimit },
 				],
 				volumes: [
-					{ $match: { type: "volume" } },
-					{ $sort: { date: 1 } },
+					{ $match: { type: "volumes" } },
+					{ $sort: { date: -1 } },
 					{ $skip: (volumesPage - 1) * volumesLimit },
 					{ $limit: volumesLimit },
 				],
 				updates: [
 					{ $match: { type: "site" } },
-					{ $sort: { date: 1 } },
+					{ $sort: { date: -1 } },
 					{ $skip: (updatesPage - 1) * updatesLimit },
 					{ $limit: updatesLimit },
 				],
@@ -166,7 +168,7 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 			$replaceRoot: { newRoot: "$notificationDetails" },
 		},
 		{ $match: { type } },
-		{ $sort: { date: 1 } },
+		{ $sort: { date: -1 } },
 		{ $skip: (page - 1) * limit },
 		{ $limit: limit },
 	]);

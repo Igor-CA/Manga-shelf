@@ -76,7 +76,7 @@ export default function NotificationsPage() {
 	}, [isFetching, user, navigate]);
 
 	const handleMoreVolumes = async () => {
-		const list = await fetchNotifications(volumesPage, { type: "volume" });
+		const list = await fetchNotifications(volumesPage, { type: "volumes" });
 		setVolumesPage((prev) => prev + 1);
 		setVolumesNotifications((prev) => [...prev, ...list]);
 	};
@@ -205,13 +205,14 @@ export default function NotificationsPage() {
 }
 
 function Notification({ notification }) {
-	const { type, text, imageUrl, associatedObject, date, seen, _id } =
-	notification;
-	const [seenState, setSeenState] = useState(seen)
-	const {setOutdated} = useContext(UserContext)
+	const { type, text, imageUrl, associatedObject, date, seen, id } =
+		notification;
+	const [seenState, setSeenState] = useState(seen);
+	const { setOutdated } = useContext(UserContext);
 
 	const markAsSeen = async (id) => {
-		setSeenState(true)
+		if (seen) return
+		setSeenState(true);
 		try {
 			await axios({
 				method: "PUT",
@@ -220,67 +221,20 @@ function Notification({ notification }) {
 					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 				data: {
-					notification:id
+					notification: id,
 				},
 				url: `${
 					import.meta.env.REACT_APP_HOST_ORIGIN
 				}/api/user/mark-notification-seen`,
 			});
-			setOutdated(true)
+			setOutdated(true);
 		} catch (error) {
-			setSeenState(seen)
+			setSeenState(seen);
 			console.error("Error fetching series list:", error);
 		}
 	};
 
-	const NotificationImage = ({
-		imageUrl,
-		type,
-		associatedObject,
-		userName,
-	}) => {
-		const pictureSRC = `${import.meta.env.REACT_APP_HOST_ORIGIN}/images`;
-
-		const imageSRC = `${import.meta.env.REACT_APP_HOST_ORIGIN}${
-			imageUrl ? imageUrl : "/images/deffault-profile-picture.webp"
-		}`;
-		return (
-			<Link
-				className={`notification-image-container ${
-					type === "followers" &&
-					"notification-image-container--square"
-				}`}
-				to={`${
-					type === "volume"
-						? "/volume/" + associatedObject
-						: "/user/" + userName
-				}`}
-			>
-				{type === "volume" ? (
-					<img
-						src={`${pictureSRC}/medium/${imageUrl}`}
-						srcSet={`
-					${pictureSRC}/small/${imageUrl} 100w,
-					${pictureSRC}/medium/${imageUrl} 400w, 
-					${pictureSRC}/large/${imageUrl} 700w,
-					${pictureSRC}/extralarge/${imageUrl} 1000w,`}
-						sizes=" (min-width: 1024px) 15vw, 
-						(min-width: 768px) 20vw, 
-						(min-width: 360px) and (max-width: 768px) 35vw, 
-						(max-width: 320px) 50vw"
-						alt={`notification picture`}
-						className="notification-image"
-					/>
-				) : (
-					<img
-						src={imageSRC}
-						alt="user profile"
-						className="notification-image"
-					></img>
-				)}
-			</Link>
-		);
-	};
+	
 
 	function extractParts(text) {
 		const regex =
@@ -326,7 +280,7 @@ function Notification({ notification }) {
 	const textList = extractParts(text);
 	const time = timeAgo(date);
 	return (
-		<li className="notification" onClick={() => markAsSeen(_id)}>
+		<li className="notification" onClick={() => markAsSeen(id)}>
 			<NotificationImage
 				imageUrl={imageUrl}
 				type={type}
@@ -334,7 +288,7 @@ function Notification({ notification }) {
 				userName={textList[0]}
 			></NotificationImage>
 			<p className="notification-text">
-				{type === "volume" ? (
+				{type === "volumes" ? (
 					<>
 						{textList[0]}{" "}
 						<Link to={`/volume/${associatedObject}`}>
@@ -355,7 +309,58 @@ function Notification({ notification }) {
 					{time}
 				</time>
 			</div>
-			{!seen && !seenState && <div className="notification-not-seen"></div>}
+			{!seen && !seenState && (
+				<div className="notification-not-seen"></div>
+			)}
 		</li>
 	);
 }
+
+const NotificationImage = ({
+	imageUrl,
+	type,
+	associatedObject,
+	userName,
+}) => {
+	const pictureSRC = `${import.meta.env.REACT_APP_HOST_ORIGIN}/images`;
+
+	const imageSRC = `${import.meta.env.REACT_APP_HOST_ORIGIN}${
+		imageUrl ? imageUrl : "/images/deffault-profile-picture.webp"
+	}`;
+	return (
+		<Link
+			className={`notification-image-container ${
+				type === "followers" &&
+				"notification-image-container--square"
+			}`}
+			to={`${
+				type === "volumes"
+					? "/volume/" + associatedObject
+					: "/user/" + userName
+			}`}
+		>
+			{type === "volumes" ? (
+				<img
+					src={`${pictureSRC}/medium/${imageUrl}`}
+					srcSet={`
+				${pictureSRC}/small/${imageUrl} 100w,
+				${pictureSRC}/medium/${imageUrl} 400w, 
+				${pictureSRC}/large/${imageUrl} 700w,
+				${pictureSRC}/extralarge/${imageUrl} 1000w,`}
+					sizes=" (min-width: 1024px) 15vw, 
+					(min-width: 768px) 20vw, 
+					(min-width: 360px) and (max-width: 768px) 35vw, 
+					(max-width: 320px) 50vw"
+					alt={`notification picture`}
+					className="notification-image"
+				/>
+			) : (
+				<img
+					src={imageSRC}
+					alt="user profile"
+					className="notification-image"
+				></img>
+			)}
+		</Link>
+	);
+};
