@@ -11,14 +11,13 @@
 			color: #3d4e66;
 		"
 	>
-		<h2>Hello, <%= username %></h2>
+		<h2>Olá <%= username %></h2>
 		<p>
-			New volumes from your collection launched this week. See them
-			below
+			Foram lançados novos volumes das suas obras essa semana. Veja eles abaixo:
 		</p>
 		<% for (let i=0; i < volumes.length; i++) { %>
 		<a
-			href="<%= process.env.CLIENT_HOST_ORIGIN%>/volume/<%= volumes[i]._id %>"
+			href="<%= process.env.HOST_ORIGIN %>/volume/<%= volumes[i]._id %>"
 			style="
 				margin: 0 auto;
 				display: block;
