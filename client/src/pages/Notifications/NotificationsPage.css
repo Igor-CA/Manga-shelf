@@ -23,14 +23,20 @@
 	gap: 1rem;
 	padding: 1rem 0rem;
 }
+.notification_container {
+	display: flex;
+	justify-content: space-between;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+	border-radius: 0.75rem;
+	background-color: var(--background);
+	border-radius: 0.75rem;
+	flex-direction: column;
+}
 .notification {
 	display: flex;
-	background-color: var(--background);
-	border-radius: 0.5rem;
-	overflow: hidden;
 	align-items: center;
-	position: relative;
-	cursor: pointer;
 }
 
 .notification-image-container {
@@ -70,10 +76,29 @@
 	text-align: center;
 	padding: 100px 0px;
 }
-.notification-not-seen{
-	align-self: stretch;
+.notification-not-seen {
+	height: 100%;
 	width: 0.6rem;
 	background-color: var(--accent);
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+.notifications__list__container{
+	padding: 1rem;
+	padding-top: 0rem;
+	padding-left: 2rem;
+	list-style-type: disc;
+}
+.notifications__list__item{
+	margin-top: 1rem;
+	line-height: 1.5rem;
+}
+.notification__icon-container{
+	padding: 1rem 3rem;
+}
+.notification__icon{
+	font-size: 1.5rem;
 }
 @media only screen and (min-width: 768px) {
 	.notification-text {

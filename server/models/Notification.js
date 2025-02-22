@@ -7,7 +7,7 @@ const NotificationsSchema = new Schema({
 	imageUrl: { type: String},
 	details: [{ type: String}],
 	associatedObject: { type: mongoose.Schema.Types.ObjectId, refPath: 'objectType' },
-    objectType: { type: String, required: true, enum: ['User', 'Volume'] }, 
+    objectType: { type: String, enum: ['User', 'Volume'] }, 
 });
 
 module.exports = mongoose.model("Notifications", NotificationsSchema);

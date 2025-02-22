@@ -304,3 +304,6 @@ a {
 	text-decoration: none;
 	color: currentColor;
 }
+.mention{
+	color: var(--accent);
+}

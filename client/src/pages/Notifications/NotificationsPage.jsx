@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../components/userProvider";
 import { Link, useNavigate } from "react-router-dom";
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import SideNavbar from "../../components/SideNavbar";
 import axios from "axios";
 import "./NotificationsPage.css";
@@ -205,13 +206,14 @@ export default function NotificationsPage() {
 }
 
 function Notification({ notification }) {
-	const { type, text, imageUrl, associatedObject, date, seen, id } =
+	const { type, text, imageUrl, associatedObject, date, seen, id, details } =
 		notification;
 	const [seenState, setSeenState] = useState(seen);
 	const { setOutdated } = useContext(UserContext);
+	const [showDetails, setShowDetails] = useState(false);
 
 	const markAsSeen = async (id) => {
-		if (seen) return
+		if (seen) return;
 		setSeenState(true);
 		try {
 			await axios({
@@ -234,13 +236,11 @@ function Notification({ notification }) {
 		}
 	};
 
-	
-
 	function extractParts(text) {
 		const regex =
 			/^(?:Um novo volume de\s+(.*?)\s+foi adicionado ao site|(.+?)\s+Começou a te seguir)$/;
 		const match = text.match(regex);
-		if (!match) return null; // Return null if no match is found
+		if (!match) return [text]; // Return null if no match is found
 
 		if (match[1]) {
 			return ["Um novo volume de ", match[1], " foi adicionado ao site"];
@@ -280,48 +280,87 @@ function Notification({ notification }) {
 	const textList = extractParts(text);
 	const time = timeAgo(date);
 	return (
-		<li className="notification" onClick={() => markAsSeen(id)}>
-			<NotificationImage
-				imageUrl={imageUrl}
-				type={type}
-				associatedObject={associatedObject}
-				userName={textList[0]}
-			></NotificationImage>
-			<p className="notification-text">
-				{type === "volumes" ? (
-					<>
-						{textList[0]}{" "}
-						<Link to={`/volume/${associatedObject}`}>
+		<li className="notification_container" onClick={() => markAsSeen(id)}>
+			<div className="notification">
+				<NotificationImage
+					imageUrl={imageUrl}
+					type={type}
+					associatedObject={associatedObject}
+					userName={textList[0]}
+				></NotificationImage>
+				<p className="notification-text">
+					{type === "volumes" && (
+						<>
+							{textList[0]}{" "}
+							<Link to={`/volume/${associatedObject}`}>
+								{textList[1]}
+							</Link>{" "}
+							{textList[2]}
+						</>
+					)}
+					{type === "followers" && (
+						<>
+							<Link to={`/user/${textList[0]}`}>
+								{textList[0]}
+							</Link>{" "}
 							{textList[1]}
-						</Link>{" "}
-						{textList[2]}
-					</>
-				) : (
-					<>
-						<Link to={`/user/${textList[0]}`}>{textList[0]}</Link>{" "}
-						{textList[1]}
-					</>
+						</>
+					)}
+					{type === "site" && <>{textList[0]}</>}
+				</p>
+				<div className="notification-date-container">
+					<time className="notification-date" dateTime={date}>
+						{time}
+					</time>
+				</div>
+				{details.length > 0 && (
+					<div
+						className="notification__icon-container"
+						onClick={() => {
+							setShowDetails((prev) => !prev);
+						}}
+					>
+						{showDetails ? (
+							<FaAngleUp className="notification__icon" />
+						) : (
+							<FaAngleDown className="notification__icon" />
+						)}
+					</div>
 				)}
-			</p>
-
-			<div className="notification-date-container">
-				<time className="notification-date" dateTime={date}>
-					{time}
-				</time>
 			</div>
+			{showDetails && (
+				<ul className="notifications__list__container">
+					{details.map((detail, id) => {
+						return (
+							<li key={id} className="notifications__list__item">
+								{parseMessage(detail)}
+							</li>
+						);
+					})}
+				</ul>
+			)}
 			{!seen && !seenState && (
 				<div className="notification-not-seen"></div>
 			)}
 		</li>
 	);
 }
+const parseMessage = (message) => {
+	const regex = /@(\w+)/g; 
+	const parts = message.split(regex);
 
-const NotificationImage = ({
-	imageUrl,
-	type,
-	associatedObject,
-	userName,
-}) => {
+	return parts.map((part, index) =>
+		index % 2 === 0 ? (
+			part
+		) : (
+			<Link key={index} to={`/user/${part}`} className="mention">
+				@{part}
+			</Link>
+		)
+	);
+};
+
+const NotificationImage = ({ imageUrl, type, associatedObject, userName }) => {
 	const pictureSRC = `${import.meta.env.REACT_APP_HOST_ORIGIN}/images`;
 
 	const imageSRC = `${import.meta.env.REACT_APP_HOST_ORIGIN}${
@@ -330,8 +369,7 @@ const NotificationImage = ({
 	return (
 		<Link
 			className={`notification-image-container ${
-				type === "followers" &&
-				"notification-image-container--square"
+				type !== "volumes" && "notification-image-container--square"
 			}`}
 			to={`${
 				type === "volumes"

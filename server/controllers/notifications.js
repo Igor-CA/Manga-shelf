@@ -163,6 +163,30 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 	return results;
 }
 
+exports.sendSiteNewsNotification = async (updatesList) => {
+	const notification = await createSiteNewsNotification(updatesList);
+	const users = await User.find({})
+	
+	
+	for(const user of users){
+		await sendNotification(notification, user._id);
+	}
+		
+	return notification
+};
+
+async function createSiteNewsNotification(updatesList) {
+
+	const newNotification = new Notification({
+		type: "site",
+		text: "O Manga Shelf foi atualizado. Veja as novidades",
+		imageUrl: `/images/android-chrome-192x192.png`,
+		details: updatesList
+	});
+	await newNotification.save();
+	return newNotification;
+}
+
 async function createNewVolumeNotification(newVolume) {
 	const existingNotification = await Notification.findOne({
 		type: "volumes",
@@ -312,11 +336,11 @@ async function sendNotification(notification, targetUserId, dataList) {
 		if (notification.type === "volumes") {
 			sendEmailNotification(notification, targetUserId, dataList);
 		} else {
-			sendEmailNotification(notification, targetUserId);
+			await sendEmailNotification(notification, targetUserId);
 		}
 	}
 	if (allowSite) {
-		sendSiteNotification(notification, targetUserId);
+		await sendSiteNotification(notification, targetUserId);
 	}
 	return notification;
 }
