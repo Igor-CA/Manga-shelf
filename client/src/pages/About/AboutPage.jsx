@@ -8,82 +8,104 @@ export default function AboutPage() {
 					<h1>Sobre o Manga Shelf</h1>
 					<h2>O que é o Manga Shelf?</h2>
 					<p>
-						O Manga Shelf nasceu da necessidade de oferecer uma alternativa às
-						complicadas planilhas ou anotações para organizar coleções de mangás
+						O Manga Shelf nasceu da necessidade de uma alternativa
+						mais prática e intuitiva para organizar coleções de
+						mangás, sem depender de planilhas ou anotações manuais.
 					</p>
 					<p>
-						Embora existam excelentes soluções semelhantes, como MyAnimeList e
-						Anilist, nenhuma delas atendia completamente às nossas necessidades.
-						Desejávamos uma ferramenta que nos permitisse marcar volumes de
-						mangá, reconhecendo todas as diferentes edições de uma obra.
+						Embora existam plataformas similares, como MyAnimeList e
+						Anilist, nenhuma atendia totalmente às nossas
+						necessidades. Queríamos um sistema que permitisse marcar
+						volumes individualmente, reconhecendo diferentes edições
+						de uma mesma obra.
 					</p>
 					<p>
-						Para isso, decidimos criar uma plataforma focada especificamente em
-						mangás lançados fisicamente no Brasil.
+						Foi assim que surgiu o Manga Shelf, uma plataforma
+						dedicada exclusivamente a mangás lançados{" "}
+						<strong>fisicamente</strong> no Brasil. Nosso objetivo é
+						oferecer uma solução eficiente para colecionadores e fãs
+						do formato.
 					</p>
 					<p>
-						Hoje, disponibilizamos este projeto que foi concebido para resolver
-						um problema comum e esperamos que muitas outras pessoas possam
-						desfrutar desta ferramenta que desenvolvemos com tanto esforço.
+						Hoje, disponibilizamos esse projeto com a esperança de
+						que seja útil para muitas outras pessoas que
+						compartilham dessa paixão.
 					</p>
 
-					<h2>Recursos Disponíveis na Versão Alpha</h2>
+					<h2>Recursos Disponíveis na Versão Beta</h2>
 					<p>
-						Na nossa emocionante versão alpha, embora nem todas as
-						funcionalidades planejadas tenham sido implementadas ainda, você já
-						pode:
+						Embora ainda estejamos expandindo o Manga Shelf, a
+						versão Beta já conta com diversas funcionalidades:
 					</p>
 					<ul>
-						<li>Criar sua própria conta pessoal</li>
+						<li>Criar uma conta pessoal</li>
 						<li>Adicionar coleções à sua "Prateleira"</li>
-						<li>Marcar os volumes que já fazem parte da sua coleção</li>
-						<li>Descobrir quais volumes faltam para completar suas coleções</li>
+						<li>Marcar os volumes que já possui</li>
 						<li>
-							Explorar diferentes obras e obter detalhes interessantes, como
-							editora, autoria, tamanho e mais
+							Identificar quais volumes ainda faltam para
+							completar suas coleções
+						</li>
+						<li>
+							Consultar estatísticas sobre sua coleção, incluindo
+							total de volumes, distribuição por gênero e editora
+						</li>
+						<li>
+							Explorar diferentes obras e visualizar detalhes como
+							editora, autoria e tamanho
+						</li>
+						<li>Seguir outros usuários</li>
+						<li>
+							Receber notificações sobre lançamentos de novos
+							volumes
 						</li>
 					</ul>
 					<p>
-						Estamos empolgados em disponibilizar essas funcionalidades para você
-						nesta fase inicial. Como é uma versão alpha, pode ser que você
-						encontre problemas ou erros pelo caminho. Caso isso aconteça,
-						pedimos que nos ajude, detalhando o problema na aba de{" "}
-						<Link to={"/feedback"}>feedback</Link>. Estaremos dedicados a
-						corrigi-lo o mais rápido possível. E se você tiver alguma questão
-						mais específica, entre em contato através da nosso{" "}
-						<a href={"mailto:mymangashelfs@gmail.com"}>email</a>. Estamos aqui
-						para ajudar!
+						Estamos empolgados em disponibilizar essas
+						funcionalidades para você nesta fase inicial. Como é uma
+						versão Beta, pode ser que você encontre problemas ou
+						erros pelo caminho. Caso isso aconteça, pedimos que nos
+						ajude, detalhando o problema na aba de{" "}
+						<Link to={"/feedback"}>feedback</Link>. Estaremos
+						dedicados a corrigi-lo o mais rápido possível. E se você
+						tiver alguma questão mais específica, entre em contato
+						através da nosso{" "}
+						<a href={"mailto:mymangashelfs@gmail.com"}>email</a>.
+						Estamos aqui para ajudar!
 					</p>
 					<h2>Funcionalidades em desenvolvimento</h2>
 					<p>
-						Decidimos reduzir a quantidade de funcionalidades para lançar a
-						versão alpha ao público, mas já estamos trabalhando para implementar
-						as seguintes funcionalidades nas próximas versões:
+						Para lançar o Manga Shelf mais rapidamente, algumas
+						funcionalidades foram adiadas, mas já temos planejadas
+						algumas ideias para as próximas atualizações:
 					</p>
 					<ul>
-						<li>
-							Melhorias no sistema de busca. Filtrar por gênero, editora,
-							autor(a), etc.
-						</li>
-						<li>
-							Sistema de notificações. Novos volumes, pré-vendas, anúncios, etc.
-						</li>
-						<li>Adicionar fotos de perfil</li>
-						<li>Possibilidade de seguir outros usuários</li>
 						<li>Perfis privados</li>
-						<li>
-							Adição de mangás adultos publicados no Brasil (Restrito para
-							usuários logados e com permissão de acesso ao conteúdo)
-						</li>
 						<li>Sistema de review de volumes e coleções</li>
-						<li>Tema escuro (dark theme)</li>
+						<li>
+							Postagens: usuários poderão criar publicações e
+							interagir entre si
+						</li>
+						<li>
+							Abandono de coleções: será possível marcar obras
+							como "abandonadas", removendo-as da área de volumes
+							faltantes e das notificações
+						</li>
+						<li>
+							Alertas de preços: você será notificado quando um
+							volume da sua lista de faltantes atingir um desconto
+							específico (ex: 30% de desconto)
+						</li>
 					</ul>
 					<h2>Créditos especiais</h2>
 					<p>
-						Todos os dados como imagens, sinópses e generos utilizados no site
-						foram retiradas diretamente dos sites de cada editora ou de sites
-						como{" "}
-						<a href="https://blogbbm.com/" target="_blank" rel="noreferrer">
+						Os dados utilizados no Manga Shelf, como imagens,
+						sinopses e gêneros, foram coletados diretamente dos
+						sites das editoras ou de fontes confiáveis, como {" "}
+						<a
+							href="https://blogbbm.com/"
+							target="_blank"
+							rel="noreferrer"
+						>
 							Biblioteca Brasileira de Mangas
 						</a>
 						,{" "}
@@ -95,15 +117,19 @@ export default function AboutPage() {
 							Guia dos quadrinhos
 						</a>{" "}
 						ou{" "}
-						<a href="https://anilist.co/home" target="_blank" rel="noreferrer">
+						<a
+							href="https://anilist.co/home"
+							target="_blank"
+							rel="noreferrer"
+						>
 							Anilist
 						</a>{" "}
 					</p>
 					<p>
-						Se você é o detentor dos direitos autorais de qualquer conteúdo
-						exibido neste site e acredita que seu trabalho foi usado de maneira
-						que constitui violação de direitos autorais, entre em contato
-						conosco em{" "}
+						Se você é o detentor dos direitos autorais de qualquer
+						conteúdo exibido neste site e acredita que seu trabalho
+						foi usado de maneira que constitui violação de direitos
+						autorais, entre em contato conosco em{" "}
 						<a href={"mailto:mymangashelfs@gmail.com"}>
 							mymangashelfs@gmail.com.
 						</a>{" "}

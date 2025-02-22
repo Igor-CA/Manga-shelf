@@ -17,6 +17,7 @@
     font-size: 2rem;
 }
 .about-page ul{
+    max-width: calc(600px - 2rem);
     margin-top: 1rem;
     margin-left: 2rem;
 }
