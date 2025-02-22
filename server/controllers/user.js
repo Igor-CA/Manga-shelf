@@ -243,7 +243,7 @@ exports.sendResetEmail = [
 
 			sendEmail(emailTo, "Change password", "forgotEmail", {
 				username: user.username,
-				link: `${process.env.CLIENT_HOST_ORIGIN}/reset/${urlCode}`,
+				link: `${process.env.HOST_ORIGIN}/reset/${urlCode}`,
 			})
 				.then(() => res.send({ msg: "Email sent" }))
 				.catch((error) => res.send(error));

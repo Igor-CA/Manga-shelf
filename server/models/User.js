@@ -33,7 +33,7 @@ const UserSchema = new Schema({
 			followers: { type: Boolean, default: 1 },
 			updates: { type: Boolean, default: 1 },
 			site: { type: Boolean, default: 1 },
-			email: { type: Boolean, default: 0 },
+			email: { type: Boolean, default: 1 },
 		},
 	},
 	notifications: [
