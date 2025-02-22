@@ -33,8 +33,6 @@ async function sendEmail(to, subject, template, data, attachments) {
 		};
 
 		await transporter.sendMail(mailOptions);
-
-		console.log("Message sent successfully!");
 	} catch (err) {
 		console.log("Error: ", err);
 		throw err;

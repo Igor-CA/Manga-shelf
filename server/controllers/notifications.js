@@ -163,7 +163,6 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 	return results;
 }
 
-
 async function createNewVolumeNotification(newVolume) {
 	const existingNotification = await Notification.findOne({
 		type: "volumes",
@@ -183,10 +182,27 @@ async function createNewVolumeNotification(newVolume) {
 	await newNotification.save();
 	return newNotification;
 }
-exports.sendNewVolumeNotification = async (volume, targetUserId) => {
-	const notification = await createNewVolumeNotification(volume);
-	return sendNotification(notification, targetUserId)
-}
+exports.sendNewVolumeNotification = async (volumesList, targetUserId) => {
+	const notificationsList = []
+	for(const volume of volumesList){
+		const notification = await createNewVolumeNotification(volume);
+		notificationsList.push(notification)
+	}
+	const firstNotification = notificationsList[0]
+
+	const { allowNotifications, allowType, allowEmail, allowSite } =
+		await checkNotificationSettings(targetUserId, firstNotification.type);
+	
+	if (!allowNotifications || !allowType) return;
+	if (allowEmail) {
+		await sendEmailNotification(firstNotification, targetUserId, volumesList);
+	}
+	if (allowSite) {
+		for(const notification of notificationsList){
+			await sendSiteNotification(notification, targetUserId);
+		}
+	}
+};
 async function createFollowingNotification(userId) {
 	const [existingNotification, user] = await Promise.all([
 		Notification.findOne({
@@ -209,7 +225,7 @@ async function createFollowingNotification(userId) {
 	await newNotification.save();
 	return newNotification;
 }
-exports.sendNewFollowerNotification = async(followerID, followedID) =>  {
+exports.sendNewFollowerNotification = async (followerID, followedID) => {
 	const notification = await createFollowingNotification(followerID);
 	return sendNotification(notification, followedID);
 };
@@ -222,7 +238,7 @@ async function checkNotificationSettings(userId, type) {
 	const allowSite = user.settings.notifications.site;
 	return { allowNotifications, allowType, allowEmail, allowSite };
 }
-async function sendEmailNotification(notification, targetUserId) {
+async function sendEmailNotification(notification, targetUserId, volumesList) {
 	const targetUser = await User.findById(targetUserId);
 
 	if (notification.type === "followers") {
@@ -252,31 +268,29 @@ async function sendEmailNotification(notification, targetUserId) {
 		);
 	}
 	if (notification.type === "volumes") {
-		const volume = await Volume.findById(
-			notification.associatedObject
-		).populate({
-			path: "serie",
+		const attachments = volumesList.map((volume, id) => {
+			return {
+				filename: getVolumeCoverURL(volume.serie, volume.number),
+				path: `${
+					process.env.HOST_ORIGIN
+				}/images/medium/${getVolumeCoverURL(
+					volume.serie,
+					volume.number
+				)}`,
+				contentDisposition: "inline",
+				cid: `img${id + 1}.webp`,
+				contentType: "img/webp",
+			};
 		});
-		sendEmail(
+		await sendEmail(
 			targetUser.email,
-			"New Volumes",
+			"Novos volumes Manga Shelf",
 			"newVolumes",
 			{
 				username: targetUser.username,
-				series: volume.serie.title,
-				volumeId: notification.associatedObject,
-				imageName: "img1.webp",
-				volumeNumber: volume.number,
+				volumes: volumesList,
 			},
-			[
-				{
-					filename: notification.imageUrl,
-					path: `${process.env.HOST_ORIGIN}/images/large/${notification.imageUrl}`,
-					contentDisposition: "inline",
-					cid: "img1.webp",
-					contentType: "img/webp",
-				},
-			]
+			attachments
 		);
 	}
 
@@ -290,12 +304,16 @@ async function sendSiteNotification(notificationId, targetUserId) {
 	);
 	return;
 }
-async function sendNotification(notification, targetUserId) {
+async function sendNotification(notification, targetUserId, dataList) {
 	const { allowNotifications, allowType, allowEmail, allowSite } =
 		await checkNotificationSettings(targetUserId, notification.type);
 	if (!allowNotifications || !allowType) return;
 	if (allowEmail) {
-		sendEmailNotification(notification, targetUserId);
+		if (notification.type === "volumes") {
+			sendEmailNotification(notification, targetUserId, dataList);
+		} else {
+			sendEmailNotification(notification, targetUserId);
+		}
 	}
 	if (allowSite) {
 		sendSiteNotification(notification, targetUserId);

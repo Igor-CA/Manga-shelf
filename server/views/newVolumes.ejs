@@ -13,21 +13,18 @@
 	>
 		<h2>Hello, <%= username %></h2>
 		<p>
-			A new volume of <%= series %> launched this week. Click
-			<a
-				href="<%= process.env.CLIENT_HOST_ORIGIN%>/volume/<%= volumeId %>"
-				>here</a
-			>
-			to see it
+			New volumes from your collection launched this week. See them
+			below
 		</p>
+		<% for (let i=0; i < volumes.length; i++) { %>
 		<a
-			href="<%= process.env.CLIENT_HOST_ORIGIN%>/volume/<%= volumeId %>"
+			href="<%= process.env.CLIENT_HOST_ORIGIN%>/volume/<%= volumes[i]._id %>"
 			style="
 				margin: 0 auto;
 				display: block;
-				width: 200px;
-				height: 300px;
-				background-image: url('cid:<%= imageName %>');
+				width: 300px;
+				height: 400px;
+				background-image: url('cid:img<%= i+1 %>.webp');
 				background-size: cover;
 				background-position: center;
 				border: none;
@@ -36,8 +33,9 @@
 			"
 		></a>
 		<p style="text-align: center; font-weight: bold">
-			<%= series %> volume <%= volumeNumber%>
+			<%= volumes[i].serie.title %> volume <%= volumes[i].number%>
 		</p>
+		<% } %>
 	</div>
 	<%- await include('./footer.ejs') %>
 </div>
