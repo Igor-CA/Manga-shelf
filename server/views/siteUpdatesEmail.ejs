@@ -1,0 +1,29 @@
+<div style="background-color: #fafafa">
+	<%- await include('./header.ejs') %>
+
+	<div
+		style="
+			margin: 0 auto;
+			max-width: 720px;
+			padding: 30px 0;
+			font-family: Arial;
+			background-color: #fafafa;
+			color: #3d4e66;
+		"
+	>
+		<h2>Olá <%= username %></h2>
+		<p>O Manga Shelf foi atualizado. Veja as novidades abaixo:</p>
+		<ul>
+            <% 
+            const baseUrl = process.env.HOST_ORIGIN; // Inject the base URL first
+            for (let i = 0; i < notification.details.length; i++) { 
+                let message = notification.details[i].replace(/@(\w+)/g, `<a href="${baseUrl}/user/$1">@$1</a>`); 
+            %>
+			<li>
+                <%- message %>
+            </li>
+			<% } %>
+		</ul>
+	</div>
+	<%- await include('./footer.ejs') %>
+</div>

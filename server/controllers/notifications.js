@@ -317,6 +317,18 @@ async function sendEmailNotification(notification, targetUserId, volumesList) {
 			attachments
 		);
 	}
+	if (notification.type === "site") {
+		await sendEmail(
+			targetUser.email,
+			"Nova atualização no Manga Shelf",
+			"siteUpdatesEmail",
+			{
+				username: targetUser.username,
+				notification
+			}
+		);
+		
+	}
 
 	return;
 }
@@ -334,7 +346,7 @@ async function sendNotification(notification, targetUserId, dataList) {
 	if (!allowNotifications || !allowType) return;
 	if (allowEmail) {
 		if (notification.type === "volumes") {
-			sendEmailNotification(notification, targetUserId, dataList);
+			await sendEmailNotification(notification, targetUserId, dataList);
 		} else {
 			await sendEmailNotification(notification, targetUserId);
 		}
