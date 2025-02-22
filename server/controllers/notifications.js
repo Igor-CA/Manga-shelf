@@ -245,7 +245,7 @@ async function sendEmailNotification(notification, targetUserId, volumesList) {
 		const followedUser = await User.findById(notification.associatedObject);
 		sendEmail(
 			targetUser.email,
-			"New follower",
+			"Novos volumes Manga Shelf",
 			"newFollower",
 			{
 				username: targetUser.username,

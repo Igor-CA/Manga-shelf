@@ -241,7 +241,7 @@ exports.sendResetEmail = [
 			const emailTo =
 				process.env.NODE_ENV === "production" ? user.email : process.env.EMAIL;
 
-			sendEmail(emailTo, "Change password", "forgotEmail", {
+			sendEmail(emailTo, "Mudança de senha", "forgotEmail", {
 				username: user.username,
 				link: `${process.env.HOST_ORIGIN}/reset/${urlCode}`,
 			})
