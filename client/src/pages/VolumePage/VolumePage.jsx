@@ -11,20 +11,20 @@ export default function VolumePage() {
 	const navigate = useNavigate();
 	const [volumeData, setVolumeData] = useState();
 	const { user, isFetching } = useContext(UserContext);
-
 	useEffect(() => {
-		if (!isFetching && !user?.allowAdult) {
-		  navigate("/");
+		if ((!isFetching && volumeData) &&  volumeData?.serie?.isAdult && !user?.allowAdult) {
+			console.log(!isFetching, !volumeData?.serie?.isAdult, !user?.allowAdult);
+			navigate("/");
 		}
-	  }, [isFetching, user, navigate]);
-	
-
+	}, [volumeData, isFetching, user, navigate]);
 
 	useEffect(() => {
 		const fetchVolumeData = async () => {
 			try {
 				const response = await axios.get(
-					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/volume/${id}`,
+					`${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/api/data/volume/${id}`,
 					{
 						headers: {
 							Authorization: import.meta.env.REACT_APP_API_KEY,
@@ -43,7 +43,7 @@ export default function VolumePage() {
 		};
 
 		fetchVolumeData();
-	}, []);
+	}, [id, navigate]);
 
 	return (
 		<div className="container page-content">

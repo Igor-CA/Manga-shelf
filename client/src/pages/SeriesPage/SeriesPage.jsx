@@ -27,7 +27,7 @@ export default function SeriesPage() {
 		if (!isFetching && (!user?.allowAdult && series?.isAdult)) {
 		  navigate("/");
 		}
-	  }, [isFetching, user, navigate]);
+	  }, [isFetching, user, navigate, series]);
 	
 
 	const setters = [
