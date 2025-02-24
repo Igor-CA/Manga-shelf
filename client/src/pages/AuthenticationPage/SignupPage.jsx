@@ -33,11 +33,12 @@ export default function SignupPage() {
 				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/signup`,
 			});
-			setLoading(false);
 			navigate("/login");
 		} catch (error) {
-			const customErrorMessage = error.response.data.message;
+			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
+		}finally{
+			setLoading(false)
 		}
 	};
 	const handleInvalid = (e) => {

@@ -3,10 +3,23 @@ const router = express.Router();
 const passport = require("passport");
 
 const userController = require("../controllers/user");
+const { authController } = require("../controllers/user/index");
+
 const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
+const { signupValidation } = require("../validators/signupValidator");
 
-router.post("/signup", userController.signup);
+//Middleware for authentication
+const requireAuth = (req, res, next) => {
+	if (!req.isAuthenticated()) {
+		return res.status(401).json({ msg: "Usuário deve estar logado" });
+	}
+	next();
+};
+
+
+
+router.post("/signup",signupValidation, authController.signup);
 router.post("/login", userController.login);
 router.get("/logout", userController.logout);
 router.post("/forgot", userController.sendResetEmail);

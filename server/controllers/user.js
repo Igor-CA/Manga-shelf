@@ -1,5 +1,4 @@
 const User = require("../models/User");
-const Series = require("../models/Series");
 const {
 	getVolumeCoverURL,
 	getSeriesCoverURL,
@@ -7,7 +6,6 @@ const {
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
 const { body, validationResult } = require("express-validator");
 const ITEMS_PER_PAGE = 36;
 const path = require("path");
@@ -45,90 +43,6 @@ const profileBannerUploader = configureMulter(
 	}
 );
 
-exports.signup = [
-	body("username")
-		.trim()
-		.notEmpty()
-		.withMessage("User name must be specified.")
-		.matches(/^[A-Za-z0-9]{3,16}$/)
-		.withMessage(
-			"The username must be alphanumeric and between 3 and 16 characters."
-		)
-		.escape(),
-	body("password")
-		.trim()
-		.notEmpty()
-		.withMessage("Password must be specified.")
-		.matches(
-			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
-		)
-		.withMessage(
-			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
-		)
-		.escape(),
-	body("confirm-password")
-		.trim()
-		.notEmpty()
-		.withMessage("Password must be specified.")
-		.matches(
-			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
-		)
-		.withMessage(
-			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
-		)
-		.escape(),
-	body("email")
-		.trim()
-		.notEmpty()
-		.withMessage("Email must be specified.")
-		.isEmail()
-		.withMessage("Invalid email format.")
-		.escape(),
-
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-
-		const {
-			username,
-			password,
-			email,
-			["confirm-password"]: confirmPassword,
-			["tos-checkbox"]: tosCheckbox,
-		} = req.body;
-
-		if (password !== confirmPassword) {
-			return res.status(409).json({ message: "Senhas não combinam" });
-		}
-		if (!tosCheckbox) {
-			return res.status(409).json({
-				message: "Precisa concordar com os termos de serviço",
-			});
-		}
-
-		const [existingUser] = await User.find()
-			.or([{ username }, { email }])
-			.limit(1);
-
-		if (existingUser) {
-			return res
-				.status(409)
-				.json({ message: "Email ou nome de usuário já existe" });
-		}
-
-		const hashedPassword = await bcrypt.hash(password, 10);
-		const newUser = new User({
-			username,
-			password: hashedPassword,
-			email,
-			TOSAcceptedAt: new Date(),
-		});
-		await newUser.save();
-		res.status(201).json({ message: "User created successfully" });
-	}),
-];
 
 exports.login = [
 	body("login")
