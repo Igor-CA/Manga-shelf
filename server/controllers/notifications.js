@@ -8,13 +8,6 @@ const { sendEmail } = require("../Utils/sendEmail");
 
 
 exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
 	if (!req.isAuthenticated()) {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
 	}
@@ -29,13 +22,7 @@ exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserNotifications = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	if (!req.isAuthenticated()) {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
 	}

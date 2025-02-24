@@ -190,13 +190,6 @@ exports.login = [
 ];
 
 exports.logout = (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
 	req.logout(function (err) {
 		if (err) {
 			return next(err);
@@ -326,13 +319,7 @@ async function fetchUser(req) {
 }
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const user = await fetchUser(req);
 
 	if (user) {
@@ -346,13 +333,7 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeSeries = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const user = await User.findById(req.user._id, {
 		ownedVolumes: 1,
 		userList: 1,
@@ -378,13 +359,7 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.getLoggedUser = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	if (req.user) {
 		const user = await User.findById(req.user._id)
 			.populate({
@@ -423,13 +398,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const targetUser = req.params.username;
 	if (targetUser) {
 		const page = parseInt(req.query.p) || 1;
@@ -528,13 +497,7 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 });
 
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const targetUser = req.params.username;
 	if (targetUser) {
 		const page = parseInt(req.query.p) || 1;
@@ -633,13 +596,7 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 });
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	if (req.isAuthenticated()) {
 		const user = await User.findOne(
 			{ _id: req.user._id },
@@ -685,13 +642,7 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeVolume = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	if (req.isAuthenticated()) {
 		const user = await User.findOne(
 			{ _id: req.user._id },
@@ -808,13 +759,7 @@ exports.changeProfileBanner = [
 ];
 
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const targetUser = req.params.username;
 	if (!targetUser) return res.send({ msg: "Nenhum usuário informado" });
 
@@ -829,13 +774,7 @@ exports.getUserInfo = asyncHandler(async (req, res, next) => {
 	res.send(userInfo);
 });
 exports.searchUser = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const regex = new RegExp(req.query.q, "i");
 	const page = parseInt(req.query.p) || 1;
 	const users_per_page = 12;
@@ -857,13 +796,7 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserStats = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const targetUser = req.params.username;
 	if (targetUser) {
 		const genresByVolumePipeline = [
@@ -1038,13 +971,6 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 });
 
 exports.followUser = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
 
 	if (!req.isAuthenticated()) {
 		res.status(400).json({ msg: "User not authenticated" });
@@ -1087,13 +1013,7 @@ exports.followUser = asyncHandler(async (req, res, next) => {
 	res.send({ msg: "Followed Successfuly" });
 });
 exports.unfollowUser = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 
 	if (!req.isAuthenticated()) {
 		res.status(400).json({ msg: "User not authenticated" });
@@ -1138,13 +1058,6 @@ exports.unfollowUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getFollowing = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
 	const username = req.params.username;
 	const result = await User.findOne({ username }, { following: 1 }).populate(
 		"following",
@@ -1154,13 +1067,7 @@ exports.getFollowing = asyncHandler(async (req, res, next) => {
 });
 
 exports.getFollowers = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const username = req.params.username;
 	const result = await User.findOne({ username }, { followers: 1 }).populate(
 		"followers",
@@ -1170,12 +1077,7 @@ exports.getFollowers = asyncHandler(async (req, res, next) => {
 });
 
 exports.setUserNotifications = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		return res.status(401).json({ msg: "Not authorized" });
-	}
+
 	if (!req.isAuthenticated()) {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
 	}
@@ -1333,13 +1235,7 @@ exports.changeEmail = [
 ];
 
 exports.allowAdultContent = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	if (!req.isAuthenticated()) {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
 	}

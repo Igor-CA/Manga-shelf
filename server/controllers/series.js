@@ -9,13 +9,7 @@ const asyncHandler = require("express-async-handler");
 const ITEMS_PER_PAGE = 24;
 
 exports.browse = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const MIN_SCORE = 1.0;
 
 	const page = parseInt(req.query.p) || 1;
@@ -118,9 +112,8 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	);
 	const allowAdultContent = req.user?.allowAdult || false;
 	if (!allowAdultContent) {
-		pipeline.push({ $match: { "isAdult": false } });
+		pipeline.push({ $match: { isAdult: false } });
 	}
-
 
 	if (isValidSearch) {
 		pipeline.push(
@@ -149,22 +142,15 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	);
 	const seriesList = await Series.aggregate(pipeline).exec();
 
-	const searchResults = seriesList
-		.map((serie) => ({
-			...serie,
-			image: getSeriesCoverURL(serie),
-		}))
+	const searchResults = seriesList.map((serie) => ({
+		...serie,
+		image: getSeriesCoverURL(serie),
+	}));
 	res.send(searchResults);
 });
 
 exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
-	if (
-		req.headers.authorization !== process.env.API_KEY &&
-		process.env.NODE_ENV === "production"
-	) {
-		res.status(401).json({ msg: "Not authorized" });
-		return;
-	}
+
 	const validId = mongoose.Types.ObjectId.isValid(req.params.id);
 	if (!validId) {
 		res.status(400).json({ msg: "Series not found" });
@@ -185,7 +171,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		volumeId: volume._id,
 		volumeNumber: volume.number,
 		image: getVolumeCoverURL(desiredSeries, volume.number),
-		isAdult: desiredSeries.isAdult
+		isAdult: desiredSeries.isAdult,
 	}));
 
 	const {

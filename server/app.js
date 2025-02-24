@@ -18,6 +18,18 @@ const userRouter = require("./routes/user");
 
 const app = express();
 
+//Middle ware for API Key
+const apiKeyAuth = (req, res, next) => {
+	if (
+		req.headers.authorization !== process.env.API_KEY &&
+		process.env.NODE_ENV === "production"
+	) {
+		return res.status(401).json({ msg: "Not authorized" });
+	}
+	next();
+};
+
+
 const mongoDB = process.env.MONGODB_URI;
 mongoose
 	.connect(mongoDB)
@@ -44,7 +56,7 @@ app.use(
 		resave: true,
 		saveUninitialized: true,
 		store: MongoStore.create({
-			mongoUrl: process.env.MONGODB_URI,
+			mongoUrl: mongoDB,
 			collection: "sessions",
 			ttl: 15 * 24 * 60 * 60,
 			autoRemove: "native",
@@ -63,9 +75,9 @@ require("./passport-config")(passport);
 
 app.use(express.static(path.resolve(__dirname, "public")));
 
-app.use("/api/user", userRouter);
-app.use("/admin", adminRouter);
-app.use("/api/data", apiRouter);
+app.use("/api/user", apiKeyAuth, userRouter);
+app.use("/admin", apiKeyAuth, adminRouter);
+app.use("/api/data", apiKeyAuth, apiRouter);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../client/dist")));
