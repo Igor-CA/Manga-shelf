@@ -15,7 +15,7 @@
 		<p>O Manga Shelf foi atualizado. Veja as novidades abaixo:</p>
 		<ul>
             <% 
-            const baseUrl = process.env.HOST_ORIGIN; // Inject the base URL first
+            const baseUrl = process.env.SITE_DOMAIN; // Inject the base URL first
             for (let i = 0; i < notification.details.length; i++) { 
                 let message = notification.details[i].replace(/@(\w+)/g, `<a href="${baseUrl}/user/$1">@$1</a>`); 
             %>
