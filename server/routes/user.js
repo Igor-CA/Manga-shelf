@@ -8,6 +8,7 @@ const { authController } = require("../controllers/user/index");
 const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
 const { signupValidation } = require("../validators/signupValidator");
+const { loginValidation } = require("../validators/loginValidator");
 
 //Middleware for authentication
 const requireAuth = (req, res, next) => {

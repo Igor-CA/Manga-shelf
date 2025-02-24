@@ -44,50 +44,6 @@ const profileBannerUploader = configureMulter(
 );
 
 
-exports.login = [
-	body("login")
-		.trim()
-		.notEmpty()
-		.withMessage("User name or e-mail must be specified.")
-		.escape(),
-	body("password")
-		.trim()
-		.notEmpty()
-		.withMessage("Password must be specified.")
-		.escape(),
-
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-
-		const [user] = await User.find()
-			.or([{ username: req.body.login }, { email: req.body.login }])
-			.limit(1);
-		if (!user) {
-			res.status(401).json({
-				message: "Usuário ou senha está errado, tente novamente.",
-			});
-			return;
-		}
-
-		const compareResult = await bcrypt.compare(
-			req.body.password,
-			user.password
-		);
-		if (compareResult) {
-			req.logIn(user, (err) => {
-				if (err) throw err;
-				res.send({ msg: "Successfully authenticated" });
-			});
-		} else {
-			res.status(401).json({
-				message: "Usuário ou senha está errado, tente novamente.",
-			});
-		}
-	}),
-];
 
 exports.logout = (req, res, next) => {
 	req.logout(function (err) {

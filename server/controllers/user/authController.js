@@ -24,3 +24,31 @@ exports.signup = asyncHandler(async (req, res, next) => {
 	await newUser.save();
 	res.status(201).json({ msg: "Usuário criado com sucesso" });
 });
+
+exports.login = asyncHandler(async (req, res, next) => {
+	const { login, password } = req.body;
+	const user = await User.findOne({
+		$or: [{ username: login }, { email: login }],
+	});
+
+	if (!user) {
+		return res
+			.status(401)
+			.json({ msg: "Usuário ou senha errados, tente novamente." });
+	}
+	const compareResult = await bcrypt.compare(password, user.password);
+	if (!compareResult) {
+		return res
+			.status(401)
+			.json({ msg: "Usuário ou senha errados, tente novamente." });
+	}
+
+	await new Promise((resolve, reject) => {
+		req.logIn(user, (err) => {
+			if (err) return reject(err);
+			resolve();
+		});
+	});
+
+	res.json({ msg: "Usuário logado com sucesso" });
+});

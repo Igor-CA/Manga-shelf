@@ -45,7 +45,7 @@ export default function LoginPage() {
 			navigate(`/user/${userFetch.data.username}`);
 			window.location.reload(true);
 		} catch (error) {
-			const customErrorMessage = error.response.data.message;
+			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
 		}
 	};
