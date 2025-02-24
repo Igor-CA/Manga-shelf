@@ -86,13 +86,6 @@ exports.signup = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			res.status(401).json({ msg: "Not authorized" });
-			return;
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -150,13 +143,6 @@ exports.login = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			res.status(401).json({ msg: "Not authorized" });
-			return;
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -207,13 +193,6 @@ exports.sendResetEmail = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			res.status(401).json({ msg: "Not authorized" });
-			return;
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -271,13 +250,6 @@ exports.resetPassword = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			res.status(401).json({ msg: "Not authorized" });
-			return;
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -688,12 +660,6 @@ exports.setUserName = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			return res.status(401).json({ msg: "Not authorized" });
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -716,12 +682,6 @@ exports.setUserName = [
 exports.changeProfilePicture = [
 	profilePictureUploader.single("file"),
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			return res.status(401).json({ msg: "Not authorized" });
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -738,12 +698,6 @@ exports.changeProfilePicture = [
 exports.changeProfileBanner = [
 	profileBannerUploader.single("file"),
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			return res.status(401).json({ msg: "Not authorized" });
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -1108,13 +1062,6 @@ exports.changeUsername = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			res.status(401).json({ msg: "Not authorized" });
-			return;
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -1167,13 +1114,6 @@ exports.changePassword = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			res.status(401).json({ msg: "Not authorized" });
-			return;
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
@@ -1206,13 +1146,6 @@ exports.changeEmail = [
 		.escape(),
 
 	asyncHandler(async (req, res, next) => {
-		if (
-			req.headers.authorization !== process.env.API_KEY &&
-			process.env.NODE_ENV === "production"
-		) {
-			res.status(401).json({ msg: "Not authorized" });
-			return;
-		}
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ message: errors.array() });
