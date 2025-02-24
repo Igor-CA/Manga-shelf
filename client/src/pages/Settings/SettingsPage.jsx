@@ -39,7 +39,10 @@ export default function SettingsPage() {
 		<div className="container page-content settings-page">
 			{user && (
 				<>
-					<SideNavbar title={"Configurações"} options={navbarOptions} />
+					<SideNavbar
+						title={"Configurações"}
+						options={navbarOptions}
+					/>
 					<div className="settings-container">
 						<AccountSettings />
 						<ProfileSettings />
@@ -50,7 +53,6 @@ export default function SettingsPage() {
 		</div>
 	);
 }
-
 
 function AccountSettings() {
 	const { addMessage, setMessageType } = useContext(messageContext);
@@ -367,7 +369,7 @@ function ProfileSettings() {
 
 			<div className="settings__picture-container">
 				<img
-					src={`http://localhost:3001${
+					src={`${import.meta.env.REACT_APP_HOST_ORIGIN}${
 						user?.profileImageUrl
 							? user.profileImageUrl
 							: "/images/deffault-profile-picture.webp"

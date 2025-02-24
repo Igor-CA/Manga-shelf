@@ -167,7 +167,7 @@ async function createSiteNewsNotification(updatesList) {
 	const newNotification = new Notification({
 		type: "site",
 		text: "O Manga Shelf foi atualizado. Veja as novidades",
-		imageUrl: `/images/android-chrome-192x192.png`,
+		imageUrl: `/android-chrome-192x192.png`,
 		details: updatesList
 	});
 	await newNotification.save();
@@ -256,7 +256,7 @@ async function sendEmailNotification(notification, targetUserId, volumesList) {
 		const followedUser = await User.findById(notification.associatedObject);
 		sendEmail(
 			targetUser.email,
-			"Novos volumes Manga Shelf",
+			"Novo seguidor Manga Shelf",
 			"newFollower",
 			{
 				username: targetUser.username,

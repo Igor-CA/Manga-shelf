@@ -346,7 +346,7 @@ function Notification({ notification }) {
 	);
 }
 const parseMessage = (message) => {
-	const regex = /@(\w+)/g; 
+	const regex = /@(\w+)/g;
 	const parts = message.split(regex);
 
 	return parts.map((part, index) =>
@@ -374,7 +374,9 @@ const NotificationImage = ({ imageUrl, type, associatedObject, userName }) => {
 			to={`${
 				type === "volumes"
 					? "/volume/" + associatedObject
-					: "/user/" + userName
+					: type === "followers"
+					? "/user/" + userName
+					: "/"
 			}`}
 		>
 			{type === "volumes" ? (
