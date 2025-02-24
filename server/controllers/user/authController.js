@@ -4,14 +4,6 @@ const { validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 
 exports.signup = asyncHandler(async (req, res, next) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		console.log(errors);
-		return res
-			.status(400)
-			.json({ msg: errors.array().map((erro) => erro.msg) });
-	}
-
 	const { username, password, email } = req.body;
 
 	const existingUser = await User.findOne({ $or: [{ username }, { email }] });

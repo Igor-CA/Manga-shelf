@@ -17,10 +17,26 @@ const requireAuth = (req, res, next) => {
 	next();
 };
 
+const { validationResult } = require("express-validator");
 
+// Middleware to handle validation errors
+const validateRequest = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({
+			msg: errors.array().map((error) => error.msg),
+		});
+	}
+	next();
+};
 
-router.post("/signup",signupValidation, authController.signup);
-router.post("/login", userController.login);
+router.post(
+	"/signup",
+	signupValidation,
+	validateRequest,
+	authController.signup
+);
+router.post("/login", loginValidation, validateRequest, authController.login);
 router.get("/logout", userController.logout);
 router.post("/forgot", userController.sendResetEmail);
 router.post("/reset-password", userController.resetPassword);
