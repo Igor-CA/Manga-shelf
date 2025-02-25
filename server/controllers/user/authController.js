@@ -1,7 +1,8 @@
 const User = require("../../models/User");
 const asyncHandler = require("express-async-handler");
-const { validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const { sendEmail } = require("../../Utils/sendEmail");
 
 exports.signup = asyncHandler(async (req, res, next) => {
 	const { username, password, email } = req.body;
@@ -73,13 +74,12 @@ exports.sendResetEmail = asyncHandler(async (req, res, next) => {
 
 	const tokenLength = 32;
 	const token = crypto.randomBytes(tokenLength).toString("hex");
-	
+
 	const timestamp = Date.now() + 15 * 60 * 1000; // 15 min later
-	
+
 	user.tokenTimestamp = timestamp;
 	user.token = token;
 	await user.save();
-	
 
 	const urlCode = `${user._id}/${token}`;
 	sendEmail(user.email, "Mudança de senha", "forgotEmail", {
