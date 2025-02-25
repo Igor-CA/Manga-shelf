@@ -28,7 +28,7 @@ export default function ResetPasswordPage() {
 			});
 			navigate("/login");
 		} catch (error) {
-			const customErrorMessage = error.response.data.message;
+			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
 		}
 	};

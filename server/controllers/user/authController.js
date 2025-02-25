@@ -90,3 +90,25 @@ exports.sendResetEmail = asyncHandler(async (req, res, next) => {
 		.catch((error) => res.send(error));
 	return;
 });
+
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+	const user = await User.findOne({ _id: req.body.userId });
+	if (!user) {
+		return res.status(400).json({ msg: "Esse usuário não existe" });
+	}
+
+	if (user.token !== req.body.token) {
+		return res.status(400).json({ msg: "Link inválido" });
+	}
+
+	const currentTimeStamp = new Date();
+	if (currentTimeStamp > user.tokenTimestamp) {
+		return res.status(400).json({ msg: "Link expirado" });
+	}
+
+	const newHashedPassword = await bcrypt.hash(req.body.password, 10);
+	user.password = newHashedPassword;
+	user.token = null;
+	await user.save();
+	res.send({ msg: "Senha alterada com sucesso" });
+});

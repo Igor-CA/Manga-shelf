@@ -43,63 +43,6 @@ const profileBannerUploader = configureMulter(
 	}
 );
 
-exports.resetPassword = [
-	body("password")
-		.trim()
-		.notEmpty()
-		.withMessage("Password must be specified.")
-		.matches(
-			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
-		)
-		.withMessage(
-			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
-		)
-		.escape(),
-	body("confirm-password")
-		.trim()
-		.notEmpty()
-		.withMessage("Password must be specified.")
-		.matches(
-			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
-		)
-		.withMessage(
-			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
-		)
-		.escape(),
-
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-
-		const currentTimeStamp = new Date();
-		const user = await User.findOne({ _id: req.body.userId });
-		if (!user) {
-			res.status(400).json({
-				message: "Erro: Esse usuário não existe",
-			});
-			return;
-		}
-
-		if (user.token !== req.body.token) {
-			res.status(400).json({ message: "Error: Invalid token" });
-			return;
-		}
-
-		if (currentTimeStamp < user.timestamp) {
-			res.status(400).json({ message: "Error: Token Expired" });
-			return;
-		}
-
-		const newHashedPassword = await bcrypt.hash(req.body.password, 10);
-		user.password = newHashedPassword;
-		user.token = null;
-		user.save();
-		res.send("Password changed successfully");
-	}),
-];
-
 async function fetchUser(req) {
 	if (req.isAuthenticated()) {
 		const user = await User.findById(req.user._id);

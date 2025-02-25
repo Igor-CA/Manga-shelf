@@ -9,10 +9,10 @@ const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
 const { signupValidation } = require("../validators/signupValidator");
 const { loginValidation } = require("../validators/loginValidator");
+const { newPasswordValidator } = require("../validators/newPasswordValidator");
 const {
 	forgotPasswordValidation,
 } = require("../validators/forgotPasswordValidator");
-
 //Middleware for authentication
 const requireAuth = (req, res, next) => {
 	if (!req.isAuthenticated()) {
@@ -62,8 +62,12 @@ router.post(
 	authController.sendResetEmail
 );
 
-
-router.post("/reset-password", userController.resetPassword);
+router.post(
+	"/reset-password",
+	newPasswordValidator,
+	validateRequest,
+	authController.resetPassword
+);
 router.post("/report", reportController.createReport);
 
 //
