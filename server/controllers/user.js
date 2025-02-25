@@ -43,58 +43,6 @@ const profileBannerUploader = configureMulter(
 	}
 );
 
-
-
-exports.logout = (req, res, next) => {
-	req.logout(function (err) {
-		if (err) {
-			return next(err);
-		}
-		res.send({ msg: "Successfully logout" });
-	});
-};
-exports.sendResetEmail = [
-	body("email")
-		.trim()
-		.notEmpty()
-		.withMessage("Email must be specified.")
-		.isEmail()
-		.withMessage("Invalid email format.")
-		.escape(),
-
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-
-		const user = await User.findOne({ email: req.body.email });
-		if (user) {
-			const tokenLength = 32;
-			const token = crypto.randomBytes(tokenLength).toString("hex");
-			const urlCode = `${user._id}/${token}`;
-
-			const timestamp = new Date();
-			timestamp.setMinutes(timestamp.getMinutes() + 15);
-
-			user.tokenTimestamp = timestamp;
-			user.token = token;
-			user.save();
-			const emailTo =
-				process.env.NODE_ENV === "production" ? user.email : process.env.EMAIL;
-
-			sendEmail(emailTo, "Mudança de senha", "forgotEmail", {
-				username: user.username,
-				link: `${process.env.HOST_ORIGIN}/reset/${urlCode}`,
-			})
-				.then(() => res.send({ msg: "Email sent" }))
-				.catch((error) => res.send(error));
-			return;
-		}
-		res.status(401).json({ message: "No user with this email" });
-	}),
-];
-
 exports.resetPassword = [
 	body("password")
 		.trim()

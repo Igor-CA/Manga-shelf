@@ -52,3 +52,41 @@ exports.login = asyncHandler(async (req, res, next) => {
 
 	res.json({ msg: "Usuário logado com sucesso" });
 });
+
+exports.logout = (req, res, next) => {
+	req.logout(function (err) {
+		if (err) {
+			return next(err);
+		}
+		res.send({ msg: "Deslogado com sucesso" });
+	});
+};
+
+exports.sendResetEmail = asyncHandler(async (req, res, next) => {
+	const user = await User.findOne({ email: req.body.email });
+
+	if (!user) {
+		return res
+			.status(401)
+			.json({ msg: "Nenhum usuário com esse email encontrado" });
+	}
+
+	const tokenLength = 32;
+	const token = crypto.randomBytes(tokenLength).toString("hex");
+	
+	const timestamp = Date.now() + 15 * 60 * 1000; // 15 min later
+	
+	user.tokenTimestamp = timestamp;
+	user.token = token;
+	await user.save();
+	
+
+	const urlCode = `${user._id}/${token}`;
+	sendEmail(user.email, "Mudança de senha", "forgotEmail", {
+		username: user.username,
+		link: `${process.env.HOST_ORIGIN}/reset/${urlCode}`,
+	})
+		.then(() => res.send({ msg: "Email enviado com sucesso" }))
+		.catch((error) => res.send(error));
+	return;
+});

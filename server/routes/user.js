@@ -9,6 +9,9 @@ const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
 const { signupValidation } = require("../validators/signupValidator");
 const { loginValidation } = require("../validators/loginValidator");
+const {
+	forgotPasswordValidation,
+} = require("../validators/forgotPasswordValidator");
 
 //Middleware for authentication
 const requireAuth = (req, res, next) => {
@@ -31,6 +34,7 @@ const validateRequest = (req, res, next) => {
 	next();
 };
 
+//Authentication related functions
 router.post(
 	"/signup",
 	signupValidation,
@@ -38,25 +42,7 @@ router.post(
 	authController.signup
 );
 router.post("/login", loginValidation, validateRequest, authController.login);
-router.get("/logout", userController.logout);
-router.post("/forgot", userController.sendResetEmail);
-router.post("/reset-password", userController.resetPassword);
-router.post("/report", reportController.createReport);
-router.post("/add-series", userController.addSeries);
-router.post("/add-volume", userController.addVolume);
-router.post("/remove-series", userController.removeSeries);
-router.post("/remove-volume", userController.removeVolume);
-router.put("/set-username", userController.setUserName);
-router.put("/change-profile-pic", userController.changeProfilePicture);
-router.put("/change-profile-banner", userController.changeProfileBanner);
-router.put("/change-username", userController.changeUsername);
-router.put("/change-password", userController.changePassword);
-router.put("/allow-adult", userController.allowAdultContent);
-router.put("/change-email", userController.changeEmail);
-router.put("/follow", userController.followUser);
-router.put("/unfollow", userController.unfollowUser);
-router.put("/set-notifications", userController.setUserNotifications);
-router.put("/mark-notification-seen", notificationsController.setNotificationAsSeen);
+router.get("/logout", requireAuth, authController.logout);
 router.get(
 	"/login/auth/google",
 	passport.authenticate("google", { scope: ["profile", "email"] })
@@ -67,6 +53,50 @@ router.get(
 	(req, res) => {
 		res.redirect("/");
 	}
+);
+
+router.post(
+	"/forgot",
+	forgotPasswordValidation,
+	validateRequest,
+	authController.sendResetEmail
+);
+
+
+router.post("/reset-password", userController.resetPassword);
+router.post("/report", reportController.createReport);
+
+//
+router.post("/add-series", requireAuth, userController.addSeries);
+router.post("/add-volume", requireAuth, userController.addVolume);
+router.post("/remove-series", requireAuth, userController.removeSeries);
+router.post("/remove-volume", requireAuth, userController.removeVolume);
+router.put("/set-username", requireAuth, userController.setUserName);
+router.put(
+	"/change-profile-pic",
+	requireAuth,
+	userController.changeProfilePicture
+);
+router.put(
+	"/change-profile-banner",
+	requireAuth,
+	userController.changeProfileBanner
+);
+router.put("/change-username", requireAuth, userController.changeUsername);
+router.put("/change-password", requireAuth, userController.changePassword);
+router.put("/allow-adult", requireAuth, userController.allowAdultContent);
+router.put("/change-email", requireAuth, userController.changeEmail);
+router.put("/follow", requireAuth, userController.followUser);
+router.put("/unfollow", requireAuth, userController.unfollowUser);
+router.put(
+	"/set-notifications",
+	requireAuth,
+	userController.setUserNotifications
+);
+router.put(
+	"/mark-notification-seen",
+	requireAuth,
+	notificationsController.setNotificationAsSeen
 );
 
 module.exports = router;
