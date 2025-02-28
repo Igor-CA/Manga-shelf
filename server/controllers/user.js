@@ -105,6 +105,9 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
+	const targetUser = req.params.username?.trim();
+	if (!targetUser)
+		return res.status(400).send({ msg: "Usuário não encontrado" });
 
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
