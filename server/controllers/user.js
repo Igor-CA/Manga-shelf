@@ -106,102 +106,106 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
 
-	const targetUser = req.params.username;
-	if (targetUser) {
-		const page = parseInt(req.query.p) || 1;
-		const skip = ITEMS_PER_PAGE * (page - 1);
-		const { publisher, genre } = req.query;
-		const title = req.query["search-bar"];
-
-		const filter = {};
-		if (genre) filter["userList.Series.genres"] = { $in: [genre] };
-		if (publisher) filter["userList.Series.publisher"] = publisher;
-		if (title) {
-			filter.$or = [
-				{ "userList.Series.title": { $regex: title, $options: "i" } },
-				{
-					"userList.Series.synonyms": {
-						$regex: title,
-						$options: "i",
-					},
-				},
-				{ "userList.Series.authors": { $regex: title, $options: "i" } },
-			];
-		}
-
-		const sortOptions = {
-			title: "userList.Series.title",
-			publisher: "userList.Series.publisher",
-			volumes: "volumesLength",
-			status: "userList.completionPercentage",
-			timestamp: "userList.timestamp",
+	const page = parseInt(req.query.p) || 1;
+	const skip = ITEMS_PER_PAGE * (page - 1);
+	const filter = buildFilter(req.query);
+	const sortStage = buildSortStage(req.query.ordering || "title");
+	const allowAdult = req.user?.allowAdult || false;
+	const pipeline = buildAggregationPipeline(targetUser, allowAdult, filter, sortStage, skip);
+	const userCollection = await User.aggregate(pipeline);
+	const filteredList = userCollection.map((series) => {
+		return {
+			...series,
+			image: getSeriesCoverURL(series),
 		};
-		const ordering = req.query.ordering || "title";
+	});
 
-		const sortStage = {};
-		sortStage[sortOptions[ordering]] = 1;
-		sortStage["userList.Series.title"] = 1;
-		const pipeline = [
-			{ $match: { username: targetUser } },
-			{
-				$project: {
-					userList: {
-						$filter: {
-							input: "$userList",
-							as: "item",
-							cond: { $ne: ["$$item.Series", null] },
-						},
+	res.send(filteredList);
+});
+
+//Filters for building search pipeline
+
+const buildFilter = ({ publisher, genre, search }) => {
+	const filter = {};
+	if (genre) filter["userList.Series.genres"] = { $in: [genre] };
+	if (publisher) filter["userList.Series.publisher"] = publisher;
+	if (search) {
+		const searchRegex = { $regex: search, $options: "i" };
+		filter.$or = [
+			{ "userList.Series.title": searchRegex },
+			{ "userList.Series.synonyms": searchRegex },
+			{ "userList.Series.authors": searchRegex },
+		];
+	}
+	return filter;
+};
+
+const buildSortStage = (ordering) => {
+	const sortOptions = {
+		title: "userList.Series.title",
+		publisher: "userList.Series.publisher",
+		volumes: "volumesLength",
+		status: "userList.completionPercentage",
+		timestamp: "userList.timestamp",
+	};
+
+	const sortStage = {
+		[sortOptions[ordering]]: 1,
+		"userList.Series.title": 1,
+	};
+	return sortStage;
+};
+
+const buildAggregationPipeline = (targetUser, allowAdult, filter, sortStage, skip) => {
+	const pipeline = [
+		{ $match: { username: targetUser } },
+		{
+			$project: {
+				userList: {
+					$filter: {
+						input: "$userList",
+						as: "item",
+						cond: { $ne: ["$$item.Series", null] },
 					},
 				},
 			},
-			{ $unwind: "$userList" },
-			{
-				$lookup: {
-					from: "series",
-					localField: "userList.Series",
-					foreignField: "_id",
-					as: "userList.Series",
-				},
+		},
+		{ $unwind: "$userList" },
+		{
+			$lookup: {
+				from: "series",
+				localField: "userList.Series",
+				foreignField: "_id",
+				as: "userList.Series",
 			},
-		];
-		const allowAdult = req.user?.allowAdult || false;
-
-		if (!allowAdult) {
-			pipeline.push({ $match: { "userList.Series.isAdult": false } });
-		}
-		pipeline.push(
-			{ $unwind: "$userList.Series" },
-			{ $addFields: { volumesLength: { $size: "$userList.Series.volumes" } } },
-			{ $match: filter },
-			{ $sort: sortStage },
-			{
-				$project: {
-					_id: "$userList.Series._id",
-					title: "$userList.Series.title",
-					completionPercentage: "$userList.completionPercentage",
-					isAdult: "$userList.Series.isAdult",
-				},
+		},
+		{ $unwind: "$userList.Series" },
+		{
+			$addFields: {
+				volumesLength: { $size: "$userList.Series.volumes" },
 			},
-			{ $skip: skip },
-			{ $limit: ITEMS_PER_PAGE }
-		);
-		const user = await User.aggregate(pipeline);
-		if (user) {
-			const filteredList = user.map((series) => {
-				return {
-					...series,
-					image: getSeriesCoverURL(series),
-				};
-			});
+		},
+		{ $match: filter },
+		{ $sort: sortStage },
+		{
+			$project: {
+				_id: "$userList.Series._id",
+				title: "$userList.Series.title",
+				completionPercentage: "$userList.completionPercentage",
+				isAdult: "$userList.Series.isAdult",
+			},
+		},
+		{ $skip: skip },
+		{ $limit: ITEMS_PER_PAGE },
+	];
 
-			res.send(filteredList);
-		} else {
-			res.status(400).json({ msg: "User not found" });
-		}
-	} else {
-		res.send();
+	// Apply adult content filtering if necessary
+	if (!allowAdult) {
+		pipeline.splice(6, 0, { $match: { "userList.Series.isAdult": false } });
 	}
-});
+
+	return pipeline;
+};
 
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
 
