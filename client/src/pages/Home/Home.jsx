@@ -8,11 +8,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import "./Home.css";
 import BrowsePage from "../BrowsePage/BrowsePage";
+import { useContext } from "react";
+import { UserContext } from "../../components/userProvider";
 
 export default function Home() {
+	const { user } = useContext(UserContext);
 	return (
 		<div className="page-content">
-			<div className="home">
+			{!user && <div className="home">
 				<h1>Bem vindo ao Manga Shelf!</h1>
 				<p className="home__main-description">
 					Chega de anotações perdidas e planilhas chatas! Descubra uma maneira
@@ -81,7 +84,7 @@ export default function Home() {
 						Saiba mais
 					</Link>
 				</div>
-			</div>
+			</div>}
 			<BrowsePage></BrowsePage>
 		</div>
 	);
