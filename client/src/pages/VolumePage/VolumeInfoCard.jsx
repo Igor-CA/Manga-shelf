@@ -26,12 +26,12 @@ export default function VolumeInfoCard({ volumeData }) {
 			const url = isAdding
 				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-volume`
 				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-volume`;
-			const amoutVolumesFromSeries = volumeData.serie.volumes.length;
+			const amountVolumesFromSeries = volumeData.serie.volumes.length;
 			await axios({
 				method: "POST",
 				data: {
 					idList: [id],
-					amoutVolumesFromSeries,
+					amountVolumesFromSeries,
 					seriesId: volumeData.serie.id,
 				},
 				headers: {

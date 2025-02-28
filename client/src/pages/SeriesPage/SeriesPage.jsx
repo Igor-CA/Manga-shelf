@@ -124,10 +124,10 @@ export default function SeriesPage() {
 				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-volume`
 				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-volume`;
 
-			const amoutVolumesFromSeries = series.volumes.length;
+			const amountVolumesFromSeries = series.volumes.length;
 			await axios({
 				method: "POST",
-				data: { idList: idList, amoutVolumesFromSeries, seriesId: id },
+				data: { idList: idList, amountVolumesFromSeries, seriesId: id },
 				withCredentials: true,
 				headers: {
 					Authorization: import.meta.env.REACT_APP_API_KEY,

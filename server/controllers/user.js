@@ -296,84 +296,68 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 });
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
+	const { seriesId, amountVolumesFromSeries, idList } = req.body;
 
-	if (req.isAuthenticated()) {
-		const user = await User.findOne(
-			{ _id: req.user._id },
-			{
-				ownedVolumes: 1,
-				userList: 1,
-			}
-		).populate("userList.Series");
-		if (user) {
-			const indexOfSeries = user.userList.findIndex((seriesObj) => {
-				return seriesObj.Series._id.toString() === req.body.seriesId;
-			});
-			user.ownedVolumes.push(...req.body.idList);
+	const user = await User.findById(req.user._id, {
+		ownedVolumes: 1,
+		userList: 1,
+	}).populate("userList.Series");
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
 
-			if (indexOfSeries === -1) {
-				const completePorcentage =
-					req.body.idList.length / req.body.amoutVolumesFromSeries;
-				const addedSeries = {
-					Series: req.body.seriesId,
-					completionPercentage: completePorcentage,
-				};
-				user.userList.push(addedSeries);
-			} else {
-				const seriesList = user.userList[indexOfSeries].Series.volumes;
-				const haveFromSeries = seriesList.filter((volumesId) => {
-					id = volumesId.toString();
-					return user.ownedVolumes.includes(id);
-				});
-				const completePorcentage = haveFromSeries.length / seriesList.length;
+	//Add all volumes to ownedVolumes
+	const ownedSet = new Set(user.ownedVolumes.map((id) => id.toString()));
+	idList.forEach((id) => ownedSet.add(id));
+	user.ownedVolumes = Array.from(ownedSet);
 
-				const seriesBeingAdded = user.userList[indexOfSeries];
-				seriesBeingAdded.completionPercentage = completePorcentage;
-			}
+	let seriesEntry = user.userList.find(
+		(s) => s.Series._id.toString() === seriesId
+	);
 
-			user.save();
-			res.send({ msg: "Volume successfully added" });
-		} else {
-			res.status(400).json({ msg: "User not found" });
-		}
+	if (!seriesEntry) {
+		//Add series to userList
+		user.userList.push({
+			Series: seriesId,
+			completionPercentage: idList.length / amountVolumesFromSeries,
+		});
 	} else {
-		res.send({ msg: "User need to be authenticated" });
+		const allVolumes = seriesEntry.Series.volumes.map((id) =>
+			id.toString()
+		);
+		const ownedFromSeries = allVolumes.filter((volId) =>
+			ownedSet.has(volId)
+		);
+		seriesEntry.completionPercentage =
+			ownedFromSeries.length / allVolumes.length;
 	}
+
+	await user.save();
+	res.send({ msg: "Volume(s) Adicionado com sucesso" });
 });
 
 exports.removeVolume = asyncHandler(async (req, res, next) => {
+	const { seriesId, idList } = req.body;
+	const user = await User.findById(req.user._id, {
+		ownedVolumes: 1,
+		userList: 1,
+	}).populate("userList.Series");
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
 
-	if (req.isAuthenticated()) {
-		const user = await User.findOne(
-			{ _id: req.user._id },
-			{
-				ownedVolumes: 1,
-				userList: { $elemMatch: { Series: req.body.seriesId } },
-			}
-		).populate("userList.Series");
-		if (user) {
-			const newVolumesList = user.ownedVolumes.filter((volumeId) => {
-				id = volumeId.toString();
-				return !req.body.idList.includes(id);
-			});
-			user.ownedVolumes = newVolumesList;
-			const seriesList = user.userList[0].Series.volumes;
-			const haveFromSeries = seriesList.filter((volumesId) => {
-				id = volumesId.toString();
-				return user.ownedVolumes.includes(id);
-			});
-			const completePorcentage = haveFromSeries.length / seriesList.length;
+	//Filter out all volumes from ownedVolumes
+	const ownedSet = new Set(user.ownedVolumes.map((id) => id.toString()));
+	idList.forEach((id) => ownedSet.delete(id)); // Remove specified volumes
+	user.ownedVolumes = Array.from(ownedSet);
 
-			user.userList[0].completionPercentage = completePorcentage;
+	//Calculate New percentage
+	const seriesEntry = user.userList.find((s) => s.Series._id.toString() === seriesId);
 
-			user.save();
-			res.send({ msg: "Volume successfully removed" });
-		} else {
-			res.status(400).json({ msg: "User not found" });
-		}
-	} else {
-		res.send({ msg: "User need to be authenticated" });
+	if (seriesEntry) {
+		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
+		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
+		seriesEntry.completionPercentage = ownedFromSeries.length / allVolumes.length;
 	}
+
+	await user.save();
+	res.send({ msg: "Volume(s) removido com sucesso" });
 });
 
 exports.setUserName = [
