@@ -7,32 +7,14 @@ const { authController } = require("../controllers/user/index");
 
 const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
-const { signupValidation } = require("../validators/signupValidator");
-const { loginValidation } = require("../validators/loginValidator");
-const { newPasswordValidator } = require("../validators/newPasswordValidator");
+const { requireAuth } = require("../middlewares/authentications");
 const {
+	signupValidation,
+	loginValidation,
+	newPasswordValidator,
 	forgotPasswordValidation,
-} = require("../validators/forgotPasswordValidator");
-//Middleware for authentication
-const requireAuth = (req, res, next) => {
-	if (!req.isAuthenticated()) {
-		return res.status(401).json({ msg: "Usuário deve estar logado" });
-	}
-	next();
-};
-
-const { validationResult } = require("express-validator");
-
-// Middleware to handle validation errors
-const validateRequest = (req, res, next) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json({
-			msg: errors.array().map((error) => error.msg),
-		});
-	}
-	next();
-};
+	validateRequest,
+} = require("../middlewares/validators");
 
 //Authentication related functions
 router.post(

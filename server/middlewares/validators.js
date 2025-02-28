@@ -1,11 +1,26 @@
+
+const { validationResult } = require("express-validator");
 const { body } = require("express-validator");
 
+// --- Validators ---
 const emailValidation = body("email")
 	.trim()
 	.notEmpty()
 	.withMessage("É obrigatório informar um email.")
 	.isEmail()
 	.withMessage("O email inserido não é um email válido")
+	.escape();
+
+const loginInputValidation = body("login")
+	.trim()
+	.notEmpty()
+	.withMessage("Um email ou nome de usuário deve ser informado.")
+	.escape();
+
+const passwordValidation = body("password")
+	.trim()
+	.notEmpty()
+	.withMessage("Uma senha deve ser informada.")
 	.escape();
 
 const usernameValidation = body("username")
@@ -18,7 +33,7 @@ const usernameValidation = body("username")
 	)
 	.escape();
 
-const passwordValidation = body("password")
+const newPasswordValidation = body("password")
 	.trim()
 	.notEmpty()
 	.withMessage("É obrigatório informar uma senha.")
@@ -46,12 +61,38 @@ const tosValidation = body("tos-checkbox")
 	.notEmpty()
 	.withMessage("Concorde com nossos termos para criar uma conta.");
 
+
+// --- Validations ---
+const forgotPasswordValidation = [emailValidation];
+const loginValidation = [loginInputValidation, passwordValidation];
+const newPasswordValidator = [newPasswordValidation, confirmPasswordValidation];
 const signupValidation = [
 	emailValidation,
 	usernameValidation,
-	passwordValidation,
+	newPasswordValidation,
 	confirmPasswordValidation,
 	tosValidation,
 ];
 
-module.exports = { signupValidation };
+
+
+// Middleware to handle validation errors
+const validateRequest = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({
+			msg: errors.array().map((error) => error.msg),
+		});
+	}
+	next();
+};
+
+
+// Export
+module.exports = {
+	forgotPasswordValidation,
+	signupValidation,
+	loginValidation,
+	newPasswordValidator,
+	validateRequest
+};
