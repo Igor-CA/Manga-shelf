@@ -462,159 +462,85 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserStats = asyncHandler(async (req, res, next) => {
+	const targetUser = req.params.username?.trim();
+	if (!targetUser)
+		return res.status(400).send({ msg: "Usuário não encontrado" });
+	
+	
+	const getVolumesStats = (groupField) => [
+		{ $match: { username: targetUser } },
+		{ $unwind: { path: "$ownedVolumes", preserveNullAndEmptyArrays: true } },
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "ownedVolumes",
+				foreignField: "_id",
+				as: "details",
+			},
+		},
+		{ $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
+		{
+			$lookup: {
+				from: "series",
+				localField: "details.serie",
+				foreignField: "_id",
+				as: "seriesDetails",
+			},
+		},
+		{ $unwind: { path: "$seriesDetails", preserveNullAndEmptyArrays: true } },
+		{ $unwind: { path: `$seriesDetails.${groupField}`, preserveNullAndEmptyArrays: true } },
+		{
+			$group: { _id: `$seriesDetails.${groupField}`, count: { $sum: 1 } },
+		},
+		{
+			$project: { _id: 0, name: "$_id", count: 1 },
+		},
+		{ $sort: { count: -1, name: 1 } },
+	];
+	
+	
+	const getSeriesStats = (groupField) => [
+		{ $match: { username: targetUser } },
+		{ $unwind: { path: "$userList", preserveNullAndEmptyArrays: true } },
+		{
+			$lookup: {
+				from: "series",
+				localField: "userList.Series",
+				foreignField: "_id",
+				as: "details",
+			},
+		},
+		{ $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
+		{ $unwind: { path: `$details.${groupField}`, preserveNullAndEmptyArrays: true } },
+		{
+			$group: { _id: `$details.${groupField}`, count: { $sum: 1 } },
+		},
+		{
+			$project: { _id: 0, name: "$_id", count: 1 },
+		},
+		{ $sort: { count: -1, name: 1 } },
+	];
+	
+	// Pipelines
+	const genresByVolumePipeline = getVolumesStats("genres");
+	const publisherByVolumePipeline = getVolumesStats("publisher");
+	const genresBySeriesPipeline = getSeriesStats("genres");
+	const publisherBySeriesPipeline = getSeriesStats("publisher");
+	
+	
+	const countPipeline = [
+		{ $match: { username: targetUser } },
+		{
+			$project: {
+				ownedVolumesCount: { $size: "$ownedVolumes" },
+				userListCount: { $size: "$userList" },
+			},
+		},
+	];
 
-	const targetUser = req.params.username;
-	if (targetUser) {
-		const genresByVolumePipeline = [
-			{ $match: { username: targetUser } },
-			{ $unwind: "$ownedVolumes" },
-			{
-				$lookup: {
-					from: "volumes",
-					localField: "ownedVolumes",
-					foreignField: "_id",
-					as: "volumeDetails",
-				},
-			},
-			{ $unwind: "$volumeDetails" },
-			{
-				$lookup: {
-					from: "series",
-					localField: "volumeDetails.serie",
-					foreignField: "_id",
-					as: "seriesDetails",
-				},
-			},
-			{ $unwind: "$seriesDetails" },
-			{ $unwind: "$seriesDetails.genres" },
-			{
-				$group: {
-					_id: "$seriesDetails.genres",
-					count: { $sum: 1 },
-				},
-			},
-			{
-				$project: {
-					_id: 0,
-					name: "$_id",
-					count: 1,
-				},
-			},
-			{ $sort: { count: -1, name: 1 } },
-		];
-		const genresBySeriesPipeline = [
-			{ $match: { username: targetUser } },
-			{ $unwind: "$userList" },
-
-			{
-				$lookup: {
-					from: "series",
-					localField: "userList.Series",
-					foreignField: "_id",
-					as: "seriesDetails",
-				},
-			},
-			{ $unwind: "$seriesDetails" },
-			{ $unwind: "$seriesDetails.genres" },
-			{
-				$group: {
-					_id: "$seriesDetails.genres",
-					count: { $sum: 1 },
-				},
-			},
-			{
-				$project: {
-					_id: 0,
-					name: "$_id",
-					count: 1,
-				},
-			},
-
-			{ $sort: { count: -1, name: 1 } },
-		];
-		const publisherByVolumePipeline = [
-			{ $match: { username: targetUser } },
-			{ $unwind: "$ownedVolumes" },
-			{
-				$lookup: {
-					from: "volumes",
-					localField: "ownedVolumes",
-					foreignField: "_id",
-					as: "volumeDetails",
-				},
-			},
-			{ $unwind: "$volumeDetails" },
-			{
-				$lookup: {
-					from: "series",
-					localField: "volumeDetails.serie",
-					foreignField: "_id",
-					as: "seriesDetails",
-				},
-			},
-			{ $unwind: "$seriesDetails" },
-			{ $unwind: "$seriesDetails.publisher" },
-			{
-				$group: {
-					_id: "$seriesDetails.publisher",
-					count: { $sum: 1 },
-				},
-			},
-			{
-				$project: {
-					_id: 0,
-					name: "$_id",
-					count: 1,
-				},
-			},
-			{ $sort: { count: -1, name: 1 } },
-		];
-		const publisherBySeriesPipeline = [
-			{ $match: { username: targetUser } },
-			{ $unwind: "$userList" },
-
-			{
-				$lookup: {
-					from: "series",
-					localField: "userList.Series",
-					foreignField: "_id",
-					as: "seriesDetails",
-				},
-			},
-			{ $unwind: "$seriesDetails" },
-			{ $unwind: "$seriesDetails.publisher" },
-			{
-				$group: {
-					_id: "$seriesDetails.publisher",
-					count: { $sum: 1 },
-				},
-			},
-			{
-				$project: {
-					_id: 0,
-					name: "$_id",
-					count: 1,
-				},
-			},
-
-			{ $sort: { count: -1, name: 1 } },
-		];
-		const countPipeline = [
-			{ $match: { username: targetUser } },
-			{
-				$project: {
-					ownedVolumesCount: { $size: "$ownedVolumes" },
-					userListCount: { $size: "$userList" },
-				},
-			},
-		];
-		const [
-			genresByVolume,
-			genresBySeries,
-			publisherByVolume,
-			publisherBySeries,
-			counts,
-		] = await Promise.all([
+	// Execute queries
+	const [genresByVolume, genresBySeries, publisherByVolume, publisherBySeries, counts] =
+		await Promise.all([
 			User.aggregate(genresByVolumePipeline).exec(),
 			User.aggregate(genresBySeriesPipeline).exec(),
 			User.aggregate(publisherByVolumePipeline).exec(),
@@ -622,18 +548,17 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 			User.aggregate(countPipeline).exec(),
 		]);
 
-		const stats = {
-			genresBySeries,
-			genresByVolume,
-			publisherByVolume,
-			publisherBySeries,
-			volumesCount: counts[0].ownedVolumesCount,
-			seriesCount: counts[0].userListCount,
-		};
-		res.send(stats);
-	} else {
-		res.send();
-	}
+	// Build response
+	const stats = {
+		genresBySeries,
+		genresByVolume,
+		publisherByVolume,
+		publisherBySeries,
+		volumesCount: counts[0]?.ownedVolumesCount || 0,
+		seriesCount: counts[0]?.userListCount || 0,
+	};
+
+	res.send(stats);
 });
 
 exports.followUser = asyncHandler(async (req, res, next) => {
