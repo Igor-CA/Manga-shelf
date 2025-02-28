@@ -43,30 +43,15 @@ const profileBannerUploader = configureMulter(
 	}
 );
 
-async function fetchUser(req) {
-	if (req.isAuthenticated()) {
-		const user = await User.findById(req.user._id);
-		return user;
-	}
-	return null;
-}
-
 exports.addSeries = asyncHandler(async (req, res, next) => {
-
-	const user = await fetchUser(req);
-
-	if (user) {
-		const addedSeries = { Series: req.body.id };
-		user.userList.push(addedSeries);
-		user.save();
-		res.send({ msg: "Series successfully added" });
-	} else {
-		res.status(400).json({ msg: "User not authenticated" });
-	}
+	const addedSeries = { Series: req.body.id };
+	await User.findByIdAndUpdate(req.user._id, {
+		$push: { userList: addedSeries },
+	});
+	return res.send({ msg: "Obra adicionada com sucesso" });
 });
 
 exports.removeSeries = asyncHandler(async (req, res, next) => {
-
 	const user = await User.findById(req.user._id, {
 		ownedVolumes: 1,
 		userList: 1,
@@ -74,60 +59,49 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 		path: "ownedVolumes",
 		select: "serie",
 	});
-	if (user) {
-		const newSeriesList = user.userList.filter((seriesObject) => {
-			return seriesObject.Series.toString() !== req.body.id;
-		});
-		const newVolumesList = user.ownedVolumes.filter((volume) => {
-			volumeSeriesId = volume.serie.toString();
-			return volumeSeriesId !== req.body.id;
-		});
-		user.userList = newSeriesList;
-		user.ownedVolumes = newVolumesList;
-		user.save();
-		res.send({ msg: "Series successfully removed" });
-	} else {
-		res.status(400).json({ msg: "User not found" });
-	}
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+
+	const newSeriesList = user.userList.filter((seriesObject) => {
+		return seriesObject.Series.toString() !== req.body.id;
+	});
+	const newVolumesList = user.ownedVolumes.filter((volume) => {
+		return volume.serie.toString() !== req.body.id;
+	});
+	user.userList = newSeriesList;
+	user.ownedVolumes = newVolumesList;
+	await user.save();
+	return res.send({ msg: "Obra removida com sucesso" });
 });
 
 exports.getLoggedUser = asyncHandler(async (req, res, next) => {
+	const user = await User.findById(req.user._id)
+		.populate({
+			path: "userList.Series",
+			select: "title",
+		})
+		.lean()
+		.exec();
 
-	if (req.user) {
-		const user = await User.findById(req.user._id)
-			.populate({
-				path: "userList.Series",
-				select: "title",
-			})
-			.exec();
-		if (user) {
-			const notificationCount = user.notifications?.reduce(
-				(count, currentNotification) => {
-					if (!currentNotification.seen) return count + 1;
-					return count;
-				},
-				0
-			);
+	if (!user) return res.send({ msg: "Usuário não encontrado" });
 
-			const userInfo = {
-				_id: user._id,
-				username: user.username,
-				userList: user.userList,
-				ownedVolumes: user.ownedVolumes,
-				profileImageUrl: user.profileImageUrl,
-				profileBannerUrl: user.profileBannerUrl,
-				settings: user.settings,
-				email: user.email,
-				allowAdult: user.allowAdult,
-				notificationCount,
-			};
-			res.send(userInfo);
-		} else {
-			res.send({ msg: "User not found" });
-		}
-	} else {
-		res.send({ msg: "No user logged" });
-	}
+	const notificationCount =
+		user.notifications?.reduce((count, currentNotification) => {
+			return count + (!currentNotification.seen ? 1 : 0);
+		}, 0) ?? 0;
+
+	const userInfo = {
+		_id: user._id,
+		username: user.username,
+		userList: user.userList,
+		ownedVolumes: user.ownedVolumes,
+		profileImageUrl: user.profileImageUrl,
+		profileBannerUrl: user.profileBannerUrl,
+		settings: user.settings,
+		email: user.email,
+		allowAdult: user.allowAdult,
+		notificationCount,
+	};
+	return res.send(userInfo);
 });
 
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
