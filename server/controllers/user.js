@@ -211,102 +211,88 @@ const buildAggregationPipeline = (targetUser, allowAdult, filter, sortStage, ski
 };
 
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
+	const targetUser = req.params.username?.trim();
+	if (!targetUser)
+		return res.status(400).send({ msg: "Usuário não encontrado" });
 
-	const targetUser = req.params.username;
-	if (targetUser) {
-		const page = parseInt(req.query.p) || 1;
-		const skip = ITEMS_PER_PAGE * (page - 1);
+	const page = parseInt(req.query.p) || 1;
+	const skip = ITEMS_PER_PAGE * (page - 1);
 
-		const aggregationPipeline = [
-			// Match the user by username
-			{ $match: { username: targetUser } },
-
-			// Unwind userList to process individual series
-			{ $unwind: "$userList" },
-			// Lookup the series details
-			{
-				$lookup: {
-					from: "series",
-					localField: "userList.Series",
-					foreignField: "_id",
-					as: "seriesDetails",
+	const aggregationPipeline = [
+		// Match the user by username
+		{ $match: { username: targetUser } },
+		// Unwind userList to process individual series
+		{ $unwind: "$userList" },
+		// Lookup the series details
+		{
+			$lookup: {
+				from: "series",
+				localField: "userList.Series",
+				foreignField: "_id",
+				as: "seriesDetails",
+			},
+		},
+		{ $unwind: "$seriesDetails" },
+		// Lookup to get volume details
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "seriesDetails.volumes",
+				foreignField: "_id",
+				as: "volumeDetails",
+			},
+		},
+		{ $unwind: "$volumeDetails" },
+		// Prepare the list of owned volume IDs
+		{
+			$addFields: {
+				ownedVolumesSet: { $setUnion: ["$ownedVolumes", []] },
+			},
+		},
+		// Add a field to indicate whether the volume is owned or not
+		{
+			$addFields: {
+				isOwned: {
+					$cond: [
+						{ $in: ["$volumeDetails._id", "$ownedVolumesSet"] },
+						true,
+						false,
+					],
 				},
 			},
-			{ $unwind: "$seriesDetails" },
-
-			// Unwind the volumes array within seriesDetails
-			{ $unwind: "$seriesDetails.volumes" },
-
-			// Lookup to get volume details
-			{
-				$lookup: {
-					from: "volumes",
-					localField: "seriesDetails.volumes",
-					foreignField: "_id",
-					as: "volumeDetails",
-				},
+		},
+		// Filter out volumes that are owned
+		{ $match: { isOwned: false } },
+		// Group back the data
+		{
+			$group: {
+				_id: "$volumeDetails._id",
+				series: { $first: "$seriesDetails.title" },
+				volumeId: { $first: "$volumeDetails._id" },
+				volumeNumber: { $first: "$volumeDetails.number" },
 			},
-			{ $unwind: "$volumeDetails" },
-
-			// Prepare the list of owned volume IDs
-			{
-				$addFields: {
-					ownedVolumesSet: { $setUnion: ["$ownedVolumes", []] },
-				},
+		},
+		// Sort the results by series title and volume number
+		{
+			$sort: {
+				series: 1,
+				volumeNumber: 1,
 			},
-
-			// Add a field to indicate whether the volume is owned or not
-			{
-				$addFields: {
-					isOwned: {
-						$cond: [
-							{ $in: ["$volumeDetails._id", "$ownedVolumesSet"] },
-							true,
-							false,
-						],
-					},
-				},
-			},
-
-			// Filter out volumes that are owned
-			{ $match: { isOwned: false } },
-
-			// Group back the data
-			{
-				$group: {
-					_id: "$volumeDetails._id",
-					series: { $first: "$seriesDetails.title" },
-					volumeId: { $first: "$volumeDetails._id" },
-					volumeNumber: { $first: "$volumeDetails.number" },
-				},
-			},
-
-			// Sort the results by series title and volume number
-			{
-				$sort: {
-					series: 1,
-					volumeNumber: 1,
-				},
-			},
-
-			// Pagination
-			{ $skip: skip },
-			{ $limit: ITEMS_PER_PAGE },
-		];
-
-		const missingVolumesList = await User.aggregate(aggregationPipeline).exec();
-		const listWithImages = missingVolumesList.map((volume) => {
-			const seriesObject = { title: volume.series };
-			return {
-				...volume,
-				title: volume.series,
-				image: getVolumeCoverURL(seriesObject, volume.volumeNumber),
-			};
-		});
-		res.send(listWithImages);
-	} else {
-		res.send();
-	}
+		},
+		// Pagination
+		{ $skip: skip },
+		{ $limit: ITEMS_PER_PAGE },
+	];
+	const missingVolumesList = await User.aggregate(aggregationPipeline).exec();
+	const listWithImages = missingVolumesList.map((volume) => {
+		const seriesObject = { title: volume.series };
+		return {
+			...volume,
+			title: volume.series,
+			image: getVolumeCoverURL(seriesObject, volume.volumeNumber),
+		};
+	});
+	res.send(listWithImages);
 });
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
