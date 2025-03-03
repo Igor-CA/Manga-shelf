@@ -101,99 +101,66 @@ export default function NotificationsPage() {
 					<SideNavbar title={"Notificações"} options={options} />
 					<div className="notifications-container">
 						<div className="notifications-group">
-							<h2
-								className="notifications-group__title"
-								id="volumes"
-							>
+							<h2 className="notifications-group__title" id="volumes">
 								Novos volumes
 							</h2>
 							<ul className="notifications-list">
-								{volumesNotifications.map(
-									(notification, index) => {
-										return (
-											<Notification
-												notification={notification}
-												key={index}
-											/>
-										);
-									}
-								)}
+								{volumesNotifications.map((notification, index) => {
+									return (
+										<Notification notification={notification} key={index} />
+									);
+								})}
 							</ul>
 							{volumesNotifications.length === 0 ? (
 								<p className="notification-missing">
 									Nenhuma notificação desse tipo no momento
 								</p>
 							) : (
-								<button
-									className="button"
-									onClick={handleMoreVolumes}
-								>
+								<button className="button" onClick={handleMoreVolumes}>
 									Mostrar mais
 								</button>
 							)}
 						</div>
 
 						<div className="notifications-group">
-							<h2
-								className="notifications-group__title"
-								id="followers"
-							>
+							<h2 className="notifications-group__title" id="followers">
 								Seguidores
 							</h2>
 							<ul className="notifications-list">
-								{followersNotifications.map(
-									(notification, index) => {
-										return (
-											<Notification
-												notification={notification}
-												key={index}
-											/>
-										);
-									}
-								)}
+								{followersNotifications.map((notification, index) => {
+									return (
+										<Notification notification={notification} key={index} />
+									);
+								})}
 							</ul>
 							{followersNotifications.length === 0 ? (
 								<p className="notification-missing">
 									Nenhuma notificação desse tipo no momento
 								</p>
 							) : (
-								<button
-									className="button"
-									onClick={handleMoreFollowers}
-								>
+								<button className="button" onClick={handleMoreFollowers}>
 									Mostrar mais
 								</button>
 							)}
 						</div>
 
 						<div className="notifications-group">
-							<h2
-								className="notifications-group__title"
-								id="updates"
-							>
+							<h2 className="notifications-group__title" id="updates">
 								Novas funcionalidades
 							</h2>
 							<ul className="notifications-list">
-								{siteNotifications.map(
-									(notification, index) => {
-										return (
-											<Notification
-												notification={notification}
-												key={index}
-											/>
-										);
-									}
-								)}
+								{siteNotifications.map((notification, index) => {
+									return (
+										<Notification notification={notification} key={index} />
+									);
+								})}
 							</ul>
 							{siteNotifications.length === 0 ? (
 								<p className="notification-missing">
 									Nenhuma notificação desse tipo no momento
 								</p>
 							) : (
-								<button
-									className="button"
-									onClick={handleMoreSite}
-								>
+								<button className="button" onClick={handleMoreSite}>
 									Mostrar mais
 								</button>
 							)}
@@ -268,9 +235,7 @@ function Notification({ notification }) {
 		for (const interval of intervals) {
 			const count = Math.floor(diff / interval.seconds);
 			if (count >= 1) {
-				return `${count} ${interval.label}${
-					count > 1 ? "s" : ""
-				} atrás`;
+				return `${count} ${interval.label}${count > 1 ? "s" : ""} atrás`;
 			}
 		}
 
@@ -292,17 +257,13 @@ function Notification({ notification }) {
 					{type === "volumes" && (
 						<>
 							{textList[0]}{" "}
-							<Link to={`/volume/${associatedObject}`}>
-								{textList[1]}
-							</Link>{" "}
+							<Link to={`/volume/${associatedObject}`}>{textList[1]}</Link>{" "}
 							{textList[2]}
 						</>
 					)}
 					{type === "followers" && (
 						<>
-							<Link to={`/user/${textList[0]}`}>
-								{textList[0]}
-							</Link>{" "}
+							<Link to={`/user/${textList[0]}`}>{textList[0]}</Link>{" "}
 							{textList[1]}
 						</>
 					)}
@@ -312,21 +273,21 @@ function Notification({ notification }) {
 					<time className="notification-date" dateTime={date}>
 						{time}
 					</time>
+					{details.length > 0 && (
+						<div
+							className="notification__icon-container"
+							onClick={() => {
+								setShowDetails((prev) => !prev);
+							}}
+						>
+							{showDetails ? (
+								<FaAngleUp className="notification__icon" />
+							) : (
+								<FaAngleDown className="notification__icon" />
+							)}
+						</div>
+					)}
 				</div>
-				{details.length > 0 && (
-					<div
-						className="notification__icon-container"
-						onClick={() => {
-							setShowDetails((prev) => !prev);
-						}}
-					>
-						{showDetails ? (
-							<FaAngleUp className="notification__icon" />
-						) : (
-							<FaAngleDown className="notification__icon" />
-						)}
-					</div>
-				)}
 			</div>
 			{showDetails && (
 				<ul className="notifications__list__container">
@@ -339,9 +300,7 @@ function Notification({ notification }) {
 					})}
 				</ul>
 			)}
-			{!seen && !seenState && (
-				<div className="notification-not-seen"></div>
-			)}
+			{!seen && !seenState && <div className="notification-not-seen"></div>}
 		</li>
 	);
 }

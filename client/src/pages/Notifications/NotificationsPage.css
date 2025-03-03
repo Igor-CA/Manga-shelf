@@ -1,4 +1,4 @@
-.notifications-group {
+	.notifications-group {
 	background-color: var(--foreground);
 	padding: 20px;
 	margin-bottom: 20px;
@@ -46,6 +46,8 @@
 	overflow: hidden;
 	aspect-ratio: auto 465 / 695;
 	max-width: 15vw;
+	min-width: 50px;
+	align-self: flex-start;
 }
 .notification-image-container--square {
 	aspect-ratio: 1;
@@ -56,7 +58,6 @@
 }
 .notification-text {
 	padding: 0.5rem;
-	padding-right: 100px;
 	flex-grow: 1;
 }
 .notification-text > a {
@@ -64,12 +65,10 @@
 }
 .notification-date-container {
 	padding: 0.5rem;
-	position: absolute;
-	right: 0;
-	top: 0;
+	align-self: flex-start;
+	text-align: center;
 }
 .notification-date {
-	padding: 0.75rem;
 	font-size: 0.75rem;
 }
 .notification-missing {
