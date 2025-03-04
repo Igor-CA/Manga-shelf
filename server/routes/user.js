@@ -92,8 +92,7 @@ router.put(
 	userController.changeEmail
 );
 router.put("/allow-adult", requireAuth, userController.allowAdultContent);
-router.put("/follow", requireAuth, userController.followUser);
-router.put("/unfollow", requireAuth, userController.unfollowUser);
+router.put("/toggle-follow", requireAuth, userController.toggleFollowUser);
 router.put(
 	"/set-notifications",
 	requireAuth,

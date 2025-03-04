@@ -524,91 +524,47 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 	res.send(stats);
 });
 
-exports.followUser = asyncHandler(async (req, res, next) => {
-
-	if (!req.isAuthenticated()) {
-		res.status(400).json({ msg: "User not authenticated" });
-		return;
-	}
-
+exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 	const userId = req.user._id;
 	const targetUserName = req.body.targetUser;
-	//console.log({ userId, targetUserName });
+	const follow = req.body.follow; // true to follow, false to unfollow
 
 	if (!targetUserName) {
-		return res.status(400).json({ msg: "No user selected" });
+		return res.status(400).json({ msg: "Usuário não encontrado" });
 	}
 	const user = await User.findById(userId);
 	const targetUser = await User.findOne({ username: targetUserName });
 
-	//console.log({ user, targetUser });
-	if (!targetUser) {
-		res.send({ msg: "No user selected" });
-		return;
-	}
-	if (!user) {
-		res.status(400).json({ msg: "User not found" });
-		return;
-	}
-	if (user._id.toString() === targetUser._id.toString()) {
-		res.status(400).json({ msg: "Can't follow yourself" });
-		return;
-	}
-	if (!user.following.includes(targetUser._id)) {
-		user.following.push(targetUser._id);
-	}
-	if (!targetUser.followers.includes(userId)) {
-		targetUser.followers.push(userId);
-	}
-	user.save();
-	targetUser.save();
-
-	sendNewFollowerNotification(user._id, targetUser._id);
-	res.send({ msg: "Followed Successfuly" });
-});
-exports.unfollowUser = asyncHandler(async (req, res, next) => {
-
-
-	if (!req.isAuthenticated()) {
-		res.status(400).json({ msg: "User not authenticated" });
-		return;
+	if (!targetUser || !user) {
+		return res.send({ msg: "Usuário não encontrado" });
 	}
 
-	const userId = req.user._id;
-	const targetUserName = req.body.targetUser;
-	//console.log({ userId, targetUserName });
-
-	if (!targetUserName) {
-		return res.status(400).json({ msg: "No user selected" });
-	}
-	const user = await User.findById(userId);
-	const targetUser = await User.findOne({ username: targetUserName });
-
-	//console.log({ user, targetUser });
-	if (!targetUser) {
-		res.send({ msg: "No user selected" });
-		return;
-	}
-	if (!user) {
-		res.status(400).json({ msg: "User not found" });
-		return;
+	if (user._id.equals(targetUser._id)) {
+		return res.status(400).json({ msg: "Não é possível seguir a si mesmo" });
 	}
 
-	if (user.following.includes(targetUser._id)) {
-		const elementToRemove = targetUser._id.toString();
-		user.following = user.following.filter(
-			(el) => el.toString() !== elementToRemove
-		);
-	}
-	if (targetUser.followers.includes(user._id)) {
-		const elementToRemove = user._id.toString();
+	if (follow) {
+		if (!user.following.some((id) => id.equals(targetUser._id))) {
+			user.following.push(targetUser._id);
+		}
+		if (!targetUser.followers.some((id) => id.equals(user._id))) {
+			targetUser.followers.push(userId);
+		}
+		await user.save();
+		await targetUser.save();
+
+		sendNewFollowerNotification(user._id, targetUser._id);
+		return res.send({ msg: "Seguindo com sucesso" });
+	} else {
+		user.following = user.following.filter((id) => !id.equals(targetUser._id));
 		targetUser.followers = targetUser.followers.filter(
-			(el) => el.toString() !== elementToRemove
+			(id) => !id.equals(user._id)
 		);
+
+		await user.save();
+		await targetUser.save();
+		res.send({ msg: "Deixou de seguir com sucesso" });
 	}
-	user.save();
-	targetUser.save();
-	res.send({ msg: "Unfollowed Successfuly" });
 });
 
 exports.getFollowing = asyncHandler(async (req, res, next) => {

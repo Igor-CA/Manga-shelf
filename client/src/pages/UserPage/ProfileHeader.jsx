@@ -62,7 +62,6 @@ export default function ProfileHeader({ user }) {
 		setLoaded(true);
 	};
 	const followUser = async () => {
-		const route = following ? "unfollow" : "follow";
 		try {
 			await axios({
 				method: "PUT",
@@ -72,8 +71,9 @@ export default function ProfileHeader({ user }) {
 				},
 				data: {
 					targetUser: user,
+					follow: !following
 				},
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/${route}`,
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/toggle-follow`,
 			});
 			setFollowing((prev) => !prev);
 		} catch (error) {
