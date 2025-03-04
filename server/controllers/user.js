@@ -388,27 +388,26 @@ exports.changeProfilePicture = changeUserImage("avatar", "profileImageUrl");
 exports.changeProfileBanner = changeUserImage("banner", "profileBannerUrl");
 
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
-
 	const targetUser = req.params.username;
 	if (!targetUser) return res.send({ msg: "Nenhum usuário informado" });
 
 	const user = await User.findOne(
 		{ username: targetUser },
 		{ profileImageUrl: 1, username: 1, profileBannerUrl: 1 }
-	);
-	const following = req.user?.following.includes(user._id);
-	const userInfo = { ...user._doc, following };
-	if (!user) return res.status(400).json({ msg: "User not found" });
+	).lean();
+	if (!user) return res.status(404).json({ msg: "Usuário não encontrado" });
 
-	res.send(userInfo);
+	const following = req.user?.following?.includes(user._id) || false;
+	const userInfo = { ...user, following };
+
+	return res.send(userInfo);
 });
 exports.searchUser = asyncHandler(async (req, res, next) => {
-
 	const regex = new RegExp(req.query.q, "i");
 	const page = parseInt(req.query.p) || 1;
 	const users_per_page = 12;
 	const skip = users_per_page * (page - 1);
-	const user = await User.aggregate([
+	const users  = await User.aggregate([
 		{ $match: { username: regex } },
 		{
 			$addFields: {
@@ -419,9 +418,8 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 		{ $skip: skip },
 		{ $limit: users_per_page },
 	]).collation({ locale: "en", strength: 2 });
-	if (!user) return res.status(400).json({ msg: "User not found" });
 
-	res.send(user);
+	return res.send(users);
 });
 
 exports.getUserStats = asyncHandler(async (req, res, next) => {
@@ -587,10 +585,6 @@ exports.getSocials = asyncHandler(async (req, res, next) => {
 });
 
 exports.setUserNotifications = asyncHandler(async (req, res, next) => {
-
-	if (!req.isAuthenticated()) {
-		return res.status(401).json({ msg: "Usuário deve estar logado" });
-	}
 	const user = await User.findById(req.user._id);
 
 	user.settings.notifications = {
@@ -602,8 +596,8 @@ exports.setUserNotifications = asyncHandler(async (req, res, next) => {
 		site: req.body["site-notification"] === "on",
 	};
 
-	user.save();
-	res.send({ msg: "Atualizado com sucesso" });
+	await user.save();
+	return res.send({ msg: "Atualizado com sucesso" });
 });
 
 exports.changePassword = asyncHandler(async (req, res, next) => {
