@@ -72,6 +72,13 @@ const signupValidation = [
 	tosValidation,
 ];
 const changeUsernameValidator = [usernameValidation];
+const changeEmailValidator = [
+	emailValidation
+]
+const changePasswordValidator = [
+	newPasswordValidation,
+	confirmPasswordValidation,
+];
 
 // Middleware to handle validation errors
 const validateRequest = (req, res, next) => {
@@ -91,5 +98,7 @@ module.exports = {
 	loginValidation,
 	newPasswordValidator,
 	changeUsernameValidator,
+	changeEmailValidator,
+	changePasswordValidator,
 	validateRequest,
 };

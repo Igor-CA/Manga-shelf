@@ -650,84 +650,25 @@ exports.setUserNotifications = asyncHandler(async (req, res, next) => {
 	res.send({ msg: "Atualizado com sucesso" });
 });
 
-
-exports.changePassword = [
-	body("password")
-		.trim()
-		.notEmpty()
-		.withMessage("Password must be specified.")
-		.matches(
-			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
-		)
-		.withMessage(
-			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
-		)
-		.escape(),
-	body("confirm-password")
-		.trim()
-		.notEmpty()
-		.withMessage("Password must be specified.")
-		.matches(
-			/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
-		)
-		.withMessage(
-			"The password must contain at least one letter, one number, and a special character, and be between 8 and 20 characters."
-		)
-		.escape(),
-
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-		if (!req.isAuthenticated()) {
-			return res.status(401).json({ msg: "Usuário deve estar logado" });
-		}
-
-		const { password, ["confirm-password"]: confirmPassword } = req.body;
-
-		if (password !== confirmPassword) {
-			return res.status(409).json({ message: "Senhas não combinam" });
-		}
-
-		const hashedPassword = await bcrypt.hash(password, 10);
-		await User.findByIdAndUpdate(req.user._id, {
-			password: hashedPassword,
-		});
-		res.status(201).json({ message: "Senha atualizada com sucesso" });
-	}),
-];
-
-exports.changeEmail = [
-	body("email")
-		.trim()
-		.notEmpty()
-		.withMessage("Email must be specified.")
-		.isEmail()
-		.withMessage("Invalid email format.")
-		.escape(),
-
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-		if (!req.isAuthenticated()) {
-			return res.status(401).json({ msg: "Usuário deve estar logado" });
-		}
-		const { email } = req.body;
-
-		const user = await User.findOne({ email });
-
-		if (user) {
-			return res.status(409).json({ message: "Email já está em uso" });
-		}
-		await User.findByIdAndUpdate(req.user._id, {
-			email,
-		});
-		res.status(201).json({ message: "Email atualizado com sucesso" });
-	}),
-];
+exports.changePassword = asyncHandler(async (req, res, next) => {
+	const { password } = req.body;
+	const hashedPassword = await bcrypt.hash(password, 10);
+	await User.findByIdAndUpdate(req.user._id, {
+		password: hashedPassword,
+	});
+	res.status(201).json({ msg: "Senha atualizada com sucesso" });
+});
+exports.changeEmail = asyncHandler(async (req, res, next) => {
+	const { email } = req.body;
+	const user = await User.findOne({ email });
+	if (user) {
+		return res.status(409).json({ msg: "Email já está em uso" });
+	}
+	await User.findByIdAndUpdate(req.user._id, {
+		email,
+	});
+	res.status(201).json({ msg: "Email atualizado com sucesso" });
+});
 
 exports.allowAdultContent = asyncHandler(async (req, res, next) => {
 

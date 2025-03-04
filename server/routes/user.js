@@ -15,6 +15,8 @@ const {
 	forgotPasswordValidation,
 	validateRequest,
 	changeUsernameValidator,
+	changePasswordValidator,
+	changeEmailValidator,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -58,7 +60,13 @@ router.post("/add-series", requireAuth, userController.addSeries);
 router.post("/add-volume", requireAuth, userController.addVolume);
 router.post("/remove-series", requireAuth, userController.removeSeries);
 router.post("/remove-volume", requireAuth, userController.removeVolume);
-router.put("/set-username", requireAuth, changeUsernameValidator,validateRequest, userController.setUserName);
+router.put(
+	"/set-username",
+	requireAuth,
+	changeUsernameValidator,
+	validateRequest,
+	userController.setUserName
+);
 router.put(
 	"/change-profile-pic",
 	requireAuth,
@@ -69,9 +77,21 @@ router.put(
 	requireAuth,
 	userController.changeProfileBanner
 );
-router.put("/change-password", requireAuth, userController.changePassword);
+router.put(
+	"/change-password",
+	requireAuth,
+	changePasswordValidator,
+	validateRequest,
+	userController.changePassword
+);
+router.put(
+	"/change-email",
+	requireAuth,
+	changeEmailValidator,
+	validateRequest,
+	userController.changeEmail
+);
 router.put("/allow-adult", requireAuth, userController.allowAdultContent);
-router.put("/change-email", requireAuth, userController.changeEmail);
 router.put("/follow", requireAuth, userController.followUser);
 router.put("/unfollow", requireAuth, userController.unfollowUser);
 router.put(
