@@ -672,9 +672,6 @@ exports.changeEmail = asyncHandler(async (req, res, next) => {
 
 exports.allowAdultContent = asyncHandler(async (req, res, next) => {
 
-	if (!req.isAuthenticated()) {
-		return res.status(401).json({ msg: "Usuário deve estar logado" });
-	}
 	if (!req.body.allow) {
 		await User.findByIdAndUpdate(req.user._id, {
 			allowAdult: false,
@@ -684,5 +681,5 @@ exports.allowAdultContent = asyncHandler(async (req, res, next) => {
 		allowAdult: req.body.allow,
 		allowedAdultAt: new Date(),
 	});
-	res.status(201).json({ message: "Atualizado com sucesso" });
+	res.status(201).json({ msg: "Atualizado com sucesso" });
 });
