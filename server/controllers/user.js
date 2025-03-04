@@ -567,23 +567,23 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 	}
 });
 
-exports.getFollowing = asyncHandler(async (req, res, next) => {
-	const username = req.params.username;
-	const result = await User.findOne({ username }, { following: 1 }).populate(
-		"following",
-		{ _id: 1, username: 1, profileImageUrl: 1, profileBannerUrl: 1 }
-	);
-	res.send(result.following);
-});
+exports.getSocials = asyncHandler(async (req, res, next) => {
+	const { username, type } = req.params; 
 
-exports.getFollowers = asyncHandler(async (req, res, next) => {
+	if (!["following", "followers"].includes(type)) {
+		return res.status(400).json({ msg: "Requisição inválida" });
+	}
 
-	const username = req.params.username;
-	const result = await User.findOne({ username }, { followers: 1 }).populate(
-		"followers",
-		{ _id: 1, username: 1, profileImageUrl: 1, profileBannerUrl: 1 }
-	);
-	res.send(result.followers);
+	const user = await User.findOne({ username })
+		.select(type)
+		.populate(type, "_id username profileImageUrl profileBannerUrl")
+		.lean();
+
+	if (!user) {
+		return res.status(404).json({ msg: "Usuário não encontrado" });
+	}
+
+	res.json(user[type]);
 });
 
 exports.setUserNotifications = asyncHandler(async (req, res, next) => {

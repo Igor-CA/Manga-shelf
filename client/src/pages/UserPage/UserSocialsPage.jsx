@@ -7,15 +7,15 @@ import "../SeriesPage/SeriesPage.css";
 export default function UserSocials() {
 	const { username } = useParams();
 
-	const [page, setPage] = useState("Seguidores");
+	const [page, setPage] = useState("followers");
 
 	const handleToggle = () => {
 		setPage((prev) => {
-			return prev === "Seguindo" ? "Seguidores" : "Seguindo";
+			return prev === "following" ? "followers" : "following";
 		});
 	};
 
-	const fetchFollowers = async () => {
+	const fetchSocials = async () => {
 		try {
 			const response = await axios({
 				method: "GET",
@@ -25,26 +25,7 @@ export default function UserSocials() {
 				},
 				url: `${
 					import.meta.env.REACT_APP_HOST_ORIGIN
-				}/api/data/get-user-socials/followers/${username}`,
-			});
-			const resultList = response.data;
-			console.log(resultList);
-			return resultList;
-		} catch (error) {
-			console.error("Error fetching series list:", error);
-		}
-	};
-	const fetchFollowing = async () => {
-		try {
-			const response = await axios({
-				method: "GET",
-				withCredentials: true,
-				headers: {
-					Authorization: import.meta.env.REACT_APP_API_KEY,
-				},
-				url: `${
-					import.meta.env.REACT_APP_HOST_ORIGIN
-				}/api/data/get-user-socials/following/${username}`,
+				}/api/data/get-user-socials/${page}/${username}`,
 			});
 			const resultList = response.data;
 			console.log(resultList);
@@ -69,7 +50,7 @@ export default function UserSocials() {
 			<div className="options-container">
 				<div
 					className={`options options--${
-						page === "Seguidores" && "selected"
+						page === "followers" && "selected"
 					}`}
 					onClick={handleToggle}
 				>
@@ -77,7 +58,7 @@ export default function UserSocials() {
 				</div>
 				<div
 					className={`options options--${
-						page === "Seguindo" && "selected"
+						page === "following" && "selected"
 					}`}
 					onClick={handleToggle}
 				>
@@ -86,9 +67,9 @@ export default function UserSocials() {
 			</div>
 			<UserCardsList
 				skeletonsCount={12}
-				fetchFunction={page === "Seguindo" ? fetchFollowing : fetchFollowers}
+				fetchFunction={fetchSocials}
 				errorComponent={
-					page === "Seguindo" ? ErrorComponentFollowing : ErrorComponentFollower
+					page === "following" ? ErrorComponentFollowing : ErrorComponentFollower
 				}
 				functionArguments={page}
 			></UserCardsList>
