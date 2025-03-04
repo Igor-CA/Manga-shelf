@@ -11,37 +11,31 @@ const ITEMS_PER_PAGE = 36;
 const path = require("path");
 
 const multer = require("multer");
+const mime = require("mime-types");
+
 const { sendNewFollowerNotification } = require("./notifications");
 const { sendEmail } = require("../Utils/sendEmail");
-function configureMulter(folder, getFilename) {
+function configureMulter(folder) {
 	const storage = multer.diskStorage({
-		destination: function (req, file, cb) {
-			cb(null, path.resolve(folder));
-		},
-		filename: function (req, file, cb) {
-			const filename = getFilename(req, file);
-			cb(null, filename);
+		destination: (req, file, cb) => cb(null, path.resolve(folder)),
+		filename: (req, file, cb) => {
+			const userId = req.user._id;
+			const fileExtension = mime.extension(file.mimetype) || "webp";
+			cb(null, `${userId}.${fileExtension}`);
 		},
 	});
 
-	return multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+	const fileFilter = (req, file, cb) => {
+		const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+		if (!allowedTypes.includes(file.mimetype)) {
+			return cb(new Error("Invalid file type. Only JPEG, PNG, and WEBP are allowed."), false);
+		}
+		cb(null, true);
+	};
+
+	return multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter });
 }
-const profilePictureUploader = configureMulter(
-	"public/images/avatar",
-	(req, file) => {
-		const userId = req.user._id;
-		const fileExtension = file.originalname.split(".").pop();
-		return `${userId}.${fileExtension}`;
-	}
-);
-const profileBannerUploader = configureMulter(
-	"public/images/banner",
-	(req, file) => {
-		const userId = req.user._id;
-		const fileExtension = file.originalname.split(".").pop();
-		return `${userId}.${fileExtension}`;
-	}
-);
+
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
 	const addedSeries = { Series: req.body.id };
@@ -371,38 +365,27 @@ exports.setUserName = asyncHandler(async (req, res, next) => {
 	});
 	res.send({ msg: "Nome atualizado com sucesso" });
 });
-exports.changeProfilePicture = [
-	profilePictureUploader.single("file"),
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-		if (!req.isAuthenticated()) {
-			return res.status(401).json({ msg: "Usuário deve estar logado" });
-		}
-		const user = await User.findById(req.user._id);
-		user.profileImageUrl = `/images/avatar/${req.file.filename}`;
-		await user.save();
-		res.status(201).json(user);
-	}),
-];
-exports.changeProfileBanner = [
-	profileBannerUploader.single("file"),
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-		if (!req.isAuthenticated()) {
-			return res.status(401).json({ msg: "Usuário deve estar logado" });
-		}
-		const user = await User.findById(req.user._id);
-		user.profileBannerUrl = `/images/banner/${req.file.filename}`;
-		await user.save();
-		res.status(201).json(user);
-	}),
-];
+const uploaders = {
+	avatar: configureMulter("public/images/avatar"),
+	banner: configureMulter("public/images/banner"),
+};
+ 
+function changeUserImage(type, field) {
+	if (!uploaders[type]) {
+		throw new Error(`Invalid image type: ${type}`);
+	}
+	return [
+		uploaders[type].single("file"),
+		asyncHandler(async (req, res) => {
+			const user = await User.findById(req.user._id);
+			user[field] = `/images/${type}/${req.file.filename}`;
+			await user.save();
+			res.status(201).json(user);
+		}),
+	];
+}
+exports.changeProfilePicture = changeUserImage("avatar", "profileImageUrl");
+exports.changeProfileBanner = changeUserImage("banner", "profileBannerUrl");
 
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
 
