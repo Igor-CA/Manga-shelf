@@ -1,4 +1,3 @@
-
 const { validationResult } = require("express-validator");
 const { body } = require("express-validator");
 
@@ -61,7 +60,6 @@ const tosValidation = body("tos-checkbox")
 	.notEmpty()
 	.withMessage("Concorde com nossos termos para criar uma conta.");
 
-
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -73,8 +71,7 @@ const signupValidation = [
 	confirmPasswordValidation,
 	tosValidation,
 ];
-
-
+const changeUsernameValidator = [usernameValidation];
 
 // Middleware to handle validation errors
 const validateRequest = (req, res, next) => {
@@ -87,12 +84,12 @@ const validateRequest = (req, res, next) => {
 	next();
 };
 
-
 // Export
 module.exports = {
 	forgotPasswordValidation,
 	signupValidation,
 	loginValidation,
 	newPasswordValidator,
-	validateRequest
+	changeUsernameValidator,
+	validateRequest,
 };

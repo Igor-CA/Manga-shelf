@@ -360,37 +360,17 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 	res.send({ msg: "Volume(s) removido com sucesso" });
 });
 
-exports.setUserName = [
-	body("username")
-		.trim()
-		.notEmpty()
-		.withMessage("É obrigatório informar um nome de usuário.")
-		.matches(/^[A-Za-z0-9]{3,16}$/)
-		.withMessage(
-			"O nome de usuário não pode ter caracteres especiais (!@#$%^&*) e deve ter entre 3 e 16 caracteres."
-		)
-		.escape(),
+exports.setUserName = asyncHandler(async (req, res, next) => {
+	const user = await User.findOne({ username: req.body.username });
+	if (user) {
+		return res.status(409).json({ msg: "Nome de usuário já existe" });
+	}
 
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-		if (!req.isAuthenticated()) {
-			return res.status(401).json({ msg: "Usuário deve estar logado" });
-		}
-
-		const user = await User.findOne({ username: req.body.username });
-		if (user) {
-			return res.status(409).json({ msg: "Nome de usuário já existe" });
-		}
-
-		await User.findByIdAndUpdate(req.user._id, {
-			username: req.body.username,
-		});
-		res.send({ msg: "Nome atualizado com sucesso" });
-	}),
-];
+	await User.findByIdAndUpdate(req.user._id, {
+		username: req.body.username,
+	});
+	res.send({ msg: "Nome atualizado com sucesso" });
+});
 exports.changeProfilePicture = [
 	profilePictureUploader.single("file"),
 	asyncHandler(async (req, res, next) => {
@@ -687,44 +667,6 @@ exports.setUserNotifications = asyncHandler(async (req, res, next) => {
 	res.send({ msg: "Atualizado com sucesso" });
 });
 
-exports.changeUsername = [
-	body("username")
-		.trim()
-		.notEmpty()
-		.withMessage("User name must be specified.")
-		.matches(/^[A-Za-z0-9]{3,16}$/)
-		.withMessage(
-			"The username must be alphanumeric and between 3 and 16 characters."
-		)
-		.escape(),
-
-	asyncHandler(async (req, res, next) => {
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
-		}
-
-		if (!req.isAuthenticated()) {
-			return res.status(401).json({ msg: "Usuário deve estar logado" });
-		}
-
-		const { username } = req.body;
-
-		const user = await User.findOne({ username });
-
-		if (user) {
-			return res
-				.status(409)
-				.json({ message: "Nome de usuário já esta em uso" });
-		}
-
-		await User.findByIdAndUpdate(req.user._id, {
-			username: req.body.username,
-		});
-
-		res.status(201).json({ message: "Nome atualizado com sucesso" });
-	}),
-];
 
 exports.changePassword = [
 	body("password")

@@ -157,11 +157,11 @@ function AccountSettings() {
 				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/${url}`,
 			});
-			addMessage(response.data.message);
+			addMessage(response.data.msg);
 			setMessageType("Success");
 			setOutdated(true);
 		} catch (error) {
-			const customErrorMessage = error.response.data.message;
+			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
 		}
 	};
@@ -194,11 +194,11 @@ function AccountSettings() {
 					import.meta.env.REACT_APP_HOST_ORIGIN
 				}/api/user/allow-adult`,
 			});
-			addMessage(response.data.message);
+			addMessage(response.data.msg);
 			setMessageType("Success");
 			setOutdated(true);
 		} catch (error) {
-			const customErrorMessage = error.response.data.message;
+			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
 		}
 	};
@@ -239,7 +239,7 @@ function AccountSettings() {
 				<button
 					className="button"
 					onClick={() => {
-						setUrl("change-username");
+						setUrl("set-username");
 					}}
 				>
 					Salvar nome
