@@ -571,17 +571,40 @@ exports.getSocials = asyncHandler(async (req, res, next) => {
 	if (!["following", "followers"].includes(type)) {
 		return res.status(400).json({ msg: "Requisição inválida" });
 	}
+	const page = parseInt(req.query.p) || 1;
+	const skip = ITEMS_PER_PAGE * (page - 1);
 
-	const user = await User.findOne({ username })
-		.select(type)
-		.populate(type, "_id username profileImageUrl profileBannerUrl")
-		.lean();
-
-	if (!user) {
-		return res.status(404).json({ msg: "Usuário não encontrado" });
-	}
-
-	res.json(user[type]);
+	const users = await User.aggregate([
+		{ $match: { username } },
+		{ $unwind: `$${type}` },
+		{
+			$lookup: {
+				from: "users", 
+				localField: type,
+				foreignField: "_id",
+				as: `${type}Details`,
+			},
+		},
+		{ $unwind: `$${type}Details` }, 
+		{
+			$addFields: {
+				followersCount: { $size: { $ifNull: [`$${type}Details.followers`, []] } },
+			},
+		},
+		{ $sort: { followersCount: -1, username: 1 } }, 
+		{
+			$project: {
+				_id: `$${type}Details._id`,
+				username: `$${type}Details.username`,
+				profileImageUrl: `$${type}Details.profileImageUrl`,
+				profileBannerUrl: `$${type}Details.profileBannerUrl`,
+			},
+		},
+		{ $skip: skip },
+		{ $limit: ITEMS_PER_PAGE },
+	]);
+	
+	res.json(users);
 });
 
 exports.setUserNotifications = asyncHandler(async (req, res, next) => {

@@ -15,13 +15,16 @@ export default function UserSocials() {
 		});
 	};
 
-	const fetchSocials = async () => {
+	const fetchSocials = async (pageNumber) => {
 		try {
 			const response = await axios({
 				method: "GET",
 				withCredentials: true,
 				headers: {
 					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				params: {
+					p: pageNumber,
 				},
 				url: `${
 					import.meta.env.REACT_APP_HOST_ORIGIN
@@ -66,7 +69,7 @@ export default function UserSocials() {
 				</div>
 			</div>
 			<UserCardsList
-				skeletonsCount={12}
+				skeletonsCount={36}
 				fetchFunction={fetchSocials}
 				errorComponent={
 					page === "following" ? ErrorComponentFollowing : ErrorComponentFollower
