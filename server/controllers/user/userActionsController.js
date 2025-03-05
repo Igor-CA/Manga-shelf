@@ -1,12 +1,7 @@
-const User = require("../models/User");
-const {
-	getVolumeCoverURL,
-	getSeriesCoverURL,
-} = require("../Utils/getCoverFunctions");
+const User = require("../../models/User");
 const asyncHandler = require("express-async-handler");
-const ITEMS_PER_PAGE = 36;
 
-const { sendNewFollowerNotification } = require("./notifications");
+const { sendNewFollowerNotification } = require("../notifications");
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
 	const addedSeries = { Series: req.body.id };
@@ -102,7 +97,6 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 	res.send({ msg: "Volume(s) removido com sucesso" });
 });
 
-
 exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 	const userId = req.user._id;
 	const targetUserName = req.body.targetUser;
@@ -145,4 +139,3 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 		res.send({ msg: "Deixou de seguir com sucesso" });
 	}
 });
-

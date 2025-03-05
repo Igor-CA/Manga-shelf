@@ -3,7 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 
 const userController = require("../controllers/user");
-const { authController, profileController } = require("../controllers/user/index");
+const { authController, profileController, userActionsController } = require("../controllers/user/index");
 
 const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
@@ -56,10 +56,10 @@ router.post(
 router.post("/report", reportController.createReport);
 
 //
-router.post("/add-series", requireAuth, userController.addSeries);
-router.post("/add-volume", requireAuth, userController.addVolume);
-router.post("/remove-series", requireAuth, userController.removeSeries);
-router.post("/remove-volume", requireAuth, userController.removeVolume);
+router.post("/add-series", requireAuth, userActionsController.addSeries);
+router.post("/add-volume", requireAuth, userActionsController.addVolume);
+router.post("/remove-series", requireAuth, userActionsController.removeSeries);
+router.post("/remove-volume", requireAuth, userActionsController.removeVolume);
 router.put(
 	"/set-username",
 	requireAuth,
@@ -92,7 +92,7 @@ router.put(
 	profileController.changeEmail
 );
 router.put("/allow-adult", requireAuth, profileController.allowAdultContent);
-router.put("/toggle-follow", requireAuth, userController.toggleFollowUser);
+router.put("/toggle-follow", requireAuth, userActionsController.toggleFollowUser);
 router.put(
 	"/set-notifications",
 	requireAuth,
