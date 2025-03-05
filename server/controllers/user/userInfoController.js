@@ -1,6 +1,11 @@
 const User = require("../../models/User");
 const asyncHandler = require("express-async-handler");
+const {
+    getVolumeCoverURL,
+	getSeriesCoverURL,
+} = require("../../Utils/getCoverFunctions");
 
+const ITEMS_PER_PAGE = 36;
 //Filters for building search pipeline
 
 const buildFilter = ({ publisher, genre, search }) => {
