@@ -4,38 +4,9 @@ const {
 	getSeriesCoverURL,
 } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
-const bcrypt = require("bcrypt");
-const crypto = require("crypto");
-const { body, validationResult } = require("express-validator");
 const ITEMS_PER_PAGE = 36;
-const path = require("path");
-
-const multer = require("multer");
-const mime = require("mime-types");
 
 const { sendNewFollowerNotification } = require("./notifications");
-const { sendEmail } = require("../Utils/sendEmail");
-function configureMulter(folder) {
-	const storage = multer.diskStorage({
-		destination: (req, file, cb) => cb(null, path.resolve(folder)),
-		filename: (req, file, cb) => {
-			const userId = req.user._id;
-			const fileExtension = mime.extension(file.mimetype) || "webp";
-			cb(null, `${userId}.${fileExtension}`);
-		},
-	});
-
-	const fileFilter = (req, file, cb) => {
-		const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-		if (!allowedTypes.includes(file.mimetype)) {
-			return cb(new Error("Invalid file type. Only JPEG, PNG, and WEBP are allowed."), false);
-		}
-		cb(null, true);
-	};
-
-	return multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter });
-}
-
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
 	const addedSeries = { Series: req.body.id };
@@ -67,7 +38,6 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Obra removida com sucesso" });
 });
 
-
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username?.trim();
 	if (!targetUser)
@@ -78,7 +48,13 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	const filter = buildFilter(req.query);
 	const sortStage = buildSortStage(req.query.ordering || "title");
 	const allowAdult = req.user?.allowAdult || false;
-	const pipeline = buildAggregationPipeline(targetUser, allowAdult, filter, sortStage, skip);
+	const pipeline = buildAggregationPipeline(
+		targetUser,
+		allowAdult,
+		filter,
+		sortStage,
+		skip
+	);
 	const userCollection = await User.aggregate(pipeline);
 	const filteredList = userCollection.map((series) => {
 		return {
@@ -123,7 +99,13 @@ const buildSortStage = (ordering) => {
 	return sortStage;
 };
 
-const buildAggregationPipeline = (targetUser, allowAdult, filter, sortStage, skip) => {
+const buildAggregationPipeline = (
+	targetUser,
+	allowAdult,
+	filter,
+	sortStage,
+	skip
+) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
 		{
@@ -284,12 +266,8 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 			completionPercentage: idList.length / amountVolumesFromSeries,
 		});
 	} else {
-		const allVolumes = seriesEntry.Series.volumes.map((id) =>
-			id.toString()
-		);
-		const ownedFromSeries = allVolumes.filter((volId) =>
-			ownedSet.has(volId)
-		);
+		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
+		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
 		seriesEntry.completionPercentage =
 			ownedFromSeries.length / allVolumes.length;
 	}
@@ -312,50 +290,20 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 	user.ownedVolumes = Array.from(ownedSet);
 
 	//Calculate New percentage
-	const seriesEntry = user.userList.find((s) => s.Series._id.toString() === seriesId);
+	const seriesEntry = user.userList.find(
+		(s) => s.Series._id.toString() === seriesId
+	);
 
 	if (seriesEntry) {
 		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
 		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
-		seriesEntry.completionPercentage = ownedFromSeries.length / allVolumes.length;
+		seriesEntry.completionPercentage =
+			ownedFromSeries.length / allVolumes.length;
 	}
 
 	await user.save();
 	res.send({ msg: "Volume(s) removido com sucesso" });
 });
-
-exports.setUserName = asyncHandler(async (req, res, next) => {
-	const user = await User.findOne({ username: req.body.username });
-	if (user) {
-		return res.status(409).json({ msg: "Nome de usuário já existe" });
-	}
-
-	await User.findByIdAndUpdate(req.user._id, {
-		username: req.body.username,
-	});
-	res.send({ msg: "Nome atualizado com sucesso" });
-});
-const uploaders = {
-	avatar: configureMulter("public/images/avatar"),
-	banner: configureMulter("public/images/banner"),
-};
- 
-function changeUserImage(type, field) {
-	if (!uploaders[type]) {
-		throw new Error(`Invalid image type: ${type}`);
-	}
-	return [
-		uploaders[type].single("file"),
-		asyncHandler(async (req, res) => {
-			const user = await User.findById(req.user._id);
-			user[field] = `/images/${type}/${req.file.filename}`;
-			await user.save();
-			res.status(201).json(user);
-		}),
-	];
-}
-exports.changeProfilePicture = changeUserImage("avatar", "profileImageUrl");
-exports.changeProfileBanner = changeUserImage("banner", "profileBannerUrl");
 
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username;
@@ -377,7 +325,7 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 	const page = parseInt(req.query.p) || 1;
 	const users_per_page = 12;
 	const skip = users_per_page * (page - 1);
-	const users  = await User.aggregate([
+	const users = await User.aggregate([
 		{ $match: { username: regex } },
 		{
 			$addFields: {
@@ -396,8 +344,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username?.trim();
 	if (!targetUser)
 		return res.status(400).send({ msg: "Usuário não encontrado" });
-	
-	
+
 	const getVolumesStats = (groupField) => [
 		{ $match: { username: targetUser } },
 		{ $unwind: { path: "$ownedVolumes", preserveNullAndEmptyArrays: true } },
@@ -419,7 +366,12 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{ $unwind: { path: "$seriesDetails", preserveNullAndEmptyArrays: true } },
-		{ $unwind: { path: `$seriesDetails.${groupField}`, preserveNullAndEmptyArrays: true } },
+		{
+			$unwind: {
+				path: `$seriesDetails.${groupField}`,
+				preserveNullAndEmptyArrays: true,
+			},
+		},
 		{
 			$group: { _id: `$seriesDetails.${groupField}`, count: { $sum: 1 } },
 		},
@@ -428,8 +380,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		},
 		{ $sort: { count: -1, name: 1 } },
 	];
-	
-	
+
 	const getSeriesStats = (groupField) => [
 		{ $match: { username: targetUser } },
 		{ $unwind: { path: "$userList", preserveNullAndEmptyArrays: true } },
@@ -442,7 +393,12 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{ $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
-		{ $unwind: { path: `$details.${groupField}`, preserveNullAndEmptyArrays: true } },
+		{
+			$unwind: {
+				path: `$details.${groupField}`,
+				preserveNullAndEmptyArrays: true,
+			},
+		},
 		{
 			$group: { _id: `$details.${groupField}`, count: { $sum: 1 } },
 		},
@@ -451,14 +407,13 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		},
 		{ $sort: { count: -1, name: 1 } },
 	];
-	
+
 	// Pipelines
 	const genresByVolumePipeline = getVolumesStats("genres");
 	const publisherByVolumePipeline = getVolumesStats("publisher");
 	const genresBySeriesPipeline = getSeriesStats("genres");
 	const publisherBySeriesPipeline = getSeriesStats("publisher");
-	
-	
+
 	const countPipeline = [
 		{ $match: { username: targetUser } },
 		{
@@ -470,14 +425,19 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 	];
 
 	// Execute queries
-	const [genresByVolume, genresBySeries, publisherByVolume, publisherBySeries, counts] =
-		await Promise.all([
-			User.aggregate(genresByVolumePipeline).exec(),
-			User.aggregate(genresBySeriesPipeline).exec(),
-			User.aggregate(publisherByVolumePipeline).exec(),
-			User.aggregate(publisherBySeriesPipeline).exec(),
-			User.aggregate(countPipeline).exec(),
-		]);
+	const [
+		genresByVolume,
+		genresBySeries,
+		publisherByVolume,
+		publisherBySeries,
+		counts,
+	] = await Promise.all([
+		User.aggregate(genresByVolumePipeline).exec(),
+		User.aggregate(genresBySeriesPipeline).exec(),
+		User.aggregate(publisherByVolumePipeline).exec(),
+		User.aggregate(publisherBySeriesPipeline).exec(),
+		User.aggregate(countPipeline).exec(),
+	]);
 
 	// Build response
 	const stats = {
@@ -536,7 +496,7 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 });
 
 exports.getSocials = asyncHandler(async (req, res, next) => {
-	const { username, type } = req.params; 
+	const { username, type } = req.params;
 
 	if (!["following", "followers"].includes(type)) {
 		return res.status(400).json({ msg: "Requisição inválida" });
@@ -549,19 +509,21 @@ exports.getSocials = asyncHandler(async (req, res, next) => {
 		{ $unwind: `$${type}` },
 		{
 			$lookup: {
-				from: "users", 
+				from: "users",
 				localField: type,
 				foreignField: "_id",
 				as: `${type}Details`,
 			},
 		},
-		{ $unwind: `$${type}Details` }, 
+		{ $unwind: `$${type}Details` },
 		{
 			$addFields: {
-				followersCount: { $size: { $ifNull: [`$${type}Details.followers`, []] } },
+				followersCount: {
+					$size: { $ifNull: [`$${type}Details.followers`, []] },
+				},
 			},
 		},
-		{ $sort: { followersCount: -1, username: 1 } }, 
+		{ $sort: { followersCount: -1, username: 1 } },
 		{
 			$project: {
 				_id: `$${type}Details._id`,
@@ -573,56 +535,6 @@ exports.getSocials = asyncHandler(async (req, res, next) => {
 		{ $skip: skip },
 		{ $limit: ITEMS_PER_PAGE },
 	]);
-	
+
 	res.json(users);
-});
-
-exports.setUserNotifications = asyncHandler(async (req, res, next) => {
-	const user = await User.findById(req.user._id);
-
-	user.settings.notifications = {
-		allow: req.body.enable === "on",
-		volumes: req.body.volumes === "on",
-		followers: req.body.followers === "on",
-		updates: req.body.updates === "on",
-		email: req.body["email-notification"] === "on",
-		site: req.body["site-notification"] === "on",
-	};
-
-	await user.save();
-	return res.send({ msg: "Atualizado com sucesso" });
-});
-
-exports.changePassword = asyncHandler(async (req, res, next) => {
-	const { password } = req.body;
-	const hashedPassword = await bcrypt.hash(password, 10);
-	await User.findByIdAndUpdate(req.user._id, {
-		password: hashedPassword,
-	});
-	res.status(201).json({ msg: "Senha atualizada com sucesso" });
-});
-exports.changeEmail = asyncHandler(async (req, res, next) => {
-	const { email } = req.body;
-	const user = await User.findOne({ email });
-	if (user) {
-		return res.status(409).json({ msg: "Email já está em uso" });
-	}
-	await User.findByIdAndUpdate(req.user._id, {
-		email,
-	});
-	res.status(201).json({ msg: "Email atualizado com sucesso" });
-});
-
-exports.allowAdultContent = asyncHandler(async (req, res, next) => {
-
-	if (!req.body.allow) {
-		await User.findByIdAndUpdate(req.user._id, {
-			allowAdult: false,
-		});
-	}
-	await User.findByIdAndUpdate(req.user._id, {
-		allowAdult: req.body.allow,
-		allowedAdultAt: new Date(),
-	});
-	res.status(201).json({ msg: "Atualizado com sucesso" });
 });

@@ -3,7 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 
 const userController = require("../controllers/user");
-const { authController } = require("../controllers/user/index");
+const { authController, profileController } = require("../controllers/user/index");
 
 const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
@@ -65,38 +65,38 @@ router.put(
 	requireAuth,
 	changeUsernameValidator,
 	validateRequest,
-	userController.setUserName
+	profileController.setUserName
 );
 router.put(
 	"/change-profile-pic",
 	requireAuth,
-	userController.changeProfilePicture
+	profileController.changeProfilePicture
 );
 router.put(
 	"/change-profile-banner",
 	requireAuth,
-	userController.changeProfileBanner
+	profileController.changeProfileBanner
 );
 router.put(
 	"/change-password",
 	requireAuth,
 	changePasswordValidator,
 	validateRequest,
-	userController.changePassword
+	profileController.changePassword
 );
 router.put(
 	"/change-email",
 	requireAuth,
 	changeEmailValidator,
 	validateRequest,
-	userController.changeEmail
+	profileController.changeEmail
 );
-router.put("/allow-adult", requireAuth, userController.allowAdultContent);
+router.put("/allow-adult", requireAuth, profileController.allowAdultContent);
 router.put("/toggle-follow", requireAuth, userController.toggleFollowUser);
 router.put(
 	"/set-notifications",
 	requireAuth,
-	userController.setUserNotifications
+	profileController.setUserNotifications
 );
 router.put(
 	"/mark-notification-seen",
