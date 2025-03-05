@@ -35,11 +35,11 @@ export default function ReportProblem() {
 				page: "",
 				user: "",
 			});
-			const customErrorMessage = response.data.message;
+			const customErrorMessage = response.data.msg;
 			addMessage(customErrorMessage);
 			setMessageType("Success");
 		} catch (error) {
-			const customErrorMessage = error.response.data.message;
+			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
 		}
 	};

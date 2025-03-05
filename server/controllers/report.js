@@ -6,29 +6,29 @@ exports.createReport = [
 	body("details")
 		.trim()
 		.notEmpty()
-		.withMessage("details must be specified.")
+		.withMessage("Detalhes devem ser especificados.")
 		.escape(),
 	body("local")
 		.trim()
 		.notEmpty()
-		.withMessage("local must be specified.")
+		.withMessage("O local deve ser especificado.")
 		.escape(),
 	body("page")
 		.trim()
 		.notEmpty()
-		.withMessage("page must be specified.")
+		.withMessage("A página em específico deve ser citada.")
 		.escape(),
 	body("type")
 		.trim()
 		.notEmpty()
-		.withMessage("type must be specified.")
+		.withMessage("O tipo de sugestão deve ser especificada.")
 		.escape(),
 	body("user").trim().escape(),
 
 	asyncHandler(async (req, res, next) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
-			return res.status(400).json({ message: errors.array() });
+			return res.status(400).json({ msg: errors.array() });
 		}
 
 		const { details, local, page, type, user } = req.body;
@@ -41,6 +41,6 @@ exports.createReport = [
 			user,
 		});
 		await newReport.save();
-		res.status(201).json({ message: "Report created successfully" });
+		res.status(201).json({ msg: "Sugestão criada com sucesso" });
 	}),
 ];
