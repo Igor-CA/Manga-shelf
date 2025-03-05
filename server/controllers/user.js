@@ -67,36 +67,6 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Obra removida com sucesso" });
 });
 
-exports.getLoggedUser = asyncHandler(async (req, res, next) => {
-	const user = await User.findById(req.user._id)
-		.populate({
-			path: "userList.Series",
-			select: "title",
-		})
-		.lean()
-		.exec();
-
-	if (!user) return res.send({ msg: "Usuário não encontrado" });
-
-	const notificationCount =
-		user.notifications?.reduce((count, currentNotification) => {
-			return count + (!currentNotification.seen ? 1 : 0);
-		}, 0) ?? 0;
-
-	const userInfo = {
-		_id: user._id,
-		username: user.username,
-		userList: user.userList,
-		ownedVolumes: user.ownedVolumes,
-		profileImageUrl: user.profileImageUrl,
-		profileBannerUrl: user.profileBannerUrl,
-		settings: user.settings,
-		email: user.email,
-		allowAdult: user.allowAdult,
-		notificationCount,
-	};
-	return res.send(userInfo);
-});
 
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username?.trim();

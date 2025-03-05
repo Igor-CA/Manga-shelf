@@ -6,8 +6,10 @@ const volumesController = require("../controllers/volumes");
 const userController = require("../controllers/user");
 const Notifications = require("../controllers/notifications");
 const { requireAuth } = require("../middlewares/authentications");
+const { authController } = require("../controllers/user/index");
+
 //User page api
-router.get("/user/logged-user", requireAuth, userController.getLoggedUser);
+router.get("/user/logged-user", requireAuth, authController.getLoggedUser);
 router.get("/user/:username", userController.getUserCollection);
 router.get("/user/:username/missing", userController.getMissingPage);
 router.get("/user/stats/:username", userController.getUserStats);
