@@ -266,7 +266,7 @@ async function sendEmailNotification(notification, targetUserId, volumesList) {
 			[
 				{
 					filename: notification.imageUrl,
-					path: `${process.env.HOST_ORIGIN}/${
+					path: `${process.env.SITE_DOMAIN}/${
 						notification.imageUrl
 							? notification.imageUrl
 							: "/images/deffault-profile-picture.webp"
@@ -283,7 +283,7 @@ async function sendEmailNotification(notification, targetUserId, volumesList) {
 			return {
 				filename: getVolumeCoverURL(volume.serie, volume.number),
 				path: `${
-					process.env.HOST_ORIGIN
+					process.env.SITE_DOMAIN
 				}/images/medium/${getVolumeCoverURL(
 					volume.serie,
 					volume.number
