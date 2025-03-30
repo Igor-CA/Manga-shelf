@@ -18,13 +18,13 @@ const userRouter = require("./routes/user");
 
 const app = express();
 
-//Middle ware for API Key
+//Middleware for API Key
 const apiKeyAuth = (req, res, next) => {
 	if (
 		req.headers.authorization !== process.env.API_KEY &&
 		process.env.NODE_ENV === "production"
 	) {
-		return res.status(401).json({ msg: "Not authorized" });
+		return res.status(401).json({ msg: "Não autorizado" }); //Not authorized
 	}
 	next();
 };
