@@ -2,9 +2,13 @@ const User = require("../../models/User");
 const asyncHandler = require("express-async-handler");
 
 const { sendNewFollowerNotification } = require("../notifications");
+const Series = require("../../models/Series");
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
 	const user = await User.findById(req.user._id);
+
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+
 	const alreadyAdded = user.userList.some(
 		(entry) => entry.Series.toString() === req.body.id
 	);
@@ -14,8 +18,13 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 	}
 
 	const addedSeries = { Series: req.body.id };
-	user.userList.push(addedSeries)
-	await user.save()
+	user.userList.push(addedSeries);
+
+	await Promise.all([
+		Series.findByIdAndUpdate(req.body.id, { $inc: { popularity: 1 } }),
+		user.save(),
+	]);
+
 	return res.send({ msg: "Obra adicionada com sucesso" });
 });
 
@@ -37,7 +46,13 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 	});
 	user.userList = newSeriesList;
 	user.ownedVolumes = newVolumesList;
-	await user.save();
+	await Promise.all([
+		Series.findOneAndUpdate(
+			{ _id: req.body.id, popularity: { $gt: 0 } },
+			{ $inc: { popularity: -1 } }
+		),
+		user.save(),
+	]);
 	return res.send({ msg: "Obra removida com sucesso" });
 });
 
@@ -66,8 +81,12 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 			completionPercentage: idList.length / amountVolumesFromSeries,
 		});
 	} else {
-		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
-		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
+		const allVolumes = seriesEntry.Series.volumes.map((id) =>
+			id.toString()
+		);
+		const ownedFromSeries = allVolumes.filter((volId) =>
+			ownedSet.has(volId)
+		);
 		seriesEntry.completionPercentage =
 			ownedFromSeries.length / allVolumes.length;
 	}
@@ -95,8 +114,12 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 	);
 
 	if (seriesEntry) {
-		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
-		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
+		const allVolumes = seriesEntry.Series.volumes.map((id) =>
+			id.toString()
+		);
+		const ownedFromSeries = allVolumes.filter((volId) =>
+			ownedSet.has(volId)
+		);
 		seriesEntry.completionPercentage =
 			ownedFromSeries.length / allVolumes.length;
 	}
@@ -121,7 +144,9 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 	}
 
 	if (user._id.equals(targetUser._id)) {
-		return res.status(400).json({ msg: "Não é possível seguir a si mesmo" });
+		return res
+			.status(400)
+			.json({ msg: "Não é possível seguir a si mesmo" });
 	}
 
 	if (follow) {
@@ -137,7 +162,9 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 		sendNewFollowerNotification(user._id, targetUser._id);
 		return res.send({ msg: "Seguindo com sucesso" });
 	} else {
-		user.following = user.following.filter((id) => !id.equals(targetUser._id));
+		user.following = user.following.filter(
+			(id) => !id.equals(targetUser._id)
+		);
 		targetUser.followers = targetUser.followers.filter(
 			(id) => !id.equals(user._id)
 		);

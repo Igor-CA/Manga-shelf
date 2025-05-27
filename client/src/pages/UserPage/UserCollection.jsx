@@ -185,7 +185,7 @@ export default function UserCollection() {
 							onChange={handleChange}
 						>
 							<option value={"title"}>Alfabética</option>
-							<option value={"added"}>Adicionados</option>
+							<option value={"popularity"}>Popularidade</option>
 							<option value={"volumes"}>Tamanho</option>
 							<option value={"publisher"}>Editora</option>
 							<option value={"status"}>Status</option>

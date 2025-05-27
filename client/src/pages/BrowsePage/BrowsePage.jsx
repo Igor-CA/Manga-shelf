@@ -1,16 +1,9 @@
-import React, {
-	useState,
-	useCallback,
-	useMemo,
-} from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
 
-import {
-	Link,
-	useSearchParams,
-} from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
 import TogglePageButton from "../../components/TogglePageButton";
 
@@ -111,8 +104,8 @@ export default function BrowsePage() {
 	const ErrorComponent = () => {
 		return (
 			<p className="not-found-message">
-				Não encontramos nada para "{params["search-bar"]}" verifique se você
-				digitou corretamente ou então{" "}
+				Não encontramos nada para "{params["search-bar"]}" verifique se
+				você digitou corretamente ou então{" "}
 				<Link to={"/feedback"}>
 					<strong>sugira sua obra para nós</strong>
 				</Link>{" "}
@@ -213,6 +206,7 @@ export default function BrowsePage() {
 							className="form__input filter__input"
 							onChange={handleChange}
 						>
+							<option value={"popularity"}>Popularidade</option>
 							<option value={"title"}>Alfabética</option>
 							{/* <option value={"date"}>Data</option> */}
 							<option value={"volumes"}>Tamanho</option>

@@ -9,7 +9,6 @@ const asyncHandler = require("express-async-handler");
 const ITEMS_PER_PAGE = 24;
 
 exports.browse = asyncHandler(async (req, res, next) => {
-
 	const MIN_SCORE = 1.0;
 
 	const page = parseInt(req.query.p) || 1;
@@ -22,16 +21,17 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	if (publisher) filter["publisher"] = publisher;
 
 	const sortOptions = {
-		title: "title",
-		publisher: "publisher",
-		volumes: "volumesLength",
-		date: "releaseDate",
+		// Order 1 for ascending and 2 for descending
+		popularity: { atribute: "popularity", order: -1 },
+		title: { atribute: "title", order: 1 },
+		publisher: { atribute: "publisher", order: 1 },
+		volumes: { atribute: "volumesLength", order: -1 },
+		date: { atribute: "releaseDate", order: 1 },
 	};
-	const ordering = req.query.ordering || "title";
+	const ordering = req.query.ordering || "popularity";
 	const sortStage = {};
-	sortStage[sortOptions[ordering]] = 1;
+	sortStage[sortOptions[ordering].atribute] = sortOptions[ordering].order;
 	sortStage["title"] = 1;
-
 	const isValidSearch = search && search.trim() !== "";
 
 	let pipeline = [];
@@ -150,7 +150,6 @@ exports.browse = asyncHandler(async (req, res, next) => {
 });
 
 exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
-
 	const validId = mongoose.Types.ObjectId.isValid(req.params.id);
 	if (!validId) {
 		res.status(400).json({ msg: "Series not found" });
@@ -185,6 +184,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		genres,
 		isAdult,
 		status,
+		popularity,
 	} = desiredSeries;
 
 	const jsonResponse = {
@@ -198,6 +198,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		genres,
 		isAdult,
 		status,
+		popularity,
 		volumes: volumesWithImages,
 	};
 	res.send(jsonResponse);

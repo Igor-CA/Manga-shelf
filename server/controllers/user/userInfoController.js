@@ -1,7 +1,7 @@
 const User = require("../../models/User");
 const asyncHandler = require("express-async-handler");
 const {
-    getVolumeCoverURL,
+	getVolumeCoverURL,
 	getSeriesCoverURL,
 } = require("../../Utils/getCoverFunctions");
 
@@ -25,15 +25,17 @@ const buildFilter = ({ publisher, genre, search }) => {
 
 const buildSortStage = (ordering) => {
 	const sortOptions = {
-		title: "userList.Series.title",
-		publisher: "userList.Series.publisher",
-		volumes: "volumesLength",
-		status: "userList.completionPercentage",
-		timestamp: "userList.timestamp",
+		// Order 1 for ascending and 2 for descending
+		popularity: { atribute: "userList.Series.popularity", order: -1 },
+		title: { atribute: "userList.Series.title", order: 1 },
+		publisher: { atribute: "userList.Series.publisher", order: 1 },
+		volumes: { atribute: "volumesLength", order: -1 },
+		timestamp: { atribute: "userList.timestamp", order: 1 },
+		status: { atribute: "userList.completionPercentage", order: 1 },
 	};
 
 	const sortStage = {
-		[sortOptions[ordering]]: 1,
+		[sortOptions[ordering].atribute]: sortOptions[ordering].order,
 		"userList.Series.title": 1,
 	};
 	return sortStage;
@@ -232,7 +234,12 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 
 	const getVolumesStats = (groupField) => [
 		{ $match: { username: targetUser } },
-		{ $unwind: { path: "$ownedVolumes", preserveNullAndEmptyArrays: true } },
+		{
+			$unwind: {
+				path: "$ownedVolumes",
+				preserveNullAndEmptyArrays: true,
+			},
+		},
 		{
 			$lookup: {
 				from: "volumes",
@@ -250,7 +257,12 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 				as: "seriesDetails",
 			},
 		},
-		{ $unwind: { path: "$seriesDetails", preserveNullAndEmptyArrays: true } },
+		{
+			$unwind: {
+				path: "$seriesDetails",
+				preserveNullAndEmptyArrays: true,
+			},
+		},
 		{
 			$unwind: {
 				path: `$seriesDetails.${groupField}`,

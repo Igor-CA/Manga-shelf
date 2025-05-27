@@ -7,13 +7,14 @@ const SeriesSchema = new Schema({
 	authors: [{ type: String }],
 	publisher: { type: String, required: true },
 	volumes: [{ type: Schema.Types.ObjectId, ref: "Volume", required: true }],
-	dimmensions: [{type: Number}] ,
-	status:{type: String},
-	synonyms:[{type:String}],
-	genres:[{type:String}],
+	dimmensions: [{ type: Number }],
+	status: { type: String },
+	synonyms: [{ type: String }],
+	genres: [{ type: String }],
 	summary: [{ type: String }], //Separated by paragraphs
-	isAdult: {type: Boolean},
-	anilistId: {type: Number} 
+	isAdult: { type: Boolean },
+	anilistId: { type: Number },
+	popularity: { type: Number, default: 0 },
 });
 
 SeriesSchema.virtual("seriesCover").get(function () {
