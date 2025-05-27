@@ -4,10 +4,18 @@ const asyncHandler = require("express-async-handler");
 const { sendNewFollowerNotification } = require("../notifications");
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
+	const user = await User.findById(req.user._id);
+	const alreadyAdded = user.userList.some(
+		(entry) => entry.Series.toString() === req.body.id
+	);
+
+	if (alreadyAdded) {
+		return res.send({ msg: "Obra já está na lista" });
+	}
+
 	const addedSeries = { Series: req.body.id };
-	await User.findByIdAndUpdate(req.user._id, {
-		$push: { userList: addedSeries },
-	});
+	user.userList.push(addedSeries)
+	await user.save()
 	return res.send({ msg: "Obra adicionada com sucesso" });
 });
 

@@ -21,6 +21,7 @@ export default function SeriesInfoCard({
 	const seriesSummarry = useRef(null);
 	const [showingMore, setShowingMore] = useState(false);
 	const [loaded, setLoaded] = useState(false);
+	const [buttonActive, setButtonActive] = useState(true);
 
 	useEffect(() => {
 		setShowingMore(
@@ -46,6 +47,7 @@ export default function SeriesInfoCard({
 
 	const addOrRemoveSeries = async (isAdding) => {
 		try {
+			setButtonActive(false)
 			const url = isAdding
 				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-series`
 				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-series`;
@@ -60,6 +62,7 @@ export default function SeriesInfoCard({
 				url: url,
 			});
 			setOutdated(true);
+			setButtonActive(true)
 		} catch (err) {
 			console.log(err);
 		}
@@ -151,6 +154,7 @@ export default function SeriesInfoCard({
 								seriesId={id}
 								handleRemoveSeries={handleRemoveSeries}
 								addOrRemoveSeries={addOrRemoveSeries}
+								active={buttonActive}
 							></AddOrRemoveButton>
 						</div>
 					}

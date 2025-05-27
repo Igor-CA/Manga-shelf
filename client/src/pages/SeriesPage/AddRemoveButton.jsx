@@ -3,6 +3,7 @@ export default function AddOrRemoveButton({
 	seriesId,
 	handleRemoveSeries,
 	addOrRemoveSeries,
+	active,
 }) {
 	const inList =
 		user &&
@@ -21,6 +22,7 @@ export default function AddOrRemoveButton({
 				}
 				inList ? handleRemoveSeries() : addOrRemoveSeries(true);
 			}}
+			disabled={!active}
 		>
 			{inList ? "Remover coleção" : "Adicionar coleção"}
 		</button>
