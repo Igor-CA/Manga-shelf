@@ -123,12 +123,12 @@ export default function UserCollection() {
 		<div className="user-collection container">
 			<div className="filter">
 				<div className="filter__search">
-					<label htmlFor="search-bar" className="filter__label">
+					<label htmlFor="search" className="filter__label">
 						Buscar
 						<input
 							type="text"
-							name="search-bar"
-							id="search-bar"
+							name="search"
+							id="search"
 							autoComplete="off"
 							placeholder="Buscar"
 							className="form__input filter__input filter__input--grow "
