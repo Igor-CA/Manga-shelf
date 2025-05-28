@@ -105,11 +105,16 @@ export default function BrowsePage() {
 		return (
 			<p className="not-found-message">
 				Não encontramos nada para "{params["search-bar"]}" verifique se
-				você digitou corretamente ou então{" "}
-				<Link to={"/feedback"}>
-					<strong>sugira sua obra para nós</strong>
-				</Link>{" "}
-				para que poçamos adiciona-la no futuro
+				você digitou corretamente. <br />
+				<br />
+				<strong>Importante</strong>: Algumas obras podem ser
+				classificadas como conteúdo adulto. Se você não ativou essa
+				opção nas suas configurações, elas não aparecerão nos
+				resultados. <Link to={"/settings"}>Clique aqui</Link> para
+				verificar ou alterar suas permissões. <br />
+				Caso a obra realmente não esteja disponível, você pode{" "}
+				<Link to={"/feedback"}>sugeri-la aqui</Link>{" "}
+				para que possamos adicioná-la futuramente!
 			</p>
 		);
 	};
