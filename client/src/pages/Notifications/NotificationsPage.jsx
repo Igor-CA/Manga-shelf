@@ -225,7 +225,7 @@ function Notification({ notification }) {
 		const intervals = [
 			{ label: "ano", seconds: 31536000 },
 			{ label: "mês", seconds: 2592000 },
-			{ label: "semada", seconds: 604800 },
+			{ label: "semana", seconds: 604800 },
 			{ label: "dia", seconds: 86400 },
 			{ label: "hora", seconds: 3600 },
 			{ label: "minuto", seconds: 60 },
@@ -235,6 +235,8 @@ function Notification({ notification }) {
 		for (const interval of intervals) {
 			const count = Math.floor(diff / interval.seconds);
 			if (count >= 1) {
+				if(interval.label === "mês")
+					return `${count} meses atrás`;
 				return `${count} ${interval.label}${count > 1 ? "s" : ""} atrás`;
 			}
 		}
