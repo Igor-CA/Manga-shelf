@@ -15,6 +15,12 @@ const UserSchema = new Schema({
 			completionPercentage: { type: Number, default: 0 },
 		},
 	],
+	wishList: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Series",
+		},
+	],
 	ownedVolumes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Volume" }],
 	following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
@@ -43,7 +49,7 @@ const UserSchema = new Schema({
 				ref: "Notifications",
 			},
 			seen: { type: Boolean, default: 0 },
-			date: {type: Date, default: Date.now }
+			date: { type: Date, default: Date.now },
 		},
 	],
 });

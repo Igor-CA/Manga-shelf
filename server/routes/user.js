@@ -57,8 +57,10 @@ router.post("/report", reportController.createReport);
 
 //
 router.post("/add-series", requireAuth, userActionsController.addSeries);
+router.post("/add-to-wishlist", requireAuth, userActionsController.addToWishlist);
 router.post("/add-volume", requireAuth, userActionsController.addVolume);
 router.post("/remove-series", requireAuth, userActionsController.removeSeries);
+router.post("/remove-from-wishlist", requireAuth, userActionsController.removeFromWishList);
 router.post("/remove-volume", requireAuth, userActionsController.removeVolume);
 router.put(
 	"/set-username",

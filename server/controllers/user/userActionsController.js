@@ -17,11 +17,71 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 		return res.send({ msg: "Obra já está na lista" });
 	}
 
-	const addedSeries = { Series: req.body.id };
+	const addedSeries = {
+		Series: req.body.id,
+		completionPercentage: 0,
+	};
+	const inWishList = user.wishList.some(
+		(entry) => entry.toString() === req.body.id
+	);
+	//If series in wishlist remove it
+	const newWishlist = user.wishList.filter((seriesId) => {
+		return seriesId.toString() !== req.body.id;
+	});
+	user.wishList = newWishlist;
+
 	user.userList.push(addedSeries);
 
 	await Promise.all([
-		Series.findByIdAndUpdate(req.body.id, { $inc: { popularity: 1 } }),
+		Series.findByIdAndUpdate(req.body.id, {
+			$inc: { popularity: !inWishList },
+		}),
+		user.save(),
+	]);
+
+	return res.send({ msg: "Obra adicionada com sucesso" });
+});
+
+exports.addToWishlist = asyncHandler(async (req, res, next) => {
+	const user = await User.findById(req.user._id);
+	const addedSeries = req.body.id;
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	if (!addedSeries) return res.status(400).json({ msg: "Obra não informada" });
+
+	const alreadyAdded = user.wishList.some(
+		(entry) => entry.toString() === req.body.id
+	);
+
+	const inUserList = user.userList.some(
+		(entry) => entry.Series.toString() === req.body.id
+	);
+
+	if (alreadyAdded) {
+		return res.send({ msg: "Obra já está na lista de desejos" });
+	}
+
+	if (inUserList) {
+		const series = user.userList.find(
+			(series) => series.Series._id.toString() === req.body.id
+		);
+		if (series.completionPercentage !== 0) {
+			return res.send({
+				msg: "Você já possui volumes dessa obra portanto não faz sentido adicionala à lista de desejos",
+			});
+		} else {
+			const newSeriesList = user.userList.filter((seriesObject) => {
+				return seriesObject.Series.toString() !== req.body.id;
+			});
+			user.userList = newSeriesList;
+		}
+	}
+
+	user.wishList.push(addedSeries);
+
+	await Promise.all([
+		Series.findByIdAndUpdate(req.body.id, {
+			$inc: { popularity: !inUserList },
+		}),
 		user.save(),
 	]);
 
@@ -56,12 +116,36 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Obra removida com sucesso" });
 });
 
+exports.removeFromWishList = asyncHandler(async (req, res, next) => {
+	const user = await User.findById(req.user._id, {
+		wishList: 1,
+	});
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+
+	const removedSeries = req.body.id;
+	if (!removedSeries)
+		return res.status(400).json({ msg: "Obra não informada" });
+	
+	const newWishList = user.wishList.filter((seriesObject) => {
+		return seriesObject.toString() !== removedSeries;
+	});
+	user.wishList = newWishList;
+	await Promise.all([
+		Series.findOneAndUpdate(
+			{ _id: req.body.id, popularity: { $gt: 0 } },
+			{ $inc: { popularity: -1 } }
+		),
+		user.save(),
+	]);
+	return res.send({ msg: "Obra removida com sucesso" });
+});
 exports.addVolume = asyncHandler(async (req, res, next) => {
 	const { seriesId, amountVolumesFromSeries, idList } = req.body;
 
 	const user = await User.findById(req.user._id, {
 		ownedVolumes: 1,
 		userList: 1,
+		wishList: 1,
 	}).populate("userList.Series");
 	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
 
@@ -73,25 +157,33 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 	let seriesEntry = user.userList.find(
 		(s) => s.Series._id.toString() === seriesId
 	);
-
+	const inUserList = (seriesEntry !== undefined)
+	const inWishList = user.wishList.some(
+		(entry) => entry.toString() === seriesId
+	);
+	
 	if (!seriesEntry) {
 		//Add series to userList
 		user.userList.push({
 			Series: seriesId,
 			completionPercentage: idList.length / amountVolumesFromSeries,
 		});
+		//If series in wishlist remove it
+		const newWishlist = user.wishList.filter((wishListSeriesId) => {
+			return wishListSeriesId.toString() !== seriesId;
+		});
+		user.wishList = newWishlist;
 	} else {
-		const allVolumes = seriesEntry.Series.volumes.map((id) =>
-			id.toString()
-		);
-		const ownedFromSeries = allVolumes.filter((volId) =>
-			ownedSet.has(volId)
-		);
+		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
+		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
 		seriesEntry.completionPercentage =
 			ownedFromSeries.length / allVolumes.length;
 	}
 
-	await user.save();
+	await Promise.all([
+		Series.findByIdAndUpdate(seriesId, { $inc: { popularity: (!inUserList && !inWishList) } }),
+		user.save(),
+	]);
 	res.send({ msg: "Volume(s) Adicionado com sucesso" });
 });
 
@@ -114,12 +206,8 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 	);
 
 	if (seriesEntry) {
-		const allVolumes = seriesEntry.Series.volumes.map((id) =>
-			id.toString()
-		);
-		const ownedFromSeries = allVolumes.filter((volId) =>
-			ownedSet.has(volId)
-		);
+		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
+		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
 		seriesEntry.completionPercentage =
 			ownedFromSeries.length / allVolumes.length;
 	}
@@ -144,9 +232,7 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 	}
 
 	if (user._id.equals(targetUser._id)) {
-		return res
-			.status(400)
-			.json({ msg: "Não é possível seguir a si mesmo" });
+		return res.status(400).json({ msg: "Não é possível seguir a si mesmo" });
 	}
 
 	if (follow) {
@@ -162,9 +248,7 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 		sendNewFollowerNotification(user._id, targetUser._id);
 		return res.send({ msg: "Seguindo com sucesso" });
 	} else {
-		user.following = user.following.filter(
-			(id) => !id.equals(targetUser._id)
-		);
+		user.following = user.following.filter((id) => !id.equals(targetUser._id));
 		targetUser.followers = targetUser.followers.filter(
 			(id) => !id.equals(user._id)
 		);

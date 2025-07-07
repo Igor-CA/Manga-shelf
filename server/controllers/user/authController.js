@@ -138,6 +138,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 		settings: user.settings,
 		email: user.email,
 		allowAdult: user.allowAdult,
+		wishList: user.wishList,
 		notificationCount,
 	};
 	return res.send(userInfo);
