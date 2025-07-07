@@ -201,7 +201,7 @@
 		display: none;
 	}
 	.series__butons-containers {
-		flex-direction: row;
+		/*flex-direction: row;*/
 		margin-top: 10px;
 	}
 	.series__title {
