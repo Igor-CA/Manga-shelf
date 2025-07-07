@@ -67,6 +67,7 @@
 	align-items: stretch;
 	margin-bottom: 15px;
 	gap: 10px;
+	position: relative;
 }
 .series__cover {
 	width: 100vw;
