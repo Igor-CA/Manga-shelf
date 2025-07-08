@@ -80,7 +80,8 @@ export default function SeriesInfoCard({
 			addMessage(`Obra ${isAdding?"adicionada":"removida"} com sucesso`)
 			setOutdated(true);
 		} catch (err) {
-			console.log(err);
+			const customErrorMessage = err.response.data.msg;
+			addMessage(customErrorMessage);
 		}
 	};
 
@@ -103,7 +104,8 @@ export default function SeriesInfoCard({
 			setMessageType("Success")
 			addMessage(`Obra ${isAdding?"adicionada à lista de desejos":"removida da lista de desejos"} com sucesso`)
 		} catch (err) {
-			console.log(err);
+			const customErrorMessage = err.response.data.msg;
+			addMessage(customErrorMessage);
 		}
 	};
 	const handleSelectAll = (e) => {

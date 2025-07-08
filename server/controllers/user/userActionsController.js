@@ -14,7 +14,7 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 	);
 
 	if (alreadyAdded) {
-		return res.send({ msg: "Obra já está na lista" });
+		return res.status(400).json({ msg: "Obra já está na lista" });
 	}
 
 	const addedSeries = {
@@ -57,7 +57,7 @@ exports.addToWishlist = asyncHandler(async (req, res, next) => {
 	);
 
 	if (alreadyAdded) {
-		return res.send({ msg: "Obra já está na lista de desejos" });
+		return res.status(400).json({ msg: "Obra já está na lista de desejos" });
 	}
 
 	if (inUserList) {
@@ -65,8 +65,8 @@ exports.addToWishlist = asyncHandler(async (req, res, next) => {
 			(series) => series.Series._id.toString() === req.body.id
 		);
 		if (series.completionPercentage !== 0) {
-			return res.send({
-				msg: "Você já possui volumes dessa obra portanto não faz sentido adicionala à lista de desejos",
+			return res.status(400).json({
+				msg: "Você já possui volumes dessa obra portanto ela não foi adicionada à lista de desejos",
 			});
 		} else {
 			const newSeriesList = user.userList.filter((seriesObject) => {
