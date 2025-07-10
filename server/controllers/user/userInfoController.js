@@ -141,7 +141,7 @@ const buildWishlistPipeline = (
 
 	// Apply adult content filtering if necessary
 	if (!allowAdult) {
-		pipeline.splice(6, 0, { $match: { "userList.Series.isAdult": false } });
+		pipeline.splice(6, 0, { $match: { "wishListSeries.isAdult": false } });
 	}
 	return pipeline;
 };
