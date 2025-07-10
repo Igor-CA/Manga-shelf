@@ -22,13 +22,11 @@ export default function SeriesPage() {
 	const [onConfirm, setOnConfirm] = useState(null);
 	const [onCancel, setOnCancel] = useState(null);
 
-
 	useEffect(() => {
-		if (!isFetching && (!user?.allowAdult && series?.isAdult)) {
-		  navigate("/");
+		if (!isFetching && !user?.allowAdult && series?.isAdult) {
+			navigate("/");
 		}
-	  }, [isFetching, user, navigate, series]);
-	
+	}, [isFetching, user, navigate, series]);
 
 	const setters = [
 		setOnConfirm,
@@ -43,6 +41,7 @@ export default function SeriesPage() {
 				const response = await axios.get(
 					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/series/${id}`,
 					{
+						withCredentials: true,
 						headers: {
 							Authorization: import.meta.env.REACT_APP_API_KEY,
 						},

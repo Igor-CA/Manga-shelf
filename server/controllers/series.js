@@ -7,6 +7,55 @@ const {
 const asyncHandler = require("express-async-handler");
 
 const ITEMS_PER_PAGE = 24;
+const addUserListData = (pipeline, user) => {
+	if (!user) {
+		pipeline.push({
+			$addFields: {
+				inWishlist: false,
+				inUserList: false,
+			},
+		});
+		return;
+	}
+
+	const userId = user._id;
+
+	pipeline.push(
+		{
+			$lookup: {
+				from: "users",
+				let: { seriesId: "$_id" },
+				pipeline: [
+					{ $match: { _id: userId } },
+					{
+						$project: {
+							inWishlist: { $in: ["$$seriesId", "$wishList"] },
+							inUserList: { $in: ["$$seriesId", "$userList.Series"] },
+						},
+					},
+				],
+				as: "userData",
+			},
+		},
+		{
+			$unwind: {
+				path: "$userData",
+				preserveNullAndEmptyArrays: true,
+			},
+		},
+		{
+			$addFields: {
+				inWishlist: { $ifNull: ["$userData.inWishlist", false] },
+				inUserList: { $ifNull: ["$userData.inUserList", false] },
+			},
+		},
+		{
+			$project: {
+				userData: 0,
+			},
+		}
+	);
+};
 
 exports.browse = asyncHandler(async (req, res, next) => {
 	const MIN_SCORE = 1.0;
@@ -110,6 +159,8 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		{ $match: filter },
 		{ $sort: sortStage }
 	);
+	addUserListData(pipeline, req.user);
+
 	const allowAdultContent = req.user?.allowAdult || false;
 	if (!allowAdultContent) {
 		pipeline.push({ $match: { isAdult: false } });
@@ -135,6 +186,8 @@ exports.browse = asyncHandler(async (req, res, next) => {
 			$project: {
 				title: 1,
 				isAdult: 1,
+				inWishlist: 1,
+				inUserList: 1,
 			},
 		},
 		{ $skip: skip },
@@ -155,17 +208,29 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		res.status(400).json({ msg: "Series not found" });
 		return;
 	}
+	const seriesId = new mongoose.Types.ObjectId(req.params.id);
 
-	const desiredSeries = await Series.findById(req.params.id)
-		.populate({
-			path: "volumes",
-			options: { sort: { number: 1 } }, // Sort populated volumes by their number field
-		})
-		.exec();
-	if (desiredSeries === null) {
-		res.status(400).json({ msg: "Seried not found" });
+	let pipeline = [
+		{ $match: { _id: seriesId } },
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "volumes",
+				foreignField: "_id",
+				as: "volumes",
+				pipeline: [{ $sort: { number: 1 } }],
+			},
+		},
+	];
+	addUserListData(pipeline, req.user);
+	const seriesResult = await Series.aggregate(pipeline).exec();
+	if (seriesResult.length === 0) {
+		res.status(400).json({ msg: "Series not found" });
 		return;
 	}
+	//console.log(seriesResult)
+	const desiredSeries = seriesResult[0];
+	desiredSeries.seriesCover = getSeriesCoverURL(desiredSeries)
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
@@ -185,6 +250,8 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		isAdult,
 		status,
 		popularity,
+		inWishlist,
+		inUserList,
 	} = desiredSeries;
 
 	const jsonResponse = {
@@ -199,6 +266,8 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		isAdult,
 		status,
 		popularity,
+		inWishlist,
+		inUserList,
 		volumes: volumesWithImages,
 	};
 	res.send(jsonResponse);
