@@ -29,8 +29,8 @@ const addUserListData = (pipeline, user) => {
 					{ $match: { _id: userId } },
 					{
 						$project: {
-							inWishlist: { $in: ["$$seriesId", "$wishList"] },
-							inUserList: { $in: ["$$seriesId", "$userList.Series"] },
+							inWishlist: { $in: ["$$seriesId",  { $ifNull: ["$wishList", []] }] },
+							inUserList: { $in: ["$$seriesId", { $ifNull: ["$userList.Series", []] }] },
 						},
 					},
 				],
@@ -228,7 +228,6 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		res.status(400).json({ msg: "Series not found" });
 		return;
 	}
-	//console.log(seriesResult)
 	const desiredSeries = seriesResult[0];
 	desiredSeries.seriesCover = getSeriesCoverURL(desiredSeries)
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({

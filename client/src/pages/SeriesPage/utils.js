@@ -14,12 +14,13 @@ export const getCompletionPercentage = (user, id) => {
 	const indexOfSeries = user.userList.findIndex(
 		(seriesObj) => seriesObj.Series._id.toString() === id
 	);
-	return indexOfSeries !== -1 ? user.userList[indexOfSeries].completionPercentage : 0;
+	return indexOfSeries !== -1
+		? user.userList[indexOfSeries].completionPercentage
+		: 0;
 };
 export const checkIfInWishlist = (user, id) => {
-	const inWishList = user.wishList.some(
-		(entry) => entry.toString() === id
-	);
+	if (!user.wishlist) return false;
+	const inWishList = user.wishList.some((entry) => entry.toString() === id);
 	return inWishList;
 };
 export const getSeriesStatus = (user, id) => {
@@ -28,8 +29,18 @@ export const getSeriesStatus = (user, id) => {
 	);
 	return indexOfSeries !== -1 ? user.userList[indexOfSeries].status : "";
 };
-export const customWindowConfirm = (setters, message, onConfirmCb, onCancelCb) => {
-	const [setOnConfirm, setOnCancel, setConfirmationMessage, setShowConfirmation] = setters;
+export const customWindowConfirm = (
+	setters,
+	message,
+	onConfirmCb,
+	onCancelCb
+) => {
+	const [
+		setOnConfirm,
+		setOnCancel,
+		setConfirmationMessage,
+		setShowConfirmation,
+	] = setters;
 	setOnConfirm(() => onConfirmCb);
 	setOnCancel(() => onCancelCb);
 	setConfirmationMessage(message);
