@@ -13,6 +13,7 @@ const addUserListData = (pipeline, user) => {
 			$addFields: {
 				inWishlist: false,
 				inUserList: false,
+				userListStatus: null,
 			},
 		});
 		return;
@@ -29,8 +30,31 @@ const addUserListData = (pipeline, user) => {
 					{ $match: { _id: userId } },
 					{
 						$project: {
-							inWishlist: { $in: ["$$seriesId",  { $ifNull: ["$wishList", []] }] },
-							inUserList: { $in: ["$$seriesId", { $ifNull: ["$userList.Series", []] }] },
+							inWishlist: {
+								$in: ["$$seriesId", { $ifNull: ["$wishList", []] }],
+							},
+							inUserList: {
+								$in: ["$$seriesId", { $ifNull: ["$userList.Series", []] }],
+							},
+							userListStatus: {
+								$let: {
+									vars: {
+										matchedElement: {
+											$arrayElemAt: [
+												{
+													$filter: {
+														input: { $ifNull: ["$userList", []] },
+														as: "item",
+														cond: { $eq: ["$$item.Series", "$$seriesId"] },
+													},
+												},
+												0, // Get the first (and only) match
+											],
+										},
+									},
+									in: "$$matchedElement.status",
+								},
+							},
 						},
 					},
 				],
@@ -47,6 +71,7 @@ const addUserListData = (pipeline, user) => {
 			$addFields: {
 				inWishlist: { $ifNull: ["$userData.inWishlist", false] },
 				inUserList: { $ifNull: ["$userData.inUserList", false] },
+				userListStatus: { $ifNull: ["$userData.userListStatus", null] },
 			},
 		},
 		{
@@ -188,6 +213,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 				isAdult: 1,
 				inWishlist: 1,
 				inUserList: 1,
+				userListStatus: 1,
 			},
 		},
 		{ $skip: skip },
@@ -229,7 +255,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		return;
 	}
 	const desiredSeries = seriesResult[0];
-	desiredSeries.seriesCover = getSeriesCoverURL(desiredSeries)
+	desiredSeries.seriesCover = getSeriesCoverURL(desiredSeries);
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
@@ -251,6 +277,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		popularity,
 		inWishlist,
 		inUserList,
+		userListStatus,
 	} = desiredSeries;
 
 	const jsonResponse = {
@@ -267,6 +294,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		popularity,
 		inWishlist,
 		inUserList,
+		userListStatus,
 		volumes: volumesWithImages,
 	};
 	res.send(jsonResponse);

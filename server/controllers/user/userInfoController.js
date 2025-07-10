@@ -87,6 +87,7 @@ const buildAggregationPipeline = (
 				title: "$userList.Series.title",
 				completionPercentage: "$userList.completionPercentage",
 				isAdult: "$userList.Series.isAdult",
+				status: "$userList.status",
 			},
 		},
 		{ $skip: skip },
@@ -267,8 +268,10 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				series: { $first: "$seriesDetails.title" },
 				volumeId: { $first: "$volumeDetails._id" },
 				volumeNumber: { $first: "$volumeDetails.number" },
+				status: { $first: "$userList.status" },
 			},
 		},
+		{ $match: { status: { $ne: "Dropped" } } },
 		// Sort the results by series title and volume number
 		{
 			$sort: {
@@ -395,6 +398,18 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 	const countPipeline = [
 		{ $match: { username: targetUser } },
 		//For wishlist count
+		{ $unwind: "$userList" },
+		{ $match: { "userList.status": { $ne: "Dropped" } } },
+		{
+			$group: {
+				_id: "$_id",
+				nonDroppedSeriesIds: { $push: "$userList.Series" },
+				ownedVolumes: { $first: "$ownedVolumes" },
+				wishList: { $first: "$wishList" },
+				originalUserList: { $first: "$userList" },
+			},
+		},
+
 		{
 			$lookup: {
 				from: "series",
@@ -407,23 +422,9 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		{
 			$lookup: {
 				from: "series",
-				localField: "userList.Series",
+				localField: "nonDroppedSeriesIds",
 				foreignField: "_id",
 				as: "userListSeriesData",
-			},
-		},
-		{
-			$addFields: {
-				allUserListVolumes: {
-					$reduce: {
-						input: "$userListSeriesData",
-						initialValue: [],
-						in: {
-							$concatArrays: ["$$value", { $ifNull: ["$$this.volumes", []] }],
-						},
-					},
-				},
-				ownedVolumesSafe: { $ifNull: ["$ownedVolumes", []] },
 			},
 		},
 		{
@@ -442,7 +443,16 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 				},
 				missingVolumesCount: {
 					$size: {
-						$setDifference: ["$allUserListVolumes", "$ownedVolumesSafe"],
+						$setDifference: [
+							{
+								$reduce: {
+									input: "$userListSeriesData",
+									initialValue: [],
+									in: { $concatArrays: ["$$value", "$$this.volumes"] },
+								},
+							},
+							{ $ifNull: ["$ownedVolumes", []] },
+						],
 					},
 				},
 			},
