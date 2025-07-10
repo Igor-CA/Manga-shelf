@@ -1,13 +1,14 @@
 import { Route, Routes, useParams } from "react-router-dom";
 import "./UserPage.css";
 import { lazy, Suspense } from "react";
-import {LoadingPageComponent} from "../../App"
+import { LoadingPageComponent } from "../../App";
 
 const UserCollection = lazy(() => import("./UserCollection"));
 const ProfileHeader = lazy(() => import("./ProfileHeader"));
 const MissingVolumesPage = lazy(() => import("./MissingVolumesPage"));
 const UserStatsPage = lazy(() => import("./UserStatsPage"));
 const UserSocials = lazy(() => import("./UserSocialsPage"));
+const WishlistPage = lazy(() => import("./WishlistPage"));
 
 export default function UserPage() {
 	const { username } = useParams();
@@ -19,6 +20,7 @@ export default function UserPage() {
 				<Suspense fallback={<LoadingPageComponent />}>
 					<Routes>
 						<Route path="missing" element={<MissingVolumesPage />}></Route>
+						<Route path="wishlist" element={<WishlistPage />}></Route>
 						<Route path="stats" element={<UserStatsPage />}></Route>
 						<Route path="socials" element={<UserSocials />}></Route>
 						<Route path="" element={<UserCollection />}></Route>

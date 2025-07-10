@@ -162,7 +162,6 @@ export default function SeriesInfoCard({
 	};
 
 	const handleOptionsClick = () => {
-		console.log("ha")
 		setOptionsVisible((prev) => !prev);
 	};
 

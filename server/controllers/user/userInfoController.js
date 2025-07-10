@@ -8,27 +8,30 @@ const {
 const ITEMS_PER_PAGE = 36;
 //Filters for building search pipeline
 
-const buildFilter = ({ publisher, genre, search }) => {
+const buildFilter = ({ publisher, genre, search }, field) => {
 	const filter = {};
-	if (genre) filter["userList.Series.genres"] = { $in: [genre] };
-	if (publisher) filter["userList.Series.publisher"] = publisher;
+	if (genre) filter[`${field}.genres`] = { $in: [genre] };
+	if (publisher) filter[`${field}.publisher`] = publisher;
 	if (search) {
 		const searchRegex = { $regex: search, $options: "i" };
+		const titleField = `${field}.title`;
+		const synonymsField = `${field}.synonyms`;
+		const authorsField = `${field}.authors`;
 		filter.$or = [
-			{ "userList.Series.title": searchRegex },
-			{ "userList.Series.synonyms": searchRegex },
-			{ "userList.Series.authors": searchRegex },
+			{ [titleField]: searchRegex },
+			{ [synonymsField]: searchRegex },
+			{ [authorsField]: searchRegex },
 		];
 	}
 	return filter;
 };
 
-const buildSortStage = (ordering) => {
+const buildSortStage = (ordering, field) => {
 	const sortOptions = {
 		// Order 1 for ascending and 2 for descending
-		popularity: { atribute: "userList.Series.popularity", order: -1 },
-		title: { atribute: "userList.Series.title", order: 1 },
-		publisher: { atribute: "userList.Series.publisher", order: 1 },
+		popularity: { atribute: `${field}.popularity`, order: -1 },
+		title: { atribute: `${field}.title`, order: 1 },
+		publisher: { atribute: `${field}.publisher`, order: 1 },
 		volumes: { atribute: "volumesLength", order: -1 },
 		timestamp: { atribute: "userList.timestamp", order: 1 },
 		status: { atribute: "userList.completionPercentage", order: 1 },
@@ -98,6 +101,50 @@ const buildAggregationPipeline = (
 	return pipeline;
 };
 
+const buildWishlistPipeline = (
+	targetUser,
+	allowAdult,
+	filter,
+	sortStage,
+	skip
+) => {
+	const pipeline = [
+		{ $match: { username: targetUser } },
+		{ $unwind: "$wishList" },
+
+		{
+			$lookup: {
+				from: "series",
+				localField: "wishList",
+				foreignField: "_id",
+				as: "wishListSeries",
+			},
+		},
+		{ $unwind: "$wishListSeries" },
+		{
+			$addFields: {
+				volumesLength: { $size: "$wishListSeries.volumes" },
+			},
+		},
+		{ $match: filter },
+		{ $sort: sortStage },
+		{
+			$project: {
+				_id: "$wishListSeries._id",
+				title: "$wishListSeries.title",
+				isAdult: "$wishListSeries.isAdult",
+			},
+		},
+		{ $skip: skip },
+		{ $limit: ITEMS_PER_PAGE },
+	];
+
+	// Apply adult content filtering if necessary
+	if (!allowAdult) {
+		pipeline.splice(6, 0, { $match: { "userList.Series.isAdult": false } });
+	}
+	return pipeline;
+};
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username?.trim();
 	if (!targetUser)
@@ -105,10 +152,38 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
-	const filter = buildFilter(req.query);
-	const sortStage = buildSortStage(req.query.ordering || "title");
+	const filter = buildFilter(req.query, "userList.Series");
+	const sortStage = buildSortStage(req.query.ordering || "title", "userList.Series");
 	const allowAdult = req.user?.allowAdult || false;
 	const pipeline = buildAggregationPipeline(
+		targetUser,
+		allowAdult,
+		filter,
+		sortStage,
+		skip
+	);
+	const userCollection = await User.aggregate(pipeline);
+	const filteredList = userCollection.map((series) => {
+		return {
+			...series,
+			image: getSeriesCoverURL(series),
+		};
+	});
+
+	res.send(filteredList);
+});
+
+exports.getUserWishlist = asyncHandler(async (req, res, next) => {
+	const targetUser = req.params.username?.trim();
+	if (!targetUser)
+		return res.status(400).send({ msg: "Usuário não encontrado" });
+
+	const page = parseInt(req.query.p) || 1;
+	const skip = ITEMS_PER_PAGE * (page - 1);
+	const filter = buildFilter(req.query, "wishListSeries");
+	const sortStage = buildSortStage(req.query.ordering || "title", "wishListSeries");
+	const allowAdult = req.user?.allowAdult || false;
+	const pipeline = buildWishlistPipeline(
 		targetUser,
 		allowAdult,
 		filter,

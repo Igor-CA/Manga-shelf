@@ -11,6 +11,7 @@ const { authController, userInfoController } = require("../controllers/user/inde
 router.get("/user/logged-user", requireAuth, authController.getLoggedUser);
 router.get("/user/:username", userInfoController.getUserCollection);
 router.get("/user/:username/missing", userInfoController.getMissingPage);
+router.get("/user/:username/wishlist", userInfoController.getUserWishlist);
 router.get("/user/stats/:username", userInfoController.getUserStats);
 router.get("/user-notifications", Notifications.getUserNotifications);
 router.get("/search-user/", userInfoController.searchUser);
