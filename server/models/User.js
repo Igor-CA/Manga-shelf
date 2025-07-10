@@ -13,14 +13,18 @@ const UserSchema = new Schema({
 				required: true,
 			},
 			completionPercentage: { type: Number, default: 0 },
+			status: { type: String, default: "Collectingu"},
 		},
 	],
-	wishList: [
-		{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "Series",
-		},
-	],
+	wishList: {
+		type: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Series",
+			},
+		],
+		default: [],
+	},
 	ownedVolumes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Volume" }],
 	following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

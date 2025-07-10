@@ -125,7 +125,7 @@ exports.removeFromWishList = asyncHandler(async (req, res, next) => {
 	const removedSeries = req.body.id;
 	if (!removedSeries)
 		return res.status(400).json({ msg: "Obra não informada" });
-	
+
 	const newWishList = user.wishList.filter((seriesObject) => {
 		return seriesObject.toString() !== removedSeries;
 	});
@@ -157,11 +157,11 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 	let seriesEntry = user.userList.find(
 		(s) => s.Series._id.toString() === seriesId
 	);
-	const inUserList = (seriesEntry !== undefined)
+	const inUserList = seriesEntry !== undefined;
 	const inWishList = user.wishList.some(
 		(entry) => entry.toString() === seriesId
 	);
-	
+
 	if (!seriesEntry) {
 		//Add series to userList
 		user.userList.push({
@@ -181,7 +181,9 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 	}
 
 	await Promise.all([
-		Series.findByIdAndUpdate(seriesId, { $inc: { popularity: (!inUserList && !inWishList) } }),
+		Series.findByIdAndUpdate(seriesId, {
+			$inc: { popularity: !inUserList && !inWishList },
+		}),
 		user.save(),
 	]);
 	res.send({ msg: "Volume(s) Adicionado com sucesso" });
@@ -257,4 +259,32 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 		await targetUser.save();
 		res.send({ msg: "Deixou de seguir com sucesso" });
 	}
+});
+
+exports.dropSeries = asyncHandler(async (req, res, next) => {
+	const { id: seriesId } = req.body;
+	const result = await User.updateOne(
+		{ _id: req.user._id, "userList.Series": seriesId },
+		{ $set: { "userList.$.status": "Dropped" } }
+	);
+	if (result.matchedCount === 0) {
+		return res
+			.status(404)
+			.json({ msg: "Série não encontrada na lista do usuário" });
+	}
+	return res.send({ msg: "Status da série atualizado para 'Dropped'" });
+});
+
+exports.undropSeries = asyncHandler(async (req, res, next) => {
+	const { id: seriesId } = req.body;
+	const result = await User.updateOne(
+		{ _id: req.user._id, "userList.Series": seriesId },
+		{ $set: { "userList.$.status": "Collecting" } }
+	);
+	if (result.matchedCount === 0) {
+		return res
+			.status(404)
+			.json({ msg: "Série não encontrada na lista do usuário" });
+	}
+	return res.send({ msg: "Status da série atualizado para 'Colecionando'" });
 });
