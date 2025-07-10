@@ -153,7 +153,10 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
 	const filter = buildFilter(req.query, "userList.Series");
-	const sortStage = buildSortStage(req.query.ordering || "title", "userList.Series");
+	const sortStage = buildSortStage(
+		req.query.ordering || "title",
+		"userList.Series"
+	);
 	const allowAdult = req.user?.allowAdult || false;
 	const pipeline = buildAggregationPipeline(
 		targetUser,
@@ -181,7 +184,10 @@ exports.getUserWishlist = asyncHandler(async (req, res, next) => {
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
 	const filter = buildFilter(req.query, "wishListSeries");
-	const sortStage = buildSortStage(req.query.ordering || "title", "wishListSeries");
+	const sortStage = buildSortStage(
+		req.query.ordering || "title",
+		"wishListSeries"
+	);
 	const allowAdult = req.user?.allowAdult || false;
 	const pipeline = buildWishlistPipeline(
 		targetUser,
@@ -341,7 +347,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		{
 			$unwind: {
 				path: `$seriesDetails.${groupField}`,
-				preserveNullAndEmptyArrays: true,
+				preserveNullAndEmptyArrays: false,
 			},
 		},
 		{
@@ -388,10 +394,57 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 
 	const countPipeline = [
 		{ $match: { username: targetUser } },
+		//For wishlist count
+		{
+			$lookup: {
+				from: "series",
+				localField: "wishList",
+				foreignField: "_id",
+				as: "wishListSeries",
+			},
+		},
+		//For missing count
+		{
+			$lookup: {
+				from: "series",
+				localField: "userList.Series",
+				foreignField: "_id",
+				as: "userListSeriesData",
+			},
+		},
+		{
+			$addFields: {
+				allUserListVolumes: {
+					$reduce: {
+						input: "$userListSeriesData",
+						initialValue: [],
+						in: {
+							$concatArrays: ["$$value", { $ifNull: ["$$this.volumes", []] }],
+						},
+					},
+				},
+				ownedVolumesSafe: { $ifNull: ["$ownedVolumes", []] },
+			},
+		},
 		{
 			$project: {
-				ownedVolumesCount: { $size: "$ownedVolumes" },
-				userListCount: { $size: "$userList" },
+				ownedVolumesCount: { $size: { $ifNull: ["$ownedVolumes", []] } },
+				userListCount: { $size: { $ifNull: ["$userList", []] } },
+				wishListSeriesCount: { $size: { $ifNull: ["$wishList", []] } },
+				wishListVolumesCount: {
+					$sum: {
+						$map: {
+							input: "$wishListSeries",
+							as: "series",
+							in: { $size: { $ifNull: ["$$series.volumes", []] } },
+						},
+					},
+				},
+				missingVolumesCount: {
+					$size: {
+						$setDifference: ["$allUserListVolumes", "$ownedVolumesSafe"],
+					},
+				},
 			},
 		},
 	];
@@ -419,6 +472,9 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		publisherBySeries,
 		volumesCount: counts[0]?.ownedVolumesCount || 0,
 		seriesCount: counts[0]?.userListCount || 0,
+		wishListSeriesCount: counts[0]?.wishListSeriesCount || 0,
+		wishListVolumesCount: counts[0]?.wishListVolumesCount || 0,
+		missingVolumesCount: counts[0]?.missingVolumesCount || 0,
 	};
 
 	res.send(stats);

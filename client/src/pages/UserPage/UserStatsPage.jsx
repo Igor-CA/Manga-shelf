@@ -38,11 +38,25 @@ export default function UserStatsPage() {
 					<div className="stats-highlights">
 						<div className="stats-highlight">
 							<div className="stats-highlight__value">{data.seriesCount}</div>
-							<div className="stats-highlight__label">Coleções diferentes</div>
+							<div className="stats-highlight__label">Obras diferentes</div>
 						</div>
 						<div className="stats-highlight">
 							<div className="stats-highlight__value">{data.volumesCount}</div>
 							<div className="stats-highlight__label">Volumes no total</div>
+						</div>
+						<div className="stats-highlight">
+							<div className="stats-highlight__value">
+								{data.wishListSeriesCount}
+							</div>
+							<div className="stats-highlight__label">
+								Obras na lista de desejos
+							</div>
+						</div>
+						<div className="stats-highlight">
+							<div className="stats-highlight__value">
+								{data.missingVolumesCount}
+							</div>
+							<div className="stats-highlight__label">Volumes Faltantes</div>
 						</div>
 					</div>
 					<BarChartComponent
