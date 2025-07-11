@@ -397,7 +397,11 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 
 	const countPipeline = [
 		{ $match: { username: targetUser } },
-		//For wishlist count
+		{
+			$addFields: {
+				originalUserList: "$userList",
+			},
+		},
 		{ $unwind: "$userList" },
 		{ $match: { "userList.status": { $ne: "Dropped" } } },
 		{
@@ -406,7 +410,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 				nonDroppedSeriesIds: { $push: "$userList.Series" },
 				ownedVolumes: { $first: "$ownedVolumes" },
 				wishList: { $first: "$wishList" },
-				originalUserList: { $first: "$userList" },
+				originalUserList: { $first: "$originalUserList" },
 			},
 		},
 
@@ -430,7 +434,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		{
 			$project: {
 				ownedVolumesCount: { $size: { $ifNull: ["$ownedVolumes", []] } },
-				userListCount: { $size: { $ifNull: ["$userList", []] } },
+				userListCount: { $size: { $ifNull: ["$originalUserList", []] } },
 				wishListSeriesCount: { $size: { $ifNull: ["$wishList", []] } },
 				wishListVolumesCount: {
 					$sum: {
