@@ -126,7 +126,12 @@ export default function SeriesPage() {
 			const amountVolumesFromSeries = series.volumes.length;
 			await axios({
 				method: "POST",
-				data: { idList: idList, amountVolumesFromSeries, seriesId: id },
+				data: {
+					idList: idList,
+					amountVolumesFromSeries,
+					seriesId: id,
+					seriesStatus: series.status,
+				},
 				withCredentials: true,
 				headers: {
 					Authorization: import.meta.env.REACT_APP_API_KEY,

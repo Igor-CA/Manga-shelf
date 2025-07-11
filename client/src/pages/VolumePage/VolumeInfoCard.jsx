@@ -33,6 +33,7 @@ export default function VolumeInfoCard({ volumeData }) {
 					idList: [id],
 					amountVolumesFromSeries,
 					seriesId: volumeData.serie.id,
+					seriesStatus: volumeData.serie.status
 				},
 				headers: {
 					Authorization: import.meta.env.REACT_APP_API_KEY,

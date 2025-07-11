@@ -13,7 +13,7 @@ const UserSchema = new Schema({
 				required: true,
 			},
 			completionPercentage: { type: Number, default: 0 },
-			status: { type: String, default: "Collectingu"},
+			status: { type: String, default: "Collecting"},
 		},
 	],
 	wishList: {

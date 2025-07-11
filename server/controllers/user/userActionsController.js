@@ -20,6 +20,7 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 	const addedSeries = {
 		Series: req.body.id,
 		completionPercentage: 0,
+		status: "Collecting",
 	};
 	const inWishList = user.wishList.some(
 		(entry) => entry.toString() === req.body.id
@@ -139,9 +140,21 @@ exports.removeFromWishList = asyncHandler(async (req, res, next) => {
 	]);
 	return res.send({ msg: "Obra removida com sucesso" });
 });
-exports.addVolume = asyncHandler(async (req, res, next) => {
-	const { seriesId, amountVolumesFromSeries, idList } = req.body;
 
+function getNewUserSeriesStatus(currentStatus, completionPercentage) {
+	if (
+		(currentStatus === "Finalizado" || currentStatus === "Cancelado") &&
+		completionPercentage === 1
+	) {
+		return "Finished";
+	} else if (completionPercentage === 1) {
+		return "Up to date";
+	}
+	return "Collecting";
+}
+
+exports.addVolume = asyncHandler(async (req, res, next) => {
+	const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
 	const user = await User.findById(req.user._id, {
 		ownedVolumes: 1,
 		userList: 1,
@@ -164,9 +177,11 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 
 	if (!seriesEntry) {
 		//Add series to userList
+		const completionPercentage = idList.length / amountVolumesFromSeries;
 		user.userList.push({
 			Series: seriesId,
-			completionPercentage: idList.length / amountVolumesFromSeries,
+			completionPercentage: completionPercentage,
+			status: getNewUserSeriesStatus(seriesStatus, completionPercentage)
 		});
 		//If series in wishlist remove it
 		const newWishlist = user.wishList.filter((wishListSeriesId) => {
@@ -176,8 +191,9 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 	} else {
 		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
 		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
-		seriesEntry.completionPercentage =
-			ownedFromSeries.length / allVolumes.length;
+		const completionPercentage = ownedFromSeries.length / allVolumes.length;
+		seriesEntry.completionPercentage = completionPercentage
+		seriesEntry.status = getNewUserSeriesStatus(seriesStatus, completionPercentage);
 	}
 
 	await Promise.all([
@@ -212,6 +228,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
 		seriesEntry.completionPercentage =
 			ownedFromSeries.length / allVolumes.length;
+		seriesEntry.status = "Collecting"
 	}
 
 	await user.save();

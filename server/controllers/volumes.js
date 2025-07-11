@@ -25,7 +25,7 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 	}
 
 	const desiredVolume = await Volume.findById(req.params.id)
-		.populate("serie", "title volumes isAdult")
+		.populate("serie", "title volumes isAdult status")
 		.exec();
 
 	if (!desiredVolume) {
