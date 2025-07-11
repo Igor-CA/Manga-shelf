@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export function SeriesCard({ itemDetails, itemType }) {
 	const [loaded, setLoaded] = useState(false);
-	const { title, image, _id, completionPercentage, volumeNumber, isAdult } = itemDetails;
+	const { title, image, _id, completionPercentage, volumeNumber, isAdult, status } = itemDetails;
 	const link = itemType === "Series" ? `/series/${_id}` : `/volume/${_id}`;
 	const imageText =
 		itemType === "Series" ? title : `${title} - ${volumeNumber}`;
@@ -37,7 +37,7 @@ export function SeriesCard({ itemDetails, itemType }) {
 					onLoad={handleLoading}
 				/>
 				{isAdult && <div className="series-card__adult-indicator">+18</div>}
-				{completionPercentage > 0 && (
+				{completionPercentage > 0 && status !== "Dropped" &&(
 					<div className="series-card__bar">
 						<div
 							className={`series-card__progress-bar  ${
@@ -49,6 +49,15 @@ export function SeriesCard({ itemDetails, itemType }) {
 						></div>
 					</div>
 				)}
+				{status === "Dropped" &&(
+					<div className="series-card__bar">
+						<div
+							className="series-card__progress-bar series-card__progress-bar--dropped "
+							style={{ width: "100%" }}
+						></div>
+					</div>
+				)}
+
 			</Link>
 			<p className="series-card__title">{imageText}</p>
 		</div>

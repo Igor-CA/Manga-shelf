@@ -89,11 +89,14 @@
 	position: absolute;
 	z-index: 2;
 	background-color: rgb(var(--yellow));
-	height: 5px;
+	height: 8px;
 	bottom: 0;
 }
 .series-card__progress-bar--completed {
 	background-color: var(--green);
+}
+.series-card__progress-bar--dropped {
+	background-color: var(--red);
 }
 
 .button-select{

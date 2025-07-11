@@ -26,12 +26,7 @@ export default function SeriesInfoCard({
 	const [loaded, setLoaded] = useState(false);
 	const [optionsVisible, setOptionsVisible] = useState(false);
 	const { addMessage, setMessageType } = useContext(messageContext);
-	const [seriesInList, setSeriesInList] = useState(
-		user &&
-			user.userList.some(
-				(seriesObj) => seriesObj.Series._id.toString() === seriesInfo.id
-			)
-	);
+	const [seriesInList, setSeriesInList] = useState(seriesInfo.inUserList);
 	useEffect(() => {
 		setShowingMore(
 			seriesSummarry.current?.scrollHeight <=
@@ -45,7 +40,7 @@ export default function SeriesInfoCard({
 					(seriesObj) => seriesObj.Series._id.toString() === seriesInfo.id
 				)
 		);
-	}, [user, setOutdated]);
+	}, [user]);
 	const handleLoading = () => {
 		setLoaded(true);
 	};
@@ -76,8 +71,8 @@ export default function SeriesInfoCard({
 				},
 				url: url,
 			});
-			setMessageType("Success")
-			addMessage(`Obra ${isAdding?"adicionada":"removida"} com sucesso`)
+			setMessageType("Success");
+			addMessage(`Obra ${isAdding ? "adicionada" : "removida"} com sucesso`);
 			setOutdated(true);
 		} catch (err) {
 			const customErrorMessage = err.response.data.msg;
@@ -89,7 +84,9 @@ export default function SeriesInfoCard({
 		try {
 			const url = isAdding
 				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-to-wishlist`
-				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-from-wishlist`;
+				: `${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+				  }/api/user/remove-from-wishlist`;
 
 			await axios({
 				method: "POST",
@@ -101,8 +98,39 @@ export default function SeriesInfoCard({
 				url: url,
 			});
 			setOutdated(true);
-			setMessageType("Success")
-			addMessage(`Obra ${isAdding?"adicionada à lista de desejos":"removida da lista de desejos"} com sucesso`)
+			setMessageType("Success");
+			addMessage(
+				`Obra ${
+					isAdding
+						? "adicionada à lista de desejos"
+						: "removida da lista de desejos"
+				} com sucesso`
+			);
+		} catch (err) {
+			const customErrorMessage = err.response.data.msg;
+			addMessage(customErrorMessage);
+		}
+	};
+	const dropOrUndropSeries = async (dropping) => {
+		try {
+			const url = dropping
+				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/drop-series`
+				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/undrop-series`;
+
+			await axios({
+				method: "POST",
+				data: { id },
+				withCredentials: true,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				url: url,
+			});
+			setOutdated(true);
+			setMessageType("Success");
+			addMessage(
+				`Obra ${dropping ? "abandonada" : "de volta ao normal"} com sucesso`
+			);
 		} catch (err) {
 			const customErrorMessage = err.response.data.msg;
 			addMessage(customErrorMessage);
@@ -112,7 +140,7 @@ export default function SeriesInfoCard({
 		if (!user) {
 			return;
 		}
-		setOptionsVisible(false)
+		setOptionsVisible(false);
 		const adding = e.target.checked;
 		const list = localVolumeList
 			.filter((volume) => volume.ownsVolume === !adding)
@@ -132,14 +160,24 @@ export default function SeriesInfoCard({
 	};
 
 	const handleDropSeries = (e) => {
-		const adding = e.target.checked;
-		setOptionsVisible(false)
-		console.log(`${adding ? "Adding" : "Removing"} to dropped`);
+		const dropping = e.target.checked;
+		setOptionsVisible(false);
+		console.log(`${dropping ? "Adding" : "Removing"} to dropped`);
+		if (dropping) {
+			customWindowConfirm(
+				windowSetters,
+				"Deseja desistir(droppar) dessa obra? Obras desistidas não apareceram mais na lista de volumes faltosos mas continuarão na sua estante contando para as estatísticas",
+				() => dropOrUndropSeries(dropping),
+				null
+			);
+		} else {
+			dropOrUndropSeries(dropping);
+		}
 	};
 
 	const handleWishlist = (e) => {
 		const adding = e.target.checked;
-		setOptionsVisible(false)
+		setOptionsVisible(false);
 		if (!adding) {
 			customWindowConfirm(
 				windowSetters,
@@ -148,7 +186,7 @@ export default function SeriesInfoCard({
 				null
 			);
 		} else {
-			addOrRemoveFromWishList(adding)
+			addOrRemoveFromWishList(adding);
 		}
 	};
 
@@ -232,7 +270,7 @@ export default function SeriesInfoCard({
 									<label
 										htmlFor="select-all-check-mark"
 										className="button-select__option"
-										>
+									>
 										<strong>
 											{user && getCompletionPercentage(user, id) === 1
 												? "Remover todos"
@@ -268,9 +306,7 @@ export default function SeriesInfoCard({
 												id="wishlist-check-mark"
 												className="checkmark invisible"
 												disabled={user ? false : true}
-												checked={
-													user && checkIfInWishlist(user, id)
-												}
+												checked={user && checkIfInWishlist(user, id)}
 												onChange={handleWishlist}
 											/>
 										</label>
