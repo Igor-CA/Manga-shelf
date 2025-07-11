@@ -19,7 +19,7 @@ export const getCompletionPercentage = (user, id) => {
 		: 0;
 };
 export const checkIfInWishlist = (user, id) => {
-	if (!user.wishlist) return false;
+	if (!user.wishList) return false;
 	const inWishList = user.wishList.some((entry) => entry.toString() === id);
 	return inWishList;
 };
