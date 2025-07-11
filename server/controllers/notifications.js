@@ -5,7 +5,7 @@ const User = require("../models/User");
 
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const { sendEmail } = require("../Utils/sendEmail");
-
+const UserNotificationStatus = require("../models/UserNotificationStatus");
 
 exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 	if (!req.isAuthenticated()) {
@@ -22,7 +22,6 @@ exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 });
 
 exports.getUserNotifications = asyncHandler(async (req, res, next) => {
-
 	if (!req.isAuthenticated()) {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
 	}
@@ -152,23 +151,21 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 
 exports.sendSiteNewsNotification = async (updatesList) => {
 	const notification = await createSiteNewsNotification(updatesList);
-	const users = await User.find({})
-	
-	
-	for(const user of users){
+	const users = await User.find({});
+
+	for (const user of users) {
 		await sendNotification(notification, user._id);
 	}
-		
-	return notification
+
+	return notification;
 };
 
 async function createSiteNewsNotification(updatesList) {
-
 	const newNotification = new Notification({
 		type: "site",
 		text: "O Manga Shelf foi atualizado. Veja as novidades",
 		imageUrl: `/android-chrome-192x192.png`,
-		details: updatesList
+		details: updatesList,
 	});
 	await newNotification.save();
 	return newNotification;
@@ -193,23 +190,52 @@ async function createNewVolumeNotification(newVolume) {
 	await newNotification.save();
 	return newNotification;
 }
-exports.sendNewVolumeNotification = async (volumesList, targetUserId) => {
-	const notificationsList = []
-	for(const volume of volumesList){
-		const notification = await createNewVolumeNotification(volume);
-		notificationsList.push(notification)
+
+exports.createPendingVolumeNotification = async (newVolume) => {
+	const notification = await createNewVolumeNotification(newVolume);
+
+	const users = await User.find({
+		"userList.Series": newVolume.serie,
+		"userList.status": { $ne: "Dropped" },
+	}).select("settings");
+	console.log(users);
+	if (users.length === 0) return;
+
+	const pendingDocs = [];
+	for (const user of users) {
+		const settings = user.settings.notifications;
+		if (settings.allow && (settings.site || settings.email)) {
+			pendingDocs.push({
+				user: user._id,
+				notification: notification._id,
+				siteStatus: settings.site ? "pending" : "disabled",
+				emailStatus: settings.email ? "pending" : "disabled",
+			});
+		}
 	}
-	const firstNotification = notificationsList[0]
+	console.log(pendingDocs);
+	if (pendingDocs.length > 0) {
+		await UserNotificationStatus.insertMany(pendingDocs);
+	}
+};
+
+exports.sendNewVolumeNotification = async (volumesList, targetUserId) => {
+	const notificationsList = [];
+	for (const volume of volumesList) {
+		const notification = await createNewVolumeNotification(volume);
+		notificationsList.push(notification);
+	}
+	const firstNotification = notificationsList[0];
 
 	const { allowNotifications, allowType, allowEmail, allowSite } =
 		await checkNotificationSettings(targetUserId, firstNotification.type);
-	
+
 	if (!allowNotifications || !allowType) return;
 	if (allowEmail) {
 		await sendEmailNotification(firstNotification, targetUserId, volumesList);
 	}
 	if (allowSite) {
-		for(const notification of notificationsList){
+		for (const notification of notificationsList) {
 			await sendSiteNotification(notification, targetUserId);
 		}
 	}
@@ -249,7 +275,11 @@ async function checkNotificationSettings(userId, type) {
 	const allowSite = user.settings.notifications.site;
 	return { allowNotifications, allowType, allowEmail, allowSite };
 }
-async function sendEmailNotification(notification, targetUserId, volumesList) {
+const sendEmailNotification = async (
+	notification,
+	targetUserId,
+	volumesList
+) => {
 	const targetUser = await User.findById(targetUserId);
 
 	if (notification.type === "followers") {
@@ -282,9 +312,7 @@ async function sendEmailNotification(notification, targetUserId, volumesList) {
 		const attachments = volumesList.map((volume, id) => {
 			return {
 				filename: getVolumeCoverURL(volume.serie, volume.number),
-				path: `${
-					process.env.SITE_DOMAIN
-				}/images/medium/${getVolumeCoverURL(
+				path: `${process.env.SITE_DOMAIN}/images/medium/${getVolumeCoverURL(
 					volume.serie,
 					volume.number
 				)}`,
@@ -311,14 +339,13 @@ async function sendEmailNotification(notification, targetUserId, volumesList) {
 			"siteUpdatesEmail",
 			{
 				username: targetUser.username,
-				notification
+				notification,
 			}
 		);
-		
 	}
 
 	return;
-}
+};
 async function sendSiteNotification(notificationId, targetUserId) {
 	await User.findByIdAndUpdate(
 		targetUserId,
@@ -343,3 +370,5 @@ async function sendNotification(notification, targetUserId, dataList) {
 	}
 	return notification;
 }
+
+exports.sendEmailNotification = sendEmailNotification;
