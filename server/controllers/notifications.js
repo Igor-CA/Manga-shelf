@@ -198,7 +198,6 @@ exports.createPendingVolumeNotification = async (newVolume) => {
 		"userList.Series": newVolume.serie,
 		"userList.status": { $ne: "Dropped" },
 	}).select("settings");
-	console.log(users);
 	if (users.length === 0) return;
 
 	const pendingDocs = [];
@@ -213,7 +212,6 @@ exports.createPendingVolumeNotification = async (newVolume) => {
 			});
 		}
 	}
-	console.log(pendingDocs);
 	if (pendingDocs.length > 0) {
 		await UserNotificationStatus.insertMany(pendingDocs);
 	}
@@ -346,7 +344,7 @@ const sendEmailNotification = async (
 
 	return;
 };
-async function sendSiteNotification(notificationId, targetUserId) {
+const sendSiteNotification = async(notificationId, targetUserId) => {
 	await User.findByIdAndUpdate(
 		targetUserId,
 		{ $push: { notifications: { notification: notificationId } } },
@@ -372,3 +370,4 @@ async function sendNotification(notification, targetUserId, dataList) {
 }
 
 exports.sendEmailNotification = sendEmailNotification;
+exports.sendSiteNotification = sendSiteNotification;
