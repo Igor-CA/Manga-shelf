@@ -40,10 +40,11 @@ export default function ReportProblem() {
 			const customErrorMessage = response.data.msg;
 			addMessage(customErrorMessage);
 			setMessageType("Success");
-			setLoading(false);
 		} catch (error) {
 			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
+		} finally {
+			setLoading(false);
 		}
 	};
 	const handleInvalid = (e) => {
