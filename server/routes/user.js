@@ -17,6 +17,7 @@ const {
 	changeUsernameValidator,
 	changePasswordValidator,
 	changeEmailValidator,
+	reportsValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -53,7 +54,7 @@ router.post(
 	validateRequest,
 	authController.resetPassword
 );
-router.post("/report", reportController.createReport);
+router.post("/report", reportsValidation, validateRequest, reportController.createReport);
 
 //
 router.post("/add-series", requireAuth, userActionsController.addSeries);

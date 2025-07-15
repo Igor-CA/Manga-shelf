@@ -60,6 +60,31 @@ const tosValidation = body("tos-checkbox")
 	.notEmpty()
 	.withMessage("Concorde com nossos termos para criar uma conta.");
 
+const reportDetailsValidation = body("details")
+	.trim()
+	.notEmpty()
+	.withMessage("Detalhes devem ser especificados.");
+
+const reportLocalValidation = body("local")
+	.trim()
+	.notEmpty()
+	.withMessage("O local deve ser especificado.")
+	.escape();
+
+const reportPageValidation = body("page")
+	.trim()
+	.notEmpty()
+	.withMessage("A página em específico deve ser citada.")
+	.escape();
+
+const reportTypeValidation = body("type")
+	.trim()
+	.notEmpty()
+	.withMessage("O tipo de sugestão deve ser especificada.")
+	.escape();
+
+const reportUserValidation = body("user").trim().escape();
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -72,14 +97,18 @@ const signupValidation = [
 	tosValidation,
 ];
 const changeUsernameValidator = [usernameValidation];
-const changeEmailValidator = [
-	emailValidation
-]
+const changeEmailValidator = [emailValidation];
 const changePasswordValidator = [
 	newPasswordValidation,
 	confirmPasswordValidation,
 ];
-
+const reportsValidation = [
+	reportDetailsValidation,
+	reportLocalValidation,
+	reportTypeValidation,
+	reportPageValidation,
+	reportUserValidation,
+];
 // Middleware to handle validation errors
 const validateRequest = (req, res, next) => {
 	const errors = validationResult(req);
@@ -100,5 +129,6 @@ module.exports = {
 	changeUsernameValidator,
 	changeEmailValidator,
 	changePasswordValidator,
+	reportsValidation,
 	validateRequest,
 };
