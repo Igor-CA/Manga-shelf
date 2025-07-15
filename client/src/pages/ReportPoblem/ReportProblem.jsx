@@ -11,6 +11,7 @@ export default function ReportProblem() {
 		page: "",
 		user: "",
 	});
+	const [loading, setLoading] = useState(false);
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -18,6 +19,7 @@ export default function ReportProblem() {
 	};
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		setLoading(true);
 		try {
 			const response = await axios({
 				method: "POST",
@@ -38,6 +40,7 @@ export default function ReportProblem() {
 			const customErrorMessage = response.data.msg;
 			addMessage(customErrorMessage);
 			setMessageType("Success");
+			setLoading(false);
 		} catch (error) {
 			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
@@ -86,15 +89,24 @@ export default function ReportProblem() {
 						}}
 						required
 						defaultValue={""}
+						value={formData.type}
 					>
 						<option value="" disabled>
 							Escolha o tipo de problema
 						</option>
 						<option value="Wrong info">Informação errada</option>
-						<option value="Missing info">Informação faltando</option>
-						<option value="Bug">Ocorrencia de problemas/bugs</option>
-						<option value="Change suggestion">Sugestão de mudança</option>
-						<option value="New feature">Sugestão de nova função</option>
+						<option value="Missing info">
+							Informação faltando
+						</option>
+						<option value="Bug">
+							Ocorrencia de problemas/bugs
+						</option>
+						<option value="Change suggestion">
+							Sugestão de mudança
+						</option>
+						<option value="New feature">
+							Sugestão de nova função
+						</option>
 						<option value="Other">Outro</option>
 					</select>
 					<label
@@ -115,16 +127,25 @@ export default function ReportProblem() {
 						}}
 						required
 						defaultValue={""}
+						value={formData.local}
 					>
 						<option value="" disabled>
 							Escolha onde ocorreu o problema
 						</option>
 						<option value="User profile">Perfis de usuário</option>
-						<option value="Missing volumes">Página de Volumes faltosos</option>
-						<option value="Volumes page">Página de um Volume</option>
-						<option value="Series page">Página de uma coleção</option>
+						<option value="Missing volumes">
+							Página de Volumes faltosos
+						</option>
+						<option value="Volumes page">
+							Página de um Volume
+						</option>
+						<option value="Series page">
+							Página de uma coleção
+						</option>
 						<option value="Search page">Pagina de busca</option>
-						<option value="Search result">Resultado em busca</option>
+						<option value="Search result">
+							Resultado em busca
+						</option>
 						<option value="Authentication">Login/Cadastro</option>
 						<option value="Other">Outro</option>
 					</select>
@@ -190,7 +211,14 @@ export default function ReportProblem() {
 							handleInvalid(e);
 						}}
 					/>
-					<button className="button">Enviar sugestão</button>
+					<button
+						className={`button ${
+							loading ? "button--disabled" : ""
+						}`}
+						disabled={loading}
+					>
+						Enviar sugestão
+					</button>
 				</form>
 			</div>
 		</div>
