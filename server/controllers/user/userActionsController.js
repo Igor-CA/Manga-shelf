@@ -141,7 +141,7 @@ exports.removeFromWishList = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Obra removida com sucesso" });
 });
 
-function getNewUserSeriesStatus(currentStatus, completionPercentage) {
+exports.getNewUserSeriesStatus = (currentStatus, completionPercentage) => {
 	if (
 		(currentStatus === "Finalizado" || currentStatus === "Cancelado") &&
 		completionPercentage === 1
