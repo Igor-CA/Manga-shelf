@@ -16,6 +16,9 @@ export default function ProfileHeader({ user }) {
 	const [banner, setBanner] = useState();
 	const avatarUrl = useRef("");
 
+	const [cropperAspectRatio, setCropperAspectRatio] = useState(1);
+	const [cropperApiRoute, setCropperApiRoute] = useState("");
+
 	useEffect(() => {
 		const getProfilePicture = async (page) => {
 			setLoaded(false);
@@ -58,6 +61,26 @@ export default function ProfileHeader({ user }) {
 	const toggleModal = () => {
 		setShowModal((prev) => !prev);
 	};
+
+	const configureCropToPic = () => {
+		setCropperAspectRatio(1);
+		setCropperApiRoute(
+			`${
+				import.meta.env.REACT_APP_HOST_ORIGIN
+			}/api/user/change-profile-pic`
+		);
+		toggleModal();
+	};
+	const configureCropToBanner = () => {
+		setCropperAspectRatio(5);
+		setCropperApiRoute(
+			`${
+				import.meta.env.REACT_APP_HOST_ORIGIN
+			}/api/user/change-profile-banner`
+		);
+		toggleModal();
+	};
+
 	const handleLoading = () => {
 		setLoaded(true);
 	};
@@ -71,9 +94,11 @@ export default function ProfileHeader({ user }) {
 				},
 				data: {
 					targetUser: user,
-					follow: !following
+					follow: !following,
 				},
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/toggle-follow`,
+				url: `${
+					import.meta.env.REACT_APP_HOST_ORIGIN
+				}/api/user/toggle-follow`,
 			});
 			setFollowing((prev) => !prev);
 		} catch (error) {
@@ -85,16 +110,19 @@ export default function ProfileHeader({ user }) {
 			{showModal && (
 				<ImageModal
 					closeModal={toggleModal}
-					apiUrl={`${
-						import.meta.env.REACT_APP_HOST_ORIGIN
-					}/api/user/change-profile-pic`}
+					apiUrl={cropperApiRoute}
+					aspectRatio={cropperAspectRatio}
 				></ImageModal>
 			)}
 			<header
 				className="profile-header"
 				style={
 					banner
-						? { backgroundImage: `url(${import.meta.env.REACT_APP_HOST_ORIGIN}/${banner})` }
+						? {
+								backgroundImage: `url(${
+									import.meta.env.REACT_APP_HOST_ORIGIN
+								}/${banner})`,
+						  }
 						: undefined
 				}
 			>
@@ -112,7 +140,9 @@ export default function ProfileHeader({ user }) {
 						{loggedUser?.username === user && (
 							<button
 								className="profile-header__change-picture-button"
-								onClick={toggleModal}
+								onClick={() => {
+									configureCropToPic();
+								}}
 							>
 								Mudar foto de perfil
 							</button>
@@ -129,6 +159,16 @@ export default function ProfileHeader({ user }) {
 						</button>
 					)}
 				</div>
+				{loggedUser?.username === user && (
+					<button
+						className="profile-header__change-picture-button"
+						onClick={() => {
+							configureCropToBanner();
+						}}
+					>
+						Mudar foto de fundo 
+					</button>
+				)}
 			</header>
 			<div className="profile-header__navbar">
 				<nav className="container">
