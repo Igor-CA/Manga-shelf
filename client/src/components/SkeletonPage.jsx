@@ -8,27 +8,13 @@ export default function SkeletonPage({ type = "Volume" }) {
 				<div className="series-card__image-container series-card__loader"></div>
 				<div className="volume__main-info">
 					<div className="volume__functions">
-						<div className="button button--disabled">
+						<div className="button button--disabled button--grow">
 							<strong>
 								{type === "Volume"
 									? "Ver coleção"
 									: "Adicionar todos"}
 							</strong>
 						</div>
-						<label
-							htmlFor="have-volume-check-mark"
-							className="button button--grow button--disabled"
-						>
-							{type === "Volume"
-								? "Adicionar Volume"
-								: "Adicionar coleção"}
-						</label>
-						<input
-							type="checkbox"
-							name="have-volume-check-mark"
-							id="have-volume-check-mark"
-							className="checkmark invisible"
-						/>
 					</div>
 					{type === "Series" && (
 						<div className="series__mobile-options-container">
