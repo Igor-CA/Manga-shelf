@@ -7,7 +7,7 @@ const  UserNotificationStatus  = require("../models/UserNotificationStatus");
 const { sendEmailNotification } = require("../controllers/notifications");
 
 async function dispatchEmails(){
-	console.log("Running Email Dispatcher Job...");
+	console.log("[INFO] Running Email Dispatcher Job...");
 
 	const pendingNotifications = await UserNotificationStatus.find({
 		emailStatus: "pending",
@@ -27,7 +27,7 @@ async function dispatchEmails(){
 		});
 
 	if (pendingNotifications.length === 0) {
-		console.log("No pending emails to send.");
+		console.log("[ERROR] No pending emails to send.");
 		return;
 	}
 
@@ -55,7 +55,7 @@ async function dispatchEmails(){
 		if (volumesList.length === 0) continue;
 
 		console.log(
-			`Sending ONE summary email to ${user.username} for ${volumesList.length} new volumes.`
+			`[INFO] Sending ONE summary email to ${user.username} for ${volumesList.length} new volumes.`
 		);
 
 		try {
@@ -70,7 +70,7 @@ async function dispatchEmails(){
 		}
 	}
 
-	console.log("Email Dispatcher Job finished.");
+	console.log("[INFO] Email Dispatcher Job finished.");
 }
 module.exports = { dispatchEmails }; 
 
