@@ -235,7 +235,7 @@ function Notification({ notification }) {
 		for (const interval of intervals) {
 			const count = Math.floor(diff / interval.seconds);
 			if (count >= 1) {
-				if(interval.label === "mês")
+				if(interval.label === "mês" && count > 1)
 					return `${count} meses atrás`;
 				return `${count} ${interval.label}${count > 1 ? "s" : ""} atrás`;
 			}
