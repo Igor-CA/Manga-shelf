@@ -3,6 +3,7 @@ const path = require('path');
 
 const nodemailer = require("nodemailer");
 const ejs = require("ejs");
+const logger = require("./logger");
 
 const transporter = nodemailer.createTransport({
 	service: "gmail",
@@ -34,7 +35,7 @@ async function sendEmail(to, subject, template, data, attachments) {
 
 		await transporter.sendMail(mailOptions);
 	} catch (err) {
-		console.log("Error: ", err);
+		logger.error("Error: ", err);
 		throw err;
 	}
 }

@@ -4,12 +4,11 @@ const Notifications = require("../models/Notification");
 const Volume = require("../models/volume");
 const Series = require("../models/Series");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
-const {
-    sendSiteNotification,
-} = require("../controllers/notifications");
+const { sendSiteNotification } = require("../controllers/notifications");
+const logger = require("../Utils/logger");
 
 async function dispatchSiteNotifications() {
-	console.log("[INFO] Running Site Dispatcher Job...");
+	logger.info("Running Site Dispatcher Job...");
 
 	const pendingNotifications = await UserNotificationStatus.find({
 		siteStatus: "pending",
@@ -28,7 +27,7 @@ async function dispatchSiteNotifications() {
 			},
 		});
 	if (pendingNotifications.length === 0) {
-		console.log("[INFO] No pending notifications to send.");
+		logger.info("No pending notifications to send.");
 		return;
 	}
 
@@ -50,8 +49,8 @@ async function dispatchSiteNotifications() {
 
 		if (notificationsList.length === 0) continue;
 
-		console.log(
-			`[INFO] Sending ${notificationsList.length} new volumes notifications to ${user.username} profile.`
+		logger.info(
+			`Sending ${notificationsList.length} new volumes notifications to ${user.username} profile.`
 		);
 		for (const notification of notificationsList) {
 			try {
@@ -62,10 +61,13 @@ async function dispatchSiteNotifications() {
 					{ $set: { siteStatus: "sent" } }
 				);
 			} catch (error) {
-				console.error(`[ERROR] Failed to add notification to ${user.username}:`, error);
+				logger.error(
+					`Failed to add notification to ${user.username}:`,
+					error
+				);
 			}
 		}
 	}
-	console.log("[INFO] Notification Dispatcher Job finished.");
+	logger.info("Notification Dispatcher Job finished.");
 }
 module.exports = { dispatchSiteNotifications };

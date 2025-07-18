@@ -15,6 +15,7 @@ const createError = require("http-errors");
 const adminRouter = require("./routes/admin");
 const apiRouter = require("./routes/api");
 const userRouter = require("./routes/user");
+const logger = require("./Utils/logger");
 
 const app = express();
 
@@ -34,9 +35,9 @@ const mongoDB = process.env.MONGODB_URI;
 mongoose
 	.connect(mongoDB)
 	.then(() => {
-		console.log("mongoose is conncected");
+		logger.info("mongoose is conncected");
 	})
-	.catch((err) => console.log(err));
+	.catch((err) => logger.error(err));
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -101,6 +102,7 @@ app.use(function (err, req, res, next) {
 	// render the error page
 	res.status(err.status || 500);
 	res.render("error");
+	logger.error("Error in API call:", err)
 });
 
 module.exports = app;

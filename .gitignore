@@ -31,3 +31,4 @@ client/dist
 server/sitemap.xml
 server/sitemapGenerator.js
 Backups
+logs
