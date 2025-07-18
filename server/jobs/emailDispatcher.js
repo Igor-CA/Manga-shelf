@@ -1,13 +1,14 @@
 //Job responsible to send emails with new volumes batched as a single email to each user
-const  User  = require("../models/User");
-const  Notifications  = require("../models/Notification");
-const  Volume  = require("../models/volume");
-const  Series  = require("../models/Series");
-const  UserNotificationStatus  = require("../models/UserNotificationStatus");
+const User = require("../models/User");
+const Notifications = require("../models/Notification");
+const Volume = require("../models/volume");
+const Series = require("../models/Series");
+const UserNotificationStatus = require("../models/UserNotificationStatus");
 const { sendEmailNotification } = require("../controllers/notifications");
+const logger = require("../Utils/logger");
 
-async function dispatchEmails(){
-	console.log("[INFO] Running Email Dispatcher Job...");
+async function dispatchEmails() {
+	logger.info("Running Email Dispatcher Job...");
 
 	const pendingNotifications = await UserNotificationStatus.find({
 		emailStatus: "pending",
@@ -27,7 +28,7 @@ async function dispatchEmails(){
 		});
 
 	if (pendingNotifications.length === 0) {
-		console.log("[ERROR] No pending emails to send.");
+		logger.warn("No pending emails to send.");
 		return;
 	}
 
@@ -46,7 +47,7 @@ async function dispatchEmails(){
 	for (const userId in userGroupedStatuses) {
 		const statusGroup = userGroupedStatuses[userId];
 		const user = statusGroup[0].user;
-        const notification = statusGroup[0].notification
+		const notification = statusGroup[0].notification;
 
 		const volumesList = statusGroup
 			.map((status) => status.notification.associatedObject)
@@ -54,23 +55,22 @@ async function dispatchEmails(){
 
 		if (volumesList.length === 0) continue;
 
-		console.log(
+		logger.info(
 			`[INFO] Sending ONE summary email to ${user.username} for ${volumesList.length} new volumes.`
 		);
 
 		try {
-		    await sendEmailNotification(notification, user._id, volumesList);
+			await sendEmailNotification(notification, user._id, volumesList);
 			const statusIdsToUpdate = statusGroup.map((status) => status._id);
 			await UserNotificationStatus.updateMany(
 				{ _id: { $in: statusIdsToUpdate } },
 				{ $set: { emailStatus: "sent" } }
 			);
 		} catch (error) {
-			console.error(`Failed to send email to ${user.username}:`, error);
+			logger.error(`Failed to send email to ${user.username}:`, error);
 		}
 	}
 
-	console.log("[INFO] Email Dispatcher Job finished.");
+	logger.info("Email Dispatcher Job finished.");
 }
-module.exports = { dispatchEmails }; 
-
+module.exports = { dispatchEmails };

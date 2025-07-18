@@ -6,6 +6,7 @@ const Series = require("../models/Series");
 const {
 	getNewUserSeriesStatus,
 } = require("../controllers/user/userActionsController");
+const logger = require("../Utils/logger");
 async function syncAndRecalculateData() {
 	await cleanUserDuplicates();
 	await recalculateUserListInfo();
@@ -13,7 +14,7 @@ async function syncAndRecalculateData() {
 }
 
 async function cleanUserDuplicates() {
-	console.log("[INFO] Cleaning duplicate data");
+	logger.info("Cleaning duplicate data");
 	let usersProcessed = 0;
 	let usersModified = 0;
 
@@ -76,27 +77,25 @@ async function cleanUserDuplicates() {
 			usersProcessed++;
 		}
 
-		console.log(
-			`[INFO] Processed: ${usersProcessed}, Modified: ${usersModified}.`
-		);
+		logger.info(`Processed: ${usersProcessed}, Modified: ${usersModified}.`);
 		return { usersProcessed, usersModified };
 	} catch (error) {
-		console.error("[ERROR] Error cleaning duplicate data:", error);
+		logger.error("Error cleaning duplicate data:", error);
 		throw error;
 	}
 }
 async function recalculateUserListInfo() {
-	console.log("[INFO] Checking userList related info");
+	logger.info("Checking userList related info");
 	let usersProcessed = 0;
 	let usersModified = 0;
-	
-    await User.updateMany(
+
+	await User.updateMany(
 		{ "userList.status": { $exists: false } },
 		{ $set: { "userList.$[element].status": "Collecting" } },
 		{ arrayFilters: [{ "element.status": { $exists: false } }] }
 	);
-	
-    const cursor = User.find({ "userList.0": { $exists: true } }).cursor();
+
+	const cursor = User.find({ "userList.0": { $exists: true } }).cursor();
 
 	try {
 		for (
@@ -156,52 +155,55 @@ async function recalculateUserListInfo() {
 			usersProcessed++;
 		}
 
-		console.log(
-			`[INFO] Checking userList related info`
-		);
+		logger.info(`Processed: ${usersProcessed}, Modified: ${usersModified}.`);
 		return { usersProcessed, usersModified };
 	} catch (error) {
-		console.error("[ERROR] Error hecking userList related info:", error);
+		logger.error("Error checking userList related info:", error);
 		throw error;
 	}
 }
 
 async function updateSeriesPopularity() {
-	console.log("[INFO] Calculating series popularity");
-	const popularityAggregation = await User.aggregate([
-		{
-			$project: {
-				allSeries: {
-					$concatArrays: [
-						{ $ifNull: ["$userList.Series", []] },
-						{ $ifNull: ["$wishList", []] },
-					],
+	try {
+		logger.info("Calculating series popularity");
+		const popularityAggregation = await User.aggregate([
+			{
+				$project: {
+					allSeries: {
+						$concatArrays: [
+							{ $ifNull: ["$userList.Series", []] },
+							{ $ifNull: ["$wishList", []] },
+						],
+					},
 				},
 			},
-		},
-		{ $unwind: "$allSeries" },
-		{
-			$group: {
-				_id: "$allSeries",
-				userCount: { $addToSet: "$_id" },
+			{ $unwind: "$allSeries" },
+			{
+				$group: {
+					_id: "$allSeries",
+					userCount: { $addToSet: "$_id" },
+				},
 			},
-		},
-		{
-			$project: {
-				popularity: { $size: "$userCount" },
+			{
+				$project: {
+					popularity: { $size: "$userCount" },
+				},
 			},
-		},
-	]);
+		]);
 
-	const bulkOps = popularityAggregation.map(({ _id, popularity }) => ({
-		updateOne: {
-			filter: { _id },
-			update: { $set: { popularity } },
-		},
-	}));
+		const bulkOps = popularityAggregation.map(({ _id, popularity }) => ({
+			updateOne: {
+				filter: { _id },
+				update: { $set: { popularity } },
+			},
+		}));
 
-	console.log("[INFO] Series popularity updated");
-	await Series.bulkWrite(bulkOps);
+		logger.info("Series popularity updated");
+		await Series.bulkWrite(bulkOps);
+	} catch (error) {
+		logger.error("Error updating series popularity:", error);
+		throw error;
+	}
 }
 
 module.exports = { syncAndRecalculateData };
