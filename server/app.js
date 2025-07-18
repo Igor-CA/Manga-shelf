@@ -19,6 +19,16 @@ const logger = require("./Utils/logger");
 
 const app = express();
 
+process.on('uncaughtException', (error) => {
+	logger.error('Uncaught Exception:', { message: error.message, stack: error.stack });
+	process.exit(1); 
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+	logger.error('Unhandled Rejection:', { reason: reason.message, stack: reason.stack });
+	process.exit(1); 
+});
+
 //Middleware for API Key
 const apiKeyAuth = (req, res, next) => {
 	if (
