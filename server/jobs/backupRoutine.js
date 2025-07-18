@@ -2,7 +2,7 @@ const { spawn } = require("child_process");
 const path = require("path");
 const logger = require("../Utils/logger");
 
-const MONGO_URI = process.env.MONGODB_TEST_URI || "DBURL";
+const MONGO_URI = process.env.MONGODB_URI || "DBURL";
 const DB_NAME = process.env.MONGODB_NAME || "dev";
 function backupDatabase() {
 	return new Promise((resolve, reject) => {
