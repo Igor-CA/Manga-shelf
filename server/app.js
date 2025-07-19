@@ -16,17 +16,24 @@ const adminRouter = require("./routes/admin");
 const apiRouter = require("./routes/api");
 const userRouter = require("./routes/user");
 const logger = require("./Utils/logger");
+const startScheduledJobs = require("./jobsHandler");
 
 const app = express();
 
-process.on('uncaughtException', (error) => {
-	logger.error('Uncaught Exception:', { message: error.message, stack: error.stack });
-	process.exit(1); 
+process.on("uncaughtException", (error) => {
+	logger.error("Uncaught Exception:", {
+		message: error.message,
+		stack: error.stack,
+	});
+	process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-	logger.error('Unhandled Rejection:', { reason: reason.message, stack: reason.stack });
-	process.exit(1); 
+process.on("unhandledRejection", (reason, promise) => {
+	logger.error("Unhandled Rejection:", {
+		reason: reason.message,
+		stack: reason.stack,
+	});
+	process.exit(1);
 });
 
 //Middleware for API Key
@@ -48,6 +55,8 @@ mongoose
 		logger.info("mongoose is conncected");
 	})
 	.catch((err) => logger.error(err));
+
+startScheduledJobs();
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -112,7 +121,7 @@ app.use(function (err, req, res, next) {
 	// render the error page
 	res.status(err.status || 500);
 	res.render("error");
-	logger.error("Error in API call:", err)
+	logger.error(`Error in API call: ${err} URL: ${req.originalUrl}`);
 });
 
 module.exports = app;
