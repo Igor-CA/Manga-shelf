@@ -166,7 +166,7 @@ export default function SeriesInfoCard({
 		if (dropping) {
 			customWindowConfirm(
 				windowSetters,
-				"Deseja desistir(droppar) dessa obra? Obras desistidas não apareceram mais na lista de volumes faltosos mas continuarão na sua estante contando para as estatísticas",
+				"Deseja abandonar(droppar) essa obra? Obras abandonadas não apareceram mais na lista de volumes faltosos mas continuarão na sua estante contando para as estatísticas",
 				() => dropOrUndropSeries(dropping),
 				null
 			);
@@ -319,7 +319,7 @@ export default function SeriesInfoCard({
 											<strong>
 												{user && getSeriesStatus(user, id) === "Dropped"
 													? "Voltar a colecionar"
-													: "Desistir (Dropar) da coleção"}
+													: "Abandonar(Dropar) coleção"}
 											</strong>
 											<input
 												type="checkbox"
