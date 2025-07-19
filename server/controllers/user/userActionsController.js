@@ -141,7 +141,7 @@ exports.removeFromWishList = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Obra removida com sucesso" });
 });
 
-exports.getNewUserSeriesStatus = (currentStatus, completionPercentage) => {
+const getNewUserSeriesStatus = (currentStatus, completionPercentage) => {
 	if (
 		(currentStatus === "Finalizado" || currentStatus === "Cancelado") &&
 		completionPercentage === 1
@@ -151,7 +151,7 @@ exports.getNewUserSeriesStatus = (currentStatus, completionPercentage) => {
 		return "Up to date";
 	}
 	return "Collecting";
-}
+};
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
 	const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
@@ -181,7 +181,7 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 		user.userList.push({
 			Series: seriesId,
 			completionPercentage: completionPercentage,
-			status: getNewUserSeriesStatus(seriesStatus, completionPercentage)
+			status: getNewUserSeriesStatus(seriesStatus, completionPercentage),
 		});
 		//If series in wishlist remove it
 		const newWishlist = user.wishList.filter((wishListSeriesId) => {
@@ -192,8 +192,11 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
 		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
 		const completionPercentage = ownedFromSeries.length / allVolumes.length;
-		seriesEntry.completionPercentage = completionPercentage
-		seriesEntry.status = getNewUserSeriesStatus(seriesStatus, completionPercentage);
+		seriesEntry.completionPercentage = completionPercentage;
+		seriesEntry.status = getNewUserSeriesStatus(
+			seriesStatus,
+			completionPercentage
+		);
 	}
 
 	await Promise.all([
@@ -228,7 +231,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
 		seriesEntry.completionPercentage =
 			ownedFromSeries.length / allVolumes.length;
-		seriesEntry.status = "Collecting"
+		seriesEntry.status = "Collecting";
 	}
 
 	await user.save();
@@ -305,3 +308,5 @@ exports.undropSeries = asyncHandler(async (req, res, next) => {
 	}
 	return res.send({ msg: "Status da série atualizado para 'Colecionando'" });
 });
+
+exports.getNewUserSeriesStatus = getNewUserSeriesStatus;
