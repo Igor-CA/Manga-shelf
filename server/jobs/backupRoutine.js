@@ -31,10 +31,6 @@ function backupDatabase() {
 			logger.info(`mongodump stdout: ${data}`);
 		});
 
-		mongodump.stderr.on("data", (data) => {
-			logger.error(`mongodump stderr: ${data}`);
-		});
-
 		mongodump.on("close", (code) => {
 			if (code === 0) {
 				logger.info(
