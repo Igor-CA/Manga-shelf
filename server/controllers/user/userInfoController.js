@@ -202,6 +202,8 @@ exports.getUserWishlist = asyncHandler(async (req, res, next) => {
 		return {
 			...series,
 			image: getSeriesCoverURL(series),
+			inUserList: false,
+			inWishlist: true
 		};
 	});
 
