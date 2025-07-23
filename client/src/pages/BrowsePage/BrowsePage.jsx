@@ -225,6 +225,7 @@ export default function BrowsePage() {
 				fetchFunction={fetchPage}
 				functionArguments={functionArguments}
 				errorComponent={ErrorComponent}
+				showActions={true}
 			></SeriesCardList>
 		</div>
 	);

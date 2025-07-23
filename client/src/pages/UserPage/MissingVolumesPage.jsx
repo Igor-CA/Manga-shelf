@@ -54,6 +54,7 @@ export default function MissingVolumesPage() {
 				fetchFunction={fetchMissingVolumes}
 				itemType="Volumes"
 				errorComponent={EmptyListComponent}
+				showActions={true}
 			></SeriesCardList>
 		</div>
 	);
