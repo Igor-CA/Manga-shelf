@@ -1,11 +1,5 @@
 import React from "react";
-import {
-	PieChart,
-	Pie,
-	Cell,
-	Tooltip,
-	ResponsiveContainer
-} from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 const COLORS = [
 	"#003A7D",
@@ -20,6 +14,13 @@ const COLORS = [
 const MAX_SHOW = 4;
 
 export default function PieChartComponent({ chartTitle, data, total }) {
+	const getPercentageString = (count, total) => {
+		const percentage = Math.round((count / total) * 100);
+		if (percentage < 1){
+			return "< 1"
+		}
+		return percentage
+	};
 	return (
 		<div className="chart-container">
 			<div>
@@ -76,8 +77,7 @@ export default function PieChartComponent({ chartTitle, data, total }) {
 									],
 							}}
 						>
-							{val.name}: {val.count} ({Math.round((val.count / total) * 100)}
-							%)
+							{val.name}: {val.count} ({getPercentageString(val.count, total)}%)
 						</li>
 					);
 				})}
