@@ -3,11 +3,19 @@ const asyncHandler = require("express-async-handler");
 
 const { sendNewFollowerNotification } = require("../notifications");
 const Series = require("../../models/Series");
+const Volumes = require("../../models/volume");
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
-	const user = await User.findById(req.user._id);
+	const addedSeriesId = req.body.id;
+	if (!addedSeriesId)
+		return res.status(400).json({ msg: "Obra não informada" });
 
+	const [user, series] = await Promise.all([
+		User.findById(req.user._id),
+		Series.findById(req.body.id),
+	]);
 	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	if (!series) return res.status(400).json({ msg: "Obra não encontrada" });
 
 	const alreadyAdded = user.userList.some(
 		(entry) => entry.Series.toString() === req.body.id
@@ -44,11 +52,16 @@ exports.addSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.addToWishlist = asyncHandler(async (req, res, next) => {
-	const user = await User.findById(req.user._id);
-	const addedSeries = req.body.id;
-	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
-	if (!addedSeries) return res.status(400).json({ msg: "Obra não informada" });
+	const addedSeriesId = req.body.id;
+	if (!addedSeriesId)
+		return res.status(400).json({ msg: "Obra não informada" });
 
+	const [user, series] = await Promise.all([
+		User.findById(req.user._id),
+		Series.findById(req.body.id),
+	]);
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	if (!series) return res.status(400).json({ msg: "Obra não encontrada" });
 	const alreadyAdded = user.wishList.some(
 		(entry) => entry.toString() === req.body.id
 	);
@@ -77,7 +90,7 @@ exports.addToWishlist = asyncHandler(async (req, res, next) => {
 		}
 	}
 
-	user.wishList.push(addedSeries);
+	user.wishList.push(addedSeriesId);
 
 	await Promise.all([
 		Series.findByIdAndUpdate(req.body.id, {
@@ -90,14 +103,22 @@ exports.addToWishlist = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeSeries = asyncHandler(async (req, res, next) => {
-	const user = await User.findById(req.user._id, {
-		ownedVolumes: 1,
-		userList: 1,
-	}).populate({
-		path: "ownedVolumes",
-		select: "serie",
-	});
+	const removedSeriesId = req.body.id;
+	if (!removedSeriesId)
+		return res.status(400).json({ msg: "Obra não informada" });
+
+	const [user, series] = await Promise.all([
+		User.findById(req.user._id, {
+			ownedVolumes: 1,
+			userList: 1,
+		}).populate({
+			path: "ownedVolumes",
+			select: "serie",
+		}),
+		Series.findById(req.body.id),
+	]);
 	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	if (!series) return res.status(400).json({ msg: "Obra não encontrada" });
 
 	const newSeriesList = user.userList.filter((seriesObject) => {
 		return seriesObject.Series.toString() !== req.body.id;
@@ -118,17 +139,19 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeFromWishList = asyncHandler(async (req, res, next) => {
-	const user = await User.findById(req.user._id, {
-		wishList: 1,
-	});
-	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
-
-	const removedSeries = req.body.id;
-	if (!removedSeries)
+	const removedSeriesId = req.body.id;
+	if (!removedSeriesId)
 		return res.status(400).json({ msg: "Obra não informada" });
 
+	const [user, series] = await Promise.all([
+		User.findById(req.user._id, { wishList: 1 }),
+		Series.findById(req.body.id),
+	]);
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	if (!series) return res.status(400).json({ msg: "Obra não encontrada" });
+
 	const newWishList = user.wishList.filter((seriesObject) => {
-		return seriesObject.toString() !== removedSeries;
+		return seriesObject.toString() !== removedSeriesId;
 	});
 	user.wishList = newWishList;
 	await Promise.all([
@@ -155,13 +178,20 @@ const getNewUserSeriesStatus = (currentStatus, completionPercentage) => {
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
 	const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
-	const user = await User.findById(req.user._id, {
-		ownedVolumes: 1,
-		userList: 1,
-		wishList: 1,
-	}).populate("userList.Series");
-	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	if (!idList) return res.status(400).json({ msg: "Volume(s) não informado" });
 
+	const [user, volume] = await Promise.all([
+		User.findById(req.user._id, {
+			ownedVolumes: 1,
+			userList: 1,
+			wishList: 1,
+		}).populate("userList.Series"),
+		Volumes.find({ _id: { $in: idList } }),
+	]);
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	if (!volume || volume.length === 0)
+		return res.status(400).json({ msg: "Volume(s) não encontrado" });
+	
 	//Add all volumes to ownedVolumes
 	const ownedSet = new Set(user.ownedVolumes.map((id) => id.toString()));
 	idList.forEach((id) => ownedSet.add(id));
@@ -209,13 +239,20 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeVolume = asyncHandler(async (req, res, next) => {
-	const { seriesId, idList } = req.body;
-	const user = await User.findById(req.user._id, {
-		ownedVolumes: 1,
-		userList: 1,
-	}).populate("userList.Series");
-	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+		const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
+	if (!idList) return res.status(400).json({ msg: "Volume(s) não informado" });
 
+	const [user, volume] = await Promise.all([
+		User.findById(req.user._id, {
+			ownedVolumes: 1,
+			userList: 1,
+		}).populate("userList.Series"),
+		Volumes.find({ _id: { $in: idList } }),
+	]);
+	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	if (!volume || volume.length === 0)
+		return res.status(400).json({ msg: "Volume(s) não encontrado" });
+	
 	//Filter out all volumes from ownedVolumes
 	const ownedSet = new Set(user.ownedVolumes.map((id) => id.toString()));
 	idList.forEach((id) => ownedSet.delete(id)); // Remove specified volumes
