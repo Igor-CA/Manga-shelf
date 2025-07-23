@@ -7,7 +7,8 @@ export default function SeriesCardList({
 	fetchFunction,
 	functionArguments,
 	errorComponent,
-	itemType
+	itemType,
+	showActions = false,
 }) {
 	const [page, setPage] = useState(1);
 	const [loading, setLoading] = useState(false);
@@ -42,8 +43,8 @@ export default function SeriesCardList({
 							? [...resultList]
 							: [...previousList, ...resultList]
 					);
-					if(resultList.length < skeletonsCount ){
-						setReachedEnd(true)
+					if (resultList.length < skeletonsCount) {
+						setReachedEnd(true);
 					}
 					setShowErrorComponent(false);
 				} else {
@@ -87,7 +88,11 @@ export default function SeriesCardList({
 									: undefined
 							}
 						>
-							<SeriesCard itemDetails={series} itemType={itemType || "Series"}></SeriesCard>
+							<SeriesCard
+								itemDetails={series}
+								itemType={itemType || "Series"}
+								showActions={showActions}
+							></SeriesCard>
 						</div>
 					);
 				})}

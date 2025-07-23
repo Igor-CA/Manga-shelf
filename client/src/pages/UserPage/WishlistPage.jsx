@@ -198,6 +198,7 @@ export default function WishlistPage() {
 				itemType="Series"
 				errorComponent={EmptyListComponent}
 				functionArguments={functionArguments}
+				showActions={true}
 			></SeriesCardList>
 		</div>
 	);
