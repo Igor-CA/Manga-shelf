@@ -56,7 +56,7 @@ async function dispatchEmails() {
 		if (volumesList.length === 0) continue;
 
 		logger.info(
-			`[INFO] Sending ONE summary email to ${user.username} for ${volumesList.length} new volumes.`
+			`Sending ONE summary email to ${user.username} for ${volumesList.length} new volumes.`
 		);
 
 		try {
