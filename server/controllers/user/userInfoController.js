@@ -266,6 +266,9 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			$group: {
 				_id: "$volumeDetails._id",
 				series: { $first: "$seriesDetails.title" },
+				seriesId: { $first: "$seriesDetails._id" },
+				seriesSize: { $first: { $size: "$seriesDetails.volumes" } },
+				seriesStatus: { $first: "$seriesDetails.status" },
 				volumeId: { $first: "$volumeDetails._id" },
 				volumeNumber: { $first: "$volumeDetails.number" },
 				status: { $first: "$userList.status" },
@@ -284,6 +287,7 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 		{ $limit: ITEMS_PER_PAGE },
 	];
 	const missingVolumesList = await User.aggregate(aggregationPipeline).exec();
+	
 	const listWithImages = missingVolumesList.map((volume) => {
 		const seriesObject = { title: volume.series };
 		return {
