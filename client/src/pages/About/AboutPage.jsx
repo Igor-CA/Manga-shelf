@@ -41,6 +41,7 @@ export default function AboutPage() {
 						<li>Criar uma conta pessoal</li>
 						<li>Adicionar coleções à sua "Prateleira"</li>
 						<li>Marcar os volumes que já possui</li>
+						<li>Adicionar obras à uma lista de desejos</li>
 						<li>
 							Identificar quais volumes ainda faltam para
 							completar suas coleções
@@ -84,11 +85,6 @@ export default function AboutPage() {
 						<li>
 							Postagens: usuários poderão criar publicações e
 							interagir entre si
-						</li>
-						<li>
-							Abandono de coleções: será possível marcar obras
-							como "abandonadas", removendo-as da área de volumes
-							faltantes e das notificações
 						</li>
 						<li>
 							Alertas de preços: você será notificado quando um

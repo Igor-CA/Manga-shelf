@@ -47,18 +47,18 @@ export default function ToSPage() {
                         </li>
                         <li>
                             <strong>Isenção de Responsabilidade:</strong> Este site é fornecido
-                            "como está", e a MyMangaShelf não faz representações ou garantias,
+                            "como está", e a Manga Shelf não faz representações ou garantias,
                             expressas ou implícitas, sobre a precisão, integridade ou
                             disponibilidade do conteúdo.
                         </li>
                         <li>
                             <strong>Limitação de Responsabilidade:</strong> Em nenhum caso a
-                            MyMangaShelf será responsável por danos diretos, indiretos, especiais
+                            Manga Shelf será responsável por danos diretos, indiretos, especiais
                             ou consequenciais decorrentes ou relacionados ao uso ou
                             impossibilidade de uso deste site.
                         </li>
                         <li>
-                            <strong>Alterações nos Termos:</strong> A MyMangaShelf se reserva o
+                            <strong>Alterações nos Termos:</strong> A Manga Shelf se reserva o
                             direito de alterar estes termos a qualquer momento sem aviso prévio. O
                             uso contínuo do site após quaisquer alterações constitui a aceitação
                             dos novos termos.
