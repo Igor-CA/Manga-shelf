@@ -3,66 +3,18 @@ import SeriesCardList from "../../components/SeriesCardList";
 import axios from "axios";
 import { useCallback, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
-
-const genreList = [
-	"Aventura",
-	"Ação",
-	"Comédia",
-	"Drama",
-	"Ecchi",
-	"Esportes",
-	"Fantasia",
-	"Ficção Científica",
-	"Garotas mágicas",
-	"Hentai",
-	"Mecha (Robôs gigantes)",
-	"Mistério",
-	"Música",
-	"Psicológico",
-	"Romance",
-	"Slice of Life",
-	"Sobrenatural",
-	"Suspense",
-	"Terror",
-];
-const publishersList = [
-	"Abril",
-	"Alta Geek",
-	"Alto Astral",
-	"Comix Zone",
-	"Conrad",
-	"Conrad / JBC",
-	"Darkside Books",
-	"Dealer",
-	"Devir",
-	"Escala",
-	"Excelsior",
-	"Galera Record",
-	"HQM",
-	"JBC",
-	"L&PM",
-	"MPEG",
-	"Morro Branco",
-	"Mythos",
-	"NewPOP",
-	"Nova Sampa",
-	"Novatec",
-	"Online",
-	"PNC",
-	"Panini",
-	"Pipoca & Nanquim",
-	"Savana",
-	"Skript",
-	"Todavia",
-	"Veneta",
-	"Zarabatana Books",
-];
+import { useEffect } from "react";
+import { useContext } from "react";
+import { messageContext } from "../../components/messageStateProvider";
 
 export default function UserCollection() {
 	const { username } = useParams();
 	const navigate = useNavigate();
 	const [params, setParams] = useState({});
+	const [genreList, setGenresList] = useState([]);
+	const [publishersList, setPublishersList] = useState([]);
 	const functionArguments = useMemo(() => [params], [params]);
+	const { addMessage } = useContext(messageContext);
 
 	const querryUserList = async (page) => {
 		try {
@@ -89,6 +41,30 @@ export default function UserCollection() {
 			}
 		}
 	};
+
+	useEffect(() => {
+		const fetchFiltersInfo = async () => {
+			try {
+				const res = await axios({
+					method: "GET",
+					withCredentials: true,
+					headers: {
+						Authorization: import.meta.env.REACT_APP_API_KEY,
+					},
+					url: `${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/api/data/user/${username}/filters`,
+				});
+				const result = res.data;
+				setGenresList(result.genres);
+				setPublishersList(result.publishers);
+			} catch (error) {
+				const customErrorMessage = err.response.data.msg;
+				addMessage(customErrorMessage);
+			}
+		};
+		fetchFiltersInfo();
+	}, []);
 
 	const EmptyListComponent = () => {
 		return (
