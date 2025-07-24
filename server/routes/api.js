@@ -20,6 +20,7 @@ router.get("/get-user-info/:username", userInfoController.getUserInfo);
 router.get("/get-user-socials/:type/:username", userInfoController.getSocials); //Type can be followers/following
 //Collection page api
 router.get("/browse", seriesController.browse);
+router.get("/series/filters", seriesController.getInfoFilters);
 router.get("/series/:id", seriesController.getSeriesDetails);
 
 //Volumes api

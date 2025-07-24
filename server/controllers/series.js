@@ -299,3 +299,61 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	};
 	res.send(jsonResponse);
 });
+
+exports.getInfoFilters = asyncHandler(async (req, res, next) => {
+	const result = await Series.aggregate([
+		{
+			$facet: {
+				genres: [
+					{ $unwind: "$genres" },
+					{ $match: { genres: { $ne: null, $nin: [""] } } },
+					{
+						$group: {
+							_id: null,
+							genres: { $addToSet: "$genres" },
+						},
+					},
+				],
+				publishers: [
+					{ $match: { publisher: { $ne: null, $nin: [""] } } },
+					{
+						$group: {
+							_id: null,
+							publishers: { $addToSet: "$publisher" },
+						},
+					},
+				],
+			},
+		},
+		{
+			$project: {
+				genres: {
+					$cond: [
+						{ $gt: [{ $size: "$genres" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$genres.genres", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
+				publishers: {
+					$cond: [
+						{ $gt: [{ $size: "$publishers" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$publishers.publishers", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
+			},
+		},
+	]);
+
+	res.send(result[0] || { genres: [], publishers: [] });
+});
