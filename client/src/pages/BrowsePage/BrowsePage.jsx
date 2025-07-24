@@ -6,6 +6,9 @@ import debaunce from "../../utils/debaunce";
 import { Link, useSearchParams } from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
 import TogglePageButton from "../../components/TogglePageButton";
+import { useContext } from "react";
+import { messageContext } from "../../components/messageStateProvider";
+import { useEffect } from "react";
 
 const SKELETON_LOADING_COUNT = 12;
 
@@ -80,6 +83,34 @@ export default function BrowsePage() {
 	const [params, setParams] = useState(initialParams);
 	const functionArguments = useMemo(() => [params], [params]);
 
+	const [genreList, setGenresList] = useState([]);
+	const [publishersList, setPublishersList] = useState([]);
+	const { addMessage } = useContext(messageContext);
+
+	useEffect(() => {
+		const fetchFiltersInfo = async () => {
+			try {
+				const res = await axios({
+					method: "GET",
+					withCredentials: true,
+					headers: {
+						Authorization: import.meta.env.REACT_APP_API_KEY,
+					},
+					url: `${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/api/data/series/filters`,
+				});
+				const result = res.data;
+				setGenresList(result.genres);
+				setPublishersList(result.publishers);
+			} catch (error) {
+				const customErrorMessage = err.response.data.msg;
+				addMessage(customErrorMessage);
+			}
+		};
+		fetchFiltersInfo();
+	}, []);
+
 	const fetchPage = async (page, params) => {
 		try {
 			const response = await axios({
@@ -104,17 +135,17 @@ export default function BrowsePage() {
 	const ErrorComponent = () => {
 		return (
 			<p className="not-found-message">
-				Não encontramos nada para "{params["search-bar"]}" verifique se
-				você digitou corretamente. <br />
+				Não encontramos nada para "{params["search-bar"]}" verifique se você
+				digitou corretamente. <br />
 				<br />
-				<strong>Importante</strong>: Algumas obras podem ser
-				classificadas como conteúdo adulto. Se você não ativou essa
-				opção nas suas configurações, elas não aparecerão nos
-				resultados. <Link to={"/settings"}>Clique aqui</Link> para
-				verificar ou alterar suas permissões. <br />
+				<strong>Importante</strong>: Algumas obras podem ser classificadas como
+				conteúdo adulto. Se você não ativou essa opção nas suas configurações,
+				elas não aparecerão nos resultados.{" "}
+				<Link to={"/settings"}>Clique aqui</Link> para verificar ou alterar suas
+				permissões. <br />
 				Caso a obra realmente não esteja disponível, você pode{" "}
-				<Link to={"/feedback"}>sugeri-la aqui</Link>{" "}
-				para que possamos adicioná-la futuramente!
+				<Link to={"/feedback"}>sugeri-la aqui</Link> para que possamos
+				adicioná-la futuramente!
 			</p>
 		);
 	};
