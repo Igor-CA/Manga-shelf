@@ -203,7 +203,7 @@ exports.getUserWishlist = asyncHandler(async (req, res, next) => {
 			...series,
 			image: getSeriesCoverURL(series),
 			inUserList: false,
-			inWishlist: true
+			inWishlist: true,
 		};
 	});
 
@@ -289,7 +289,7 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 		{ $limit: ITEMS_PER_PAGE },
 	];
 	const missingVolumesList = await User.aggregate(aggregationPipeline).exec();
-	
+
 	const listWithImages = missingVolumesList.map((volume) => {
 		const seriesObject = { title: volume.series };
 		return {
@@ -562,4 +562,67 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 	]).collation({ locale: "en", strength: 2 });
 
 	return res.send(users);
+});
+
+exports.getUserFilters = asyncHandler(async (req, res, next) => {
+	const targetUser = req.params.username;
+	if (!targetUser) return res.send({ msg: "Nenhum usuário informado" });
+
+	const source = req.query.source || "userList";
+
+	let seriesSourceProjection;
+	if (source === "userList") {
+		seriesSourceProjection = {
+			allSeries: {
+				$map: { input: "$userList", as: "item", in: "$$item.Series" },
+			},
+		};
+	} else if (source === "wishList") {
+		seriesSourceProjection = {
+			allSeries: "$wishList",
+		};
+	} else {
+		seriesSourceProjection = {
+			allSeries: {
+				$concatArrays: [
+					{ $map: { input: "$userList", as: "item", in: "$$item.Series" } },
+					"$wishList",
+				],
+			},
+		};
+	}
+
+	const result = await User.aggregate([
+		{ $match: { username: targetUser } },
+		{
+			$project: seriesSourceProjection,
+		},
+		{ $unwind: "$allSeries" },
+		{
+			$lookup: {
+				from: "series",
+				localField: "allSeries",
+				foreignField: "_id",
+				as: "series",
+			},
+		},
+		{ $unwind: "$series" },
+		{ $unwind: "$series.genres" },
+		{
+			$group: {
+				_id: null,
+				genres: { $addToSet: "$series.genres" },
+				publishers: { $addToSet: "$series.publisher" },
+			},
+		},
+		{
+			$project: {
+				_id: 0,
+				genres: { $sortArray: { input: "$genres", sortBy: 1 } },
+				publishers: { $sortArray: { input: "$publishers", sortBy: 1 } },
+			},
+		},
+	]);
+
+	return res.send(result[0] || { genres: [], publishers: [] });
 });

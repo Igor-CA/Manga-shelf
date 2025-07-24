@@ -4,60 +4,9 @@ import "../SeriesPage/SeriesPage.css";
 import SeriesCardList from "../../components/SeriesCardList";
 import { useCallback, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
-
-const genreList = [
-	"Aventura",
-	"Ação",
-	"Comédia",
-	"Drama",
-	"Ecchi",
-	"Esportes",
-	"Fantasia",
-	"Ficção Científica",
-	"Garotas mágicas",
-	"Hentai",
-	"Mecha (Robôs gigantes)",
-	"Mistério",
-	"Música",
-	"Psicológico",
-	"Romance",
-	"Slice of Life",
-	"Sobrenatural",
-	"Suspense",
-	"Terror",
-];
-const publishersList = [
-	"Abril",
-	"Alta Geek",
-	"Alto Astral",
-	"Comix Zone",
-	"Conrad",
-	"Conrad / JBC",
-	"Darkside Books",
-	"Dealer",
-	"Devir",
-	"Escala",
-	"Excelsior",
-	"Galera Record",
-	"HQM",
-	"JBC",
-	"L&PM",
-	"MPEG",
-	"Morro Branco",
-	"Mythos",
-	"NewPOP",
-	"Nova Sampa",
-	"Novatec",
-	"Online",
-	"PNC",
-	"Panini",
-	"Pipoca & Nanquim",
-	"Savana",
-	"Skript",
-	"Todavia",
-	"Veneta",
-	"Zarabatana Books",
-];
+import { useEffect } from "react";
+import { useContext } from "react";
+import { messageContext } from "../../components/messageStateProvider";
 
 export default function WishlistPage() {
 	const { username } = useParams();
@@ -65,6 +14,35 @@ export default function WishlistPage() {
 
 	const [params, setParams] = useState({});
 	const functionArguments = useMemo(() => [params], [params]);
+
+	const [genreList, setGenresList] = useState([]);
+	const [publishersList, setPublishersList] = useState([]);
+	const { addMessage } = useContext(messageContext);
+
+	useEffect(() => {
+		const fetchFiltersInfo = async () => {
+			try {
+				const res = await axios({
+					method: "GET",
+					withCredentials: true,
+					headers: {
+						Authorization: import.meta.env.REACT_APP_API_KEY,
+					},
+					params: { source: "wishList" },
+					url: `${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/api/data/user/${username}/filters`,
+				});
+				const result = res.data;
+				setGenresList(result.genres);
+				setPublishersList(result.publishers);
+			} catch (error) {
+				const customErrorMessage = err.response.data.msg;
+				addMessage(customErrorMessage);
+			}
+		};
+		fetchFiltersInfo();
+	}, []);
 	const fetchMissingVolumes = async (page) => {
 		try {
 			const response = await axios({
@@ -187,7 +165,6 @@ export default function WishlistPage() {
 							<option value={"popularity"}>Popularidade</option>
 							<option value={"volumes"}>Tamanho</option>
 							<option value={"publisher"}>Editora</option>
-							<option value={"status"}>Status</option>
 						</select>
 					</label>
 				</div>
