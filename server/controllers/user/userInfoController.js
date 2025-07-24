@@ -379,7 +379,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 				as: "details",
 			},
 		},
-		{ $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
+		{ $unwind: { path: "$details", preserveNullAndEmptyArrays: false } },
 		{
 			$unwind: {
 				path: `$details.${groupField}`,
