@@ -594,9 +594,7 @@ exports.getUserFilters = asyncHandler(async (req, res, next) => {
 
 	const result = await User.aggregate([
 		{ $match: { username: targetUser } },
-		{
-			$project: seriesSourceProjection,
-		},
+		{ $project: seriesSourceProjection },
 		{ $unwind: "$allSeries" },
 		{
 			$lookup: {
@@ -607,19 +605,55 @@ exports.getUserFilters = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{ $unwind: "$series" },
-		{ $unwind: "$series.genres" },
 		{
-			$group: {
-				_id: null,
-				genres: { $addToSet: "$series.genres" },
-				publishers: { $addToSet: "$series.publisher" },
+			$facet: {
+				genres: [
+					{ $unwind: "$series.genres" },
+					{ $match: { "series.genres": { $ne: null, $nin: [""] } } },
+					{
+						$group: {
+							_id: null,
+							genres: { $addToSet: "$series.genres" },
+						},
+					},
+				],
+				publishers: [
+					{ $match: { "series.publisher": { $ne: null, $nin: [""] } } },
+					{
+						$group: {
+							_id: null,
+							publishers: { $addToSet: "$series.publisher" },
+						},
+					},
+				],
 			},
 		},
 		{
 			$project: {
-				_id: 0,
-				genres: { $sortArray: { input: "$genres", sortBy: 1 } },
-				publishers: { $sortArray: { input: "$publishers", sortBy: 1 } },
+				genres: {
+					$cond: [
+						{ $gt: [{ $size: "$genres" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$genres.genres", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
+				publishers: {
+					$cond: [
+						{ $gt: [{ $size: "$publishers" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$publishers.publishers", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
 			},
 		},
 	]);
