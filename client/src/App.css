@@ -169,13 +169,18 @@ body {
 	gap: 20px 10px;
 	overflow: scroll;
 }
+.collection-lable {
+	color: var(--text);
+	padding: 10px;
+	margin: 10px 0px;
+}
 .filter {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	padding: 10px;
 }
 .filter__search {
+	padding: 10px;
 	flex-grow: 1;
 	width: 100%;
 }
@@ -183,25 +188,83 @@ body {
 	display: flex;
 	flex-direction: row;
 	gap: 10px;
+	overflow-x: scroll;
+	overflow-y: visible;
+	padding: 10px 50px 50px 50px;
+	margin: -10px 0px -40px -40px;
 }
 .filter__input {
-	width: 100%;
+	min-width: 100%;
+	cursor: pointer;
 	margin-top: 10px;
+}
+.filter__input--grow {
+	flex-grow: 1;
+	width: 100%;
 }
 .filter__input::placeholder {
 	font-weight: normal;
 }
 .filter__label {
+	cursor: pointer;
 	color: var(--text);
 	font-weight: bold;
-	flex-grow: 1;
 }
 .filter__search__container {
 	display: flex;
 	width: 100%;
 	margin-top: 10px;
 }
-
+.filter__checkbox-container {
+	display: flex;
+	padding: 8px;
+	background-color: var(--foreground);
+	align-self: flex-end;
+	color: var(--text);
+	font-weight: bold;
+	padding: 10px;
+	border-radius: 3px;
+	border: none;
+	outline: none;
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.05);
+	white-space: nowrap;
+	cursor: pointer;
+}
+.filter__checkbox-container .filter__label {
+	font-size: 0.75rem;
+	display: inline;
+}
+.filter__checkbox {
+	flex-shrink: 1;
+	width: 1rem;
+	height: 1rem;
+	margin-left: 1rem;
+	color: var(--accent);
+	vertical-align: middle;
+	-webkit-appearance: none;
+	background: none;
+	border: 0;
+	outline: 0;
+	border-radius: 0.25rem;
+	transition: 300ms;
+	cursor: pointer;
+}
+.filter__checkbox::before {
+	content: "";
+	display: block;
+	width: inherit;
+	height: inherit;
+	border-radius: inherit;
+	background-size: contain;
+	box-shadow: inset 0 0 1px 1px #ccd3d8;
+}
+.filter__checkbox:checked {
+	background-color: currentColor;
+}
+.filter__checkbox:checked::before {
+	box-shadow: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E %3Cpath d='M15.88 8.29L10 14.17l-1.88-1.88a.996.996 0 1 0-1.41 1.41l2.59 2.59c.39.39 1.02.39 1.41 0L17.3 9.7a.996.996 0 0 0 0-1.41c-.39-.39-1.03-.39-1.42 0z' fill='%23fff'/%3E %3C/svg%3E");
+}
 .form__input {
 	background-color: var(--foreground);
 	color: var(--text);
@@ -221,12 +284,12 @@ body {
 .form__label {
 	display: none;
 }
-.form-title{
+.form-title {
 	font-size: 1.5em;
 	padding-top: 15px;
 	padding-bottom: 30px;
-    color: var(--text);
-    text-align: center;
+	color: var(--text);
+	text-align: center;
 }
 .form-container {
 	display: flex;
@@ -234,9 +297,9 @@ body {
 	gap: 10px;
 	background-color: var(--foreground);
 	color: var(--text);
-    width: 100%;
-    min-height: 100vh;
-    padding: 40px;
+	width: 100%;
+	min-height: 100vh;
+	padding: 40px;
 }
 
 .not-found-message {
@@ -260,7 +323,7 @@ body {
 	.collection-container {
 		grid-template-columns: repeat(4, 1fr);
 	}
-	
+
 	.form-container {
 		max-width: 400px;
 		margin: auto;
@@ -279,11 +342,16 @@ body {
 		display: flex;
 		flex-direction: row;
 		gap: 10px;
-		padding: 10px;
+		align-items: center;
 	}
 	.filter__search {
 		flex-grow: 1;
 		width: auto;
+	}
+	.filter__types {
+		overflow-x: visible;
+		padding: 10px 50px 50px 50px;
+		margin: -10px -40px -50px -60px;
 	}
 	.container {
 		padding-left: 100px;
@@ -304,6 +372,6 @@ a {
 	text-decoration: none;
 	color: currentColor;
 }
-.mention{
+.mention {
 	color: var(--accent);
 }

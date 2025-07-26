@@ -13,10 +13,12 @@ export default function UserCollection() {
 	const [params, setParams] = useState({});
 	const [genreList, setGenresList] = useState([]);
 	const [publishersList, setPublishersList] = useState([]);
+	const [groupVal, setGroupVal] = useState(false);
 	const functionArguments = useMemo(() => [params], [params]);
 	const { addMessage } = useContext(messageContext);
-
-	const querryUserList = async (page) => {
+	const statuses = ["Collecting", "Up to date", "Finished", "Dropped"];
+	const statusesLables = ["Incompleto", "Acompanhando publicação", "Concluído", "Abandonado"];
+	const querryUserList = async (page, params) => {
 		try {
 			const res = await axios({
 				method: "GET",
@@ -69,7 +71,7 @@ export default function UserCollection() {
 	const EmptyListComponent = () => {
 		return (
 			<p className="not-found-message">
-				Esta conta não possuí nenhuma coleção registrada. Caso essa seja sua
+				Esta conta não possuí nenhuma coleção registrada ou com esses filtros. Caso essa seja sua
 				conta tente{" "}
 				<Link to={"/browse"}>
 					<strong>
@@ -87,6 +89,9 @@ export default function UserCollection() {
 		} else {
 			setParams({ ...params, [name]: value });
 		}
+	};
+	const handleGroupChange = (e) => {
+		setGroupVal(e.target.checked);
 	};
 
 	const debouncedSearch = useCallback(
@@ -167,14 +172,45 @@ export default function UserCollection() {
 							<option value={"status"}>Status</option>
 						</select>
 					</label>
+
+					<div className="filter__checkbox-container">
+						<label htmlFor="group" className="filter__label">
+							Agrupar por status da coleção
+							<input
+								type="checkbox"
+								name="group"
+								id="group"
+								className="filter__checkbox"
+								onChange={handleGroupChange}
+								checked={groupVal}
+							/>
+						</label>
+					</div>
 				</div>
 			</div>
-			<SeriesCardList
-				skeletonsCount={36}
-				fetchFunction={querryUserList}
-				errorComponent={EmptyListComponent}
-				functionArguments={functionArguments}
-			></SeriesCardList>
+			{groupVal ? (
+				statuses.map((status, i) => {
+					return (
+						<div>
+							<hr style={{margin:"0px 10px"}}/>
+							<h2 className="collection-lable">{statusesLables[i]}</h2>
+							<SeriesCardList
+								skeletonsCount={36}
+								fetchFunction={querryUserList}
+								errorComponent={EmptyListComponent}
+								functionArguments={[{ ...params, group: status }]}
+							></SeriesCardList>
+						</div>
+					);
+				})
+			) : (
+				<SeriesCardList
+					skeletonsCount={36}
+					fetchFunction={querryUserList}
+					errorComponent={EmptyListComponent}
+					functionArguments={functionArguments}
+				></SeriesCardList>
+			)}
 		</div>
 	);
 }
