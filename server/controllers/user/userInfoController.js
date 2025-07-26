@@ -154,6 +154,9 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
 	const filter = buildFilter(req.query, "userList.Series");
+	if (req.query.group) {
+		filter["userList.status"] = req.query.group;
+	}
 	const sortStage = buildSortStage(
 		req.query.ordering || "title",
 		"userList.Series"
