@@ -8,10 +8,11 @@ const {
 const ITEMS_PER_PAGE = 36;
 //Filters for building search pipeline
 
-const buildFilter = ({ publisher, genre, search }, field) => {
+const buildFilter = ({ publisher, genre, status, search }, field) => {
 	const filter = {};
 	if (genre) filter[`${field}.genres`] = { $in: [genre] };
 	if (publisher) filter[`${field}.publisher`] = publisher;
+	if (status) filter[`${field}.status`] = status;
 	if (search) {
 		const searchRegex = { $regex: search, $options: "i" };
 		const titleField = `${field}.title`;
