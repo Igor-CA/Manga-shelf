@@ -10,73 +10,19 @@ import { useContext } from "react";
 import { messageContext } from "../../components/messageStateProvider";
 import { useEffect } from "react";
 
-const SKELETON_LOADING_COUNT = 12;
-
-const genreList = [
-	"Aventura",
-	"Ação",
-	"Comédia",
-	"Drama",
-	"Ecchi",
-	"Esportes",
-	"Fantasia",
-	"Ficção Científica",
-	"Garotas mágicas",
-	"Hentai",
-	"Mecha (Robôs gigantes)",
-	"Mistério",
-	"Música",
-	"Psicológico",
-	"Romance",
-	"Slice of Life",
-	"Sobrenatural",
-	"Suspense",
-	"Terror",
-];
-const publishersList = [
-	"Abril",
-	"Alta Geek",
-	"Alto Astral",
-	"Comix Zone",
-	"Conrad",
-	"Conrad / JBC",
-	"Darkside Books",
-	"Dealer",
-	"Devir",
-	"Escala",
-	"Excelsior",
-	"Galera Record",
-	"HQM",
-	"JBC",
-	"L&PM",
-	"MPEG",
-	"Morro Branco",
-	"Mythos",
-	"NewPOP",
-	"Nova Sampa",
-	"Novatec",
-	"Online",
-	"PNC",
-	"Panini",
-	"Pipoca & Nanquim",
-	"Savana",
-	"Skript",
-	"Todavia",
-	"Veneta",
-	"Zarabatana Books",
-];
-
 export default function BrowsePage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const urlSearch = searchParams.get("search-bar");
 	const urlGenre = searchParams.get("genre");
 	const urlPublisher = searchParams.get("publisher");
 	const urlOrder = searchParams.get("ordering");
+	const urlStatus = searchParams.get("status");
 	const initialParams = {
 		...(urlSearch && { "search-bar": urlSearch }),
 		...(urlGenre && { genre: urlGenre }),
 		...(urlPublisher && { publisher: urlPublisher }),
 		...(urlOrder && { ordering: urlOrder }),
+		...(urlStatus && { status: urlStatus }),
 	};
 
 	const [searchBarValue, setSearchBarValue] = useState(urlSearch || "");
@@ -247,6 +193,23 @@ export default function BrowsePage() {
 							{/* <option value={"date"}>Data</option> */}
 							<option value={"volumes"}>Tamanho</option>
 							<option value={"publisher"}>Editora</option>
+						</select>
+					</label>
+					<label htmlFor="status" className="filter__label">
+						Situação
+						<select
+							name="status"
+							id="status"
+							className="form__input filter__input"
+							onChange={handleChange}
+							defaultValue={""}
+						>
+							<option value="">Selecionar</option>
+							<option value={"Finalizado"}>Finalizado</option>
+							<option value={"Em andamento"}>Em andamento</option>
+							<option value={"Em publicação"}>Em publicação no Brasil</option>
+							<option value={"Hiatus"}>Hiatus</option>
+							<option value={"Cancelado"}>Cancelado</option>
 						</select>
 					</label>
 				</div>
