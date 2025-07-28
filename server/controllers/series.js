@@ -88,7 +88,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
 	const { publisher, genre, status } = req.query;
-	const search = req.query["search-bar"];
+	const search = req.query["search"];
 
 	const filter = {};
 	if (genre) filter["genres"] = { $in: [genre] };
