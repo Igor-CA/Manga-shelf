@@ -233,6 +233,7 @@ body {
 .filter__checkbox-container .filter__label {
 	font-size: 0.75rem;
 	display: inline;
+	white-space: nowrap;
 }
 .filter__checkbox {
 	flex-shrink: 1;
@@ -352,6 +353,10 @@ body {
 		overflow-x: visible;
 		padding: 10px 50px 50px 50px;
 		margin: -10px -40px -50px -60px;
+	}
+	.filter__input {
+		width: 100%;
+		min-width: none;
 	}
 	.container {
 		padding-left: 100px;

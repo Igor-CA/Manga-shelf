@@ -1,23 +1,33 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import SeriesCardList from "../../components/SeriesCardList";
 import axios from "axios";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import debaunce from "../../utils/debaunce";
-import { useEffect } from "react";
-import { useContext } from "react";
-import { messageContext } from "../../components/messageStateProvider";
+import { useFilterHandler } from "../../utils/useFiltersHandler";
+import FilterControls from "../../components/FilterControls";
 
 export default function UserCollection() {
 	const { username } = useParams();
 	const navigate = useNavigate();
-	const [params, setParams] = useState({});
-	const [genreList, setGenresList] = useState([]);
-	const [publishersList, setPublishersList] = useState([]);
+	const fetchFiltersUrl = `${
+		import.meta.env.REACT_APP_HOST_ORIGIN
+	}/api/data/user/${username}/filters`;
+	const {
+		params,
+		functionArguments,
+		genreList,
+		publishersList,
+		handleChange,
+		searchBarValue,
+	} = useFilterHandler(fetchFiltersUrl, true, {}, "title");
 	const [groupVal, setGroupVal] = useState(false);
-	const functionArguments = useMemo(() => [params], [params]);
-	const { addMessage } = useContext(messageContext);
 	const statuses = ["Collecting", "Up to date", "Finished", "Dropped"];
-	const statusesLables = ["Incompleto", "Acompanhando publicação", "Concluído", "Abandonado"];
+	const statusesLables = [
+		"Incompleto",
+		"Acompanhando publicação",
+		"Concluído",
+		"Abandonado",
+	];
 	const querryUserList = async (page, params) => {
 		try {
 			const res = await axios({
@@ -44,35 +54,11 @@ export default function UserCollection() {
 		}
 	};
 
-	useEffect(() => {
-		const fetchFiltersInfo = async () => {
-			try {
-				const res = await axios({
-					method: "GET",
-					withCredentials: true,
-					headers: {
-						Authorization: import.meta.env.REACT_APP_API_KEY,
-					},
-					url: `${
-						import.meta.env.REACT_APP_HOST_ORIGIN
-					}/api/data/user/${username}/filters`,
-				});
-				const result = res.data;
-				setGenresList(result.genres);
-				setPublishersList(result.publishers);
-			} catch (error) {
-				const customErrorMessage = err.response.data.msg;
-				addMessage(customErrorMessage);
-			}
-		};
-		fetchFiltersInfo();
-	}, []);
-
 	const EmptyListComponent = () => {
 		return (
 			<p className="not-found-message">
-				Esta conta não possuí nenhuma coleção registrada ou com esses filtros. Caso essa seja sua
-				conta tente{" "}
+				Esta conta não possuí nenhuma coleção registrada ou com esses filtros.
+				Caso essa seja sua conta tente{" "}
 				<Link to={"/browse"}>
 					<strong>
 						adicionar suas coleções buscando em nossa página de busca
@@ -82,14 +68,6 @@ export default function UserCollection() {
 		);
 	};
 
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-		if (value.trim() !== "" || value === null) {
-			debouncedSearch(name, value);
-		} else {
-			setParams({ ...params, [name]: value });
-		}
-	};
 	const handleGroupChange = (e) => {
 		setGroupVal(e.target.checked);
 	};
@@ -102,97 +80,37 @@ export default function UserCollection() {
 	);
 	return (
 		<div className="user-collection container">
-			<div className="filter">
-				<div className="filter__search">
-					<label htmlFor="search" className="filter__label">
-						Buscar
+			<FilterControls
+				availableFilters={[
+					"search",
+					"genre",
+					"publisher",
+					"status",
+					"ordering",
+				]}
+				handleChange={handleChange}
+				values={{ searchBarValue, ...params }}
+				lists={{ genreList, publishersList }}
+			>
+				<div className="filter__checkbox-container">
+					<label htmlFor="group" className="filter__label">
+						Agrupar por status da coleção
 						<input
-							type="text"
-							name="search"
-							id="search"
-							autoComplete="off"
-							placeholder="Buscar"
-							className="form__input filter__input filter__input--grow "
-							onChange={handleChange}
+							type="checkbox"
+							name="group"
+							id="group"
+							className="filter__checkbox"
+							onChange={(e) => setGroupVal(e.target.checked)}
+							checked={groupVal}
 						/>
 					</label>
 				</div>
-
-				<div className="filter__types">
-					<label htmlFor="genre" className="filter__label">
-						Gêneros
-						<select
-							name="genre"
-							id="genre"
-							className="form__input filter__input"
-							onChange={handleChange}
-							defaultValue={""}
-						>
-							<option value={""}>Selecionar</option>
-							{genreList.map((genre, id) => {
-								return (
-									<option value={genre} key={id}>
-										{genre}
-									</option>
-								);
-							})}
-						</select>
-					</label>
-					<label htmlFor="publisher" className="filter__label">
-						Editora
-						<select
-							name="publisher"
-							id="publisher"
-							className="form__input filter__input"
-							onChange={handleChange}
-							defaultValue={""}
-						>
-							<option value="">Selecionar</option>
-							{publishersList.map((publisher, id) => {
-								return (
-									<option value={publisher} key={id}>
-										{publisher}
-									</option>
-								);
-							})}
-						</select>
-					</label>
-					<label htmlFor="ordering" className="filter__label">
-						Ordem
-						<select
-							name="ordering"
-							id="ordering"
-							className="form__input filter__input"
-							onChange={handleChange}
-						>
-							<option value={"title"}>Alfabética</option>
-							<option value={"popularity"}>Popularidade</option>
-							<option value={"volumes"}>Tamanho</option>
-							<option value={"publisher"}>Editora</option>
-							<option value={"status"}>Status</option>
-						</select>
-					</label>
-
-					<div className="filter__checkbox-container">
-						<label htmlFor="group" className="filter__label">
-							Agrupar por status da coleção
-							<input
-								type="checkbox"
-								name="group"
-								id="group"
-								className="filter__checkbox"
-								onChange={handleGroupChange}
-								checked={groupVal}
-							/>
-						</label>
-					</div>
-				</div>
-			</div>
+			</FilterControls>
 			{groupVal ? (
 				statuses.map((status, i) => {
 					return (
 						<div>
-							<hr style={{margin:"0px 10px"}}/>
+							<hr style={{ margin: "0px 10px" }} />
 							<h2 className="collection-lable">{statusesLables[i]}</h2>
 							<SeriesCardList
 								skeletonsCount={36}
