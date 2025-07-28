@@ -87,12 +87,13 @@ exports.browse = asyncHandler(async (req, res, next) => {
 
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
-	const { publisher, genre } = req.query;
+	const { publisher, genre, status } = req.query;
 	const search = req.query["search-bar"];
 
 	const filter = {};
 	if (genre) filter["genres"] = { $in: [genre] };
 	if (publisher) filter["publisher"] = publisher;
+	if (status) filter["status"] = status;
 
 	const sortOptions = {
 		// Order 1 for ascending and 2 for descending
