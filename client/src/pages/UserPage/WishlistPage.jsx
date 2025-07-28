@@ -7,42 +7,27 @@ import debaunce from "../../utils/debaunce";
 import { useEffect } from "react";
 import { useContext } from "react";
 import { messageContext } from "../../components/messageStateProvider";
+import FilterControls from "../../components/FilterControls";
+import { useFilterHandler } from "../../utils/useFiltersHandler";
 
 export default function WishlistPage() {
 	const { username } = useParams();
 	const navigate = useNavigate();
 
-	const [params, setParams] = useState({});
-	const functionArguments = useMemo(() => [params], [params]);
+	const fetchFiltersUrl = `${
+		import.meta.env.REACT_APP_HOST_ORIGIN
+	}/api/data/user/${username}/filters`;
+	const {
+		params,
+		functionArguments,
+		genreList,
+		publishersList,
+		handleChange,
+		searchBarValue,
+	} = useFilterHandler(fetchFiltersUrl, true, { source: "wishList" }, "title");
 
-	const [genreList, setGenresList] = useState([]);
-	const [publishersList, setPublishersList] = useState([]);
 	const { addMessage } = useContext(messageContext);
 
-	useEffect(() => {
-		const fetchFiltersInfo = async () => {
-			try {
-				const res = await axios({
-					method: "GET",
-					withCredentials: true,
-					headers: {
-						Authorization: import.meta.env.REACT_APP_API_KEY,
-					},
-					params: { source: "wishList" },
-					url: `${
-						import.meta.env.REACT_APP_HOST_ORIGIN
-					}/api/data/user/${username}/filters`,
-				});
-				const result = res.data;
-				setGenresList(result.genres);
-				setPublishersList(result.publishers);
-			} catch (error) {
-				const customErrorMessage = err.response.data.msg;
-				addMessage(customErrorMessage);
-			}
-		};
-		fetchFiltersInfo();
-	}, []);
 	const fetchMissingVolumes = async (page) => {
 		try {
 			const response = await axios({
@@ -80,95 +65,15 @@ export default function WishlistPage() {
 			</p>
 		);
 	};
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-		if (value.trim() !== "" || value === null) {
-			debouncedSearch(name, value);
-		} else {
-			setParams({ ...params, [name]: value });
-		}
-	};
-
-	const debouncedSearch = useCallback(
-		debaunce((name, value) => {
-			setParams({ ...params, [name]: value });
-		}, 500),
-		[params]
-	);
 
 	return (
 		<div className="container">
-			<div className="filter">
-				<div className="filter__search">
-					<label htmlFor="search" className="filter__label">
-						Buscar
-						<input
-							type="text"
-							name="search"
-							id="search"
-							autoComplete="off"
-							placeholder="Buscar"
-							className="form__input filter__input filter__input--grow "
-							onChange={handleChange}
-						/>
-					</label>
-				</div>
-
-				<div className="filter__types">
-					<label htmlFor="genre" className="filter__label">
-						Gêneros
-						<select
-							name="genre"
-							id="genre"
-							className="form__input filter__input"
-							onChange={handleChange}
-							defaultValue={""}
-						>
-							<option value={""}>Selecionar</option>
-							{genreList.map((genre, id) => {
-								return (
-									<option value={genre} key={id}>
-										{genre}
-									</option>
-								);
-							})}
-						</select>
-					</label>
-					<label htmlFor="publisher" className="filter__label">
-						Editora
-						<select
-							name="publisher"
-							id="publisher"
-							className="form__input filter__input"
-							onChange={handleChange}
-							defaultValue={""}
-						>
-							<option value="">Selecionar</option>
-							{publishersList.map((publisher, id) => {
-								return (
-									<option value={publisher} key={id}>
-										{publisher}
-									</option>
-								);
-							})}
-						</select>
-					</label>
-					<label htmlFor="ordering" className="filter__label">
-						Ordem
-						<select
-							name="ordering"
-							id="ordering"
-							className="form__input filter__input"
-							onChange={handleChange}
-						>
-							<option value={"title"}>Alfabética</option>
-							<option value={"popularity"}>Popularidade</option>
-							<option value={"volumes"}>Tamanho</option>
-							<option value={"publisher"}>Editora</option>
-						</select>
-					</label>
-				</div>
-			</div>
+			<FilterControls
+				availableFilters={["search", "genre", "publisher", "status", "ordering"]}
+				handleChange={handleChange}
+				values={{ searchBarValue, ...params }}
+				lists={{ genreList, publishersList }}
+			/>{" "}
 			<SeriesCardList
 				skeletonsCount={36}
 				fetchFunction={fetchMissingVolumes}
