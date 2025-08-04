@@ -38,6 +38,13 @@ process.on("unhandledRejection", (reason, promise) => {
 
 //Middleware for API Key
 const apiKeyAuth = (req, res, next) => {
+	const publicRoutes = [
+		"/login/auth/google",
+		"/auth/google/callback",
+	];
+	if (publicRoutes.includes(req.path)) {
+		return next();
+	}
 	if (
 		req.headers.authorization !== process.env.API_KEY &&
 		process.env.NODE_ENV === "production"
