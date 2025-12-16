@@ -195,8 +195,12 @@ exports.createPendingVolumeNotification = async (newVolume) => {
 	const notification = await createNewVolumeNotification(newVolume);
 
 	const users = await User.find({
-		"userList.Series": newVolume.serie,
-		"userList.status": { $ne: "Dropped" },
+		userList: {
+			$elemMatch: {
+				Series: newVolume.serie,
+				status: { $ne: "Dropped" },
+			},
+		},
 	}).select("settings");
 	if (users.length === 0) return;
 
@@ -344,14 +348,14 @@ const sendEmailNotification = async (
 
 	return;
 };
-const sendSiteNotification = async(notificationId, targetUserId) => {
+const sendSiteNotification = async (notificationId, targetUserId) => {
 	await User.findByIdAndUpdate(
 		targetUserId,
 		{ $push: { notifications: { notification: notificationId } } },
 		{ new: true }
 	);
 	return;
-}
+};
 async function sendNotification(notification, targetUserId, dataList) {
 	const { allowNotifications, allowType, allowEmail, allowSite } =
 		await checkNotificationSettings(targetUserId, notification.type);
