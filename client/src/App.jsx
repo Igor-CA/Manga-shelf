@@ -5,6 +5,7 @@ import NavBar from "./components/NavBar";
 import ScrollToTop from "./utils/ScrollToTop";
 import MessageComponent from "./components/MessageComponent";
 import "./App.css";
+import SeriesPageRedesign from "./pages/SeriesPage/SeriesPageRedesign";
 
 // Lazy-loaded page components
 const SeriesPage = lazy(() => import("./pages/SeriesPage/SeriesPage"));
@@ -73,6 +74,7 @@ function App() {
 						<Route path="/donate" element={<DonatePage />}></Route>
 						<Route path="/about" element={<AboutPage />}></Route>
 						<Route path="/series/:id" element={<SeriesPage />}></Route>
+						<Route path="/series-re/:id" element={<SeriesPageRedesign />}></Route>
 						<Route path="/volume/:id" element={<VolumePage />}></Route>
 						<Route path="/user/:username/*" element={<UserPage />}></Route>
 						<Route path="/settings" element={<SettingsPage />}></Route>
