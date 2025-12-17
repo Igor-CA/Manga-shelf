@@ -3,7 +3,7 @@ export const printArray = (list) => {
 	if (listCount === 1) return list[0];
 	if (listCount === 2) return `${list[0]} e ${list[1]}`;
 	const allButLast = list.slice(0, -1).join(", ");
-	return `${allButLast}, e ${list[listCount - 1]}`;
+	return `${allButLast} e ${list[listCount - 1]}`;
 };
 
 export const checkOwnedVolumes = (user, id) => {
