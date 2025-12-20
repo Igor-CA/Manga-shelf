@@ -121,12 +121,12 @@ export default function SeriesPageHeader({ seriesInfo, user }) {
 				</div>
 
 				{summary?.length > 0 && (
-					<div className="series__details-summary">
+					<div className="content__details-summary">
 						<strong>Sinopse:</strong>
 						<div
 							ref={seriesSummarry}
-							className={`series__summary ${
-								showingMore ? "series__summary--show-full" : ""
+							className={`content__summary ${
+								showingMore ? "content__summary--show-full" : ""
 							}`}
 						>
 							{summary.map((paragraph, i) => (
@@ -135,7 +135,7 @@ export default function SeriesPageHeader({ seriesInfo, user }) {
 						</div>
 						{!showingMore && (
 							<button
-								className="series__show-more"
+								className="show-more__button"
 								aria-label="Mostrar mais"
 								onClick={() => setShowingMore(true)}
 							>

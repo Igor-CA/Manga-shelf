@@ -6,7 +6,7 @@
 }
 :root {
 	--text: #3d4e66;
-	--background: #f1f5f9;
+	--background: #edf1f5;
 	--foreground: #fafafa;
 	--gray: 221, 230, 238;
 	--light-blue: 8, 143, 214;
@@ -162,12 +162,15 @@ body {
 .collection-container {
 	list-style: none;
 	margin: auto;
-	padding: 10px 10px;
+	padding: 0.75rem;
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	justify-content: space-evenly;
-	gap: 20px 10px;
+	gap: 1.25rem 0.75rem;
 	overflow: scroll;
+}
+.collection-container--denser {
+	grid-template-columns: repeat(3, 1fr);
 }
 .collection-lable {
 	color: var(--text);
@@ -319,12 +322,18 @@ body {
 	.collection-container {
 		grid-template-columns: repeat(2, 1fr);
 	}
+	.collection-container--denser {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }
 @media only screen and (min-width: 768px) {
 	.collection-container {
 		grid-template-columns: repeat(4, 1fr);
 	}
 
+	.collection-container--denser {
+		grid-template-columns: repeat(3, 1fr);
+	}
 	.form-container {
 		max-width: 400px;
 		margin: auto;
@@ -338,6 +347,9 @@ body {
 @media only screen and (min-width: 1024px) {
 	.collection-container {
 		grid-template-columns: repeat(6, 1fr);
+	}
+	.collection-container--denser {
+		grid-template-columns: repeat(4, 1fr);
 	}
 	.filter {
 		display: flex;

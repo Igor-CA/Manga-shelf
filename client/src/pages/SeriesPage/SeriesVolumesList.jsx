@@ -4,25 +4,21 @@ import VolumeItem from "./VolumeItem";
 
 export default function SeriesVolumesList({
 	volumes,
-	infoToShow = "volumes",
 	localVolumesList,
 	handleChange,
 }) {
 	const { user } = useContext(UserContext);
 	return (
-		<ol
-			className={`series__volumes-container mobile-appearence ${
-				infoToShow !== "volumes" ? "" : "mobile-appearence--show"
-			}`}
-		>
+		<ol className="collection-container collection-container--denser">
 			{volumes.map((volume) => (
-				<VolumeItem
-					key={volume.volumeId}
-					volumeInfo={volume}
-					localVolumeState={localVolumesList}
-					handleChange={handleChange}
-					user={user}
-				/>
+				<li key={volume.volumeId}>
+					<VolumeItem
+						volumeInfo={volume}
+						localVolumeState={localVolumesList}
+						handleChange={handleChange}
+						user={user}
+					/>
+				</li>
 			))}
 		</ol>
 	);
