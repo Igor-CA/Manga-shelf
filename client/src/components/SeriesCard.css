@@ -173,6 +173,7 @@
 	cursor: pointer;
 	border-radius: 1000px;
 	overflow: hidden;
+	color: white;
 }
 .series-card__button {
 	font-size: 1.75rem;
