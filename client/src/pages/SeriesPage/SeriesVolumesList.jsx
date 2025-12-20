@@ -4,7 +4,7 @@ import VolumeItem from "./VolumeItem";
 
 export default function SeriesVolumesList({
 	volumes,
-	infoToShow,
+	infoToShow = "volumes",
 	localVolumesList,
 	handleChange,
 }) {
