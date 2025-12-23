@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "../../components/userProvider";
-import axios from "axios";
 import {
 	checkIfInWishlist,
 	getCompletionPercentage,
@@ -9,24 +8,26 @@ import {
 } from "./utils";
 import "../../components/SeriesCard.css";
 import { RiArrowDropDownLine } from "react-icons/ri";
-import { messageContext } from "../../components/messageStateProvider";
-import { usePrompt } from "../../components/PromptContext";
 
 export default function SeriesInfoCard({
 	seriesInfo,
-	addOrRemoveVolume,
-	localVolumeList,
+	actions, 
 	infoToShow,
 	setInfoToShow,
 }) {
-	const { user, setOutdated } = useContext(UserContext);
-	const { confirm } = usePrompt(); 
+	const { user } = useContext(UserContext);
 	const seriesSummarry = useRef(null);
 	const [showingMore, setShowingMore] = useState(false);
 	const [loaded, setLoaded] = useState(false);
 	const [optionsVisible, setOptionsVisible] = useState(false);
-	const { addMessage, setMessageType } = useContext(messageContext);
 	const [seriesInList, setSeriesInList] = useState(seriesInfo.inUserList);
+
+	const {
+		toggleSeriesInList,
+		toggleWishlist,
+		toggleDrop,
+		handleSelectAllVolumes,
+	} = actions;
 
 	useEffect(() => {
 		setShowingMore(
@@ -44,10 +45,6 @@ export default function SeriesInfoCard({
 		);
 	}, [user]);
 
-	const handleLoading = () => {
-		setLoaded(true);
-	};
-
 	const {
 		id,
 		seriesCover,
@@ -59,147 +56,6 @@ export default function SeriesInfoCard({
 		genres,
 		isAdult,
 	} = seriesInfo;
-
-	const addOrRemoveSeries = async (isAdding) => {
-		try {
-			const url = isAdding
-				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-series`
-				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-series`;
-
-			await axios({
-				method: "POST",
-				data: { id },
-				withCredentials: true,
-				headers: {
-					Authorization: import.meta.env.REACT_APP_API_KEY,
-				},
-				url: url,
-			});
-			setMessageType("Success");
-			addMessage(`Obra ${isAdding ? "adicionada" : "removida"} com sucesso`);
-			setOutdated(true);
-		} catch (err) {
-			const customErrorMessage = err.response.data.msg;
-			addMessage(customErrorMessage);
-		}
-	};
-
-	const addOrRemoveFromWishList = async (isAdding) => {
-		try {
-			const url = isAdding
-				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-to-wishlist`
-				: `${
-						import.meta.env.REACT_APP_HOST_ORIGIN
-				  }/api/user/remove-from-wishlist`;
-
-			await axios({
-				method: "POST",
-				data: { id },
-				withCredentials: true,
-				headers: {
-					Authorization: import.meta.env.REACT_APP_API_KEY,
-				},
-				url: url,
-			});
-			setOutdated(true);
-			setMessageType("Success");
-			addMessage(
-				`Obra ${
-					isAdding
-						? "adicionada à lista de desejos"
-						: "removida da lista de desejos"
-				} com sucesso`
-			);
-		} catch (err) {
-			const customErrorMessage = err.response.data.msg;
-			addMessage(customErrorMessage);
-		}
-	};
-
-	const dropOrUndropSeries = async (dropping) => {
-		try {
-			const url = dropping
-				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/drop-series`
-				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/undrop-series`;
-
-			await axios({
-				method: "POST",
-				data: { id },
-				withCredentials: true,
-				headers: {
-					Authorization: import.meta.env.REACT_APP_API_KEY,
-				},
-				url: url,
-			});
-			setOutdated(true);
-			setMessageType("Success");
-			addMessage(
-				`Obra ${dropping ? "abandonada" : "de volta ao normal"} com sucesso`
-			);
-		} catch (err) {
-			const customErrorMessage = err.response.data.msg;
-			addMessage(customErrorMessage);
-		}
-	};
-
-	const handleSelectAll = (e) => {
-		if (!user) {
-			return;
-		}
-		setOptionsVisible(false);
-		const adding = e.target.checked;
-		const list = localVolumeList
-			.filter((volume) => volume.ownsVolume === !adding)
-			.map((volume) => {
-				return volume.volumeId;
-			});
-		if (!adding) {
-			confirm(
-				"Deseja remover todos os volumes?",
-				() => addOrRemoveVolume(adding, list)
-			);
-		} else {
-			addOrRemoveVolume(adding, list);
-		}
-	};
-
-	const handleDropSeries = (e) => {
-		const dropping = e.target.checked;
-		setOptionsVisible(false);
-		
-		if (dropping) {
-			confirm(
-				"Deseja abandonar(droppar) essa obra? Obras abandonadas não apareceram mais na lista de volumes faltosos mas continuarão na sua estante contando para as estatísticas",
-				() => dropOrUndropSeries(dropping)
-			);
-		} else {
-			dropOrUndropSeries(dropping);
-		}
-	};
-
-	const handleWishlist = (e) => {
-		const adding = e.target.checked;
-		setOptionsVisible(false);
-		if (!adding) {
-			confirm(
-				"Deseja remover essa obra da lista de desejos?",
-				() => addOrRemoveFromWishList(adding)
-			);
-		} else {
-			addOrRemoveFromWishList(adding);
-		}
-	};
-
-	const handleRemoveSeries = () => {
-		confirm(
-			"Remover essa coleção também irá remover todos os seus volumes deseja prosseguir?",
-			() => addOrRemoveSeries(false)
-		);
-	};
-
-	const handleOptionsClick = () => {
-		setOptionsVisible((prev) => !prev);
-	};
 
 	return (
 		<div className="series">
@@ -220,132 +76,111 @@ export default function SeriesInfoCard({
 								(max-width: 768px) 100vw,"
 						loading="lazy"
 						alt={`cover volume ${title}`}
-						className={`series-card__img ${
-							!loaded && "series-card__img--loading"
-						}`}
-						onLoad={handleLoading}
+						className={`series-card__img ${!loaded && "series-card__img--loading"}`}
+						onLoad={() => setLoaded(true)}
 					/>
 					{isAdult && <div className="series-card__adult-indicator">+18</div>}
 				</div>
 				<div className="series_main-info">
-					{
-						<div className="series__butons-containers">
-							<div>
-								<div
-									className={
-										!seriesInList
-											? "button-select"
-											: "button-select button-select--red"
-									}
+					<div className="series__butons-containers">
+						<div>
+							<div
+								className={!seriesInList ? "button-select" : "button-select button-select--red"}
+							>
+								<strong
+									className="button-select__option"
+									onClick={() => {
+										if (!user) return;
+										// SIMPLE LOGIC CALL
+										toggleSeriesInList(!seriesInList);
+									}}
 								>
-									<strong
-										className="button-select__option"
-										onClick={() => {
-											if (!user) {
-												return;
-											}
-											seriesInList
-												? handleRemoveSeries()
-												: addOrRemoveSeries(true);
-										}}
-									>
-										{!seriesInList ? "Adicionar" : "Remover"} coleção
-									</strong>
-									<div
-										className="button-select__dropdown"
-										onClick={handleOptionsClick}
-									>
-										<RiArrowDropDownLine />
-									</div>
+									{!seriesInList ? "Adicionar" : "Remover"} coleção
+								</strong>
+								<div
+									className="button-select__dropdown"
+									onClick={() => setOptionsVisible((prev) => !prev)}
+								>
+									<RiArrowDropDownLine />
 								</div>
-								<div
-									className={`${
-										optionsVisible
-											? "button-select__options-container"
-											: "button-select__options-container--hidden"
-									}`}
-								>
-									<label
-										htmlFor="select-all-check-mark"
-										className="button-select__option"
-									>
+							</div>
+							<div
+								className={`${
+									optionsVisible
+										? "button-select__options-container"
+										: "button-select__options-container--hidden"
+								}`}
+							>
+								<label htmlFor="select-all-check-mark" className="button-select__option">
+									<strong>
+										{user && getCompletionPercentage(user, id) === 1
+											? "Remover todos"
+											: "Adicionar todos"}
+									</strong>
+									<input
+										type="checkbox"
+										id="select-all-check-mark"
+										className="checkmark invisible"
+										disabled={!user}
+										checked={user && getCompletionPercentage(user, id) === 1}
+										onChange={(e) => {
+											setOptionsVisible(false);
+											handleSelectAllVolumes(e);
+										}}
+									/>
+								</label>
+
+								<div className="button-select__option">
+									<label htmlFor="wishlist-check-mark" className="button-select__option">
 										<strong>
-											{user && getCompletionPercentage(user, id) === 1
-												? "Remover todos"
-												: "Adicionar todos"}
+											{user && checkIfInWishlist(user, id)
+												? "Remover da lista de desejos"
+												: "Adicionar à lista de desejos"}
 										</strong>
 										<input
 											type="checkbox"
-											name="select-all-check-mark"
-											id="select-all-check-mark"
+											id="wishlist-check-mark"
 											className="checkmark invisible"
-											disabled={user ? false : true}
-											checked={
-												user && getCompletionPercentage(user, id) === 1
-													? true
-													: false
-											}
-											onChange={handleSelectAll}
+											disabled={!user}
+											checked={user && checkIfInWishlist(user, id)}
+											onChange={(e) => {
+												setOptionsVisible(false);
+												toggleWishlist(e.target.checked);
+											}}
 										/>
 									</label>
-									<div className="button-select__option">
-										<label
-											htmlFor="wishlist-check-mark"
-											className="button-select__option"
-										>
-											<strong>
-												{user && checkIfInWishlist(user, id)
-													? "Remover da lista de desejos"
-													: "Adicionar à lista de desejos"}
-											</strong>
-											<input
-												type="checkbox"
-												name="wishlist-check-mark"
-												id="wishlist-check-mark"
-												className="checkmark invisible"
-												disabled={user ? false : true}
-												checked={user && checkIfInWishlist(user, id)}
-												onChange={handleWishlist}
-											/>
-										</label>
-									</div>
-									<div className="button-select__option">
-										<label
-											htmlFor="drop-check-mark"
-											className="button-select__option"
-										>
-											<strong>
-												{user && getSeriesStatus(user, id) === "Dropped"
-													? "Voltar a colecionar"
-													: "Abandonar(Dropar) coleção"}
-											</strong>
-											<input
-												type="checkbox"
-												name="drop-check-mark"
-												id="drop-check-mark"
-												className="checkmark invisible"
-												disabled={user ? false : true}
-												checked={
-													user && getSeriesStatus(user, id) === "Dropped"
-														? true
-														: false
-												}
-												onChange={handleDropSeries}
-											/>
-										</label>
-									</div>
+								</div>
+
+								<div className="button-select__option">
+									<label htmlFor="drop-check-mark" className="button-select__option">
+										<strong>
+											{user && getSeriesStatus(user, id) === "Dropped"
+												? "Voltar a colecionar"
+												: "Abandonar(Dropar) coleção"}
+										</strong>
+										<input
+											type="checkbox"
+											id="drop-check-mark"
+											className="checkmark invisible"
+											disabled={!user}
+											checked={user && getSeriesStatus(user, id) === "Dropped"}
+											onChange={(e) => {
+												setOptionsVisible(false);
+												toggleDrop(e.target.checked);
+											}}
+										/>
+									</label>
 								</div>
 							</div>
 						</div>
-					}
+					</div>
+
 					<div className="series__mobile-options-container">
 						<div
 							className={`series__mobile-options series__mobile-options--${
 								infoToShow === "details" && "selected"
 							}`}
-							onClick={() => {
-								setInfoToShow("details");
-							}}
+							onClick={() => setInfoToShow("details")}
 						>
 							Detalhes
 						</div>
@@ -353,15 +188,14 @@ export default function SeriesInfoCard({
 							className={`series__mobile-options series__mobile-options--${
 								infoToShow === "volumes" && "selected"
 							}`}
-							onClick={() => {
-								setInfoToShow("volumes");
-							}}
+							onClick={() => setInfoToShow("volumes")}
 						>
 							Volumes
 						</div>
 					</div>
 				</div>
 			</div>
+
 			<div
 				className={`series__info-container mobile-appearence ${
 					infoToShow !== "details" ? "" : "mobile-appearence--show"
@@ -398,17 +232,15 @@ export default function SeriesInfoCard({
 									showingMore ? "series__summary--show-full" : ""
 								}`}
 							>
-								{summary.map((paragraph, i) => {
-									return <p key={i}>{paragraph}</p>;
-								})}
+								{summary.map((paragraph, i) => (
+									<p key={i}>{paragraph}</p>
+								))}
 							</div>
 							{!showingMore && (
 								<button
 									className="series__show-more"
 									aria-label="Mostrar mais"
-									onClick={() => {
-										setShowingMore(true);
-									}}
+									onClick={() => setShowingMore(true)}
 								>
 									Mostrar mais
 								</button>
