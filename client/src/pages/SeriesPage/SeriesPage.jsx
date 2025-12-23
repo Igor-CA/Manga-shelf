@@ -1,164 +1,61 @@
-import { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 import "./SeriesPage.css";
-import { UserContext } from "../../components/userProvider";
-import axios from "axios";
 import SeriesInfoCard from "./SeriesInfoCard";
 import SeriesVolumesList from "./SeriesVolumesList";
-import { checkOwnedVolumes } from "./utils"; 
 import SkeletonPage from "../../components/SkeletonPage";
 import SkeletonVolumesList from "./SkeletonVolumesList";
-import { usePrompt } from "../../components/PromptContext";
+import { useSeriesLogic } from "./useSeriesLogic";
 
 export default function SeriesPage() {
 	const { id } = useParams();
-	const navigate = useNavigate();
-	const { user, setOutdated, isFetching } = useContext(UserContext);
-	const { confirm } = usePrompt(); 
-	const [series, setSeries] = useState();
-	const [localVolumeState, setLocalVolumeState] = useState();
 	const [infoToShow, setInfoToShow] = useState("details");
 
-	useEffect(() => {
-		if (!isFetching && !user?.allowAdult && series?.isAdult) {
-			navigate("/");
-		}
-	}, [isFetching, user, navigate, series]);
+	const {
+		series,
+		localVolumeState,
+		handleVolumeChange,
+		handleSelectAllVolumes,
+		toggleSeriesInList,
+		toggleWishlist,
+		toggleDrop,
+	} = useSeriesLogic(id);
 
-	useEffect(() => {
-		const fetchSeriesData = async () => {
-			try {
-				const response = await axios.get(
-					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/series/${id}`,
-					{
-						withCredentials: true,
-						headers: {
-							Authorization: import.meta.env.REACT_APP_API_KEY,
-						},
-					}
-				);
-				const responseData = response.data;
-				setSeries(responseData);
-			} catch (error) {
-				const errorType = error.response.status;
-				if (errorType === 400) {
-					navigate("/404");
-				}
-				console.error("Error fetching Series Data:", error);
-			}
-		};
-
-		fetchSeriesData();
-	}, [id, navigate]);
-
-	useEffect(() => {
-		if (series?.title) {
-			const newLocalVolumeState = series.volumes.map((volume) => {
-				const { volumeId } = volume;
-				const ownsVolume = checkOwnedVolumes(user, volumeId);
-				return { volumeId, ownsVolume };
-			});
-			setLocalVolumeState(newLocalVolumeState);
-		}
-	}, [series, user]);
-
-	const handleChange = (e, id) => {
-		const adding = e.target.checked;
-
-		if (adding) {
-			const index = localVolumeState.findIndex(
-				(volumeState) => volumeState.volumeId === id
-			);
-			const listToAdd = localVolumeState
-				.slice(0, index + 1)
-				.filter((volume) => volume.ownsVolume === false)
-				.map((volume) => {
-					return volume.volumeId;
-				});
-
-			if (listToAdd.length > 1) {
-				confirm(
-					"Deseja adicionar os volumes anteriores também?",
-					() => {
-						addOrRemoveVolume(adding, listToAdd);
-					}, 
-					() => {
-						addOrRemoveVolume(adding, [id]);
-					} 
-				);
-			} else {
-				addOrRemoveVolume(adding, [id]);
-			}
-		} else {
-			addOrRemoveVolume(adding, [id]);
-		}
-
-		const newList = localVolumeState.map((checkbox) => {
-			const { volumeId, ownsVolume } = checkbox;
-			if (volumeId === id) {
-				return { ...checkbox, ownsVolume: !ownsVolume };
-			}
-			return checkbox;
-		});
-		setLocalVolumeState(newList);
-	};
-    const addOrRemoveVolume = async (isAdding, idList) => {
-		try {
-			const url = isAdding
-				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-volume`
-				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-volume`;
-
-			const amountVolumesFromSeries = series.volumes.length;
-			await axios({
-				method: "POST",
-				data: {
-					idList: idList,
-					amountVolumesFromSeries,
-					seriesId: id,
-					seriesStatus: series.status,
-				},
-				withCredentials: true,
-				headers: {
-					Authorization: import.meta.env.REACT_APP_API_KEY,
-				},
-				url: url,
-			});
-			setOutdated(true);
-		} catch (err) {
-			console.log(err);
-		}
-	};
+	if (!series) {
+		return (
+			<div className="container page-content">
+				<SkeletonPage type="Series" />
+				<div
+					className={`series__volumes-container mobile-appearence ${
+						infoToShow === "volumes" ? "mobile-appearence--show" : ""
+					}`}
+				>
+					<SkeletonVolumesList count={12} />
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="container page-content">
-			{series ? (
-				<>
-					<SeriesInfoCard
-						seriesInfo={series}
-						addOrRemoveVolume={addOrRemoveVolume}
-						localVolumeList={localVolumeState}
-						infoToShow={infoToShow}
-						setInfoToShow={setInfoToShow}
-					></SeriesInfoCard>
-					<SeriesVolumesList
-						volumes={series.volumes}
-						infoToShow={infoToShow}
-						localVolumesList={localVolumeState}
-						handleChange={handleChange}
-					></SeriesVolumesList>
-				</>
-			) : (
-				<>
-					<SkeletonPage type="Series"></SkeletonPage>
-					<div
-						className={`series__volumes-container mobile-appearence ${
-							infoToShow !== "volumes" ? "" : "mobile-appearence--show"
-						}`}
-					>
-						<SkeletonVolumesList count={12}></SkeletonVolumesList>
-					</div>
-				</>
-			)}
+			<SeriesInfoCard
+				seriesInfo={series}
+				localVolumeList={localVolumeState}
+				actions={{
+					toggleSeriesInList,
+					toggleWishlist,
+					toggleDrop,
+					handleSelectAllVolumes,
+				}}
+				infoToShow={infoToShow}
+				setInfoToShow={setInfoToShow}
+			/>
+			<SeriesVolumesList
+				volumes={series.volumes}
+				infoToShow={infoToShow}
+				localVolumesList={localVolumeState}
+				handleChange={handleVolumeChange}
+			/>
 		</div>
 	);
 }
