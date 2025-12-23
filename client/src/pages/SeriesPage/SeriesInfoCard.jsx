@@ -3,7 +3,6 @@ import { UserContext } from "../../components/userProvider";
 import axios from "axios";
 import {
 	checkIfInWishlist,
-	customWindowConfirm,
 	getCompletionPercentage,
 	getSeriesStatus,
 	printArray,
@@ -11,28 +10,31 @@ import {
 import "../../components/SeriesCard.css";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { messageContext } from "../../components/messageStateProvider";
+import { usePrompt } from "../../components/PromptContext";
 
 export default function SeriesInfoCard({
 	seriesInfo,
 	addOrRemoveVolume,
 	localVolumeList,
-	windowSetters,
 	infoToShow,
 	setInfoToShow,
 }) {
 	const { user, setOutdated } = useContext(UserContext);
+	const { confirm } = usePrompt(); 
 	const seriesSummarry = useRef(null);
 	const [showingMore, setShowingMore] = useState(false);
 	const [loaded, setLoaded] = useState(false);
 	const [optionsVisible, setOptionsVisible] = useState(false);
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const [seriesInList, setSeriesInList] = useState(seriesInfo.inUserList);
+
 	useEffect(() => {
 		setShowingMore(
 			seriesSummarry.current?.scrollHeight <=
 				seriesSummarry.current?.clientHeight
 		);
 	}, [seriesInfo]);
+
 	useEffect(() => {
 		setSeriesInList(
 			user &&
@@ -41,9 +43,11 @@ export default function SeriesInfoCard({
 				)
 		);
 	}, [user]);
+
 	const handleLoading = () => {
 		setLoaded(true);
 	};
+
 	const {
 		id,
 		seriesCover,
@@ -111,6 +115,7 @@ export default function SeriesInfoCard({
 			addMessage(customErrorMessage);
 		}
 	};
+
 	const dropOrUndropSeries = async (dropping) => {
 		try {
 			const url = dropping
@@ -136,6 +141,7 @@ export default function SeriesInfoCard({
 			addMessage(customErrorMessage);
 		}
 	};
+
 	const handleSelectAll = (e) => {
 		if (!user) {
 			return;
@@ -148,11 +154,9 @@ export default function SeriesInfoCard({
 				return volume.volumeId;
 			});
 		if (!adding) {
-			customWindowConfirm(
-				windowSetters,
+			confirm(
 				"Deseja remover todos os volumes?",
-				() => addOrRemoveVolume(adding, list),
-				null
+				() => addOrRemoveVolume(adding, list)
 			);
 		} else {
 			addOrRemoveVolume(adding, list);
@@ -162,13 +166,11 @@ export default function SeriesInfoCard({
 	const handleDropSeries = (e) => {
 		const dropping = e.target.checked;
 		setOptionsVisible(false);
-		console.log(`${dropping ? "Adding" : "Removing"} to dropped`);
+		
 		if (dropping) {
-			customWindowConfirm(
-				windowSetters,
+			confirm(
 				"Deseja abandonar(droppar) essa obra? Obras abandonadas não apareceram mais na lista de volumes faltosos mas continuarão na sua estante contando para as estatísticas",
-				() => dropOrUndropSeries(dropping),
-				null
+				() => dropOrUndropSeries(dropping)
 			);
 		} else {
 			dropOrUndropSeries(dropping);
@@ -179,11 +181,9 @@ export default function SeriesInfoCard({
 		const adding = e.target.checked;
 		setOptionsVisible(false);
 		if (!adding) {
-			customWindowConfirm(
-				windowSetters,
+			confirm(
 				"Deseja remover essa obra da lista de desejos?",
-				() => addOrRemoveFromWishList(adding),
-				null
+				() => addOrRemoveFromWishList(adding)
 			);
 		} else {
 			addOrRemoveFromWishList(adding);
@@ -191,11 +191,9 @@ export default function SeriesInfoCard({
 	};
 
 	const handleRemoveSeries = () => {
-		customWindowConfirm(
-			windowSetters,
+		confirm(
 			"Remover essa coleção também irá remover todos os seus volumes deseja prosseguir?",
-			() => addOrRemoveSeries(false),
-			null
+			() => addOrRemoveSeries(false)
 		);
 	};
 

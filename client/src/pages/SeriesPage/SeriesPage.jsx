@@ -1,39 +1,29 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./SeriesPage.css";
 import { UserContext } from "../../components/userProvider";
 import axios from "axios";
-import PromptConfirm from "../../components/PromptConfirm";
 import SeriesInfoCard from "./SeriesInfoCard";
 import SeriesVolumesList from "./SeriesVolumesList";
-import { checkOwnedVolumes, customWindowConfirm } from "./utils";
+import { checkOwnedVolumes } from "./utils"; 
 import SkeletonPage from "../../components/SkeletonPage";
 import SkeletonVolumesList from "./SkeletonVolumesList";
+import { usePrompt } from "../../components/PromptContext";
 
 export default function SeriesPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const { user, setOutdated, isFetching } = useContext(UserContext);
+	const { confirm } = usePrompt(); 
 	const [series, setSeries] = useState();
 	const [localVolumeState, setLocalVolumeState] = useState();
 	const [infoToShow, setInfoToShow] = useState("details");
-	const [showConfirmation, setShowConfirmation] = useState(false);
-	const [confirmationMessage, setConfirmationMessage] = useState("");
-	const [onConfirm, setOnConfirm] = useState(null);
-	const [onCancel, setOnCancel] = useState(null);
 
 	useEffect(() => {
 		if (!isFetching && !user?.allowAdult && series?.isAdult) {
 			navigate("/");
 		}
 	}, [isFetching, user, navigate, series]);
-
-	const setters = [
-		setOnConfirm,
-		setOnCancel,
-		setConfirmationMessage,
-		setShowConfirmation,
-	];
 
 	useEffect(() => {
 		const fetchSeriesData = async () => {
@@ -76,7 +66,6 @@ export default function SeriesPage() {
 		const adding = e.target.checked;
 
 		if (adding) {
-			//Lista do que precisa ser adicionado
 			const index = localVolumeState.findIndex(
 				(volumeState) => volumeState.volumeId === id
 			);
@@ -88,17 +77,14 @@ export default function SeriesPage() {
 				});
 
 			if (listToAdd.length > 1) {
-				customWindowConfirm(
-					setters,
+				confirm(
 					"Deseja adicionar os volumes anteriores também?",
 					() => {
 						addOrRemoveVolume(adding, listToAdd);
-
-						return;
-					},
+					}, 
 					() => {
 						addOrRemoveVolume(adding, [id]);
-					}
+					} 
 				);
 			} else {
 				addOrRemoveVolume(adding, [id]);
@@ -116,8 +102,7 @@ export default function SeriesPage() {
 		});
 		setLocalVolumeState(newList);
 	};
-
-	const addOrRemoveVolume = async (isAdding, idList) => {
+    const addOrRemoveVolume = async (isAdding, idList) => {
 		try {
 			const url = isAdding
 				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-volume`
@@ -146,21 +131,12 @@ export default function SeriesPage() {
 
 	return (
 		<div className="container page-content">
-			{showConfirmation && (
-				<PromptConfirm
-					message={confirmationMessage}
-					onConfirm={onConfirm}
-					onCancel={onCancel}
-					hidePrompt={setShowConfirmation}
-				></PromptConfirm>
-			)}
 			{series ? (
 				<>
 					<SeriesInfoCard
 						seriesInfo={series}
 						addOrRemoveVolume={addOrRemoveVolume}
 						localVolumeList={localVolumeState}
-						windowSetters={setters}
 						infoToShow={infoToShow}
 						setInfoToShow={setInfoToShow}
 					></SeriesInfoCard>
