@@ -170,6 +170,7 @@ body {
 	overflow: scroll;
 }
 .collection-container--denser {
+	flex-grow: 1;
 	grid-template-columns: repeat(3, 1fr);
 }
 .collection-lable {
