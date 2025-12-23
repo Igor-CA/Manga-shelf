@@ -28,7 +28,7 @@ export default function VolumeItem({
 				id={`have-volume-check-mark-${volumeId}`}
 				className="volume-state-controller"
 				disabled={!user}
-				checked={Math.random() < 0.5}
+				checked={ownsVolume}
 				onChange={handleCheckboxChange}
 			/>
 			<Link

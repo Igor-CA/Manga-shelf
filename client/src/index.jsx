@@ -3,14 +3,17 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { UserProvider } from "./components/userProvider";
 import { MessageProvider } from "./components/messageStateProvider";
+import { PromptProvider } from "./components/PromptContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
 	<React.StrictMode>
-		<UserProvider>
-			<MessageProvider>
-				<App />
-			</MessageProvider>
-		</UserProvider>
+		<PromptProvider>
+			<UserProvider>
+				<MessageProvider>
+					<App />
+				</MessageProvider>
+			</UserProvider>
+		</PromptProvider>
 	</React.StrictMode>
 );
