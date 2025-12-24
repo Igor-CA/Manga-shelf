@@ -8,8 +8,9 @@ import {
 	printArray,
 } from "./utils";
 import { UserContext } from "../../components/userProvider";
+import SkeletonHeader from "../../components/SkeletonPage";
 
-export default function SeriesPageHeader({ seriesInfo, actions}) {
+export default function SeriesPageHeader({ seriesInfo, actions }) {
 	const { user } = useContext(UserContext);
 	const [showingMore, setShowingMore] = useState(false);
 	const [loaded, setLoaded] = useState(false);
@@ -30,7 +31,7 @@ export default function SeriesPageHeader({ seriesInfo, actions}) {
 	const handleLoading = () => {
 		setLoaded(true);
 	};
-	const { seriesCover, title, summary, genres, authors, id } = seriesInfo;
+	const { seriesCover, title, summary, genres, authors, id } = seriesInfo || {};
 	const dropdownOptions = [
 		{
 			label:
@@ -66,7 +67,7 @@ export default function SeriesPageHeader({ seriesInfo, actions}) {
 		isRed: isSeriesInUserList,
 		onClick: () => toggleSeriesInList(!isSeriesInUserList),
 	};
-	return (
+	return seriesInfo ? (
 		<header className="content-header">
 			<div className="header__bg-image-container">
 				<div
@@ -84,33 +85,35 @@ export default function SeriesPageHeader({ seriesInfo, actions}) {
 			<div className="container">
 				<div className="header-container">
 					<div className="header__art-container">
-						<img
-							src={`${
-								import.meta.env.REACT_APP_HOST_ORIGIN
-							}/images/medium/${seriesCover}`}
-							srcSet={
-								`${
+						<div className="header__cover-image-container">
+							<img
+								src={`${
 									import.meta.env.REACT_APP_HOST_ORIGIN
-								}/images/small/${seriesCover} 100w,` +
-								`${
-									import.meta.env.REACT_APP_HOST_ORIGIN
-								}/images/medium/${seriesCover} 400w,` +
-								`${
-									import.meta.env.REACT_APP_HOST_ORIGIN
-								}/images/large/${seriesCover} 700w,` +
-								`${
-									import.meta.env.REACT_APP_HOST_ORIGIN
-								}/images/extralarge/${seriesCover} 1000w,`
-							}
-							sizes=" (min-width: 768px) 360px, 
+								}/images/medium/${seriesCover}`}
+								srcSet={
+									`${
+										import.meta.env.REACT_APP_HOST_ORIGIN
+									}/images/small/${seriesCover} 100w,` +
+									`${
+										import.meta.env.REACT_APP_HOST_ORIGIN
+									}/images/medium/${seriesCover} 400w,` +
+									`${
+										import.meta.env.REACT_APP_HOST_ORIGIN
+									}/images/large/${seriesCover} 700w,` +
+									`${
+										import.meta.env.REACT_APP_HOST_ORIGIN
+									}/images/extralarge/${seriesCover} 1000w,`
+								}
+								sizes=" (min-width: 768px) 360px, 
                                             (max-width: 768px) 100vw,"
-							loading="lazy"
-							alt={`cover volume ${title}`}
-							className={`header__cover-image-container ${
-								!loaded && "series-card__img--loading"
-							}`}
-							onLoad={handleLoading}
-						/>
+								loading="lazy"
+								alt={`cover volume ${title}`}
+								className={`header__cover-image ${
+									!loaded && "header__cover-image--loading"
+								}`}
+								onLoad={handleLoading}
+							/>
+						</div>
 						<ActionDropdown
 							mainAction={mainAction}
 							options={dropdownOptions}
@@ -164,5 +167,7 @@ export default function SeriesPageHeader({ seriesInfo, actions}) {
 				)}
 			</div>
 		</header>
+	) : (
+		<SkeletonHeader></SkeletonHeader>
 	);
 }

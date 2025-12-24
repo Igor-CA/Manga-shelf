@@ -5,6 +5,7 @@ import SeriesPageHeader from "./SeriesPageHeader";
 import { LoadingPageComponent } from "../../App";
 import SeriesOverallPage from "./SeriesOverallPage";
 import { useSeriesLogic } from "./useSeriesLogic";
+import SkeletonHeader from "../../components/SkeletonPage";
 export default function SeriesPageRedesign() {
 	const { id } = useParams();
 
@@ -23,32 +24,30 @@ export default function SeriesPageRedesign() {
 		toggleWishlist,
 		toggleDrop,
 		handleSelectAllVolumes,
-		handleVolumeChange
+		handleVolumeChange,
 	};
 
 	return (
 		<div className="page-content" key={id}>
+			<SeriesPageHeader
+				seriesInfo={series}
+				actions={actions}
+			></SeriesPageHeader>
 			{series && (
-				<>
-					<SeriesPageHeader
-						seriesInfo={series}
-						actions={actions}
-					></SeriesPageHeader>
-					<Suspense fallback={<LoadingPageComponent />}>
-						<Routes>
-							<Route
-								path=""
-								element={
-									<SeriesOverallPage
-										series={series}
-										volumesState={localVolumeState}
-										actions={actions}
-									/>
-								}
-							></Route>
-						</Routes>
-					</Suspense>
-				</>
+				<Suspense fallback={<LoadingPageComponent />}>
+					<Routes>
+						<Route
+							path=""
+							element={
+								<SeriesOverallPage
+									series={series}
+									volumesState={localVolumeState}
+									actions={actions}
+								/>
+							}
+						></Route>
+					</Routes>
+				</Suspense>
 			)}
 		</div>
 	);

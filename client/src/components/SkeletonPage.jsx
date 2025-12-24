@@ -1,50 +1,58 @@
+import { RiArrowDropDownLine } from "react-icons/ri";
 
-import "../components/SeriesCard.css";
-import "../pages/VolumePage/VolumePage.css";
-export default function SkeletonPage({ type = "Volume" }) {
+export default function SkeletonHeader() {
 	return (
-		<div className="volume">
-			<div className="volume__cover-wrapper">
-				<div className="series-card__image-container series-card__loader"></div>
-				<div className="volume__main-info">
-					<div className="volume__functions">
-						<div className="button button--disabled button--grow">
-							<strong>
-								{type === "Volume"
-									? "Ver coleção"
-									: "Adicionar todos"}
-							</strong>
+		<div className="content-header">
+			<div className="header__bg-image-container">
+				<div className="header__bg-image loader-animation"></div>
+			</div>
+			<div className="container">
+				<div className="header-container">
+					<div className="header__art-container">
+						<div className={`header__cover-image-container loader-animation`} />
+						<div className="button-select__container">
+							<div className="button-select button-select--disabled">
+								<strong className="button-select__option">
+									Carregando...	
+								</strong>
+								<div className="button-select__dropdown">
+									<RiArrowDropDownLine />
+								</div>
+							</div>
 						</div>
 					</div>
-					{type === "Series" && (
-						<div className="series__mobile-options-container">
-							<div className='series__mobile-options series__mobile-options--selected'>Detalhes</div>
-							<div className='series__mobile-options'>Volumes</div>
+					<div className="header__main-info-container">
+						<div className="header__title-container">
+							<h1 className="content-title loader-animation">
+								Carregando Titulo
+							</h1>
+							<span className="content-author loader-animation">
+								Obra de: Carregando autores
+							</span>
 						</div>
-					)}
+						<div className="header__secondary-info">
+							<ul className="header__genres-list"></ul>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div className="volume__info-container">
 
-				<h1 className="volume__title series-card__loader">Titulo</h1>
-				<ul className="volume__details-container">
-					<li className="volume__details series-card__loader">
-						Info
-					</li>
-					<li className="volume__details series-card__loader">
-						Info
-					</li>
-					<li className="volume__details">
-						<p className="series-card__loader">Sumario</p>
-						<p className="series-card__loader">Sumario</p>
-						<p className="series-card__loader">Sumario</p>
-						<p className="series-card__loader">Sumario</p>
-						<p className="series-card__loader">Sumario</p>
-						<p className="series-card__loader">Sumario</p>
-						<p className="series-card__loader">Sumario</p>
-						<p className="series-card__loader">Sumario</p>
-					</li>
-				</ul>
+				<div className="content__details-summary">
+					<p className="content__summary loader-animation">
+						Carregando sinopse
+					</p>
+					<p className="content__summary loader-animation">
+						Carregando sinopse
+					</p>
+					<p className="content__summary loader-animation">
+						Carregando sinopse
+					</p>
+					<p className="content__summary loader-animation">
+						Carregando sinopse
+					</p>
+					<p className="content__summary loader-animation">
+						Carregando sinopse
+					</p>
+				</div>
 			</div>
 		</div>
 	);

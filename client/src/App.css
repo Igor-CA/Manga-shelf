@@ -167,7 +167,6 @@ body {
 	grid-template-columns: repeat(3, 1fr);
 	justify-content: space-evenly;
 	gap: 1.25rem 0.75rem;
-	overflow: scroll;
 }
 .collection-container--denser {
 	flex-grow: 1;
@@ -328,6 +327,9 @@ body {
 	}
 }
 @media only screen and (min-width: 768px) {
+	.loader-animation {
+		color: #00000000;
+	}
 	.collection-container {
 		grid-template-columns: repeat(4, 1fr);
 	}
