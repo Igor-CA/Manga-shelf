@@ -113,8 +113,7 @@ export const useSeriesLogic = (id) => {
 		}
 	};
 
-	const handleSelectAllVolumes = (e) => {
-		const adding = e.target.checked;
+	const handleSelectAllVolumes = (adding) => {
 		const list = localVolumeState
 			.filter((volume) => volume.ownsVolume === !adding)
 			.map((volume) => volume.volumeId);

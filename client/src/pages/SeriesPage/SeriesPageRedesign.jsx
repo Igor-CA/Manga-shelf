@@ -1,58 +1,50 @@
 import "./SeriesPageRedesign.css";
-import { Route, Routes, useNavigate, useParams } from "react-router-dom";
-import { Suspense, useContext, useEffect, useState } from "react";
-import { UserContext } from "../../components/userProvider";
-import axios from "axios";
+import { Route, Routes, useParams } from "react-router-dom";
+import { Suspense } from "react";
 import SeriesPageHeader from "./SeriesPageHeader";
 import { LoadingPageComponent } from "../../App";
 import SeriesOverallPage from "./SeriesOverallPage";
+import { useSeriesLogic } from "./useSeriesLogic";
 export default function SeriesPageRedesign() {
 	const { id } = useParams();
-	const navigate = useNavigate();
-	const { user, isFetching } = useContext(UserContext);
-	const [series, setSeries] = useState();
 
-	useEffect(() => {
-		const fetchSeriesData = async () => {
-			try {
-				const response = await axios.get(
-					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/series/${id}`,
-					{
-						withCredentials: true,
-						headers: {
-							Authorization: import.meta.env.REACT_APP_API_KEY,
-						},
-					}
-				);
-				const responseData = response.data;
-				setSeries(responseData);
-			} catch (error) {
-				const errorType = error.response.status;
-				if (errorType === 400) {
-					navigate("/404");
-				}
-				console.error("Error fetching Series Data:", error);
-			}
-		};
+	const {
+		series,
+		toggleSeriesInList,
+		toggleWishlist,
+		toggleDrop,
+		handleSelectAllVolumes,
+		handleVolumeChange,
+		localVolumeState,
+	} = useSeriesLogic(id);
 
-		fetchSeriesData();
-	}, [id, navigate]);
+	const actions = {
+		toggleSeriesInList,
+		toggleWishlist,
+		toggleDrop,
+		handleSelectAllVolumes,
+		handleVolumeChange
+	};
 
-	useEffect(() => {
-		if (!isFetching && !user?.allowAdult && series?.isAdult) {
-			navigate("/");
-		}
-	}, [isFetching, user, navigate, series]);
 	return (
 		<div className="page-content" key={id}>
 			{series && (
 				<>
-					<SeriesPageHeader seriesInfo={series}></SeriesPageHeader>
+					<SeriesPageHeader
+						seriesInfo={series}
+						actions={actions}
+					></SeriesPageHeader>
 					<Suspense fallback={<LoadingPageComponent />}>
 						<Routes>
 							<Route
 								path=""
-								element={<SeriesOverallPage series={series} />}
+								element={
+									<SeriesOverallPage
+										series={series}
+										volumesState={localVolumeState}
+										actions={actions}
+									/>
+								}
 							></Route>
 						</Routes>
 					</Suspense>
