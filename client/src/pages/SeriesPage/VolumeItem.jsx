@@ -9,11 +9,9 @@ export default function VolumeItem({
 }) {
 	const [loaded, setLoaded] = useState(false);
 	const { volumeId, image, volumeNumber } = volumeInfo;
-	const ownsVolume = localVolumeState
-		? localVolumeState.find((element) => element.volumeId === volumeId)
-				.ownsVolume
-		: false;
-
+	const ownsVolume =
+		localVolumeState?.find((element) => element.volumeId === volumeId)
+			?.ownsVolume ?? false;
 	const handleCheckboxChange = (e) => {
 		handleChange(e, volumeId);
 	};
