@@ -408,6 +408,7 @@
 	}
 	.all-info-container {
 		padding: 0;
+		margin-top: 0.75rem;
 		background-color: var(--foreground);
 		max-width: 250px;
 		padding: 0.75rem;
