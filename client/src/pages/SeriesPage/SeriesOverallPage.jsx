@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { printArray } from "./utils";
 import SeriesVolumesList from "./SeriesVolumesList";
 
-export default function SeriesOverallPage({ series }) {
-	const [localVolumeState, setLocalVolumeState] = useState();
+export default function SeriesOverallPage({ series, volumesState, actions}) {
 	const {
 		authors,
 		publisher,
@@ -53,9 +52,8 @@ export default function SeriesOverallPage({ series }) {
 		];
 	}, [series]);
 
-	const handleChange = () => {
-		console.log("change");
-	};
+	const { handleVolumeChange } = actions
+
 	return (
 		<div className="container">
 			<div className="content-overall__container">
@@ -79,8 +77,8 @@ export default function SeriesOverallPage({ series }) {
 				</ul>
 				<SeriesVolumesList
 					volumes={series.volumes}
-					localVolumesList={localVolumeState}
-					handleChange={handleChange}
+					localVolumesList={volumesState}
+					handleChange={handleVolumeChange}
 				></SeriesVolumesList>
 			</div>
 		</div>

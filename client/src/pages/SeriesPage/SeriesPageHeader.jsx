@@ -1,12 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import ActionDropdown from "./ActionsDropdown";
 import "./SeriesPageRedesign.css";
-import { printArray } from "./utils";
+import {
+	checkIfInWishlist,
+	getCompletionPercentage,
+	getSeriesStatus,
+	printArray,
+} from "./utils";
+import { UserContext } from "../../components/userProvider";
 
-export default function SeriesPageHeader({ seriesInfo, user }) {
+export default function SeriesPageHeader({ seriesInfo, actions}) {
+	const { user } = useContext(UserContext);
 	const [showingMore, setShowingMore] = useState(false);
 	const [loaded, setLoaded] = useState(false);
 	const seriesSummarry = useRef(null);
+	const {
+		handleSelectAllVolumes,
+		toggleSeriesInList,
+		toggleWishlist,
+		toggleDrop,
+	} = actions;
+
 	useEffect(() => {
 		setShowingMore(
 			seriesSummarry.current?.scrollHeight <=
@@ -16,41 +30,41 @@ export default function SeriesPageHeader({ seriesInfo, user }) {
 	const handleLoading = () => {
 		setLoaded(true);
 	};
-	//Todo variable fixed just for testing
-	const seriesInList = false
-	const { seriesCover, title, summary, genres, authors } = seriesInfo;
+	const { seriesCover, title, summary, genres, authors, id } = seriesInfo;
 	const dropdownOptions = [
 		{
-			label: "Adicionar todos",
-			//user && getCompletionPercentage(user, id) === 1
-			//? "Remover todos"
-			//: "Adicionar todos",
-			checked: true, //user //&& getCompletionPercentage(user, id) === 1,
-			onChange: () => console.log("adicionar todos"),
+			label:
+				user && getCompletionPercentage(user, id) === 1
+					? "Remover todos"
+					: "Adicionar todos",
+			checked: user && getCompletionPercentage(user, id) === 1,
+			onChange: handleSelectAllVolumes,
 		},
 		{
-			label: "Adicionar aos desejos",
-			//user && checkIfInWishlist(user, id)
-			//? "Remover da lista"
-			//: "Adicionar aos desejos",
-			checked: true, //user && checkIfInWishlist(user, id),
-			onChange: () => console.log("Adicionado aos desejos"), //handleWishlistAction, // Pass your existing logic here
+			label:
+				user && checkIfInWishlist(user, id)
+					? "Remover da lista"
+					: "Adicionar aos desejos",
+			checked: user && checkIfInWishlist(user, id),
+			onChange: toggleWishlist,
 		},
 		{
-			label: "Abandonar colecaao",
-			//user && getSeriesStatus(user, id) === "Dropped"
-			//? "Voltar a colecionar"
-			//: "Abandonar coleção",
-			checked: true, // user && getSeriesStatus(user, id) === "Dropped",
-			onChange: () => console.log("dropped"), //handleDropSeriesAction,
+			label:
+				user && getSeriesStatus(user, id) === "Dropped"
+					? "Voltar a colecionar"
+					: "Abandonar coleção",
+			checked: user && getSeriesStatus(user, id) === "Dropped",
+			onChange: toggleDrop,
 		},
 	];
+
+	const isSeriesInUserList = user?.userList?.some(
+        (seriesObj) => seriesObj.Series._id.toString() === id || seriesObj.Series === id
+    ) ?? false;
 	const mainAction = {
-		label: !seriesInList ? "Adicionar coleção" : "Remover coleção",
-		isRed: seriesInList,
-		onClick: () => console.log("adding series"),
-		//() =>
-		//seriesInList ? handleRemoveSeries() : addOrRemoveSeries(true),
+		label: !isSeriesInUserList ? "Adicionar coleção" : "Remover coleção",
+		isRed: isSeriesInUserList,
+		onClick: () => toggleSeriesInList(!isSeriesInUserList),
 	};
 	return (
 		<header className="content-header">
@@ -113,7 +127,11 @@ export default function SeriesPageHeader({ seriesInfo, user }) {
 						<div className="header__secondary-info">
 							<ul className="header__genres-list">
 								{genres.map((genre, index) => {
-									return <li className="header__genre-tag" key={index}>{genre}</li>;
+									return (
+										<li className="header__genre-tag" key={index}>
+											{genre}
+										</li>
+									);
 								})}
 							</ul>
 						</div>
