@@ -51,7 +51,7 @@ export default function SeriesInfoCard({
 		title,
 		publisher,
 		authors,
-		dimmensions,
+		dimensions,
 		summary,
 		genres,
 		isAdult,
@@ -213,9 +213,9 @@ export default function SeriesInfoCard({
 							<strong>Autores:</strong> {printArray(authors)}
 						</li>
 					)}
-					{dimmensions?.length > 0 && (
+					{dimensions?.length > 0 && (
 						<li className="series__details">
-							<strong>Formato:</strong> {dimmensions.join("cm x ") + "cm"}
+							<strong>Formato:</strong> {dimensions.join("cm x ") + "cm"}
 						</li>
 					)}
 					{genres?.length > 0 && (

@@ -7,7 +7,7 @@ const SeriesSchema = new Schema({
 	authors: [{ type: String }],
 	publisher: { type: String, required: true },
 	volumes: [{ type: Schema.Types.ObjectId, ref: "Volume", required: true }],
-	dimmensions: [{ type: Number }],
+	dimensions: [{ type: Number }],
 	status: { type: String },
 	synonyms: [{ type: String }],
 	genres: [{ type: String }],
