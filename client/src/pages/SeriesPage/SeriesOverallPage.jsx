@@ -7,12 +7,11 @@ export default function SeriesOverallPage({ series, volumesState, actions}) {
 		authors,
 		publisher,
 		genres,
-		dimmensions,
-		statusJapan,
+		dimensions,
+		status,
 		statusBrazil,
 		chaptersCount,
 		volumesJapan,
-		volumesBrazil,
 		releaseDateJapan,
 		releaseDateBrazil,
 		endDateJapan,
@@ -22,6 +21,7 @@ export default function SeriesOverallPage({ series, volumesState, actions}) {
 		popularity,
 		type,
 		demographics,
+		volumes
 	} = series;
 	const detailsSchema = useMemo(() => {
 		if (!series) return [];
@@ -30,12 +30,12 @@ export default function SeriesOverallPage({ series, volumesState, actions}) {
 			{ label: "Autores", value: printArray(authors) },
 			{ label: "Editora", value: publisher },
 			{ label: "Gêneros", value: printArray(genres) },
-			{ label: "Formato", value: dimmensions?.join("cm x ") + "cm" },
-			{ label: "Situação no Japão", value: statusJapan },
+			{ label: "Formato", value: dimensions?.join("cm x ") + "cm" },
+			{ label: "Situação no Japão", value: status },
 			{ label: "Situação no Brasil", value: statusBrazil },
 			{ label: "Quantidade de capítulos", value: chaptersCount },
 			{ label: "Volumes no Japão", value: volumesJapan },
-			{ label: "Volumes no Brasil", value: volumesBrazil },
+			{ label: "Volumes no Brasil", value: volumes.length },
 			{ label: "Data de lançamento no Japão", value: releaseDateJapan },
 			{ label: "Data de lançamento no Brasil", value: releaseDateBrazil },
 			{ label: "Data de conclusão no Japão", value: endDateJapan },
@@ -51,7 +51,6 @@ export default function SeriesOverallPage({ series, volumesState, actions}) {
 			{ label: "Demografia", value: demographics },
 		];
 	}, [series]);
-
 	const { handleVolumeChange } = actions
 
 	return (
