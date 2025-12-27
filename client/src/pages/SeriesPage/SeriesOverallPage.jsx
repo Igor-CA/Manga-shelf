@@ -2,12 +2,12 @@ import { useMemo } from "react";
 import { printArray } from "./utils";
 import SeriesVolumesList from "./SeriesVolumesList";
 
-export default function SeriesOverallPage({ series, volumesState, actions}) {
+export default function SeriesOverallPage({ series, volumesState, actions }) {
 	const {
 		authors,
 		publisher,
 		genres,
-		dimensions,
+		specs,
 		status,
 		statusBrazil,
 		chaptersCount,
@@ -20,8 +20,8 @@ export default function SeriesOverallPage({ series, volumesState, actions}) {
 		coverType,
 		popularity,
 		type,
-		demographics,
-		volumes
+		demographic,
+		volumes,
 	} = series;
 	const detailsSchema = useMemo(() => {
 		if (!series) return [];
@@ -30,7 +30,15 @@ export default function SeriesOverallPage({ series, volumesState, actions}) {
 			{ label: "Autores", value: printArray(authors) },
 			{ label: "Editora", value: publisher },
 			{ label: "Gêneros", value: printArray(genres) },
-			{ label: "Formato", value: dimensions?.join("cm x ") + "cm" },
+			{
+				label: "Formato",
+				value: specs.dimensions
+					? `${specs.dimensions.width}cm x ${specs.dimensions.height}cm`.replaceAll(
+							".",
+							","
+					  )
+					: null,
+			},
 			{ label: "Situação no Japão", value: status },
 			{ label: "Situação no Brasil", value: statusBrazil },
 			{ label: "Quantidade de capítulos", value: chaptersCount },
@@ -48,10 +56,10 @@ export default function SeriesOverallPage({ series, volumesState, actions}) {
 				suffix: " usuários possuem ou querem essa obra",
 			},
 			{ label: "Tipo", value: type },
-			{ label: "Demografia", value: demographics },
+			{ label: "Demografia", value: demographic },
 		];
 	}, [series]);
-	const { handleVolumeChange } = actions
+	const { handleVolumeChange } = actions;
 
 	return (
 		<div className="container">
