@@ -7,12 +7,12 @@ function getSeriesCoverURL(Series) {
 	return imageURL;
 }
 
-function getVolumeCoverURL(Series, volumeNumber) {
+function getVolumeCoverURL(Series, volumeNumber, variant=false) {
 	const sanitizedTitle = Series.title
 		.replace(/[?:/–\s]+/g, "-")
 		.replace(/-+/g, "-");
 	const nameURL = encodeURIComponent(sanitizedTitle);
-	const imageURL = `cover-${nameURL}-${volumeNumber}.webp`;
+	const imageURL = `cover-${nameURL}-${volumeNumber}${variant?"-variant":""}.webp`;
 	return imageURL;
 }
 
