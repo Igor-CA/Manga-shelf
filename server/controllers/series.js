@@ -264,40 +264,8 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		isAdult: desiredSeries.isAdult,
 	}));
 
-	const {
-		_id: id,
-		title,
-		authors,
-		publisher,
-		seriesCover,
-		dimensions,
-		summary,
-		genres,
-		isAdult,
-		status,
-		popularity,
-		inWishlist,
-		inUserList,
-		userListStatus,
-	} = desiredSeries;
-
-	const jsonResponse = {
-		id,
-		title,
-		authors,
-		publisher,
-		seriesCover,
-		dimensions,
-		summary,
-		genres,
-		isAdult,
-		status,
-		popularity,
-		inWishlist,
-		inUserList,
-		userListStatus,
-		volumes: volumesWithImages,
-	};
+	const { _id: id, __v, ...rest } = desiredSeries; 
+	const jsonResponse = { id, ...rest, volumes: volumesWithImages };
 	res.send(jsonResponse);
 });
 
