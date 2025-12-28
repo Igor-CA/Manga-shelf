@@ -223,11 +223,11 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const skip = ITEMS_PER_PAGE * (page - 1);
 
 	const aggregationPipeline = [
-		// Match the user by username
 		{ $match: { username: targetUser } },
-		// Unwind userList to process individual series
+		
 		{ $unwind: "$userList" },
-		// Lookup the series details
+		{ $match: { "userList.status": { $ne: "Dropped" } } }, 
+
 		{
 			$lookup: {
 				from: "series",
@@ -237,7 +237,6 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{ $unwind: "$seriesDetails" },
-		// Lookup to get volume details
 		{
 			$lookup: {
 				from: "volumes",
@@ -247,48 +246,67 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{ $unwind: "$volumeDetails" },
-		// Prepare the list of owned volume IDs
+
 		{
 			$addFields: {
 				ownedVolumesSet: { $setUnion: ["$ownedVolumes", []] },
-			},
-		},
-		// Add a field to indicate whether the volume is owned or not
-		{
-			$addFields: {
 				isOwned: {
-					$cond: [
-						{ $in: ["$volumeDetails._id", "$ownedVolumesSet"] },
-						true,
-						false,
-					],
+					$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumes", []] }]
 				},
+				variantSort: { 
+					$cond: [{ $ifNull: ["$volumeDetails.isVariant", false] }, 1, 0] 
+				}
 			},
 		},
-		// Filter out volumes that are owned
-		{ $match: { isOwned: false } },
-		// Group back the data
+
+		{
+			$sort: {
+				"seriesDetails.title": 1,
+				"volumeDetails.number": 1,
+				"variantSort": 1 
+			}
+		},
+
 		{
 			$group: {
-				_id: "$volumeDetails._id",
+				_id: {
+					seriesId: "$seriesDetails._id",
+					volNumber: "$volumeDetails.number"
+				},
+				hasOwnedVariant: { $max: "$isOwned" },
+
 				series: { $first: "$seriesDetails.title" },
 				seriesId: { $first: "$seriesDetails._id" },
-				seriesSize: { $first: { $size: "$seriesDetails.volumes" } },
+				seriesSize: { $first: { $size: "$seriesDetails.volumes" } }, 
 				seriesStatus: { $first: "$seriesDetails.status" },
-				volumeId: { $first: "$volumeDetails._id" },
-				volumeNumber: { $first: "$volumeDetails.number" },
-				status: { $first: "$userList.status" },
+				
+				displayVolumeId: { $first: "$volumeDetails._id" },
+				displayVolumeNumber: { $first: "$volumeDetails.number" },
+				userStatus: { $first: "$userList.status" },
 			},
 		},
-		{ $match: { status: { $ne: "Dropped" } } },
-		// Sort the results by series title and volume number
+
+		{ $match: { hasOwnedVariant: false } },
+
+		{
+			$project: {
+				_id: "$displayVolumeId", // Frontend expects volume ID as _id
+				series: 1,
+				seriesId: 1,
+				seriesSize: 1,
+				seriesStatus: 1,
+				volumeId: "$displayVolumeId",
+				volumeNumber: "$displayVolumeNumber",
+				status: "$userStatus"
+			},
+		},
+
 		{
 			$sort: {
 				series: 1,
 				volumeNumber: 1,
 			},
 		},
-		// Pagination
 		{ $skip: skip },
 		{ $limit: ITEMS_PER_PAGE },
 	];
@@ -304,7 +322,6 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	});
 	res.send(listWithImages);
 });
-
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username;
 	if (!targetUser) return res.send({ msg: "Nenhum usuário informado" });
