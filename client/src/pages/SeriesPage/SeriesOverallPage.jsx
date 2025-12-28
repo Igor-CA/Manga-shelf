@@ -50,7 +50,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 				value: normalVolumes.length,
 				suffix:
 					variants.length > 0
-						? ` + ${variants.length} com capas variantes`
+						? ` + ${variants.length} capas variantes`
 						: "",
 			},
 			{ label: "Data de lançamento no Japão", value: releaseDateJapan },
