@@ -262,9 +262,10 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		volumeNumber: volume.number,
 		image: getVolumeCoverURL(desiredSeries, volume.number, volume.isVariant),
 		isAdult: desiredSeries.isAdult,
+		isVariant: volume.isVariant,
 	}));
 
-	const { _id: id, __v, ...rest } = desiredSeries; 
+	const { _id: id, __v, ...rest } = desiredSeries;
 	const jsonResponse = { id, ...rest, volumes: volumesWithImages };
 	res.send(jsonResponse);
 });

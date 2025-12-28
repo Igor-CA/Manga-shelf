@@ -44,6 +44,7 @@ export const useSeriesLogic = (id) => {
 		if (series?.title) {
 			const newState = series.volumes.map((vol) => ({
 				volumeId: vol.volumeId,
+				isVariant: vol.isVariant,
 				ownsVolume: checkOwnedVolumes(user, vol.volumeId),
 			}));
 			setLocalVolumeState(newState);
@@ -55,11 +56,11 @@ export const useSeriesLogic = (id) => {
 			await axios({
 				method: "POST",
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}${endpoint}`,
-				data: { id, ...data }, 
+				data: { id, ...data },
 				withCredentials: true,
 				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 			});
-			setOutdated(true); 
+			setOutdated(true);
 			if (successMsg) {
 				setMessageType("Success");
 				addMessage(successMsg);
@@ -72,12 +73,17 @@ export const useSeriesLogic = (id) => {
 		}
 	};
 
-	
 	const performVolumeUpdate = async (isAdding, idList) => {
-		const endpoint = isAdding ? "/api/user/add-volume" : "/api/user/remove-volume";
+		const endpoint = isAdding
+			? "/api/user/add-volume"
+			: "/api/user/remove-volume";
+		const volumesAmount = series.volumes.filter(
+			(volume) => !volume.isVariant
+		).length;
+
 		await apiCall(endpoint, {
 			idList,
-			amountVolumesFromSeries: series.volumes.length,
+			amountVolumesFromSeries: volumesAmount,
 			seriesId: id,
 			seriesStatus: series.status,
 		});
@@ -96,7 +102,7 @@ export const useSeriesLogic = (id) => {
 			const index = localVolumeState.findIndex((v) => v.volumeId === volumeId);
 			const listToAdd = localVolumeState
 				.slice(0, index + 1)
-				.filter((v) => !v.ownsVolume)
+				.filter((v) => !v.ownsVolume && !v.isVariant)
 				.map((v) => v.volumeId);
 
 			if (listToAdd.length > 1) {
@@ -114,9 +120,15 @@ export const useSeriesLogic = (id) => {
 	};
 
 	const handleSelectAllVolumes = (adding) => {
-		const list = localVolumeState
-			.filter((volume) => volume.ownsVolume === !adding)
-			.map((volume) => volume.volumeId);
+		let candidates = localVolumeState.filter(
+			(volume) => volume.ownsVolume === !adding
+		);
+
+		if (adding) {
+			candidates = candidates.filter((vol) => !vol.isVariant);
+		}
+
+		const list = candidates.map((volume) => volume.volumeId);
 
 		const action = () => performVolumeUpdate(adding, list);
 
@@ -127,9 +139,8 @@ export const useSeriesLogic = (id) => {
 		}
 	};
 
-
 	const toggleSeriesInList = (isAdding) => {
-		const action = () => 
+		const action = () =>
 			apiCall(
 				isAdding ? "/api/user/add-series" : "/api/user/remove-series",
 				{},
@@ -137,7 +148,10 @@ export const useSeriesLogic = (id) => {
 			);
 
 		if (!isAdding) {
-			confirm("Remover essa coleção também irá remover todos os seus volumes. Deseja prosseguir?", action);
+			confirm(
+				"Remover essa coleção também irá remover todos os seus volumes. Deseja prosseguir?",
+				action
+			);
 		} else {
 			action();
 		}
@@ -146,7 +160,9 @@ export const useSeriesLogic = (id) => {
 	const toggleWishlist = (isAdding) => {
 		const action = () =>
 			apiCall(
-				isAdding ? "/api/user/add-to-wishlist" : "/api/user/remove-from-wishlist",
+				isAdding
+					? "/api/user/add-to-wishlist"
+					: "/api/user/remove-from-wishlist",
 				{},
 				`Obra ${isAdding ? "adicionada à" : "removida da"} lista de desejos`
 			);
