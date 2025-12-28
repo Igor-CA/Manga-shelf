@@ -70,6 +70,7 @@ async function cleanUserDuplicates() {
 			}
 
 			if (wasModified) {
+				logger.warn(`Cleaned user duplicate. User: ${user}`)
 				await user.save();
 				usersModified++;
 			}
@@ -110,9 +111,13 @@ async function recalculateUserListInfo() {
 			);
 
 			const seriesIds = user.userList.map((item) => item.Series);
-			const seriesDocs = await Series.find({ _id: { $in: seriesIds } }).select(
-				"volumes status"
-			);
+
+			const seriesDocs = await Series.find({ _id: { $in: seriesIds } })
+				.select("volumes status")
+				.populate({
+					path: "volumes",
+					select: "number isVariant _id",
+				});
 
 			const seriesMap = new Map(
 				seriesDocs.map((s) => [
@@ -121,18 +126,32 @@ async function recalculateUserListInfo() {
 				])
 			);
 			user.userList.forEach((listItem) => {
-				const seriesData = seriesMap.get(listItem.Series.toString());
+				const seriesId = listItem.Series.toString();
+				if (!seriesMap.has(seriesId)) return;
+
+				const seriesData = seriesMap.get(seriesId);
 				const seriesStatus = seriesData.status;
-				const totalVolumes = seriesData.volumes || [];
-				const totalCount = totalVolumes.length;
+
+				const allVolumes = seriesData.volumes || [];
 				let newPercentage = 0;
 
-				if (totalCount > 0) {
-					const ownedCount = totalVolumes.filter((volId) =>
-						ownedVolumesSet.has(volId.toString())
-					).length;
-					newPercentage = ownedCount / totalCount;
+				const standardVolumes = allVolumes.filter((v) => !v.isVariant);
+				const totalStandardCount = standardVolumes.length;
+
+				if (totalStandardCount > 0) {
+					const ownedVolumeObjects = allVolumes.filter((vol) =>
+						ownedVolumesSet.has(vol._id.toString())
+					);
+
+					const uniqueOwnedCount = new Set(
+						ownedVolumeObjects.map((v) => v.number)
+					).size;
+
+					newPercentage = uniqueOwnedCount / totalStandardCount;
 				}
+
+				if (newPercentage > 1) newPercentage = 1;
+
 				if (Math.abs(listItem.completionPercentage - newPercentage) > 0.001) {
 					listItem.completionPercentage = newPercentage;
 					wasModified = true;
@@ -148,6 +167,7 @@ async function recalculateUserListInfo() {
 			});
 
 			if (wasModified) {
+				logger.warn(`Userlist Recalculated. User: ${user}`)
 				await user.save();
 				usersModified++;
 			}
@@ -162,7 +182,6 @@ async function recalculateUserListInfo() {
 		throw error;
 	}
 }
-
 async function updateSeriesPopularity() {
 	try {
 		logger.info("Calculating series popularity");

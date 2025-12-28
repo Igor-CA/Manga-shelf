@@ -23,6 +23,8 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 		demographic,
 		volumes,
 	} = series;
+	const normalVolumes = volumes.filter((v) => !v.isVariant);
+	const variants = volumes.filter((v) => v.isVariant);
 	const detailsSchema = useMemo(() => {
 		if (!series) return [];
 
@@ -43,7 +45,14 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 			{ label: "Situação no Brasil", value: statusBrazil },
 			{ label: "Quantidade de capítulos", value: chaptersCount },
 			{ label: "Volumes no Japão", value: volumesJapan },
-			{ label: "Volumes no Brasil", value: volumes.length },
+			{
+				label: "Volumes no Brasil",
+				value: normalVolumes.length,
+				suffix:
+					variants.length > 0
+						? ` + ${variants.length} com capas variantes`
+						: "",
+			},
 			{ label: "Data de lançamento no Japão", value: releaseDateJapan },
 			{ label: "Data de lançamento no Brasil", value: releaseDateBrazil },
 			{ label: "Data de conclusão no Japão", value: endDateJapan },

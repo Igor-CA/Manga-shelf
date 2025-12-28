@@ -178,9 +178,11 @@ const getNewUserSeriesStatus = (currentStatus, completionPercentage) => {
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
 	const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
-	if (!idList) return res.status(400).json({ msg: "Volume(s) não informado" });
 
-	const [user, volume] = await Promise.all([
+	if (!idList || idList.length === 0)
+		return res.status(400).json({ msg: "Volume(s) não informado" });
+
+	const [user, volumesFound] = await Promise.all([
 		User.findById(req.user._id, {
 			ownedVolumes: 1,
 			userList: 1,
@@ -188,40 +190,48 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 		}).populate("userList.Series"),
 		Volumes.find({ _id: { $in: idList } }),
 	]);
+
 	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
-	if (!volume || volume.length === 0)
+	if (!volumesFound || volumesFound.length === 0)
 		return res.status(400).json({ msg: "Volume(s) não encontrado" });
-	
-	//Add all volumes to ownedVolumes
-	const ownedSet = new Set(user.ownedVolumes.map((id) => id.toString()));
-	idList.forEach((id) => ownedSet.add(id));
-	user.ownedVolumes = Array.from(ownedSet);
+
+	const ownedIdsSet = new Set(user.ownedVolumes.map((id) => id.toString()));
+	idList.forEach((id) => ownedIdsSet.add(id));
+	user.ownedVolumes = Array.from(ownedIdsSet);
+
+	const ownedVolumesDocs = await Volumes.find({
+		serie: seriesId,
+		_id: { $in: Array.from(ownedIdsSet) },
+	}).select("number");
+
+	const uniqueOwnedCount = new Set(ownedVolumesDocs.map((v) => v.number)).size;
+
+	const finalTotal = amountVolumesFromSeries > 0 ? amountVolumesFromSeries : 1;
+	let completionPercentage = uniqueOwnedCount / finalTotal;
+	if (completionPercentage > 1) completionPercentage = 1;
 
 	let seriesEntry = user.userList.find(
 		(s) => s.Series._id.toString() === seriesId
 	);
-	const inUserList = seriesEntry !== undefined;
 	const inWishList = user.wishList.some(
 		(entry) => entry.toString() === seriesId
 	);
 
+	const shouldIncrementPopularity = !seriesEntry && !inWishList;
+
 	if (!seriesEntry) {
-		//Add series to userList
-		const completionPercentage = idList.length / amountVolumesFromSeries;
 		user.userList.push({
 			Series: seriesId,
 			completionPercentage: completionPercentage,
 			status: getNewUserSeriesStatus(seriesStatus, completionPercentage),
 		});
-		//If series in wishlist remove it
-		const newWishlist = user.wishList.filter((wishListSeriesId) => {
-			return wishListSeriesId.toString() !== seriesId;
-		});
-		user.wishList = newWishlist;
+
+		if (inWishList) {
+			user.wishList = user.wishList.filter((wishListSeriesId) => {
+				return wishListSeriesId.toString() !== seriesId;
+			});
+		}
 	} else {
-		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
-		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
-		const completionPercentage = ownedFromSeries.length / allVolumes.length;
 		seriesEntry.completionPercentage = completionPercentage;
 		seriesEntry.status = getNewUserSeriesStatus(
 			seriesStatus,
@@ -231,50 +241,61 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 
 	await Promise.all([
 		Series.findByIdAndUpdate(seriesId, {
-			$inc: { popularity: !inUserList && !inWishList },
+			$inc: { popularity: shouldIncrementPopularity },
 		}),
 		user.save(),
 	]);
+
 	res.send({ msg: "Volume(s) Adicionado com sucesso" });
 });
 
 exports.removeVolume = asyncHandler(async (req, res, next) => {
-		const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
-	if (!idList) return res.status(400).json({ msg: "Volume(s) não informado" });
+	const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
 
-	const [user, volume] = await Promise.all([
-		User.findById(req.user._id, {
-			ownedVolumes: 1,
-			userList: 1,
-		}).populate("userList.Series"),
-		Volumes.find({ _id: { $in: idList } }),
-	]);
+	if (!idList || idList.length === 0)
+		return res.status(400).json({ msg: "Volume(s) não informado" });
+
+	const user = await User.findById(req.user._id, {
+		ownedVolumes: 1,
+		userList: 1,
+	}).populate("userList.Series");
+
 	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
-	if (!volume || volume.length === 0)
-		return res.status(400).json({ msg: "Volume(s) não encontrado" });
-	
-	//Filter out all volumes from ownedVolumes
-	const ownedSet = new Set(user.ownedVolumes.map((id) => id.toString()));
-	idList.forEach((id) => ownedSet.delete(id)); // Remove specified volumes
-	user.ownedVolumes = Array.from(ownedSet);
 
-	//Calculate New percentage
+	const ownedIdsSet = new Set(user.ownedVolumes.map((id) => id.toString()));
+	idList.forEach((id) => ownedIdsSet.delete(id));
+
+	user.ownedVolumes = Array.from(ownedIdsSet);
+
 	const seriesEntry = user.userList.find(
 		(s) => s.Series._id.toString() === seriesId
 	);
 
 	if (seriesEntry) {
-		const allVolumes = seriesEntry.Series.volumes.map((id) => id.toString());
-		const ownedFromSeries = allVolumes.filter((volId) => ownedSet.has(volId));
-		seriesEntry.completionPercentage =
-			ownedFromSeries.length / allVolumes.length;
-		seriesEntry.status = "Collecting";
+		const remainingVolumesDocs = await Volumes.find({
+			serie: seriesId,
+			_id: { $in: Array.from(ownedIdsSet) },
+		}).select("number");
+		const uniqueOwnedCount = new Set(remainingVolumesDocs.map((v) => v.number))
+			.size;
+
+		const finalTotal =
+			amountVolumesFromSeries > 0 ? amountVolumesFromSeries : 1;
+		let completionPercentage = uniqueOwnedCount / finalTotal;
+
+		if (completionPercentage > 1) completionPercentage = 1;
+
+		seriesEntry.completionPercentage = completionPercentage;
+
+		seriesEntry.status = getNewUserSeriesStatus(
+			seriesStatus,
+			completionPercentage
+		);
 	}
 
 	await user.save();
 	res.send({ msg: "Volume(s) removido com sucesso" });
 });
-
 exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 	const userId = req.user._id;
 	const targetUserName = req.body.targetUser;

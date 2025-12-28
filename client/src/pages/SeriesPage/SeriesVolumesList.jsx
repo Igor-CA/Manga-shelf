@@ -8,18 +8,40 @@ export default function SeriesVolumesList({
 	handleChange,
 }) {
 	const { user } = useContext(UserContext);
+	const normalVolumes = volumes.filter((volume) => !volume.isVariant);
+	const variants = volumes.filter((volume) => volume.isVariant);
 	return (
-		<ol className="collection-container collection-container--denser">
-			{volumes.map((volume) => (
-				<li key={volume.volumeId}>
-					<VolumeItem
-						volumeInfo={volume}
-						localVolumeState={localVolumesList}
-						handleChange={handleChange}
-						user={user}
-					/>
-				</li>
-			))}
-		</ol>
+		<div>
+			<ol className="collection-container collection-container--denser">
+				{normalVolumes.map((volume) => (
+					<li key={volume.volumeId}>
+						<VolumeItem
+							volumeInfo={volume}
+							localVolumeState={localVolumesList}
+							handleChange={handleChange}
+							user={user}
+						/>
+					</li>
+				))}
+			</ol>
+			{variants.length > 0 && (
+				<>
+					<hr style={{ margin: "0px 10px" }} />
+					<h2 className="collection-lable">Capas Variantes</h2>
+					<ol className="collection-container collection-container--denser">
+						{variants.map((volume) => (
+							<li key={volume.volumeId}>
+								<VolumeItem
+									volumeInfo={volume}
+									localVolumeState={localVolumesList}
+									handleChange={handleChange}
+									user={user}
+								/>
+							</li>
+						))}
+					</ol>
+				</>
+			)}
+		</div>
 	);
 }
