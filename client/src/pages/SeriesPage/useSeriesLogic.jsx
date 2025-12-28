@@ -100,6 +100,11 @@ export const useSeriesLogic = (id) => {
 
 		if (adding) {
 			const index = localVolumeState.findIndex((v) => v.volumeId === volumeId);
+
+			if (localVolumeState[index].isVariant) {
+				performVolumeUpdate(true, [volumeId]);
+				return
+			}
 			const listToAdd = localVolumeState
 				.slice(0, index + 1)
 				.filter((v) => !v.ownsVolume && !v.isVariant)
