@@ -36,7 +36,7 @@ export const useSeriesLogic = (id) => {
 
 	useEffect(() => {
 		if (!isFetching && !user?.allowAdult && series?.isAdult) {
-			navigate("/");
+			navigate("/adult-block");
 		}
 	}, [isFetching, user, navigate, series]);
 

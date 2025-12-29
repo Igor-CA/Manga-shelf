@@ -5,10 +5,11 @@ import NavBar from "./components/NavBar";
 import ScrollToTop from "./utils/ScrollToTop";
 import MessageComponent from "./components/MessageComponent";
 import "./App.css";
-import SeriesPageRedesign from "./pages/SeriesPage/SeriesPageRedesign";
+import AdultPageRedirect from "./pages/AdultPageRedirect/AdultPageRedirect";
 
 // Lazy-loaded page components
 const SeriesPage = lazy(() => import("./pages/SeriesPage/SeriesPage"));
+const SeriesPageRedesign = lazy(() => import("./pages/SeriesPage/SeriesPageRedesign"));
 const VolumePage = lazy(() => import("./pages/VolumePage/VolumePage"));
 const SignupPage = lazy(() => import("./pages/AuthenticationPage/SignupPage"));
 const LoginPage = lazy(() => import("./pages/AuthenticationPage/LoginPage"));
@@ -79,6 +80,7 @@ function App() {
 						<Route path="/user/:username/*" element={<UserPage />}></Route>
 						<Route path="/settings" element={<SettingsPage />}></Route>
 						<Route path="/notifications" element={<NotificationsPage />}></Route>
+						<Route path="/adult-block" element={<AdultPageRedirect />}></Route>
 						<Route path="*" element={<NotFound />}></Route>
 					</Routes>
 				</Suspense>
