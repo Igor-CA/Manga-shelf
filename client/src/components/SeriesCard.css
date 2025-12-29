@@ -64,6 +64,19 @@
 .series-card__img--loading {
 	opacity: 0;
 }
+.series-card__adult-content-block{
+	display: block;
+	margin: auto;
+	text-align: center;
+	font-weight: bold;
+	font-size: 1.5rem;
+	padding: 1rem;
+}
+.series-card__adult-content-block__container{
+	display: flex;
+	background-color: black;
+	height: 100%;
+}
 .series-card__adult-indicator {
 	position: absolute;
 	background-color: black;

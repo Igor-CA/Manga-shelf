@@ -45,13 +45,7 @@ const buildSortStage = (ordering, field) => {
 	return sortStage;
 };
 
-const buildAggregationPipeline = (
-	targetUser,
-	allowAdult,
-	filter,
-	sortStage,
-	skip
-) => {
+const buildAggregationPipeline = (targetUser, filter, sortStage, skip) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
 		{
@@ -95,21 +89,10 @@ const buildAggregationPipeline = (
 		{ $limit: ITEMS_PER_PAGE },
 	];
 
-	// Apply adult content filtering if necessary
-	if (!allowAdult) {
-		pipeline.splice(6, 0, { $match: { "userList.Series.isAdult": false } });
-	}
-
 	return pipeline;
 };
 
-const buildWishlistPipeline = (
-	targetUser,
-	allowAdult,
-	filter,
-	sortStage,
-	skip
-) => {
+const buildWishlistPipeline = (targetUser, filter, sortStage, skip) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
 		{ $unwind: "$wishList" },
@@ -141,10 +124,6 @@ const buildWishlistPipeline = (
 		{ $limit: ITEMS_PER_PAGE },
 	];
 
-	// Apply adult content filtering if necessary
-	if (!allowAdult) {
-		pipeline.splice(6, 0, { $match: { "wishListSeries.isAdult": false } });
-	}
 	return pipeline;
 };
 exports.getUserCollection = asyncHandler(async (req, res, next) => {
@@ -162,19 +141,22 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 		req.query.ordering || "title",
 		"userList.Series"
 	);
-	const allowAdult = req.user?.allowAdult || false;
 	const pipeline = buildAggregationPipeline(
 		targetUser,
-		allowAdult,
 		filter,
 		sortStage,
 		skip
 	);
 	const userCollection = await User.aggregate(pipeline);
 	const filteredList = userCollection.map((series) => {
+		let image = getSeriesCoverURL(series);
+
+		if (series.isAdult && !req.user?.allowAdult) {
+			image = null;
+		}
 		return {
 			...series,
-			image: getSeriesCoverURL(series),
+			image: image,
 		};
 	});
 
@@ -193,19 +175,17 @@ exports.getUserWishlist = asyncHandler(async (req, res, next) => {
 		req.query.ordering || "title",
 		"wishListSeries"
 	);
-	const allowAdult = req.user?.allowAdult || false;
-	const pipeline = buildWishlistPipeline(
-		targetUser,
-		allowAdult,
-		filter,
-		sortStage,
-		skip
-	);
+	const pipeline = buildWishlistPipeline(targetUser, filter, sortStage, skip);
 	const userCollection = await User.aggregate(pipeline);
 	const filteredList = userCollection.map((series) => {
+		let image = getSeriesCoverURL(series);
+
+		if (series.isAdult && !req.user?.allowAdult) {
+			image = null;
+		}
 		return {
 			...series,
-			image: getSeriesCoverURL(series),
+			image: image,
 			inUserList: false,
 			inWishlist: true,
 		};
@@ -224,9 +204,9 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 
 	const aggregationPipeline = [
 		{ $match: { username: targetUser } },
-		
+
 		{ $unwind: "$userList" },
-		{ $match: { "userList.status": { $ne: "Dropped" } } }, 
+		{ $match: { "userList.status": { $ne: "Dropped" } } },
 
 		{
 			$lookup: {
@@ -251,11 +231,11 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			$addFields: {
 				ownedVolumesSet: { $setUnion: ["$ownedVolumes", []] },
 				isOwned: {
-					$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumes", []] }]
+					$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumes", []] }],
 				},
-				variantSort: { 
-					$cond: [{ $ifNull: ["$volumeDetails.isVariant", false] }, 1, 0] 
-				}
+				variantSort: {
+					$cond: [{ $ifNull: ["$volumeDetails.isVariant", false] }, 1, 0],
+				},
 			},
 		},
 
@@ -263,23 +243,24 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			$sort: {
 				"seriesDetails.title": 1,
 				"volumeDetails.number": 1,
-				"variantSort": 1 
-			}
+				variantSort: 1,
+			},
 		},
 
 		{
 			$group: {
 				_id: {
 					seriesId: "$seriesDetails._id",
-					volNumber: "$volumeDetails.number"
+					volNumber: "$volumeDetails.number",
 				},
 				hasOwnedVariant: { $max: "$isOwned" },
 
 				series: { $first: "$seriesDetails.title" },
 				seriesId: { $first: "$seriesDetails._id" },
-				seriesSize: { $first: { $size: "$seriesDetails.volumes" } }, 
+				seriesSize: { $first: { $size: "$seriesDetails.volumes" } },
 				seriesStatus: { $first: "$seriesDetails.status" },
-				
+				isAdult: { $first: "$seriesDetails.isAdult" },
+
 				displayVolumeId: { $first: "$volumeDetails._id" },
 				displayVolumeNumber: { $first: "$volumeDetails.number" },
 				userStatus: { $first: "$userList.status" },
@@ -295,9 +276,10 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				seriesId: 1,
 				seriesSize: 1,
 				seriesStatus: 1,
+				isAdult: 1,
 				volumeId: "$displayVolumeId",
 				volumeNumber: "$displayVolumeNumber",
-				status: "$userStatus"
+				status: "$userStatus",
 			},
 		},
 
@@ -314,10 +296,15 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 
 	const listWithImages = missingVolumesList.map((volume) => {
 		const seriesObject = { title: volume.series };
+		let image = getVolumeCoverURL(seriesObject, volume.volumeNumber);
+
+		if (volume.isAdult && !req.user?.allowAdult) {
+			image = null;
+		}
 		return {
 			...volume,
 			title: volume.series,
-			image: getVolumeCoverURL(seriesObject, volume.volumeNumber),
+			image: image,
 		};
 	});
 	res.send(listWithImages);

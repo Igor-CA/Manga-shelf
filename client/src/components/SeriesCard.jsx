@@ -138,13 +138,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 			});
 			setOutdated(true);
 			setMessageType("Success");
-			addMessage(
-				`Volume ${
-					isAdding
-						? "adicionado"
-						: "removido"
-				} com sucesso`
-			);
+			addMessage(`Volume ${isAdding ? "adicionado" : "removido"} com sucesso`);
 		} catch (err) {
 			setInUserList(!isAdding);
 			const customErrorMessage = err.response.data.msg;
@@ -154,27 +148,35 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	return (
 		<div className="series-card">
 			<Link to={link} className="series-card__image-container">
-				<img
-					src={`${
-						import.meta.env.REACT_APP_HOST_ORIGIN
-					}/images/medium/${image}`}
-					srcSet={`
+				{isAdult && !user?.allowAdult ? (
+					<div className="series-card__adult-content-block__container">
+						<div className="series-card__adult-content-block">Conteúdo +18</div>
+					</div>
+				) : (
+					<img
+						src={`${
+							import.meta.env.REACT_APP_HOST_ORIGIN
+						}/images/medium/${image}`}
+						srcSet={`
 						${import.meta.env.REACT_APP_HOST_ORIGIN}/images/small/${image} 100w,
 						${import.meta.env.REACT_APP_HOST_ORIGIN}/images/medium/${image} 400w, 
 						${import.meta.env.REACT_APP_HOST_ORIGIN}/images/large/${image} 700w,
 						${import.meta.env.REACT_APP_HOST_ORIGIN}/images/extralarge/${image} 1000w,`}
-					sizes=" (min-width: 1024px) 15vw, 
+						sizes=" (min-width: 1024px) 15vw, 
 							(min-width: 768px) 20vw, 
 							(min-width: 360px) and (max-width: 768px) 35vw, 
 							(max-width: 320px) 50vw"
-					loading="lazy"
-					alt={`cover of ${title}`}
-					className={`series-card__img ${
-						!loaded && "series-card__img--loading"
-					}`}
-					onLoad={handleLoading}
-				/>
-				{isAdult && <div className="series-card__adult-indicator">+18</div>}
+						loading="lazy"
+						alt={`cover of ${title}`}
+						className={`series-card__img ${
+							!loaded && "series-card__img--loading"
+						}`}
+						onLoad={handleLoading}
+					/>
+				)}
+				{isAdult && user?.allowAdult && (
+					<div className="series-card__adult-indicator">+18</div>
+				)}
 				{completionPercentage > 0 && status !== "Dropped" && (
 					<div className="series-card__bar">
 						<div
@@ -195,7 +197,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 						></div>
 					</div>
 				)}
-				{showActions && user &&(
+				{showActions && user && (
 					<div className="series-card__actions-container">
 						{itemType === "Series" && (
 							<div

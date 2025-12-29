@@ -187,11 +187,6 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	);
 	addUserListData(pipeline, req.user);
 
-	const allowAdultContent = req.user?.allowAdult || false;
-	if (!allowAdultContent) {
-		pipeline.push({ $match: { isAdult: false } });
-	}
-
 	if (isValidSearch) {
 		pipeline.push(
 			{
@@ -222,10 +217,17 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	);
 	const seriesList = await Series.aggregate(pipeline).exec();
 
-	const searchResults = seriesList.map((serie) => ({
-		...serie,
-		image: getSeriesCoverURL(serie),
-	}));
+	const searchResults = seriesList.map((series) => {
+		let image = getSeriesCoverURL(series);
+
+		if (series.isAdult && !req.user?.allowAdult) {
+			image = null;
+		}
+		return {
+			...series,
+			image: image,
+		};
+	});
 	res.send(searchResults);
 });
 
