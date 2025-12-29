@@ -80,8 +80,8 @@ app.use(
 app.use(
 	session({
 		secret: process.env.SECRET_KEY,
-		resave: true,
-		saveUninitialized: true,
+		resave: false,
+		saveUninitialized: false,
 		store: MongoStore.create({
 			mongoUrl: mongoDB,
 			collection: "sessions",
