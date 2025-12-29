@@ -5,7 +5,6 @@ import SeriesPageHeader from "./SeriesPageHeader";
 import { LoadingPageComponent } from "../../App";
 import SeriesOverallPage from "./SeriesOverallPage";
 import { useSeriesLogic } from "./useSeriesLogic";
-import SkeletonHeader from "../../components/SkeletonPage";
 export default function SeriesPageRedesign() {
 	const { id } = useParams();
 

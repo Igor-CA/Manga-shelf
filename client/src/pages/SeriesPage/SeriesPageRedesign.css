@@ -209,6 +209,19 @@
 	transition: opacity 0.3s ease-in-out;
 	opacity: 1;
 }
+.series-card__adult-indicator {
+	position: absolute;
+	background-color: black;
+	color: white;
+	border: 1px solid white;
+	font-weight: bold;
+	padding: 0.5rem 1rem;
+	border-radius: 0.25rem;
+	z-index: 1;
+	top: 0.5rem;
+	right: 0.5rem;
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.05);
+}
 .series__volume__image--loading {
 	opacity: 0;
 }
@@ -318,6 +331,10 @@
 		flex-direction: row;
 		width: 100%;
 		padding: 0.75rem;
+	}
+	.series-card__adult-indicator {
+		top: auto;
+		bottom: 0.5rem;
 	}
 	.header__main-info-container {
 		padding: 0;

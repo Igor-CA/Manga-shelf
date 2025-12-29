@@ -31,7 +31,7 @@ export default function SettingsPage() {
 
 	useEffect(() => {
 		if (!isFetching && !user) {
-			navigate("/");
+			navigate("/login");
 		}
 	}, [isFetching, user, navigate]);
 

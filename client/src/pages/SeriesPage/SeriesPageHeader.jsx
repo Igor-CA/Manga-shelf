@@ -59,9 +59,11 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 		},
 	];
 
-	const isSeriesInUserList = user?.userList?.some(
-        (seriesObj) => seriesObj.Series._id.toString() === id || seriesObj.Series === id
-    ) ?? false;
+	const isSeriesInUserList =
+		user?.userList?.some(
+			(seriesObj) =>
+				seriesObj.Series._id.toString() === id || seriesObj.Series === id
+		) ?? false;
 	const mainAction = {
 		label: !isSeriesInUserList ? "Adicionar coleção" : "Remover coleção",
 		isRed: isSeriesInUserList,
@@ -113,6 +115,9 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 								}`}
 								onLoad={handleLoading}
 							/>
+							{seriesInfo.isAdult && (
+								<div className="series-card__adult-indicator">+18</div>
+							)}
 						</div>
 						<ActionDropdown
 							mainAction={mainAction}
