@@ -282,8 +282,8 @@
 
 	.header__bg-image-container {
 		display: block;
-		clip: rect(0, auto, auto, 0);
-		clip-path: inset(0 0);
+		position: relative; 
+		overflow: hidden;
 		width: 100vw;
 		height: 400px;
 	}
@@ -415,8 +415,8 @@
 		display: block;
 	}
 	.all-info-container {
-		padding: 0;
 		margin-top: 0.75rem;
+		margin-bottom: 0.75rem;
 		background-color: var(--foreground);
 		max-width: 250px;
 		padding: 0.75rem;

@@ -11,7 +11,7 @@ export default function SeriesVolumesList({
 	const normalVolumes = volumes.filter((volume) => !volume.isVariant);
 	const variants = volumes.filter((volume) => volume.isVariant);
 	return (
-		<div>
+		<div style={{flexGrow:1}}>
 			<ol className="collection-container collection-container--denser">
 				{normalVolumes.map((volume) => (
 					<li key={volume.volumeId}>
