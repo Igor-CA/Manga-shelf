@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import ActionDropdown from "./ActionsDropdown";
-import "./SeriesPageRedesign.css";
+import "./SeriesPage.css";
 import {
 	checkIfInWishlist,
 	getCompletionPercentage,
