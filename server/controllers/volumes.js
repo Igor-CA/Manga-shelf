@@ -35,5 +35,5 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 
 	const { serie, number } = desiredVolume;
 	const variant = desiredVolume.isVariant || false
-	res.send({ ...desiredVolume._doc, image: getVolumeCoverURL(serie, number, variant) });
+	res.send({ ...desiredVolume._doc, image: getVolumeCoverURL(serie, number, variant, desiredVolume.variantNumber) });
 });
