@@ -167,7 +167,7 @@ async function recalculateUserListInfo() {
 			});
 
 			if (wasModified) {
-				logger.warn(`Userlist Recalculated. User: ${user}`)
+				logger.warn(`Userlist Recalculated. User: ${user.username}`)
 				await user.save();
 				usersModified++;
 			}
