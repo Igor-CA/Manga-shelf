@@ -183,7 +183,12 @@ async function createNewVolumeNotification(newVolume) {
 	const newNotification = new Notification({
 		type: "volumes",
 		text: `Um novo volume de ${newVolume.serie.title} foi adicionado ao site`,
-		imageUrl: getVolumeCoverURL(newVolume.serie, newVolume.number),
+		imageUrl: getVolumeCoverURL(
+			newVolume.serie,
+			newVolume.number,
+			newVolume.isVariant,
+			newVolume.variantNumber
+		),
 		associatedObject: newVolume._id,
 		objectType: "Volume",
 	});
@@ -313,10 +318,17 @@ const sendEmailNotification = async (
 	if (notification.type === "volumes") {
 		const attachments = volumesList.map((volume, id) => {
 			return {
-				filename: getVolumeCoverURL(volume.serie, volume.number),
+				filename: getVolumeCoverURL(
+					volume.serie,
+					volume.number,
+					volume.isVariant,
+					volume.variantNumber
+				),
 				path: `${process.env.SITE_DOMAIN}/images/medium/${getVolumeCoverURL(
 					volume.serie,
-					volume.number
+					volume.number,
+					volume.isVariant,
+					volume.variantNumber
 				)}`,
 				contentDisposition: "inline",
 				cid: `img${id + 1}.webp`,

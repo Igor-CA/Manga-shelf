@@ -262,7 +262,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
-		image: getVolumeCoverURL(desiredSeries, volume.number, volume.isVariant),
+		image: getVolumeCoverURL(desiredSeries, volume.number, volume.isVariant, volume.variantNumber),
 		isAdult: desiredSeries.isAdult,
 		isVariant: volume.isVariant,
 	}));
