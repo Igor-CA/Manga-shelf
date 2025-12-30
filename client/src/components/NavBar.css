@@ -18,7 +18,7 @@
 }
 
 .navbar {
-    list-style: none;
+	list-style: none;
 	width: 0px;
 	height: 0px;
 	display: grid;
@@ -52,21 +52,19 @@
 	display: block;
 	cursor: pointer;
 }
-.navbar__icon--theme{
+.navbar__icon--theme {
 	font-size: 1.25em;
-    line-height: 0.05em;
+	line-height: 0.05em;
 }
-.navbar__link--active{
+.navbar__link--active {
 	color: var(--accent);
 }
-.navbar__link__count__container{
+.navbar__link__count__container {
 	display: none;
 }
-.navbar__link__count{
-	display: none
+.navbar__link__count {
+	display: none;
 }
-
-
 
 .side-aside {
 	position: sticky;
@@ -75,6 +73,7 @@
 	align-self: start;
 	justify-self: end;
 	width: 20rem;
+	flex: 0 0 20rem;
 }
 .side-navbar-container {
 	display: none;
@@ -93,33 +92,33 @@
 	font-size: 1.25rem;
 	line-height: 1.75rem;
 	font-weight: bold;
-	color: var(--text); 
+	color: var(--text);
 }
 .side-navbar__link {
 	color: var(--text);
 	width: 100%;
 	display: block;
 	padding: 0.5rem;
-    border-radius: 0.25rem;
+	border-radius: 0.25rem;
 }
 .side-navbar__link:hover {
 	color: var(--accent);
 }
 .side-navbar__link--active {
-    color: var(--accent);
+	color: var(--accent);
 	background-color: var(--foreground);
 }
 .side-navbar-item {
 	padding: 0.25rem 0;
 }
 @media only screen and (min-width: 1040px) {
-    .menu {
-        color: var(--text);
-        position: relative;
-        bottom: 0px;
-        left: 0px;
-        cursor: auto;
-    }
+	.menu {
+		color: var(--text);
+		position: relative;
+		bottom: 0px;
+		left: 0px;
+		cursor: auto;
+	}
 	.navbar {
 		display: flex;
 		width: 100%;
@@ -130,35 +129,35 @@
 		color: white;
 		background-color: var(--primary);
 		justify-content: space-evenly;
-        opacity: 1;
+		opacity: 1;
 		pointer-events: auto;
 	}
-    .navbar__label{
-        color: white;
+	.navbar__label {
+		color: white;
 		font-size: 1rem;
-    }
-	.navbar__link--active{
-		color: white
 	}
-    .navbar__label:hover{
-		text-decoration: underline;
-    }
-    .navbar__icon{
-        display: none;
-    }
-	.navbar__icon--theme{
+	.navbar__link--active {
 		color: white;
 	}
-	.navbar__label--theme{
+	.navbar__label:hover {
+		text-decoration: underline;
+	}
+	.navbar__icon {
 		display: none;
 	}
-	.navbar__button--theme{
+	.navbar__icon--theme {
+		color: white;
+	}
+	.navbar__label--theme {
+		display: none;
+	}
+	.navbar__button--theme {
 		border: 1px solid white;
 		padding: 5px;
 		padding-bottom: 1px;
 		border-radius: 5px;
 	}
-	.navbar__link__count__container{
+	.navbar__link__count__container {
 		display: block;
 		position: absolute;
 		background-color: var(--red);
@@ -171,12 +170,11 @@
 		top: -10%;
 		left: 105%;
 	}
-	.navbar__link__count{
-		display: block
+	.navbar__link__count {
+		display: block;
 	}
-	
+
 	.side-navbar-container {
 		display: block;
 	}
 }
-
