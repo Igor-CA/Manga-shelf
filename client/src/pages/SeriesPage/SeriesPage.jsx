@@ -1,11 +1,11 @@
-import "./SeriesPageRedesign.css";
+import "./SeriesPage.css";
 import { Route, Routes, useParams } from "react-router-dom";
 import { Suspense } from "react";
 import SeriesPageHeader from "./SeriesPageHeader";
 import { LoadingPageComponent } from "../../App";
 import SeriesOverallPage from "./SeriesOverallPage";
 import { useSeriesLogic } from "./useSeriesLogic";
-export default function SeriesPageRedesign() {
+export default function SeriesPage() {
 	const { id } = useParams();
 
 	const {

@@ -8,7 +8,7 @@ import "./App.css";
 import AdultPageRedirect from "./pages/AdultPageRedirect/AdultPageRedirect";
 
 // Lazy-loaded page components
-const SeriesPageRedesign = lazy(() => import("./pages/SeriesPage/SeriesPageRedesign"));
+const SeriesPage = lazy(() => import("./pages/SeriesPage/SeriesPage"));
 const VolumePage = lazy(() => import("./pages/VolumePage/VolumePage"));
 const SignupPage = lazy(() => import("./pages/AuthenticationPage/SignupPage"));
 const LoginPage = lazy(() => import("./pages/AuthenticationPage/LoginPage"));
@@ -73,7 +73,7 @@ function App() {
 						<Route path="/browse/user" element={<BrowseUser />}></Route>
 						<Route path="/donate" element={<DonatePage />}></Route>
 						<Route path="/about" element={<AboutPage />}></Route>
-						<Route path="/series/:id/*" element={<SeriesPageRedesign />}></Route>
+						<Route path="/series/:id/*" element={<SeriesPage />}></Route>
 						<Route path="/volume/:id" element={<VolumePage />}></Route>
 						<Route path="/user/:username/*" element={<UserPage />}></Route>
 						<Route path="/settings" element={<SettingsPage />}></Route>
