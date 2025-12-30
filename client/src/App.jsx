@@ -74,7 +74,7 @@ function App() {
 						<Route path="/donate" element={<DonatePage />}></Route>
 						<Route path="/about" element={<AboutPage />}></Route>
 						<Route path="/series/:id/*" element={<SeriesPage />}></Route>
-						<Route path="/volume/:id" element={<VolumePage />}></Route>
+						<Route path="/volume/:id/*" element={<VolumePage />}></Route>
 						<Route path="/user/:username/*" element={<UserPage />}></Route>
 						<Route path="/settings" element={<SettingsPage />}></Route>
 						<Route path="/notifications" element={<NotificationsPage />}></Route>
