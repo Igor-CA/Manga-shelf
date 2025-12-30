@@ -9,7 +9,10 @@ const VolumeSchema = new Schema({
 	date: { type: String },
 	summary: [{ type: String }], //Separated by paragraphs
 	defaultPrice: { type: String },
-	isVariant: {type: Boolean, default: false}
+	freebies: [{type:String}],
+	isVariant: {type: Boolean, default: false},
+	variantNumber: {type: Number},
+	chapters: {type: String}
 }, {timestamps: true});
 
 module.exports = mongoose.model("Volume", VolumeSchema);

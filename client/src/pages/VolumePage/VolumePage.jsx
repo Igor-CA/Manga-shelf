@@ -1,18 +1,24 @@
-import { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Suspense, useContext, useEffect, useState } from "react";
+import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import "./VolumePage.css";
-import SkeletonPage from "../../components/SkeletonPage";
 import VolumeInfoCard from "./VolumeInfoCard";
 import { UserContext } from "../../components/userProvider";
 
+import "../SeriesPage/SeriesPage.css";
+import { LoadingPageComponent } from "../../App";
+import VolumesOverallPage from "./VolumesOverallPage";
 export default function VolumePage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const [volumeData, setVolumeData] = useState();
 	const { user, isFetching } = useContext(UserContext);
 	useEffect(() => {
-		if ((!isFetching && volumeData) &&  volumeData?.serie?.isAdult && !user?.allowAdult) {
+		if (
+			!isFetching &&
+			volumeData &&
+			volumeData?.serie?.isAdult &&
+			!user?.allowAdult
+		) {
 			console.log(!isFetching, !volumeData?.serie?.isAdult, !user?.allowAdult);
 			navigate("/");
 		}
@@ -22,9 +28,7 @@ export default function VolumePage() {
 		const fetchVolumeData = async () => {
 			try {
 				const response = await axios.get(
-					`${
-						import.meta.env.REACT_APP_HOST_ORIGIN
-					}/api/data/volume/${id}`,
+					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/volume/${id}`,
 					{
 						headers: {
 							Authorization: import.meta.env.REACT_APP_API_KEY,
@@ -46,11 +50,21 @@ export default function VolumePage() {
 	}, [id, navigate]);
 
 	return (
-		<div className="container page-content">
-			{volumeData ? (
-				<VolumeInfoCard volumeData={volumeData}></VolumeInfoCard>
-			) : (
-				<SkeletonPage></SkeletonPage>
+		<div className="page-content">
+			<VolumeInfoCard volumeData={volumeData}></VolumeInfoCard>
+			{volumeData && (
+				<Suspense fallback={<LoadingPageComponent />}>
+					<Routes>
+						<Route
+							path=""
+							element={
+								<VolumesOverallPage
+									volume={volumeData}
+								/>
+							}
+						></Route>
+					</Routes>
+				</Suspense>
 			)}
 		</div>
 	);
