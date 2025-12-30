@@ -228,8 +228,16 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 		{ $unwind: "$volumeDetails" },
 
 		{
-			$addFields: {
-				ownedVolumesSet: { $setUnion: ["$ownedVolumes", []] },
+			$project: {
+				"seriesDetails.title": 1,
+				"seriesDetails._id": 1,
+				"seriesDetails.volumes": 1,
+				"seriesDetails.status": 1,
+				"volumeDetails._id": 1,
+				"volumeDetails.number": 1,
+				"volumeDetails.isVariant": 1,
+				"userList.status": 1,
+
 				isOwned: {
 					$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumes", []] }],
 				},
@@ -259,8 +267,6 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				seriesId: { $first: "$seriesDetails._id" },
 				seriesSize: { $first: { $size: "$seriesDetails.volumes" } },
 				seriesStatus: { $first: "$seriesDetails.status" },
-				isAdult: { $first: "$seriesDetails.isAdult" },
-
 				displayVolumeId: { $first: "$volumeDetails._id" },
 				displayVolumeNumber: { $first: "$volumeDetails.number" },
 				userStatus: { $first: "$userList.status" },
@@ -271,12 +277,11 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 
 		{
 			$project: {
-				_id: "$displayVolumeId", // Frontend expects volume ID as _id
+				_id: "$displayVolumeId",
 				series: 1,
 				seriesId: 1,
 				seriesSize: 1,
 				seriesStatus: 1,
-				isAdult: 1,
 				volumeId: "$displayVolumeId",
 				volumeNumber: "$displayVolumeNumber",
 				status: "$userStatus",
@@ -292,8 +297,9 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 		{ $skip: skip },
 		{ $limit: ITEMS_PER_PAGE },
 	];
-	const missingVolumesList = await User.aggregate(aggregationPipeline).exec();
-
+	const missingVolumesList = await User.aggregate(aggregationPipeline)
+		.allowDiskUse(true)
+		.exec();
 	const listWithImages = missingVolumesList.map((volume) => {
 		const seriesObject = { title: volume.series };
 		let image = getVolumeCoverURL(seriesObject, volume.volumeNumber);
