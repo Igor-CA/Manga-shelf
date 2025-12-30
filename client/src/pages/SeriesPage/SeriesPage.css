@@ -147,6 +147,7 @@
 	overflow: hidden;
 	transition: 0.2s;
 	opacity: 1;
+	z-index: 10;
 }
 .button-select__options-container--hidden {
 	opacity: 0;
@@ -212,6 +213,7 @@
 .series-card__adult-indicator {
 	position: absolute;
 	background-color: black;
+	z-index: 10;
 	color: white;
 	border: 1px solid white;
 	font-weight: bold;
