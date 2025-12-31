@@ -18,6 +18,21 @@ export default function SignupPage() {
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
+		
+		if (name === "password" || name === "confirm-password") {
+			const password = name === "password" ? value : formData.password;
+			const confirm =
+				name === "confirm-password" ? value : formData["confirm-password"];
+			const confirmInput = document.getElementById("confirm-password");
+
+			if (confirmInput && confirm) {
+				if (password !== confirm) {
+					confirmInput.setCustomValidity("As senhas devem coincidir");
+				} else {
+					confirmInput.setCustomValidity(""); 
+				}
+			}
+		}
 	};
 
 	const handleSubmit = async (e) => {
@@ -37,8 +52,8 @@ export default function SignupPage() {
 		} catch (error) {
 			const customErrorMessage = error.response.data.msg;
 			addMessage(customErrorMessage);
-		}finally{
-			setLoading(false)
+		} finally {
+			setLoading(false);
 		}
 	};
 	const handleInvalid = (e) => {
@@ -77,9 +92,7 @@ export default function SignupPage() {
 			"typeMismatch",
 			"valueMissing",
 		];
-		const inputValidity = validationTypes.find(
-			(type) => input.validity[type]
-		);
+		const inputValidity = validationTypes.find((type) => input.validity[type]);
 
 		const customErrorMessage = validationMessages[inputName][inputValidity];
 
@@ -97,10 +110,7 @@ export default function SignupPage() {
 						handleSubmit(e);
 					}}
 				>
-					<label
-						htmlFor="email"
-						className="autentication-form__label"
-					>
+					<label htmlFor="email" className="autentication-form__label">
 						Email:
 					</label>
 					<input
@@ -117,10 +127,7 @@ export default function SignupPage() {
 						}}
 						required
 					/>
-					<label
-						htmlFor="username"
-						className="autentication-form__label"
-					>
+					<label htmlFor="username" className="autentication-form__label">
 						User name:{" "}
 					</label>
 					<input
@@ -139,10 +146,7 @@ export default function SignupPage() {
 						pattern="^[A-Za-z0-9]{3,16}$"
 						maxLength="16"
 					/>
-					<label
-						htmlFor="password"
-						className="autentication-form__label"
-					>
+					<label htmlFor="password" className="autentication-form__label">
 						Password:
 					</label>
 					<input
@@ -180,12 +184,8 @@ export default function SignupPage() {
 							handleInvalid(e);
 						}}
 						required
-						pattern={formData.password}
 					/>
-					<label
-						htmlFor="tos-checkbox"
-						className="form__label--visible"
-					>
+					<label htmlFor="tos-checkbox" className="form__label--visible">
 						<input
 							type="checkbox"
 							name="tos-checkbox"
@@ -205,9 +205,7 @@ export default function SignupPage() {
 						</Link>
 					</label>
 					<button
-						className={`button ${
-							loading ? "button--disabled" : ""
-						}`}
+						className={`button ${loading ? "button--disabled" : ""}`}
 						disabled={loading}
 					>
 						Criar conta
