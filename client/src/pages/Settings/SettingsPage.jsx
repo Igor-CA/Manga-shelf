@@ -294,7 +294,6 @@ function AccountSettings() {
 					value={confirmPassword}
 					onChange={handleConfirmPasswordChange}
 					onInvalid={handleInvalid}
-					pattern={password}
 				/>
 			</label>
 			{passwordButtonVisible && (

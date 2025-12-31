@@ -20,7 +20,6 @@ const passwordValidation = body("password")
 	.trim()
 	.notEmpty()
 	.withMessage("Uma senha deve ser informada.")
-	.escape();
 
 const usernameValidation = body("username")
 	.trim()
@@ -42,7 +41,6 @@ const newPasswordValidation = body("password")
 	.withMessage(
 		"A senha deve conter pelo menos uma letra, número e caractere especial(!@#$%^&*) e ter entre 8 e 20 caracteres."
 	)
-	.escape();
 
 const confirmPasswordValidation = body("confirm-password")
 	.trim()
@@ -54,7 +52,6 @@ const confirmPasswordValidation = body("confirm-password")
 		}
 		return true;
 	})
-	.escape();
 
 const tosValidation = body("tos-checkbox")
 	.notEmpty()
