@@ -18,6 +18,8 @@
 	--primary: #1e3a8a;
 	--secundary: #06517a;
 	--accent: #3db4f2;
+
+	--box-shadow: 0 14px 30px #00000026, 0 4px 4px #0000000d;
 }
 .dark {
 	--text: #cbd5e1;
@@ -173,6 +175,7 @@ body {
 .collection-container--denser {
 	flex-grow: 1;
 	grid-template-columns: repeat(3, 1fr);
+	gap: 0.75rem;
 }
 .collection-lable {
 	color: var(--text);

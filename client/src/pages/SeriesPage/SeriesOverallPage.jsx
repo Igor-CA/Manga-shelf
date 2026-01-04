@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { printArray } from "./utils";
 import SeriesVolumesList from "./SeriesVolumesList";
+import RelatedCard from "./RelatedCard";
 
 export default function SeriesOverallPage({ series, volumesState, actions }) {
 	const {
@@ -22,6 +23,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 		type,
 		demographic,
 		volumes,
+		related,
 	} = series;
 	const normalVolumes = volumes.filter((v) => !v.isVariant);
 	const variants = volumes.filter((v) => v.isVariant);
@@ -34,8 +36,8 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 			{ label: "Gêneros", value: printArray(genres) },
 			{
 				label: "Formato",
-				value: specs.dimensions
-					? `${specs.dimensions.width}cm x ${specs.dimensions.height}cm`.replaceAll(
+				value: specs?.dimensions
+					? `${specs?.dimensions.width}cm x ${specs?.dimensions.height}cm`.replaceAll(
 							".",
 							","
 					  )
@@ -49,9 +51,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 				label: "Volumes no Brasil",
 				value: normalVolumes.length,
 				suffix:
-					variants.length > 0
-						? ` + ${variants.length} capas variantes`
-						: "",
+					variants.length > 0 ? ` + ${variants.length} capas variantes` : "",
 			},
 			{ label: "Data de lançamento no Japão", value: releaseDateJapan },
 			{ label: "Data de lançamento no Brasil", value: releaseDateBrazil },
@@ -91,11 +91,26 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 						);
 					})}
 				</ul>
-				<SeriesVolumesList
-					volumes={series.volumes}
-					localVolumesList={volumesState}
-					handleChange={handleVolumeChange}
-				></SeriesVolumesList>
+				<div className="overall-content__container">
+					{related && related.length > 0 && (
+						<>
+							<hr style={{ margin: "0px 10px" }} />
+							<h2 className="collection-lable">Obras relacionadas</h2>
+							<ul className="related-cards__container">
+								{related.map((series) => {
+									return <RelatedCard key={series.seriesId} relatedSeries={series}></RelatedCard>;
+								})}
+							</ul>
+						</>
+					)}
+					<hr style={{ margin: "0px 10px" }} />
+					<h2 className="collection-lable">Volumes</h2>
+					<SeriesVolumesList
+						volumes={series.volumes}
+						localVolumesList={volumesState}
+						handleChange={handleVolumeChange}
+					></SeriesVolumesList>
+				</div>
 			</div>
 		</div>
 	);

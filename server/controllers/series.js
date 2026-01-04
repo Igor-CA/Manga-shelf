@@ -5,6 +5,7 @@ const {
 	getVolumeCoverURL,
 } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
+const logger = require("../Utils/logger");
 
 const ITEMS_PER_PAGE = 24;
 const addUserListData = (pipeline, user) => {
@@ -241,6 +242,71 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 
 	let pipeline = [
 		{ $match: { _id: seriesId } },
+
+		{
+			$unwind: {
+				path: "$relatedSeries",
+				preserveNullAndEmptyArrays: true,
+			},
+		},
+
+		{
+			$lookup: {
+				from: "series",
+				localField: "relatedSeries.series",
+				foreignField: "_id",
+				as: "relatedSeriesData",
+			},
+		},
+
+		{
+			$unwind: {
+				path: "$relatedSeriesData",
+				preserveNullAndEmptyArrays: true,
+			},
+		},
+
+		{
+			$group: {
+				_id: "$_id",
+				root: { $first: "$$ROOT" },
+				related: {
+					$push: {
+						relation: "$relatedSeries.relation",
+						title: "$relatedSeriesData.title",
+						isAdult: "$relatedSeriesData.isAdult",
+						seriesId: "$relatedSeriesData._id",
+					},
+				},
+			},
+		},
+
+		{
+			$replaceRoot: {
+				newRoot: {
+					$mergeObjects: [
+						"$root",
+						{
+							related: {
+								$filter: {
+									input: "$related",
+									as: "item",
+									cond: { $ifNull: ["$$item.seriesId", false] },
+								},
+							},
+						},
+					],
+				},
+			},
+		},
+
+		{
+			$project: {
+				relatedSeries: 0,
+				relatedSeriesData: 0,
+			},
+		},
+
 		{
 			$lookup: {
 				from: "volumes",
@@ -262,13 +328,26 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
-		image: getVolumeCoverURL(desiredSeries, volume.number, volume.isVariant, volume.variantNumber),
+		image: getVolumeCoverURL(
+			desiredSeries,
+			volume.number,
+			volume.isVariant,
+			volume.variantNumber
+		),
 		isAdult: desiredSeries.isAdult,
 		isVariant: volume.isVariant,
 	}));
 
+	const relatedInfoImages = desiredSeries.related.map((series) => {
+		return {
+			image: getSeriesCoverURL(series),
+			...series
+		};
+	});
+
+
 	const { _id: id, __v, ...rest } = desiredSeries;
-	const jsonResponse = { id, ...rest, volumes: volumesWithImages };
+	const jsonResponse = { id, ...rest, volumes: volumesWithImages, related: relatedInfoImages };
 	res.send(jsonResponse);
 });
 
