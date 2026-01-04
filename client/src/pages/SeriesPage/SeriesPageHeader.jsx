@@ -74,9 +74,9 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 			<div className="header__bg-image-container">
 				<div
 					style={{
-						backgroundImage: `url('${
+						backgroundImage: `url("${
 							import.meta.env.REACT_APP_HOST_ORIGIN
-						}/images/medium/${seriesCover}')`,
+						}/images/medium/${seriesCover}")`,
 					}}
 					className="header__bg-image"
 					role="img"
