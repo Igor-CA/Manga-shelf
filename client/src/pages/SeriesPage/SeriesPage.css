@@ -26,7 +26,7 @@
 	transition: opacity 0.3s ease-in-out;
 	opacity: 1;
 }
-.header__cover-image--loading{
+.header__cover-image--loading {
 	opacity: 0;
 }
 .header__art-container {
@@ -111,7 +111,7 @@
 	cursor: pointer;
 	overflow: hidden;
 }
-.button-select--disabled{
+.button-select--disabled {
 	background-color: var(--text);
 	color: var(--background);
 	opacity: 0.6;
@@ -290,6 +290,59 @@
 	.text-owned {
 	display: inline;
 }
+.overall-content__container {
+	flex: 1;
+	min-width: 0;
+	width: 100%;
+}
+.related-cards__container {
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: flex;
+	flex-wrap: nowrap;
+
+	padding: 0.75rem;
+	padding-bottom: 2rem;
+	gap: 0.75rem;
+	list-style-type: none;
+
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
+}
+.related-card,
+.related-cards__container > * {
+	flex-shrink: 0;
+	width: 400px;
+}
+.related-card {
+	background-color: var(--foreground);
+	border-radius: 0.25rem;
+	overflow: hidden;
+	display: flex;
+	color: var(--text);
+	box-shadow: var(--box-shadow);
+}
+.related-card__image-container {
+	aspect-ratio: auto 465 / 695;
+	width: 5rem;
+	height: 100%;
+}
+.related-card__image {
+	width: 100%;
+	height: 100%;
+	opacity: 1;
+	transition: opacity 0.3s ease-in-out;
+}
+.related-card__image--loading {
+	opacity: 0;
+}
+.related-card__info-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 0.75rem;
+}
+
 @media only screen and (min-width: 768px) {
 	.content-header {
 		background-color: var(--foreground);
@@ -297,7 +350,7 @@
 
 	.header__bg-image-container {
 		display: block;
-		position: relative; 
+		position: relative;
 		overflow: hidden;
 		width: 100vw;
 		height: 400px;
@@ -434,7 +487,6 @@
 		display: block;
 	}
 	.all-info-container {
-		margin-top: 0.75rem;
 		margin-bottom: 0.75rem;
 		background-color: var(--foreground);
 		max-width: 250px;
@@ -451,6 +503,14 @@
 		gap: 0.75rem;
 		align-items: flex-start;
 		position: relative;
+	}
+	.related-cards__container {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		overflow: visible;
+	}
+	.related-card{
+		width: auto;
 	}
 }
 
