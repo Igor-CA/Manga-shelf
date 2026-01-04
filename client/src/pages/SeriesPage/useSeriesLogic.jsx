@@ -16,6 +16,7 @@ export const useSeriesLogic = (id) => {
 	const [localVolumeState, setLocalVolumeState] = useState([]);
 
 	useEffect(() => {
+		setSeries(null)
 		const fetchSeriesData = async () => {
 			try {
 				const response = await axios.get(
