@@ -7,9 +7,12 @@ export const printArray = (list) => {
 };
 
 export const checkOwnedVolumes = (user, id) => {
-	return user ? user.ownedVolumes.includes(id) : false;
+	return user?.ownedVolumes
+		? user.ownedVolumes.some(
+				(entry) => entry.volume.toString() === id.toString()
+		  )
+		: false;
 };
-
 export const getCompletionPercentage = (user, id) => {
 	const indexOfSeries = user.userList.findIndex(
 		(seriesObj) => seriesObj.Series._id.toString() === id

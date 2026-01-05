@@ -14,9 +14,12 @@ async function syncAndRecalculateData() {
 }
 
 async function cleanUserDuplicates() {
-	logger.info("Cleaning duplicate data");
+	logger.info("Starting cleanup of duplicate data (New Schema)...");
+
 	let usersProcessed = 0;
 	let usersModified = 0;
+	let bulkOps = [];
+	const BATCH_SIZE = 500;
 
 	const cursor = User.find({}).cursor();
 
@@ -28,57 +31,85 @@ async function cleanUserDuplicates() {
 		) {
 			let wasModified = false;
 
-			const originalWishListCount = user.wishList.length;
-			const uniqueWishList = [
+			const uniqueWishListStrings = [
 				...new Set(user.wishList.map((id) => id.toString())),
 			];
 
-			if (uniqueWishList.length < originalWishListCount) {
-				user.wishList = uniqueWishList.map(
+			if (uniqueWishListStrings.length < user.wishList.length) {
+				user.wishList = uniqueWishListStrings.map(
 					(id) => new mongoose.Types.ObjectId(id)
 				);
 				wasModified = true;
 			}
 
-			const originalOwnedVolumesCount = user.ownedVolumes.length;
-			const uniqueOwnedVolumes = [
-				...new Set(user.ownedVolumes.map((id) => id.toString())),
-			];
-
-			if (uniqueOwnedVolumes.length < originalOwnedVolumesCount) {
-				user.ownedVolumes = uniqueOwnedVolumes.map(
-					(id) => new mongoose.Types.ObjectId(id)
-				);
-				wasModified = true;
-			}
-
-			const originalUserListCount = user.userList.length;
 			const seenSeries = new Set();
-			const uniqueUserList = user.userList.filter((item) => {
-				if (!item || !item.Series) return false;
-				const seriesId = item.Series.toString();
-				if (!seenSeries.has(seriesId)) {
-					seenSeries.add(seriesId);
-					return true;
-				}
-				return false;
-			});
+			const uniqueUserList = [];
 
-			if (uniqueUserList.length < originalUserListCount) {
+			for (const item of user.userList) {
+				if (item && item.Series) {
+					const seriesId = item.Series.toString();
+					if (!seenSeries.has(seriesId)) {
+						seenSeries.add(seriesId);
+						uniqueUserList.push(item);
+					}
+				}
+			}
+
+			if (uniqueUserList.length < user.userList.length) {
 				user.userList = uniqueUserList;
 				wasModified = true;
 			}
 
+			const seenVolumes = new Set();
+			const uniqueOwnedVolumes = [];
+
+			for (const item of user.ownedVolumes) {
+				if (item && item.volume) {
+					const volId = item.volume.toString();
+					if (!seenVolumes.has(volId)) {
+						seenVolumes.add(volId);
+						uniqueOwnedVolumes.push(item);
+					}
+				}
+			}
+
+			if (uniqueOwnedVolumes.length < user.ownedVolumes.length) {
+				user.ownedVolumes = uniqueOwnedVolumes;
+				wasModified = true;
+			}
+
 			if (wasModified) {
-				logger.warn(`Cleaned user duplicate. User: ${user}`)
-				await user.save();
+				bulkOps.push({
+					updateOne: {
+						filter: { _id: user._id },
+						update: {
+							$set: {
+								wishList: user.wishList,
+								userList: user.userList,
+								ownedVolumes: user.ownedVolumes,
+							},
+						},
+					},
+				});
 				usersModified++;
 			}
 
 			usersProcessed++;
+
+			if (bulkOps.length >= BATCH_SIZE) {
+				await User.bulkWrite(bulkOps);
+				bulkOps = [];
+			}
 		}
 
-		logger.info(`Processed: ${usersProcessed}, Modified: ${usersModified}.`);
+		if (bulkOps.length > 0) {
+			await User.bulkWrite(bulkOps);
+		}
+
+		logger.info(
+			`Cleanup complete. Processed: ${usersProcessed}, Modified: ${usersModified}.`
+		);
+
 		return { usersProcessed, usersModified };
 	} catch (error) {
 		logger.error("Error cleaning duplicate data:", error);
@@ -107,7 +138,7 @@ async function recalculateUserListInfo() {
 			let wasModified = false;
 
 			const ownedVolumesSet = new Set(
-				user.ownedVolumes.map((id) => id.toString())
+				user.ownedVolumes.map((item) => item.volume.toString())
 			);
 
 			const seriesIds = user.userList.map((item) => item.Series);
@@ -125,7 +156,10 @@ async function recalculateUserListInfo() {
 					{ volumes: s.volumes, status: s.status },
 				])
 			);
+
 			user.userList.forEach((listItem) => {
+				if (!listItem.Series) return;
+
 				const seriesId = listItem.Series.toString();
 				if (!seriesMap.has(seriesId)) return;
 
@@ -167,7 +201,7 @@ async function recalculateUserListInfo() {
 			});
 
 			if (wasModified) {
-				logger.warn(`Userlist Recalculated. User: ${user.username}`)
+				logger.warn(`Userlist Recalculated. User: ${user.username}`);
 				await user.save();
 				usersModified++;
 			}

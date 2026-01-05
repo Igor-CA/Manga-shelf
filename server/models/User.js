@@ -1,6 +1,22 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+const OwnedVolumeSchema = new Schema(
+	{
+		volume: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Volume",
+			required: true,
+		},
+		amount: { type: Number, default: 1 },
+		acquiredAt: { type: Date, default: Date.now },
+		isRead: { type: Boolean, default: false },
+		readAt: { type: Date },
+		purchasePrice: { type: Number },
+	},
+	{ _id: false }
+);
+
 const UserSchema = new Schema({
 	username: { type: String },
 	email: { type: String, required: true },
@@ -13,7 +29,7 @@ const UserSchema = new Schema({
 				required: true,
 			},
 			completionPercentage: { type: Number, default: 0 },
-			status: { type: String, default: "Collecting"},
+			status: { type: String, default: "Collecting" },
 		},
 	],
 	wishList: {
@@ -25,7 +41,10 @@ const UserSchema = new Schema({
 		],
 		default: [],
 	},
-	ownedVolumes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Volume" }],
+	ownedVolumes: {
+		type: [OwnedVolumeSchema],
+		default: [],
+	},
 	following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	tokenTimestamp: { type: Date },
