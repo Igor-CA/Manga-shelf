@@ -13,6 +13,7 @@ router.get("/user/:username", userInfoController.getUserCollection);
 router.get("/user/:username/missing", userInfoController.getMissingPage);
 router.get("/user/:username/wishlist", userInfoController.getUserWishlist);
 router.get("/user/:username/filters", userInfoController.getUserFilters);
+router.get("/user/:username/volumes", userInfoController.getUserReadList);
 router.get("/user/stats/:username", userInfoController.getUserStats);
 router.get("/user-notifications", Notifications.getUserNotifications);
 router.get("/search-user/", userInfoController.searchUser);

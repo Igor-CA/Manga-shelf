@@ -4,6 +4,7 @@ const {
 	getVolumeCoverURL,
 	getSeriesCoverURL,
 } = require("../../Utils/getCoverFunctions");
+const logger = require("../../Utils/logger");
 
 const ITEMS_PER_PAGE = 36;
 //Filters for building search pipeline
@@ -45,6 +46,26 @@ const buildSortStage = (ordering, field) => {
 	return sortStage;
 };
 
+const buildVolumeSortStage = (ordering) => {
+	const sortOptions = {
+		popularity: { attribute: "seriesInfo.popularity", order: -1 },
+		title: { attribute: "seriesInfo.title", order: 1 },
+		publisher: { attribute: "seriesInfo.publisher", order: 1 },
+		number: { attribute: "volumeInfo.number", order: 1 },
+		timestamp: { attribute: "ownedVolumes.acquiredAt", order: -1 },
+		status: { attribute: "ownedVolumes.isRead", order: 1 },
+	};
+
+	const selectedOption = sortOptions[ordering] || sortOptions.timestamp;
+
+	const sortStage = {
+		[selectedOption.attribute]: selectedOption.order,
+		"seriesInfo.title": 1,
+		"volumeInfo.number": 1,
+	};
+
+	return sortStage;
+};
 const buildAggregationPipeline = (targetUser, filter, sortStage, skip) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
@@ -85,6 +106,75 @@ const buildAggregationPipeline = (targetUser, filter, sortStage, skip) => {
 				status: "$userList.status",
 			},
 		},
+		{ $skip: skip },
+		{ $limit: ITEMS_PER_PAGE },
+	];
+
+	return pipeline;
+};
+
+const buildVolumeAggregationPipeline = (
+	targetUser,
+	filter,
+	sortStage,
+	skip
+) => {
+	const pipeline = [
+		{ $match: { username: targetUser } },
+
+		{
+			$project: {
+				ownedVolumes: {
+					$filter: {
+						input: "$ownedVolumes",
+						as: "item",
+						cond: { $ne: ["$$item.volume", null] },
+					},
+				},
+			},
+		},
+
+		{ $unwind: "$ownedVolumes" },
+
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "ownedVolumes.volume",
+				foreignField: "_id",
+				as: "volumeInfo",
+			},
+		},
+		{ $unwind: "$volumeInfo" },
+
+		{
+			$lookup: {
+				from: "series",
+				localField: "volumeInfo.serie",
+				foreignField: "_id",
+				as: "seriesInfo",
+			},
+		},
+		{ $unwind: "$seriesInfo" },
+
+		{ $match: filter },
+
+		{ $sort: sortStage },
+
+		{
+			$project: {
+				_id: "$volumeInfo._id",
+				title: "$seriesInfo.title",
+				volumeNumber: "$volumeInfo.number",
+				isVariant: "$volumeInfo.isVariant",
+				variantNumber: "$volumeInfo.variantNumber",
+				isAdult: "$seriesInfo.isAdult",
+				acquiredAt: "$ownedVolumes.acquiredAt",
+				isRead: "$ownedVolumes.isRead",
+				amount: "$ownedVolumes.amount",
+				seriesId: "$seriesInfo._id",
+			},
+		},
+
 		{ $skip: skip },
 		{ $limit: ITEMS_PER_PAGE },
 	];
@@ -695,4 +785,43 @@ exports.getUserFilters = asyncHandler(async (req, res, next) => {
 	]);
 
 	return res.send(result[0] || { genres: [], publishers: [] });
+});
+
+exports.getUserReadList = asyncHandler(async (req, res, next) => {
+	const targetUser = req.params.username?.trim();
+	if (!targetUser)
+		return res.status(400).send({ msg: "Usuário não encontrado" });
+
+	const page = parseInt(req.query.p) || 1;
+	const skip = ITEMS_PER_PAGE * (page - 1);
+	const filter = buildFilter(req.query, "seriesInfo");
+	if (req.query.group) {
+		filter["userList.status"] = req.query.group;
+	}
+	const sortStage = buildVolumeSortStage(
+		req.query.ordering || "title",
+		"userList.Series"
+	);
+	const pipeline = buildVolumeAggregationPipeline(
+		targetUser,
+		filter,
+		sortStage,
+		skip
+	);
+	const userCollection = await User.aggregate(pipeline);
+	logger.info(userCollection);
+	const filteredList = userCollection.map((volume) => {
+		const seriesObject = {
+			title: volume.title,
+		};
+		let image = getVolumeCoverURL(seriesObject, volume.volumeNumber, volume.isVariant, volume.variantNumber);
+		if (volume.isAdult && !req.user?.allowAdult) {
+			image = null;
+		}
+		return {
+			...volume,
+			image: image,
+		};
+	});
+	res.send(filteredList);
 });
