@@ -205,6 +205,19 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const aggregationPipeline = [
 		{ $match: { username: targetUser } },
 
+		{
+			$addFields: {
+				ownedVolumeIds: {
+					$map: {
+						input: { $ifNull: ["$ownedVolumes", []] },
+						as: "ov",
+						in: "$$ov.volume",
+					},
+				},
+			},
+		},
+		{ $project: { ownedVolumes: 0 } },
+
 		{ $unwind: "$userList" },
 		{ $match: { "userList.status": { $ne: "Dropped" } } },
 
@@ -239,7 +252,7 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				"userList.status": 1,
 
 				isOwned: {
-					$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumes", []] }],
+					$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumeIds", []] }],
 				},
 				variantSort: {
 					$cond: [{ $ifNull: ["$volumeDetails.isVariant", false] }, 1, 0],
@@ -307,8 +320,9 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 		if (volume.isAdult && !req.user?.allowAdult) {
 			image = null;
 		}
+		const { series, volumeId, seriesStatus, ...rest } = volume;
 		return {
-			...volume,
+			...rest,
 			title: volume.series,
 			image: image,
 		};
@@ -338,16 +352,11 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 
 	const getVolumesStats = (groupField) => [
 		{ $match: { username: targetUser } },
-		{
-			$unwind: {
-				path: "$ownedVolumes",
-				preserveNullAndEmptyArrays: true,
-			},
-		},
+		{ $unwind: { path: "$ownedVolumes", preserveNullAndEmptyArrays: true } },
 		{
 			$lookup: {
 				from: "volumes",
-				localField: "ownedVolumes",
+				localField: "ownedVolumes.volume",
 				foreignField: "_id",
 				as: "details",
 			},
@@ -361,12 +370,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 				as: "seriesDetails",
 			},
 		},
-		{
-			$unwind: {
-				path: "$seriesDetails",
-				preserveNullAndEmptyArrays: true,
-			},
-		},
+		{ $unwind: { path: "$seriesDetails", preserveNullAndEmptyArrays: true } },
 		{
 			$unwind: {
 				path: `$seriesDetails.${groupField}`,
@@ -374,11 +378,12 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{
-			$group: { _id: `$seriesDetails.${groupField}`, count: { $sum: 1 } },
+			$group: {
+				_id: `$seriesDetails.${groupField}`,
+				count: { $sum: "$ownedVolumes.amount" },
+			},
 		},
-		{
-			$project: { _id: 0, name: "$_id", count: 1 },
-		},
+		{ $project: { _id: 0, name: "$_id", count: 1 } },
 		{ $sort: { count: -1, name: 1 } },
 	];
 
@@ -400,22 +405,65 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 				preserveNullAndEmptyArrays: true,
 			},
 		},
-		{
-			$group: { _id: `$details.${groupField}`, count: { $sum: 1 } },
-		},
-		{
-			$project: { _id: 0, name: "$_id", count: 1 },
-		},
+		{ $group: { _id: `$details.${groupField}`, count: { $sum: 1 } } },
+		{ $project: { _id: 0, name: "$_id", count: 1 } },
 		{ $sort: { count: -1, name: 1 } },
 	];
 
-	// Pipelines
-	const genresByVolumePipeline = getVolumesStats("genres");
-	const publisherByVolumePipeline = getVolumesStats("publisher");
-	const genresBySeriesPipeline = getSeriesStats("genres");
-	const publisherBySeriesPipeline = getSeriesStats("publisher");
+	const missingCountPipeline = [
+		{ $match: { username: targetUser } },
+		{
+			$addFields: {
+				ownedVolumeIds: {
+					$map: {
+						input: { $ifNull: ["$ownedVolumes", []] },
+						as: "ov",
+						in: "$$ov.volume",
+					},
+				},
+			},
+		},
+		{ $project: { ownedVolumes: 0 } },
+		{ $unwind: "$userList" },
+		{ $match: { "userList.status": { $ne: "Dropped" } } },
+		{
+			$lookup: {
+				from: "series",
+				localField: "userList.Series",
+				foreignField: "_id",
+				as: "seriesDetails",
+			},
+		},
+		{ $unwind: "$seriesDetails" },
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "seriesDetails.volumes",
+				foreignField: "_id",
+				as: "volumeDetails",
+			},
+		},
+		{ $unwind: "$volumeDetails" },
+		{
+			$project: {
+				seriesId: "$seriesDetails._id",
+				volNumber: "$volumeDetails.number",
+				isOwned: {
+					$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumeIds", []] }],
+				},
+			},
+		},
+		{
+			$group: {
+				_id: { seriesId: "$seriesId", volNumber: "$volNumber" },
+				hasOwnedVariant: { $max: "$isOwned" },
+			},
+		},
+		{ $match: { hasOwnedVariant: false } },
+		{ $count: "totalMissing" },
+	];
 
-	const countPipeline = [
+	const generalCountsPipeline = [
 		{ $match: { username: targetUser } },
 		{
 			$addFields: {
@@ -427,13 +475,11 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		{
 			$group: {
 				_id: "$_id",
-				nonDroppedSeriesIds: { $push: "$userList.Series" },
 				ownedVolumes: { $first: "$ownedVolumes" },
 				wishList: { $first: "$wishList" },
 				originalUserList: { $first: "$originalUserList" },
 			},
 		},
-
 		{
 			$lookup: {
 				from: "series",
@@ -442,18 +488,9 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 				as: "wishListSeries",
 			},
 		},
-		//For missing count
-		{
-			$lookup: {
-				from: "series",
-				localField: "nonDroppedSeriesIds",
-				foreignField: "_id",
-				as: "userListSeriesData",
-			},
-		},
 		{
 			$project: {
-				ownedVolumesCount: { $size: { $ifNull: ["$ownedVolumes", []] } },
+				ownedVolumesCount: { $sum: "$ownedVolumes.amount" },
 				userListCount: { $size: { $ifNull: ["$originalUserList", []] } },
 				wishListSeriesCount: { $size: { $ifNull: ["$wishList", []] } },
 				wishListVolumesCount: {
@@ -465,55 +502,40 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 						},
 					},
 				},
-				missingVolumesCount: {
-					$size: {
-						$setDifference: [
-							{
-								$reduce: {
-									input: "$userListSeriesData",
-									initialValue: [],
-									in: { $concatArrays: ["$$value", "$$this.volumes"] },
-								},
-							},
-							{ $ifNull: ["$ownedVolumes", []] },
-						],
-					},
-				},
 			},
 		},
 	];
 
-	// Execute queries
 	const [
 		genresByVolume,
 		genresBySeries,
 		publisherByVolume,
 		publisherBySeries,
-		counts,
+		generalCounts,
+		missingCountResult,
 	] = await Promise.all([
-		User.aggregate(genresByVolumePipeline).exec(),
-		User.aggregate(genresBySeriesPipeline).exec(),
-		User.aggregate(publisherByVolumePipeline).exec(),
-		User.aggregate(publisherBySeriesPipeline).exec(),
-		User.aggregate(countPipeline).exec(),
+		User.aggregate(getVolumesStats("genres")).exec(),
+		User.aggregate(getSeriesStats("genres")).exec(),
+		User.aggregate(getVolumesStats("publisher")).exec(),
+		User.aggregate(getSeriesStats("publisher")).exec(),
+		User.aggregate(generalCountsPipeline).exec(),
+		User.aggregate(missingCountPipeline).exec(),
 	]);
 
-	// Build response
 	const stats = {
 		genresBySeries,
 		genresByVolume,
 		publisherByVolume,
 		publisherBySeries,
-		volumesCount: counts[0]?.ownedVolumesCount || 0,
-		seriesCount: counts[0]?.userListCount || 0,
-		wishListSeriesCount: counts[0]?.wishListSeriesCount || 0,
-		wishListVolumesCount: counts[0]?.wishListVolumesCount || 0,
-		missingVolumesCount: counts[0]?.missingVolumesCount || 0,
+		volumesCount: generalCounts[0]?.ownedVolumesCount || 0,
+		seriesCount: generalCounts[0]?.userListCount || 0,
+		wishListSeriesCount: generalCounts[0]?.wishListSeriesCount || 0,
+		wishListVolumesCount: generalCounts[0]?.wishListVolumesCount || 0,
+		missingVolumesCount: missingCountResult[0]?.totalMissing || 0,
 	};
 
 	res.send(stats);
 });
-
 exports.getSocials = asyncHandler(async (req, res, next) => {
 	const { username, type } = req.params;
 

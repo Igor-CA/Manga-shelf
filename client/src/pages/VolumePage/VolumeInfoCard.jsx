@@ -20,10 +20,11 @@ export default function VolumeInfoCard({ volumeData }) {
 		setLoaded(true);
 	};
 	const checkOwnedVolume = () => {
-		if (user) {
-			return user.ownedVolumes.includes(id);
-		}
-		return false;
+		return user?.ownedVolumes
+			? user.ownedVolumes.some(
+					(entry) => entry.volume.toString() === id.toString()
+			  )
+			: false;
 	};
 
 	const addOrRemoveVolume = async (isAdding) => {
@@ -77,7 +78,7 @@ export default function VolumeInfoCard({ volumeData }) {
 	];
 
 	const mainAction = {
-		label: "Adicionar Volume",
+		label: checkOwnedVolume()?"Remover volume":"Adicionar Volume",
 		isRed: user && checkOwnedVolume(),
 		onClick: handleChange,
 	};
