@@ -67,17 +67,6 @@ export default function UserCollection() {
 			</p>
 		);
 	};
-
-	const handleGroupChange = (e) => {
-		setGroupVal(e.target.checked);
-	};
-
-	const debouncedSearch = useCallback(
-		debaunce((name, value) => {
-			setParams({ ...params, [name]: value });
-		}, 500),
-		[params]
-	);
 	return (
 		<div className="user-collection container">
 			<FilterControls
@@ -87,6 +76,7 @@ export default function UserCollection() {
 					"publisher",
 					"status",
 					"ordering",
+					"ordering_percentage"
 				]}
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
