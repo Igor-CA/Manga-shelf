@@ -104,13 +104,13 @@ const FilterControls = ({
 							onChange={handleChange}
 							defaultValue={values.ordering || "popularity"}
 						>
-							{availableFilters.includes("ordering_status") && (
-								<option value={"status"}>Status</option>
-							)}
 							<option value={"title"}>Alfabética</option>
 							<option value={"popularity"}>Popularidade</option>
 							<option value={"volumes"}>Tamanho</option>
 							<option value={"publisher"}>Editora</option>
+							{availableFilters.includes("ordering_percentage") && (
+								<option value={"status"}>Porcentagem de conclusão</option>
+							)}
 						</select>
 					</label>
 				)}
