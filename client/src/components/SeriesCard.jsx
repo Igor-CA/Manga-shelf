@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import "./SeriesCard.css";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { FaMinus, FaPlus } from "react-icons/fa";
 
 import { FaRegBookmark } from "react-icons/fa6";
@@ -13,6 +13,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	const [inWishlist, setInWishlist] = useState(itemDetails.inWishlist);
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const { user, setOutdated } = useContext(UserContext);
+	const { username } = useParams();
 	const {
 		title,
 		image,
@@ -197,7 +198,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 						></div>
 					</div>
 				)}
-				{showActions && user && (
+				{showActions && user && (!username || username === user?.username) && (
 					<div className="series-card__actions-container">
 						{itemType === "Series" && (
 							<div
