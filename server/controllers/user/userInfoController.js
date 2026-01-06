@@ -170,7 +170,10 @@ const buildVolumeAggregationPipeline = (
 				isAdult: "$seriesInfo.isAdult",
 				acquiredAt: "$ownedVolumes.acquiredAt",
 				isRead: "$ownedVolumes.isRead",
+				readCount: "$ownedVolumes.readCount",
 				amount: "$ownedVolumes.amount",
+				purchasePrice: "$ownedVolumes.purchasePrice",
+				notes: "$ownedVolumes.notes",
 				seriesId: "$seriesInfo._id",
 			},
 		},
@@ -795,13 +798,12 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
 	const filter = buildFilter(req.query, "seriesInfo");
+
 	if (req.query.group) {
-		filter["userList.status"] = req.query.group;
+		const bool = req.query.group === "true" ? true : false;
+		filter["ownedVolumes.isRead"] = bool;
 	}
-	const sortStage = buildVolumeSortStage(
-		req.query.ordering || "title",
-		"userList.Series"
-	);
+	const sortStage = buildVolumeSortStage(req.query.ordering || "title");
 	const pipeline = buildVolumeAggregationPipeline(
 		targetUser,
 		filter,
@@ -809,12 +811,16 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 		skip
 	);
 	const userCollection = await User.aggregate(pipeline);
-	logger.info(userCollection);
 	const filteredList = userCollection.map((volume) => {
 		const seriesObject = {
 			title: volume.title,
 		};
-		let image = getVolumeCoverURL(seriesObject, volume.volumeNumber, volume.isVariant, volume.variantNumber);
+		let image = getVolumeCoverURL(
+			seriesObject,
+			volume.volumeNumber,
+			volume.isVariant,
+			volume.variantNumber
+		);
 		if (volume.isAdult && !req.user?.allowAdult) {
 			image = null;
 		}
