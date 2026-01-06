@@ -3,10 +3,12 @@ import "./SeriesCard.css";
 import { Link, useParams } from "react-router-dom";
 import { FaMinus, FaPlus } from "react-icons/fa";
 
-import { FaRegBookmark } from "react-icons/fa6";
+import { FaPencil, FaRegBookmark } from "react-icons/fa6";
 import { UserContext } from "./userProvider";
 import axios from "axios";
 import { messageContext } from "./messageStateProvider";
+import { IoMdEye } from "react-icons/io";
+import { useEditVolume } from "./EditVolumeContext";
 export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	const [loaded, setLoaded] = useState(false);
 	const [inUserList, setInUserList] = useState(itemDetails.inUserList);
@@ -14,6 +16,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const { user, setOutdated } = useContext(UserContext);
 	const { username } = useParams();
+	const { openEditModal } = useEditVolume();
 	const {
 		title,
 		image,
@@ -42,6 +45,10 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	const handleAddRemoveFromWishlist = (e) => {
 		e.preventDefault();
 		addOrRemoveFromWishList(!inWishlist);
+	};
+	const handleEditButton = (e) => {
+		e.preventDefault();
+		openEditModal(itemDetails);
 	};
 
 	const addOrRemoveSeries = async (isAdding) => {
@@ -215,17 +222,36 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 								)}
 							</div>
 						)}
-						<div
-							title={`${inUserList ? "Remover da" : "Adicionar à"} coleção`}
-							onClick={handleAddRemove}
-							className="series-card__button-container"
-						>
-							{!inUserList ? (
-								<FaPlus className="series-card__button" />
-							) : (
-								<FaMinus className="series-card__button" />
-							)}
-						</div>
+						{itemType === "Volumes-Read" ? (
+							<>
+								<div
+									title={`Editar informações de volume`}
+									onClick={handleEditButton}
+									className="series-card__button-container"
+								>
+									<FaPencil className="series-card__button" />
+								</div>
+								<div
+									title={`Marcar volume como lido`}
+									onClick={() => console.log("lido")}
+									className="series-card__button-container"
+								>
+									<IoMdEye className="series-card__button" />
+								</div>
+							</>
+						) : (
+							<div
+								title={`${inUserList ? "Remover da" : "Adicionar à"} coleção`}
+								onClick={handleAddRemove}
+								className="series-card__button-container"
+							>
+								{!inUserList ? (
+									<FaPlus className="series-card__button" />
+								) : (
+									<FaMinus className="series-card__button" />
+								)}
+							</div>
+						)}
 					</div>
 				)}
 			</Link>

@@ -237,6 +237,8 @@ body {
 	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.05);
 	white-space: nowrap;
 	cursor: pointer;
+}.filter__checkbox-container--left{
+	align-self: flex-start;
 }
 .filter__checkbox-container .filter__label {
 	font-size: 0.75rem;
