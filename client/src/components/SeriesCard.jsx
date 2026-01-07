@@ -261,8 +261,8 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 								</div>
 								<div
 									title={`Marcar volume como ${
-										isRead ? "não" : ""
-									} lido`}
+										isRead ? "não " : ""
+									}lido`}
 									onClick={handleToggleReadButton}
 									className="series-card__button-container"
 								>

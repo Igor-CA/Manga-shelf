@@ -8,12 +8,14 @@ import "../SeriesPage/SeriesPage.css";
 import ActionDropdown from "../SeriesPage/ActionsDropdown";
 import { getOwnedVolumeInfo, printArray } from "../SeriesPage/utils";
 import { useEditVolume } from "../../components/EditVolumeContext";
+import { messageContext } from "../../components/messageStateProvider";
 export default function VolumeInfoCard({ volumeData }) {
 	const { id } = useParams();
 	const seriesSummarry = useRef(null);
 	const [showingMore, setShowingMore] = useState(false);
 	const navigate = useNavigate();
 	const { openEditModal } = useEditVolume();
+	const { addMessage } = useContext(messageContext);
 
 	const { user, setOutdated } = useContext(UserContext);
 	const [loaded, setLoaded] = useState(false);
@@ -74,8 +76,13 @@ export default function VolumeInfoCard({ volumeData }) {
 			label: "Editar informações do seu volume",
 			checked: true,
 			onChange: () => {
-				const ownedVolumeData = getOwnedVolumeInfo(user, id)
-				openEditModal(ownedVolumeData);
+				const ownedVolumeData = getOwnedVolumeInfo(user, id);
+				if (ownedVolumeData) {
+					openEditModal(ownedVolumeData);
+				}
+				else{
+					addMessage("Precisa adicionar esse volume primeiro")	
+				}
 			},
 		},
 	];

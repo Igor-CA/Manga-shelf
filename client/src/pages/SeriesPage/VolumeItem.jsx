@@ -1,5 +1,10 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { Link } from "react-router-dom";
+import { getOwnedVolumeInfo } from "./utils";
+import { messageContext } from "../../components/messageStateProvider";
+import axios from "axios";
+import { UserContext } from "../../components/userProvider";
 
 export default function VolumeItem({
 	volumeInfo,
@@ -9,6 +14,8 @@ export default function VolumeItem({
 }) {
 	const [loaded, setLoaded] = useState(false);
 	const { volumeId, image, volumeNumber } = volumeInfo;
+	const { addMessage, setMessageType } = useContext(messageContext);
+	const { setOutdated } = useContext(UserContext);
 	const ownsVolume =
 		localVolumeState?.find((element) => element.volumeId === volumeId)
 			?.ownsVolume ?? false;
@@ -18,6 +25,29 @@ export default function VolumeItem({
 	const handleLoading = () => {
 		setLoaded(true);
 	};
+	const toggleReadStatus = async (id) => {
+		try {
+			const result = await axios({
+				method: "POST",
+				data: {
+					id: id,
+				},
+				withCredentials: true,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/toggle-read`,
+			});
+			setOutdated(true);
+			setMessageType("Success");
+			addMessage(result.data.msg);
+		} catch (err) {
+			console.log(err);
+			const customErrorMessage = err.response.data.msg;
+			addMessage(customErrorMessage);
+		}
+	};
+	const ownedVolumeData = getOwnedVolumeInfo(user, volumeId);
 	return (
 		<div key={volumeId} className="series__volume-item">
 			<input
@@ -56,13 +86,26 @@ export default function VolumeItem({
 			<div className="series__volume__body">
 				<strong className="checkmark-label">Volume {volumeNumber}</strong>
 
-				<label
-					htmlFor={`have-volume-check-mark-${volumeId}`}
-					className="action-label"
-				>
-					<span className="text-add">Adicionar</span>
-					<span className="text-owned">Remover</span>
-				</label>
+				<div className="actions-container">
+					<label
+						htmlFor={`have-volume-check-mark-${volumeId}`}
+						className="action-label"
+					>
+						<span className="text-add">Adicionar</span>
+						<span className="text-owned">Remover</span>
+					</label>
+					{ownedVolumeData && (
+						<div
+							className={`button ${ownedVolumeData?.isRead?"button--red":"button--green"}`}
+							title={`Marcar volume como ${
+								ownedVolumeData?.isRead ? "não " : ""
+							}lido`}
+							onClick={() => toggleReadStatus(volumeId)}
+						>
+							{ownedVolumeData?.isRead ? <IoMdEyeOff /> : <IoMdEye />}
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);
