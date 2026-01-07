@@ -6,12 +6,14 @@ import SkeletonHeader from "../../components/SkeletonPage";
 
 import "../SeriesPage/SeriesPage.css";
 import ActionDropdown from "../SeriesPage/ActionsDropdown";
-import { printArray } from "../SeriesPage/utils";
+import { getOwnedVolumeInfo, printArray } from "../SeriesPage/utils";
+import { useEditVolume } from "../../components/EditVolumeContext";
 export default function VolumeInfoCard({ volumeData }) {
 	const { id } = useParams();
 	const seriesSummarry = useRef(null);
 	const [showingMore, setShowingMore] = useState(false);
 	const navigate = useNavigate();
+	const { openEditModal } = useEditVolume();
 
 	const { user, setOutdated } = useContext(UserContext);
 	const [loaded, setLoaded] = useState(false);
@@ -69,112 +71,20 @@ export default function VolumeInfoCard({ volumeData }) {
 			},
 		},
 		{
-			label: "Editar notas do seu volume",
+			label: "Editar informações do seu volume",
 			checked: true,
 			onChange: () => {
-				console.log("It will appear a popup when implemented");
+				const ownedVolumeData = getOwnedVolumeInfo(user, id)
+				openEditModal(ownedVolumeData);
 			},
 		},
 	];
 
 	const mainAction = {
-		label: checkOwnedVolume()?"Remover volume":"Adicionar Volume",
+		label: checkOwnedVolume() ? "Remover volume" : "Adicionar Volume",
 		isRed: user && checkOwnedVolume(),
 		onClick: handleChange,
 	};
-	/*
-	return (
-		<div className="volume">
-			<div className="volume__cover-wrapper">
-				<div className="series-card__image-container">
-					<img
-						src={`${
-							import.meta.env.REACT_APP_HOST_ORIGIN
-						}/images/medium/${image}`}
-						srcSet={`
-							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/small/${image} 100w,
-							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/medium/${image} 400w, 
-							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/large/${image} 700w,
-							${import.meta.env.REACT_APP_HOST_ORIGIN}/images/extralarge/${image} 1000w,`}
-						alt={`cover ${serie.title} volume ${number}`}
-						loading="lazy"
-						className={`series-card__img ${
-							!loaded && "series-card__img--loading"
-						}`}
-						onLoad={handleLoading}
-					/>
-					{serie.isAdult && (
-						<div className="series-card__adult-indicator">+18</div>
-					)}
-				</div>
-				<div className="volume__main-info">
-					<div className="volume__functions">
-						<Link to={`/series/${serie.id}`} className="button">
-							<strong>Ver coleção</strong>
-						</Link>
-						<label
-							htmlFor="have-volume-check-mark"
-							className={`button button--grow button--${
-								user && checkOwnedVolume() ? "red" : "green"
-							}`}
-						>
-							<strong>
-								{user && checkOwnedVolume()
-									? "Remover volume"
-									: "Adicionar Volume"}
-							</strong>
-						</label>
-						<input
-							type="checkbox"
-							name="have-volume-check-mark"
-							id="have-volume-check-mark"
-							className="checkmark invisible"
-							disabled={user ? false : true}
-							checked={user && checkOwnedVolume()}
-							onChange={(e) => {
-								handleChange(e);
-							}}
-						/>
-					</div>
-				</div>
-			</div>
-			<div className="volume__info-container">
-				<h1 className="volume__title">
-					{serie.title} Volume {number}
-				</h1>
-				<ul className="volume__details-container">
-					{pagesNumber && (
-						<li className="volume__details">
-							<strong>Páginas:</strong> {pagesNumber}
-						</li>
-					)}
-					{defaultPrice && (
-						<li className="volume__details">
-							<strong>Preço:</strong> R$ {defaultPrice}
-						</li>
-					)}
-					{date && (
-						<li className="volume__details">
-							<strong>Data de lançamento:</strong> {date}
-						</li>
-					)}
-					{summary && (
-						<li className="volume__details">
-							<strong>Sinopse:</strong>
-							{summary.map((paragraph, index) => {
-								return (
-									<p className="volume__summary" key={index}>
-										{paragraph}
-									</p>
-								);
-							})}
-						</li>
-					)}
-				</ul>
-			</div>
-		</div>
-	);
-	*/
 	return volumeData ? (
 		<header className="content-header">
 			<div className="header__bg-image-container">
@@ -221,9 +131,9 @@ export default function VolumeInfoCard({ volumeData }) {
 								}`}
 								onLoad={handleLoading}
 							/>
-							{/*seriesInfo.isAdult && (
+							{volumeData?.serie?.isAdult && (
 								<div className="series-card__adult-indicator">+18</div>
-							)*/}
+							)}
 						</div>
 						<ActionDropdown
 							mainAction={mainAction}
