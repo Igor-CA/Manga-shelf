@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../components/userProvider";
 import { messageContext } from "../../components/messageStateProvider";
-import { checkOwnedVolumes } from "./utils";
+import { checkOwnedVolumes, getOwnedVolumeInfo } from "./utils";
 import { usePrompt } from "../../components/PromptContext";
 
 export const useSeriesLogic = (id) => {
@@ -16,7 +16,7 @@ export const useSeriesLogic = (id) => {
 	const [localVolumeState, setLocalVolumeState] = useState([]);
 
 	useEffect(() => {
-		setSeries(null)
+		setSeries(null);
 		const fetchSeriesData = async () => {
 			try {
 				const response = await axios.get(
@@ -43,11 +43,15 @@ export const useSeriesLogic = (id) => {
 
 	useEffect(() => {
 		if (series?.title) {
-			const newState = series.volumes.map((vol) => ({
-				volumeId: vol.volumeId,
-				isVariant: vol.isVariant,
-				ownsVolume: checkOwnedVolumes(user, vol.volumeId),
-			}));
+			const newState = series.volumes.map((vol) => {
+				const ownedInfo = getOwnedVolumeInfo(user, vol.volumeId);
+				return {
+					volumeId: vol.volumeId,
+					isVariant: vol.isVariant,
+					ownsVolume: !!ownedInfo,
+					isRead: ownedInfo?.isRead || false,
+				};
+			});
 			setLocalVolumeState(newState);
 		}
 	}, [series, user]);
@@ -104,7 +108,7 @@ export const useSeriesLogic = (id) => {
 
 			if (localVolumeState[index].isVariant) {
 				performVolumeUpdate(true, [volumeId]);
-				return
+				return;
 			}
 			const listToAdd = localVolumeState
 				.slice(0, index + 1)
@@ -124,18 +128,60 @@ export const useSeriesLogic = (id) => {
 			performVolumeUpdate(false, [volumeId]);
 		}
 	};
+	const performReadUpdate = async (isRead, idList) => {
+		setLocalVolumeState((prev) =>
+			prev.map((item) =>
+				idList.includes(item.volumeId) ? { ...item, isRead: isRead } : item
+			)
+		);
+
+		await apiCall(
+			"/api/user/set-read-status",
+			{ idList, isRead },
+			isRead ? "Volume(s) marcados como lidos" : "Volume(s) marcados como não lidos"
+		);
+	};
+
+	const handleReadToggle = (volumeId) => {
+		const volumeState = localVolumeState.find((v) => v.volumeId === volumeId);
+		if (!volumeState) return;
+
+		const newStatus = !volumeState.isRead;
+
+		if (newStatus === true) {
+			const index = localVolumeState.findIndex((v) => v.volumeId === volumeId);
+
+			const listToRead = localVolumeState
+				.slice(0, index + 1)
+				.filter((v) => v.ownsVolume && !v.isRead && !v.isVariant)
+				.map((v) => v.volumeId);
+
+			if (!listToRead.includes(volumeId) && volumeState.ownsVolume) {
+				listToRead.push(volumeId);
+			}
+
+			if (listToRead.length > 1) {
+				confirm(
+					"Deseja marcar os volumes anteriores como lidos também?",
+					() => performReadUpdate(true, listToRead),
+					() => performReadUpdate(true, [volumeId])
+				);
+			} else {
+				performReadUpdate(true, [volumeId]);
+			}
+		} else {
+			performReadUpdate(false, [volumeId]);
+		}
+	};
 
 	const handleSelectAllVolumes = (adding) => {
 		let candidates = localVolumeState.filter(
 			(volume) => volume.ownsVolume === !adding
 		);
-
 		if (adding) {
 			candidates = candidates.filter((vol) => !vol.isVariant);
 		}
-
 		const list = candidates.map((volume) => volume.volumeId);
-
 		const action = () => performVolumeUpdate(adding, list);
 
 		if (!adding) {
@@ -202,6 +248,7 @@ export const useSeriesLogic = (id) => {
 		series,
 		localVolumeState,
 		handleVolumeChange,
+		handleReadToggle,
 		handleSelectAllVolumes,
 		toggleSeriesInList,
 		toggleWishlist,

@@ -6,6 +6,7 @@ export default function SeriesVolumesList({
 	volumes,
 	localVolumesList,
 	handleChange,
+	handleReadToggle,
 }) {
 	const { user } = useContext(UserContext);
 	const normalVolumes = volumes.filter((volume) => !volume.isVariant);
@@ -19,6 +20,7 @@ export default function SeriesVolumesList({
 							volumeInfo={volume}
 							localVolumeState={localVolumesList}
 							handleChange={handleChange}
+							handleReadToggle={handleReadToggle}
 							user={user}
 						/>
 					</li>
@@ -35,6 +37,7 @@ export default function SeriesVolumesList({
 									volumeInfo={volume}
 									localVolumeState={localVolumesList}
 									handleChange={handleChange}
+									handleReadToggle={handleReadToggle}
 									user={user}
 								/>
 							</li>

@@ -88,6 +88,11 @@ router.post(
 	requireAuth,
 	userActionsController.toggleVolumeRead
 );
+router.post(
+	"/set-read-status",
+	requireAuth,
+	userActionsController.setVolumesReadStatus
+);
 router.put(
 	"/edit-owned-volumes",
 	requireAuth,
