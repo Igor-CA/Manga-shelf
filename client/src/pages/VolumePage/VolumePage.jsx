@@ -19,8 +19,9 @@ export default function VolumePage() {
 			volumeData?.serie?.isAdult &&
 			!user?.allowAdult
 		) {
-			console.log(!isFetching, !volumeData?.serie?.isAdult, !user?.allowAdult);
-			navigate("/");
+			if (!isFetching && !user?.allowAdult && volumeData?.serie?.isAdult) {
+				navigate("/adult-block");
+			}
 		}
 	}, [volumeData, isFetching, user, navigate]);
 
@@ -57,11 +58,7 @@ export default function VolumePage() {
 					<Routes>
 						<Route
 							path=""
-							element={
-								<VolumesOverallPage
-									volume={volumeData}
-								/>
-							}
+							element={<VolumesOverallPage volume={volumeData} />}
 						></Route>
 					</Routes>
 				</Suspense>
