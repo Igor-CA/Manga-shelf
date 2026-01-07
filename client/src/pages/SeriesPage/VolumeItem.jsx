@@ -1,55 +1,29 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { Link } from "react-router-dom";
-import { getOwnedVolumeInfo } from "./utils";
-import { messageContext } from "../../components/messageStateProvider";
-import axios from "axios";
-import { UserContext } from "../../components/userProvider";
-
 export default function VolumeItem({
 	volumeInfo,
 	localVolumeState,
 	handleChange,
+	handleReadToggle,
 	user,
 }) {
 	const [loaded, setLoaded] = useState(false);
 	const { volumeId, image, volumeNumber } = volumeInfo;
-	const { addMessage, setMessageType } = useContext(messageContext);
-	const { setOutdated } = useContext(UserContext);
-	const ownsVolume =
-		localVolumeState?.find((element) => element.volumeId === volumeId)
-			?.ownsVolume ?? false;
+
+	const myState = localVolumeState?.find((el) => el.volumeId === volumeId);
+	const ownsVolume = myState?.ownsVolume ?? false;
+	const isRead = myState?.isRead ?? false;
+
 	const handleCheckboxChange = (e) => {
 		handleChange(e, volumeId);
 	};
 	const handleLoading = () => {
 		setLoaded(true);
 	};
-	const toggleReadStatus = async (id) => {
-		try {
-			const result = await axios({
-				method: "POST",
-				data: {
-					id: id,
-				},
-				withCredentials: true,
-				headers: {
-					Authorization: import.meta.env.REACT_APP_API_KEY,
-				},
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/toggle-read`,
-			});
-			setOutdated(true);
-			setMessageType("Success");
-			addMessage(result.data.msg);
-		} catch (err) {
-			console.log(err);
-			const customErrorMessage = err.response.data.msg;
-			addMessage(customErrorMessage);
-		}
-	};
-	const ownedVolumeData = getOwnedVolumeInfo(user, volumeId);
+
 	return (
-		<div key={volumeId} className="series__volume-item">
+		<div className="series__volume-item">
 			<input
 				type="checkbox"
 				name={`have-volume-check-mark-${volumeId}`}
@@ -76,7 +50,7 @@ export default function VolumeItem({
 							(min-width: 768px) 20vw, 
 							(max-width: 768px) 20vw, "
 					loading="lazy"
-					alt={`cover volume ${volumeNumber}`}
+					alt={`Cover volume ${volumeNumber}`}
 					className={`series__volume__image ${
 						!loaded && "series__volume__image--loading"
 					}`}
@@ -94,15 +68,14 @@ export default function VolumeItem({
 						<span className="text-add">Adicionar</span>
 						<span className="text-owned">Remover</span>
 					</label>
-					{ownedVolumeData && (
+
+					{ownsVolume && (
 						<div
-							className={`button ${ownedVolumeData?.isRead?"button--red":"button--green"}`}
-							title={`Marcar volume como ${
-								ownedVolumeData?.isRead ? "não " : ""
-							}lido`}
-							onClick={() => toggleReadStatus(volumeId)}
+							className={`button ${isRead ? "button--red" : "button--green"}`}
+							title={`Marcar volume como ${isRead ? "não " : ""}lido`}
+							onClick={() => handleReadToggle(volumeId)}
 						>
-							{ownedVolumeData?.isRead ? <IoMdEyeOff /> : <IoMdEye />}
+							{isRead ? <IoMdEyeOff /> : <IoMdEye />}
 						</div>
 					)}
 				</div>

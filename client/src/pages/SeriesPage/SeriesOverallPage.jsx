@@ -68,7 +68,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 			{ label: "Demografia", value: demographic },
 		];
 	}, [series]);
-	const { handleVolumeChange } = actions;
+	const { handleVolumeChange, handleReadToggle } = actions;
 
 	return (
 		<div className="container">
@@ -98,7 +98,12 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 							<h2 className="collection-lable">Obras relacionadas</h2>
 							<ul className="related-cards__container">
 								{related.map((series) => {
-									return <RelatedCard key={series.seriesId} relatedSeries={series}></RelatedCard>;
+									return (
+										<RelatedCard
+											key={series.seriesId}
+											relatedSeries={series}
+										></RelatedCard>
+									);
 								})}
 							</ul>
 						</>
@@ -109,6 +114,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 						volumes={series.volumes}
 						localVolumesList={volumesState}
 						handleChange={handleVolumeChange}
+						handleReadToggle={handleReadToggle} 
 					></SeriesVolumesList>
 				</div>
 			</div>

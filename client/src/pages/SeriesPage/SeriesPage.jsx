@@ -15,6 +15,7 @@ export default function SeriesPage() {
 		toggleDrop,
 		handleSelectAllVolumes,
 		handleVolumeChange,
+		handleReadToggle,
 		localVolumeState,
 	} = useSeriesLogic(id);
 
@@ -24,6 +25,7 @@ export default function SeriesPage() {
 		toggleDrop,
 		handleSelectAllVolumes,
 		handleVolumeChange,
+		handleReadToggle,
 	};
 
 	return (

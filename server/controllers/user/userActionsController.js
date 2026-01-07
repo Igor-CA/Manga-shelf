@@ -512,4 +512,40 @@ exports.toggleVolumeRead = asyncHandler(async (req, res, next) => {
 		msg: "Status de leitura atualizado.",
 	});
 });
+
+exports.setVolumesReadStatus = asyncHandler(async (req, res, next) => {
+	const { idList, isRead } = req.body;
+
+	if (!idList || idList.length === 0) {
+		return res.status(400).json({ msg: "Nenhum volume selecionado." });
+	}
+
+	const updateData = isRead
+		? {
+				$set: {
+					"ownedVolumes.$[elem].isRead": true,
+					"ownedVolumes.$[elem].readCount": 1,
+					"ownedVolumes.$[elem].readAt": new Date(),
+				},
+		  }
+		: {
+				$set: {
+					"ownedVolumes.$[elem].isRead": false,
+					"ownedVolumes.$[elem].readCount": 0,
+					"ownedVolumes.$[elem].readAt": null,
+				},
+		  };
+
+	const result = await User.updateOne({ _id: req.user._id }, updateData, {
+		arrayFilters: [{ "elem.volume": { $in: idList } }],
+	});
+
+	if (result.matchedCount === 0) {
+		return res.status(404).json({ msg: "Usuário não encontrado." });
+	}
+
+	res.json({
+		msg: `Volumes marcados como ${isRead ? "lidos" : "não lidos"} com sucesso.`,
+	});
+});
 exports.getNewUserSeriesStatus = getNewUserSeriesStatus;
