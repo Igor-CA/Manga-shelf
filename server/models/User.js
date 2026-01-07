@@ -11,6 +11,7 @@ const OwnedVolumeSchema = new Schema(
 		amount: { type: Number, default: 1 },
 		acquiredAt: { type: Date, default: Date.now },
 		isRead: { type: Boolean, default: false },
+		readAt: { type: Date },
 		readCount: { type: Number },
 		readAt: { type: Date },
 		purchasePrice: { type: Number },

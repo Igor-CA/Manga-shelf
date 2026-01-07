@@ -441,7 +441,8 @@ exports.undropSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
-	const { acquiredAt, isRead, readCount, price, amount, notes, _id } = req.body;
+	const { acquiredAt, readAt, isRead, readCount, price, amount, notes, _id } =
+		req.body;
 
 	const result = await User.updateOne(
 		{
@@ -453,6 +454,7 @@ exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
 				"ownedVolumes.$.acquiredAt": acquiredAt,
 				"ownedVolumes.$.isRead": isRead,
 				"ownedVolumes.$.readCount": readCount,
+				"ownedVolumes.$.readAt": readAt,
 				"ownedVolumes.$.purchasePrice": price,
 				"ownedVolumes.$.amount": amount,
 				"ownedVolumes.$.notes": notes,
@@ -483,14 +485,16 @@ exports.toggleVolumeRead = asyncHandler(async (req, res, next) => {
 	const currentVolume = user.ownedVolumes[0];
 	const isCurrentlyRead = currentVolume.isRead;
 
-	let newIsRead, newReadCount;
+	let newIsRead, newReadCount, newReadAt;
 
 	if (isCurrentlyRead) {
 		newIsRead = false;
 		newReadCount = 0;
+		newReadAt = null;
 	} else {
 		newIsRead = true;
 		newReadCount = 1;
+		newReadAt = new Date();
 	}
 
 	await User.updateOne(
@@ -499,11 +503,12 @@ exports.toggleVolumeRead = asyncHandler(async (req, res, next) => {
 			$set: {
 				"ownedVolumes.$.isRead": newIsRead,
 				"ownedVolumes.$.readCount": newReadCount,
+				"ownedVolumes.$.readAt": newReadAt,
 			},
 		}
 	);
 
-	res.json(	{
+	res.json({
 		msg: "Status de leitura atualizado.",
 	});
 });
