@@ -36,16 +36,16 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 		{
 			label:
 				user && getCompletionPercentage(user, id) === 1
-					? "Remover todos"
-					: "Adicionar todos",
+					? "Remover todos os volumes"
+					: "Adicionar todos os volumes",
 			checked: user && getCompletionPercentage(user, id) === 1,
 			onChange: handleSelectAllVolumes,
 		},
 		{
 			label:
 				user && checkIfInWishlist(user, id)
-					? "Remover da lista"
-					: "Adicionar aos desejos",
+					? "Remover da lista de desejos"
+					: "Adicionar à lista de desejos",
 			checked: user && checkIfInWishlist(user, id),
 			onChange: toggleWishlist,
 		},
@@ -53,7 +53,7 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 			label:
 				user && getSeriesStatus(user, id) === "Dropped"
 					? "Voltar a colecionar"
-					: "Abandonar coleção",
+					: "Abandonar (droppar) coleção",
 			checked: user && getSeriesStatus(user, id) === "Dropped",
 			onChange: toggleDrop,
 		},

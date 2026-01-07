@@ -192,7 +192,7 @@
 .series__volume__image-wrapper {
 	display: block;
 	position: relative;
-	border-radius: 5px;
+	border-radius: 5px 5px 0px 0px;
 	width: 100%;
 	overflow: hidden;
 	aspect-ratio: auto 465 / 695;
@@ -249,7 +249,10 @@
 	margin-bottom: 0.5rem;
 	color: var(--text);
 }
-
+.actions-container {
+	display: flex;
+	gap: 0.5rem;
+}
 .action-label {
 	display: flex;
 	align-items: center;
@@ -264,6 +267,7 @@
 	transition: all 0.2s;
 	user-select: none;
 	color: white;
+	flex-grow: 1;
 }
 
 .volume-state-controller:checked ~ .series__volume__body .action-label {
@@ -511,7 +515,7 @@
 		grid-template-columns: repeat(2, 1fr);
 		overflow: visible;
 	}
-	.related-card{
+	.related-card {
 		width: auto;
 	}
 }
