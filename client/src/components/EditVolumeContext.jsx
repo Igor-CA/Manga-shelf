@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useRef } from "react";
 import { useEffect } from "react";
 import "./EditVolumeModal.css";
+import { messageContext } from "./messageStateProvider";
+import axios from "axios";
+import { UserContext } from "./userProvider";
 
 const EditVolumeContext = createContext();
 
@@ -35,19 +38,80 @@ export const useEditVolume = () => {
 const EditVolumeModal = () => {
 	const { editingVolume, closeEditModal, dialogRef } =
 		useContext(EditVolumeContext);
-
+	const [isRead, setIsRead] = useState(false);
+	const [readCount, setReadCount] = useState(0);
+	const { addMessage, setMessageType } = useContext(messageContext);
+	const { setOutdated } = useContext(UserContext);
+	useEffect(() => {
+		if (editingVolume) {
+			setIsRead(editingVolume.isRead || false);
+			setReadCount(editingVolume.readCount || 0);
+		}
+	}, [editingVolume]);
 	if (!editingVolume) return <dialog ref={dialogRef} />;
 
+	const handleIsReadChange = (e) => {
+		const checked = e.target.checked;
+		setIsRead(checked);
+
+		if (checked) {
+			if (readCount === 0) setReadCount(1);
+		} else {
+			setReadCount(0);
+		}
+	};
+
+	const handleReadCountChange = (e) => {
+		const val = parseInt(e.target.value) || 0;
+		setReadCount(val);
+
+		if (val > 0) {
+			setIsRead(true);
+		} else {
+			setIsRead(false);
+		}
+	};
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const formData = new FormData(e.target);
-		const updates = Object.fromEntries(formData.entries());
+		const rawUpdates = Object.fromEntries(formData.entries());
 
-		console.log("Saving updates for volume ID:", editingVolume._id, updates);
+		const updates = {
+			...rawUpdates,
+			isRead: isRead,
+			readCount: parseInt(rawUpdates.readCount) || 0,
+			price: parseFloat(rawUpdates.price?.replace(",", ".")) || 0,
+			acquiredAt: rawUpdates.acquiredAt ? rawUpdates.acquiredAt : null,
+			amount: parseInt(rawUpdates.amount) || 1,
+		};
+
+		const finalPayload = {
+			_id: editingVolume._id,
+			...updates,
+		};
+
 
 		closeEditModal();
-	};
+		const response = await axios({
+			method: "PUT",
+			data: finalPayload,
+			withCredentials: true,
+			headers: {
+				Authorization: import.meta.env.REACT_APP_API_KEY,
+			},
+			url: `${
+				import.meta.env.REACT_APP_HOST_ORIGIN
+			}/api/user/edit-owned-volumes`,
+		});
+		addMessage(response.data.msg);
+		setMessageType("Success");
+		setOutdated(true);
 
+	};
+	const formatDateForInput = (isoDate) => {
+		if (!isoDate) return "";
+		return isoDate.split("T")[0];
+	};
 	return (
 		<dialog ref={dialogRef} className="edit-modal">
 			<div className="modal-content">
@@ -56,14 +120,14 @@ const EditVolumeModal = () => {
 					{editingVolume.volumeNumber}
 				</h2>
 				<form onSubmit={handleSubmit} className="modal-form">
-
 					<label className="filter__checkbox-container filter__checkbox-container--left">
 						<span className="label-text">Lido</span>
 						<input
 							type="checkbox"
 							name="isRead"
-							defaultChecked={editingVolume.isRead}
-                            className="filter__checkbox"
+							checked={isRead}
+							onChange={handleIsReadChange}
+							className="filter__checkbox"
 						/>
 					</label>
 					<label className="input-group">
@@ -71,7 +135,8 @@ const EditVolumeModal = () => {
 						<input
 							type="number"
 							name="readCount"
-							defaultValue={editingVolume.readCount || 0}
+							value={readCount}
+							onChange={handleReadCountChange}
 							className="form__input"
 						/>
 					</label>
@@ -86,7 +151,15 @@ const EditVolumeModal = () => {
 							step="0.01"
 						/>
 					</label>
-
+					<label className="input-group">
+						<span className="label-text">Data de Aquisição</span>
+						<input
+							type="date"
+							name="acquiredAt"
+							defaultValue={formatDateForInput(editingVolume.acquiredAt)}
+							className="form__input"
+						/>
+					</label>
 					<label className="input-group">
 						<span className="label-text">Quantidade de cópias</span>
 						<input
