@@ -13,6 +13,12 @@ export const checkOwnedVolumes = (user, id) => {
 		  )
 		: false;
 };
+
+export const getOwnedVolumeInfo = (user, id) => {
+	return user?.ownedVolumes?.find(
+		(entry) => entry.volume.toString() === id.toString()
+	);
+};
 export const getCompletionPercentage = (user, id) => {
 	const indexOfSeries = user.userList.findIndex(
 		(seriesObj) => seriesObj.Series._id.toString() === id
