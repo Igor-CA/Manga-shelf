@@ -170,6 +170,7 @@ const buildVolumeAggregationPipeline = (
 				isAdult: "$seriesInfo.isAdult",
 				acquiredAt: "$ownedVolumes.acquiredAt",
 				isRead: "$ownedVolumes.isRead",
+				readAt: "$ownedVolumes.readAt",
 				readCount: "$ownedVolumes.readCount",
 				amount: "$ownedVolumes.amount",
 				purchasePrice: "$ownedVolumes.purchasePrice",

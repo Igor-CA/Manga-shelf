@@ -34,6 +34,9 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.25rem;
+	flex-grow: 1;
+}.input-group--column{
+	flex-direction: row;
 }
 
 .label-text {

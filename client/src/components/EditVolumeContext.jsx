@@ -90,7 +90,6 @@ const EditVolumeModal = () => {
 			...updates,
 		};
 
-
 		closeEditModal();
 		const response = await axios({
 			method: "PUT",
@@ -106,7 +105,6 @@ const EditVolumeModal = () => {
 		addMessage(response.data.msg);
 		setMessageType("Success");
 		setOutdated(true);
-
 	};
 	const formatDateForInput = (isoDate) => {
 		if (!isoDate) return "";
@@ -130,36 +128,49 @@ const EditVolumeModal = () => {
 							className="filter__checkbox"
 						/>
 					</label>
-					<label className="input-group">
-						<span className="label-text">Vezes Lido</span>
-						<input
-							type="number"
-							name="readCount"
-							value={readCount}
-							onChange={handleReadCountChange}
-							className="form__input"
-						/>
-					</label>
+					<div className="input-group input-group--column">
+						<label className="input-group">
+							<span className="label-text">Data de leitura</span>
+							<input
+								type="date"
+								name="readAt"
+								defaultValue={formatDateForInput(editingVolume.readAt)}
+								className="form__input"
+							/>
+						</label>
+						<label className="input-group">
+							<span className="label-text">Vezes Lido</span>
+							<input
+								type="number"
+								name="readCount"
+								value={readCount}
+								onChange={handleReadCountChange}
+								className="form__input"
+							/>
+						</label>
+					</div>
 
-					<label className="input-group">
-						<span className="label-text">Preço pago</span>
-						<input
-							type="number"
-							name="price"
-							defaultValue={editingVolume.purchasePrice || 0}
-							className="form__input"
-							step="0.01"
-						/>
-					</label>
-					<label className="input-group">
-						<span className="label-text">Data de Aquisição</span>
-						<input
-							type="date"
-							name="acquiredAt"
-							defaultValue={formatDateForInput(editingVolume.acquiredAt)}
-							className="form__input"
-						/>
-					</label>
+					<div className="input-group input-group--column">
+						<label className="input-group">
+							<span className="label-text">Data de Aquisição</span>
+							<input
+								type="date"
+								name="acquiredAt"
+								defaultValue={formatDateForInput(editingVolume.acquiredAt)}
+								className="form__input"
+							/>
+						</label>
+						<label className="input-group">
+							<span className="label-text">Preço pago</span>
+							<input
+								type="number"
+								name="price"
+								defaultValue={editingVolume.purchasePrice || 0}
+								className="form__input"
+								step="0.01"
+							/>
+						</label>
+					</div>
 					<label className="input-group">
 						<span className="label-text">Quantidade de cópias</span>
 						<input
