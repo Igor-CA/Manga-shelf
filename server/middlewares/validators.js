@@ -19,7 +19,7 @@ const loginInputValidation = body("login")
 const passwordValidation = body("password")
 	.trim()
 	.notEmpty()
-	.withMessage("Uma senha deve ser informada.")
+	.withMessage("Uma senha deve ser informada.");
 
 const usernameValidation = body("username")
 	.trim()
@@ -40,7 +40,7 @@ const newPasswordValidation = body("password")
 	)
 	.withMessage(
 		"A senha deve conter pelo menos uma letra, número e caractere especial(!@#$%^&*) e ter entre 8 e 20 caracteres."
-	)
+	);
 
 const confirmPasswordValidation = body("confirm-password")
 	.trim()
@@ -51,7 +51,7 @@ const confirmPasswordValidation = body("confirm-password")
 			throw new Error("As senhas devem coincidir.");
 		}
 		return true;
-	})
+	});
 
 const tosValidation = body("tos-checkbox")
 	.notEmpty()
@@ -82,6 +82,61 @@ const reportTypeValidation = body("type")
 
 const reportUserValidation = body("user").trim().escape();
 
+const volumeIdValidation = body("_id")
+	.trim()
+	.notEmpty()
+	.withMessage("O ID do volume é obrigatório.")
+	.isMongoId()
+	.withMessage("ID de volume inválido.")
+	.escape();
+
+const acquiredAtValidation = body("acquiredAt")
+	.optional({ checkFalsy: true, nullable: true })
+	.trim()
+	.isISO8601()
+	.withMessage("A data de aquisição deve ser uma data válida (YYYY-MM-DD).")
+	.toDate();
+
+const readAtValidation = body("readAt")
+	.optional({ checkFalsy: true, nullable: true })
+	.trim()
+	.isISO8601()
+	.withMessage("A data de leitura deve ser uma data válida (YYYY-MM-DD).")
+	.toDate();
+
+const priceValidation = body("price")
+	.optional({ checkFalsy: true })
+	.isFloat({ min: 0 })
+	.withMessage("O preço deve ser um valor numérico positivo.")
+	.toFloat();
+
+const amountValidation = body("amount")
+	.notEmpty()
+	.withMessage("A quantidade é obrigatória.")
+	.isInt({ min: 1 })
+	.withMessage("Você deve possuir pelo menos 1 cópia para editar esse volume.")
+	.toInt();
+
+const readCountValidation = body("readCount")
+	.optional({ checkFalsy: true })
+	.isInt({ min: 0 })
+	.withMessage("O número de vezes lido deve ser um inteiro positivo.")
+	.toInt();
+
+const isReadValidation = body("isRead")
+	.notEmpty()
+	.withMessage("O status de leitura é obrigatório.")
+	.isBoolean()
+	.withMessage("O valor de 'Lido' deve ser verdadeiro ou falso.")
+	.toBoolean();
+
+const notesValidation = body("notes")
+	.optional()
+	.trim()
+	.isLength({ max: 500 })
+	.withMessage("As anotações não podem exceder 500 caracteres.")
+	.escape();
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -106,6 +161,17 @@ const reportsValidation = [
 	reportPageValidation,
 	reportUserValidation,
 ];
+
+const editOwnedValidation = [
+	volumeIdValidation,
+	acquiredAtValidation,
+	readAtValidation,
+	priceValidation,
+	amountValidation,
+	readCountValidation,
+	isReadValidation,
+	notesValidation,
+];
 // Middleware to handle validation errors
 const validateRequest = (req, res, next) => {
 	const errors = validationResult(req);
@@ -127,5 +193,6 @@ module.exports = {
 	changeEmailValidator,
 	changePasswordValidator,
 	reportsValidation,
+	editOwnedValidation,
 	validateRequest,
 };

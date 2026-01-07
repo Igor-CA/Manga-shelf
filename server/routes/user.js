@@ -3,7 +3,11 @@ const router = express.Router();
 const passport = require("passport");
 
 const userController = require("../controllers/user");
-const { authController, profileController, userActionsController } = require("../controllers/user/index");
+const {
+	authController,
+	profileController,
+	userActionsController,
+} = require("../controllers/user/index");
 
 const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
@@ -18,6 +22,7 @@ const {
 	changePasswordValidator,
 	changeEmailValidator,
 	reportsValidation,
+	editOwnedValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -54,19 +59,42 @@ router.post(
 	validateRequest,
 	authController.resetPassword
 );
-router.post("/report", reportsValidation, validateRequest, reportController.createReport);
+router.post(
+	"/report",
+	reportsValidation,
+	validateRequest,
+	reportController.createReport
+);
 
 //
 router.post("/add-series", requireAuth, userActionsController.addSeries);
-router.post("/add-to-wishlist", requireAuth, userActionsController.addToWishlist);
+router.post(
+	"/add-to-wishlist",
+	requireAuth,
+	userActionsController.addToWishlist
+);
 router.post("/add-volume", requireAuth, userActionsController.addVolume);
 router.post("/remove-series", requireAuth, userActionsController.removeSeries);
-router.post("/remove-from-wishlist", requireAuth, userActionsController.removeFromWishList);
+router.post(
+	"/remove-from-wishlist",
+	requireAuth,
+	userActionsController.removeFromWishList
+);
 router.post("/remove-volume", requireAuth, userActionsController.removeVolume);
 router.post("/drop-series", requireAuth, userActionsController.dropSeries);
 router.post("/undrop-series", requireAuth, userActionsController.undropSeries);
-router.post("/toggle-read", requireAuth, userActionsController.toggleVolumeRead);
-router.put("/edit-owned-volumes", requireAuth, userActionsController.editOwnedVolumes);
+router.post(
+	"/toggle-read",
+	requireAuth,
+	userActionsController.toggleVolumeRead
+);
+router.put(
+	"/edit-owned-volumes",
+	requireAuth,
+	editOwnedValidation,
+	validateRequest,
+	userActionsController.editOwnedVolumes
+);
 router.put(
 	"/set-username",
 	requireAuth,
@@ -99,7 +127,11 @@ router.put(
 	profileController.changeEmail
 );
 router.put("/allow-adult", requireAuth, profileController.allowAdultContent);
-router.put("/toggle-follow", requireAuth, userActionsController.toggleFollowUser);
+router.put(
+	"/toggle-follow",
+	requireAuth,
+	userActionsController.toggleFollowUser
+);
 router.put(
 	"/set-notifications",
 	requireAuth,

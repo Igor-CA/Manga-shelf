@@ -108,20 +108,25 @@ const EditVolumeModal = () => {
 		};
 
 		closeEditModal();
-		const response = await axios({
-			method: "PUT",
-			data: finalPayload,
-			withCredentials: true,
-			headers: {
-				Authorization: import.meta.env.REACT_APP_API_KEY,
-			},
-			url: `${
-				import.meta.env.REACT_APP_HOST_ORIGIN
-			}/api/user/edit-owned-volumes`,
-		});
-		addMessage(response.data.msg);
-		setMessageType("Success");
-		setOutdated(true);
+		try {
+			const response = await axios({
+				method: "PUT",
+				data: finalPayload,
+				withCredentials: true,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				url: `${
+					import.meta.env.REACT_APP_HOST_ORIGIN
+				}/api/user/edit-owned-volumes`,
+			});
+			addMessage(response.data.msg);
+			setMessageType("Success");
+			setOutdated(true);
+		} catch (err) {
+			const customErrorMessage = err.response.data.msg;
+			addMessage(customErrorMessage);
+		}
 	};
 	const formatDateForInput = (isoDate) => {
 		if (!isoDate) return "";
