@@ -40,12 +40,14 @@ const EditVolumeModal = () => {
 		useContext(EditVolumeContext);
 	const [isRead, setIsRead] = useState(false);
 	const [readCount, setReadCount] = useState(0);
+	const [readAt, setReadAt] = useState("");
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const { setOutdated } = useContext(UserContext);
 	useEffect(() => {
 		if (editingVolume) {
 			setIsRead(editingVolume.isRead || false);
 			setReadCount(editingVolume.readCount || 0);
+			setReadAt(formatDateForInput(editingVolume.readAt));
 		}
 	}, [editingVolume]);
 	if (!editingVolume) return <dialog ref={dialogRef} />;
@@ -56,8 +58,10 @@ const EditVolumeModal = () => {
 
 		if (checked) {
 			if (readCount === 0) setReadCount(1);
+			if (!readAt) setReadAt(new Date().toISOString().split("T")[0]);
 		} else {
 			setReadCount(0);
+			setReadAt("");
 		}
 	};
 
@@ -67,8 +71,20 @@ const EditVolumeModal = () => {
 
 		if (val > 0) {
 			setIsRead(true);
+			if (!readAt) setReadAt(new Date().toISOString().split("T")[0]);
 		} else {
 			setIsRead(false);
+			setReadAt("");
+		}
+	};
+
+	const handleReadAtChange = (e) => {
+		const val = e.target.value;
+		setReadAt(val);
+
+		if (val) {
+			setIsRead(true);
+			if (readCount === 0) setReadCount(1);
 		}
 	};
 	const handleSubmit = async (e) => {
@@ -82,6 +98,7 @@ const EditVolumeModal = () => {
 			readCount: parseInt(rawUpdates.readCount) || 0,
 			price: parseFloat(rawUpdates.price?.replace(",", ".")) || 0,
 			acquiredAt: rawUpdates.acquiredAt ? rawUpdates.acquiredAt : null,
+			readAt: readAt || null,
 			amount: parseInt(rawUpdates.amount) || 1,
 		};
 
@@ -134,7 +151,8 @@ const EditVolumeModal = () => {
 							<input
 								type="date"
 								name="readAt"
-								defaultValue={formatDateForInput(editingVolume.readAt)}
+								value={readAt}
+								onChange={handleReadAtChange}
 								className="form__input"
 							/>
 						</label>
@@ -186,6 +204,7 @@ const EditVolumeModal = () => {
 							name="notes"
 							defaultValue={editingVolume.notes || ""}
 							rows={5}
+							style={{ resize: "none" }}
 							className="form__input"
 						/>
 					</label>
