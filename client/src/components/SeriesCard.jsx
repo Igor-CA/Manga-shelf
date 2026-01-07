@@ -7,11 +7,12 @@ import { FaPencil, FaRegBookmark } from "react-icons/fa6";
 import { UserContext } from "./userProvider";
 import axios from "axios";
 import { messageContext } from "./messageStateProvider";
-import { IoMdEye } from "react-icons/io";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { useEditVolume } from "./EditVolumeContext";
 export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	const [loaded, setLoaded] = useState(false);
 	const [inUserList, setInUserList] = useState(itemDetails.inUserList);
+	const [isRead, setIsRead] = useState(itemDetails.isRead);
 	const [inWishlist, setInWishlist] = useState(itemDetails.inWishlist);
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const { user, setOutdated } = useContext(UserContext);
@@ -49,6 +50,10 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	const handleEditButton = (e) => {
 		e.preventDefault();
 		openEditModal(itemDetails);
+	};
+	const handleToggleReadButton = (e) => {
+		e.preventDefault();
+		toggleReadStatus(itemDetails?._id);
 	};
 
 	const addOrRemoveSeries = async (isAdding) => {
@@ -153,6 +158,29 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 			addMessage(customErrorMessage);
 		}
 	};
+	const toggleReadStatus = async (id) => {
+		setIsRead((prev) => !prev);
+		try {
+			const result = await axios({
+				method: "POST",
+				data: {
+					id: id,
+				},
+				withCredentials: true,
+				headers: {
+					Authorization: import.meta.env.REACT_APP_API_KEY,
+				},
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/toggle-read`,
+			});
+			setOutdated(true);
+			setMessageType("Success");
+			addMessage(result.data.msg);
+		} catch (err) {
+			setIsRead((prev) => !prev);
+			const customErrorMessage = err.response.data.msg;
+			addMessage(customErrorMessage);
+		}
+	};
 	return (
 		<div className="series-card">
 			<Link to={link} className="series-card__image-container">
@@ -232,11 +260,17 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 									<FaPencil className="series-card__button" />
 								</div>
 								<div
-									title={`Marcar volume como lido`}
-									onClick={() => console.log("lido")}
+									title={`Marcar volume como ${
+										isRead ? "não" : ""
+									} lido`}
+									onClick={handleToggleReadButton}
 									className="series-card__button-container"
 								>
-									<IoMdEye className="series-card__button" />
+									{isRead ? (
+										<IoMdEyeOff className="series-card__button" />
+									) : (
+										<IoMdEye className="series-card__button" />
+									)}
 								</div>
 							</>
 						) : (

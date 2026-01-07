@@ -440,4 +440,71 @@ exports.undropSeries = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Status da série atualizado para 'Colecionando'" });
 });
 
+exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
+	const { acquiredAt, isRead, readCount, price, amount, notes, _id } = req.body;
+
+	const result = await User.updateOne(
+		{
+			_id: req.user._id,
+			"ownedVolumes.volume": _id,
+		},
+		{
+			$set: {
+				"ownedVolumes.$.acquiredAt": acquiredAt,
+				"ownedVolumes.$.isRead": isRead,
+				"ownedVolumes.$.readCount": readCount,
+				"ownedVolumes.$.purchasePrice": price,
+				"ownedVolumes.$.amount": amount,
+				"ownedVolumes.$.notes": notes,
+			},
+		}
+	);
+
+	if (result.matchedCount === 0) {
+		return res
+			.status(404)
+			.json({ msg: "Volume não encontrado na sua coleção." });
+	}
+
+	res.json({ msg: "Informações do volume atualizadas com sucesso." });
+});
+exports.toggleVolumeRead = asyncHandler(async (req, res, next) => {
+	const { id } = req.body;
+
+	const user = await User.findOne(
+		{ _id: req.user._id, "ownedVolumes.volume": id },
+		{ "ownedVolumes.$": 1 }
+	);
+
+	if (!user || !user.ownedVolumes || user.ownedVolumes.length === 0) {
+		return res.status(404).json({ msg: "Volume não encontrado na coleção." });
+	}
+
+	const currentVolume = user.ownedVolumes[0];
+	const isCurrentlyRead = currentVolume.isRead;
+
+	let newIsRead, newReadCount;
+
+	if (isCurrentlyRead) {
+		newIsRead = false;
+		newReadCount = 0;
+	} else {
+		newIsRead = true;
+		newReadCount = 1;
+	}
+
+	await User.updateOne(
+		{ _id: req.user._id, "ownedVolumes.volume": id },
+		{
+			$set: {
+				"ownedVolumes.$.isRead": newIsRead,
+				"ownedVolumes.$.readCount": newReadCount,
+			},
+		}
+	);
+
+	res.json(	{
+		msg: "Status de leitura atualizado.",
+	});
+});
 exports.getNewUserSeriesStatus = getNewUserSeriesStatus;

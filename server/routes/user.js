@@ -65,6 +65,8 @@ router.post("/remove-from-wishlist", requireAuth, userActionsController.removeFr
 router.post("/remove-volume", requireAuth, userActionsController.removeVolume);
 router.post("/drop-series", requireAuth, userActionsController.dropSeries);
 router.post("/undrop-series", requireAuth, userActionsController.undropSeries);
+router.post("/toggle-read", requireAuth, userActionsController.toggleVolumeRead);
+router.put("/edit-owned-volumes", requireAuth, userActionsController.editOwnedVolumes);
 router.put(
 	"/set-username",
 	requireAuth,
