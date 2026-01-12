@@ -207,6 +207,14 @@ export default function ProfileHeader({ user }) {
 						</li>
 						<li>
 							<Link
+								to={`/user/${user}/gallery`}
+								className={getStyle(activeLink === "/gallery")}
+							>
+								Galeria
+							</Link>
+						</li>
+						<li>
+							<Link
 								to={`/user/${user}/socials`}
 								className={getStyle(activeLink === "/socials")}
 							>

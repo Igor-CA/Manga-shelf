@@ -7,6 +7,7 @@ const { authController, profileController, userActionsController } = require("..
 
 const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
+const collectionPhotosController = require("../controllers/collectionPhotos");
 const { requireAuth } = require("../middlewares/authentications");
 const {
 	signupValidation,
@@ -107,6 +108,31 @@ router.put(
 	"/mark-notification-seen",
 	requireAuth,
 	notificationsController.setNotificationAsSeen
+);
+
+// Collection photos routes
+router.post(
+	"/collection-photos",
+	requireAuth,
+	collectionPhotosController.createPhoto
+);
+router.get(
+	"/:username/collection-photos",
+	collectionPhotosController.getUserPhotos
+);
+router.get(
+	"/collection-photos/:id",
+	collectionPhotosController.getPhoto
+);
+router.put(
+	"/collection-photos/:id",
+	requireAuth,
+	collectionPhotosController.updatePhoto
+);
+router.delete(
+	"/collection-photos/:id",
+	requireAuth,
+	collectionPhotosController.deletePhoto
 );
 
 module.exports = router;

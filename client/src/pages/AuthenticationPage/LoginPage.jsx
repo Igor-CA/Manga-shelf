@@ -18,7 +18,7 @@ export default function LoginPage() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		if (!captchaVal) {
+		if (import.meta.env.REACT_APP_CAPTCHA_KEY && !captchaVal) {
 			addMessage("Captcha Invalido");
 			return;
 		}
@@ -122,6 +122,7 @@ export default function LoginPage() {
 						}}
 						required
 					/>
+				{import.meta.env.REACT_APP_CAPTCHA_KEY && (
 					<ReCAPTCHA
 						className="autentication-form__captcha"
 						sitekey={import.meta.env.REACT_APP_CAPTCHA_KEY}
@@ -129,7 +130,7 @@ export default function LoginPage() {
 							setCaptchaVal(val);
 						}}
 					/>
-
+				)}
 					<p>
 						Não tem uma conta?{" "}
 						<Link to={"/signup"} className="autentication-form__link">
