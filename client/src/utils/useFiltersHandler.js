@@ -32,6 +32,7 @@ export const useFilterHandler = (
 	});
 	const [genreList, setGenresList] = useState([]);
 	const [publishersList, setPublishersList] = useState([]);
+	const [typesList, setTypesList] = useState([]);
 
 	const [searchBarValue, setSearchBarValue] = useState(
 		params["search-bar"] || params["search"] || ""
@@ -53,6 +54,7 @@ export const useFilterHandler = (
 				});
 				setGenresList(res.data.genres);
 				setPublishersList(res.data.publishers);
+				setTypesList(res.data.types);
 			} catch (err) {
 				const customErrorMessage =
 					err.response?.data?.msg || "Error fetching filter data";
@@ -73,29 +75,43 @@ export const useFilterHandler = (
 		[params, useURLParams, setSearchParams]
 	);
 
+	const updateImmediate = (name, value) => {
+		const newParams = { ...params, [name]: value };
+		setParams(newParams);
+		if (useURLParams) {
+			setSearchParams(newParams);
+		}
+	};
+
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 
 		if (name === "search" || name === "search-bar") {
 			setSearchBarValue(value);
-		}
 
-		if (value.trim() !== "" || value === null) {
-			debouncedSearch(name, value);
+			if (value.trim() !== "" || value === null) {
+				debouncedSearch(name, value);
+			} else {
+				const { [name]: removed, ...rest } = params;
+				setParams(rest);
+				if (useURLParams) setSearchParams(rest);
+			}
 		} else {
-			const { [name]: removed, ...rest } = params;
-			setParams(rest);
-			if (useURLParams) {
-				setSearchParams(rest);
+			if (value.trim() !== "" || value === null) {
+				updateImmediate(name, value);
+			} else {
+				const { [name]: removed, ...rest } = params;
+				setParams(rest);
+				if (useURLParams) setSearchParams(rest);
 			}
 		}
 	};
-
 	return {
 		params,
 		functionArguments,
 		genreList,
 		publishersList,
+		typesList,
 		handleChange,
 		searchBarValue,
 	};
