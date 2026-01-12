@@ -8,7 +8,7 @@ const FilterControls = ({
 	children,
 }) => {
 	const { searchBarValue } = values;
-	const { genreList, publishersList } = lists;
+	const { genreList, publishersList, typesList } = lists;
 
 	const searchName = availableFilters.includes("search-bar")
 		? "search-bar"
@@ -43,7 +43,7 @@ const FilterControls = ({
 							id="genre"
 							className="form__input filter__input"
 							onChange={handleChange}
-							defaultValue={values.genre || ""}
+							value={values.genre || ""}
 						>
 							<option value="">Selecionar</option>
 							{genreList?.map((genre, id) => (
@@ -63,7 +63,7 @@ const FilterControls = ({
 							id="publisher"
 							className="form__input filter__input"
 							onChange={handleChange}
-							defaultValue={values.publisher || ""}
+							value={values.publisher || ""}
 						>
 							<option value="">Selecionar</option>
 							{publishersList?.map((publisher, id) => (
@@ -82,7 +82,7 @@ const FilterControls = ({
 							id="status"
 							className="form__input filter__input"
 							onChange={handleChange}
-							defaultValue={values.status || ""}
+							value={values.status || ""}
 						>
 							<option value="">Selecionar</option>
 							<option value={"Finalizado"}>Finalizado</option>
@@ -102,7 +102,7 @@ const FilterControls = ({
 							id="ordering"
 							className="form__input filter__input"
 							onChange={handleChange}
-							defaultValue={values.ordering || "popularity"}
+							value={values.ordering || "popularity"}
 						>
 							<option value={"title"}>Alfabética</option>
 							<option value={"popularity"}>Popularidade</option>
@@ -111,6 +111,46 @@ const FilterControls = ({
 							{availableFilters.includes("ordering_percentage") && (
 								<option value={"status"}>Porcentagem de conclusão</option>
 							)}
+						</select>
+					</label>
+				)}
+
+				{availableFilters.includes("demographic") && (
+					<label htmlFor="demographic" className="filter__label">
+						Demografia
+						<select
+							name="demographic"
+							id="demographic"
+							className="form__input filter__input"
+							onChange={handleChange}
+							value={values.demographic || ""}
+						>
+							<option value="">Selecionar</option>
+							<option value={"Shounen"}>Shounen</option>
+							<option value={"Shoujo"}>Shoujo</option>
+							<option value={"Seinen"}>Seinen</option>
+							<option value={"Josei"}>Josei</option>
+							<option value={"Kodomo"}>Kodomo (Infantil)</option>
+						</select>
+					</label>
+				)}
+
+				{availableFilters.includes("type") && (
+					<label htmlFor="type" className="filter__label">
+						Tipo	
+						<select
+							name="type"
+							id="type"
+							className="form__input filter__input"
+							onChange={handleChange}
+							value={values.type || ""}
+						>
+							<option value="">Selecionar</option>
+							{typesList?.map((type, id) => (
+								<option value={type} key={id}>
+									{type}
+								</option>
+							))}
 						</select>
 					</label>
 				)}

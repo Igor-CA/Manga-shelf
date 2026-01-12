@@ -88,13 +88,15 @@ exports.browse = asyncHandler(async (req, res, next) => {
 
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
-	const { publisher, genre, status } = req.query;
+	const { publisher, genre, status, demographic, type } = req.query;
 	const search = req.query["search"];
 
 	const filter = {};
 	if (genre) filter["genres"] = { $in: [genre] };
 	if (publisher) filter["publisher"] = publisher;
 	if (status) filter["status"] = status;
+	if (demographic) filter["demographic"] = demographic;
+	if (type) filter["type"] = type;
 
 	const sortOptions = {
 		// Order 1 for ascending and 2 for descending
@@ -341,13 +343,17 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	const relatedInfoImages = desiredSeries.related.map((series) => {
 		return {
 			image: getSeriesCoverURL(series),
-			...series
+			...series,
 		};
 	});
 
-
 	const { _id: id, __v, ...rest } = desiredSeries;
-	const jsonResponse = { id, ...rest, volumes: volumesWithImages, related: relatedInfoImages };
+	const jsonResponse = {
+		id,
+		...rest,
+		volumes: volumesWithImages,
+		related: relatedInfoImages,
+	};
 	res.send(jsonResponse);
 });
 
@@ -371,6 +377,15 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 						$group: {
 							_id: null,
 							publishers: { $addToSet: "$publisher" },
+						},
+					},
+				],
+				types: [
+					{ $match: { type: { $ne: null, $nin: [""] } } },
+					{
+						$group: {
+							_id: null,
+							types: { $addToSet: "$type" },
 						},
 					},
 				],
@@ -402,9 +417,21 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 						[],
 					],
 				},
+				types: {
+					$cond: [
+						{ $gt: [{ $size: "$types" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$types.types", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
 			},
 		},
 	]);
 
-	res.send(result[0] || { genres: [], publishers: [] });
+	res.send(result[0] || { genres: [], publishers: [], types: [] });
 });
