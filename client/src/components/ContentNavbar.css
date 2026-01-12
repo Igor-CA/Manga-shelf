@@ -1,0 +1,34 @@
+.content-navbar {
+	align-self: stretch;
+	background-color: var(--foreground);
+	overflow-x: scroll;
+}
+.content-navbar__list {
+	padding: 15px;
+	display: flex;
+	list-style: none;
+	flex-direction: row;
+}
+.content-navbar__link {
+	position: relative;
+	padding: 15px;
+	text-align: center;
+	text-decoration: none;
+	color: var(--text);
+	opacity: 80%;
+	font-weight: bold;
+	white-space: nowrap;
+}
+.content-navbar__link--active {
+	color: var(--accent);
+}
+.content-navbar__link:hover {
+	transition: 200ms;
+	color: var(--accent);
+}
+
+@media only screen and (min-width: 768px) {
+	.content-navbar__list {
+		justify-content: space-evenly;
+	}
+}
