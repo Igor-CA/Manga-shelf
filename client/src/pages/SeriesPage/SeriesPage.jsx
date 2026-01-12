@@ -5,6 +5,8 @@ import SeriesPageHeader from "./SeriesPageHeader";
 import { LoadingPageComponent } from "../../App";
 import SeriesOverallPage from "./SeriesOverallPage";
 import { useSeriesLogic } from "./useSeriesLogic";
+import SeriesVolumesPage from "./SeriesVolumesPage";
+import SeriesRelatedPage from "./SeriesRelatedPage";
 export default function SeriesPage() {
 	const { id } = useParams();
 
@@ -37,6 +39,20 @@ export default function SeriesPage() {
 			{series && (
 				<Suspense fallback={<LoadingPageComponent />}>
 					<Routes>
+						<Route
+							path="related"
+							element={<SeriesRelatedPage series={series} />}
+						></Route>
+						<Route
+							path="volumes"
+							element={
+								<SeriesVolumesPage
+									series={series}
+									volumesState={localVolumeState}
+									actions={actions}
+								/>
+							}
+						></Route>
 						<Route
 							path=""
 							element={

@@ -7,13 +7,18 @@ export default function SeriesVolumesList({
 	localVolumesList,
 	handleChange,
 	handleReadToggle,
+	dense = true,
 }) {
 	const { user } = useContext(UserContext);
 	const normalVolumes = volumes.filter((volume) => !volume.isVariant);
 	const variants = volumes.filter((volume) => volume.isVariant);
 	return (
 		<div>
-			<ol className="collection-container collection-container--denser">
+			<ol
+				className={`collection-container ${
+					dense === true && "collection-container--denser"
+				}`}
+			>
 				{normalVolumes.map((volume) => (
 					<li key={volume.volumeId}>
 						<VolumeItem
@@ -30,7 +35,11 @@ export default function SeriesVolumesList({
 				<>
 					<hr style={{ margin: "0px 10px" }} />
 					<h2 className="collection-lable">Capas Variantes</h2>
-					<ol className="collection-container collection-container--denser">
+					<ol
+						className={`collection-container ${
+							dense === true && "collection-container--denser"
+						}`}
+					>
 						{variants.map((volume) => (
 							<li key={volume.volumeId}>
 								<VolumeItem
