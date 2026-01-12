@@ -342,7 +342,14 @@
 	justify-content: space-between;
 	padding: 0.75rem;
 }
-
+.related__missing{
+	max-width: 600px;
+	margin: auto;
+	color: var(--text);
+	text-align: center;
+	min-height: 30vh;
+	padding: 2rem;
+}
 @media only screen and (min-width: 768px) {
 	.content-header {
 		background-color: var(--foreground);
