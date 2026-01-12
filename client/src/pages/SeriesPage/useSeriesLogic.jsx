@@ -33,7 +33,7 @@ export const useSeriesLogic = (id) => {
 			}
 		};
 		fetchSeriesData();
-	}, [id, navigate]);
+	}, [id]);
 
 	useEffect(() => {
 		if (!isFetching && !user?.allowAdult && series?.isAdult) {

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, useMemo } from "react";
 import ActionDropdown from "./ActionsDropdown";
 import "./SeriesPage.css";
 import {
@@ -9,6 +9,7 @@ import {
 } from "./utils";
 import { UserContext } from "../../components/userProvider";
 import SkeletonHeader from "../../components/SkeletonPage";
+import ContentNavbar from "../../components/ContentNavbar";
 
 export default function SeriesPageHeader({ seriesInfo, actions }) {
 	const { user } = useContext(UserContext);
@@ -28,6 +29,7 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 				seriesSummarry.current?.clientHeight
 		);
 	}, [seriesInfo]);
+
 	const handleLoading = () => {
 		setLoaded(true);
 	};
@@ -59,6 +61,18 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 		},
 	];
 
+	const navLinks = useMemo(
+		() => [
+			{ to: `/series/${seriesInfo?.id}`, label: "Geral", end: true },
+			{ to: `/series/${seriesInfo?.id}/volumes`, label: "Volumes" },
+			{ to: `/series/${seriesInfo?.id}/related`, label: "Obras Relacionadas" },
+			/*
+			{ to: `/series/${seriesInfo?.id}/reviews`, label: "Reviews" },
+			{ to: `/series/${seriesInfo?.id}/user-volumes`, label: "Seus volumes" }, //Conditioned rendered
+			*/
+		],
+		[seriesInfo]
+	);
 	const isSeriesInUserList =
 		user?.userList?.some(
 			(seriesObj) =>
@@ -171,6 +185,7 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 					</div>
 				)}
 			</div>
+			<ContentNavbar links={navLinks} />
 		</header>
 	) : (
 		<SkeletonHeader></SkeletonHeader>

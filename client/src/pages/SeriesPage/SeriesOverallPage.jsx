@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { printArray } from "./utils";
 import SeriesVolumesList from "./SeriesVolumesList";
 import RelatedCard from "./RelatedCard";
 
 export default function SeriesOverallPage({ series, volumesState, actions }) {
+	const [showingMore, setShowingMore] = useState(false);
+	const seriesSummarry = useRef(null);
 	const {
 		authors,
 		publisher,
@@ -24,6 +26,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 		demographic,
 		volumes,
 		related,
+		summary,
 	} = series;
 	const normalVolumes = volumes.filter((v) => !v.isVariant);
 	const variants = volumes.filter((v) => v.isVariant);
@@ -73,6 +76,30 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 	return (
 		<div className="container">
 			<div className="content-overall__container">
+				{summary?.length > 0 && (
+					<div className="content__details-summary content__details-summary--mobile">
+						<strong>Sinopse:</strong>
+						<div
+							ref={seriesSummarry}
+							className={`content__summary ${
+								showingMore ? "content__summary--show-full" : ""
+							}`}
+						>
+							{summary.map((paragraph, i) => (
+								<p key={i}>{paragraph}</p>
+							))}
+						</div>
+						{!showingMore && (
+							<button
+								className="show-more__button"
+								aria-label="Mostrar mais"
+								onClick={() => setShowingMore(true)}
+							>
+								Mostrar mais
+							</button>
+						)}
+					</div>
+				)}
 				<ul className="all-info-container">
 					{detailsSchema.map((item, index) => {
 						if (
@@ -114,7 +141,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 						volumes={series.volumes}
 						localVolumesList={volumesState}
 						handleChange={handleVolumeChange}
-						handleReadToggle={handleReadToggle} 
+						handleReadToggle={handleReadToggle}
 					></SeriesVolumesList>
 				</div>
 			</div>
