@@ -10,6 +10,7 @@ export default function PhotoUploadForm({ onPhotoAdded }) {
 	const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 	const [order, setOrder] = useState(0);
 	const [isVisible, setIsVisible] = useState(true);
+	const [isAdultContent, setIsAdultContent] = useState(false);
 	const [uploading, setUploading] = useState(false);
 	const [error, setError] = useState("");
 
@@ -58,6 +59,7 @@ export default function PhotoUploadForm({ onPhotoAdded }) {
 		formData.append("date", date);
 		formData.append("order", order);
 		formData.append("isVisible", isVisible);
+		formData.append("isAdultContent", isAdultContent);
 
 		try {
 			await axios({
@@ -78,6 +80,7 @@ export default function PhotoUploadForm({ onPhotoAdded }) {
 			setDate(new Date().toISOString().split("T")[0]);
 			setOrder(0);
 			setIsVisible(true);
+			setIsAdultContent(false);
 
 			onPhotoAdded();
 		} catch (error) {
@@ -169,6 +172,17 @@ export default function PhotoUploadForm({ onPhotoAdded }) {
 								onChange={(e) => setIsVisible(e.target.checked)}
 							/>
 							Tornar foto visível publicamente
+						</label>
+					</div>
+
+					<div className="photo-upload-form__field">
+						<label className="photo-upload-form__checkbox">
+							<input
+								type="checkbox"
+								checked={isAdultContent}
+								onChange={(e) => setIsAdultContent(e.target.checked)}
+							/>
+							<span style={{ color: '#ff6b6b' }}>Conteúdo adulto (+18)</span>
 						</label>
 					</div>
 

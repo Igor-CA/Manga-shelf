@@ -77,6 +77,19 @@
 	gap: 5px;
 }
 
+.photo-card__adult-badge {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	background: rgba(255, 107, 107, 0.95);
+	color: white;
+	padding: 5px 12px;
+	border-radius: 6px;
+	font-size: 0.9rem;
+	font-weight: bold;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .photo-card__content {
 	padding: 15px;
 }

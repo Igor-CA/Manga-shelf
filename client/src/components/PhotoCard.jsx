@@ -13,6 +13,7 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 	);
 	const [editedOrder, setEditedOrder] = useState(photo.order);
 	const [editedVisible, setEditedVisible] = useState(photo.isVisible);
+	const [editedAdultContent, setEditedAdultContent] = useState(photo.isAdultContent);
 	const [loading, setLoading] = useState(false);
 
 	const handleDelete = async () => {
@@ -49,8 +50,7 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 					description: editedDescription,
 					date: editedDate,
 					order: Number(editedOrder),
-					isVisible: editedVisible,
-				},
+					isVisible: editedVisible,					isAdultContent: editedAdultContent,				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/collection-photos/${photo._id}`,
 			});
 			setIsEditing(false);
@@ -98,6 +98,11 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 						<FaEyeSlash /> Oculta
 					</div>
 				)}
+				{photo.isAdultContent && (
+					<div className="photo-card__adult-badge">
+						+18
+					</div>
+				)}
 			</div>
 
 			<div className="photo-card__content">
@@ -138,6 +143,14 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 								onChange={(e) => setEditedVisible(e.target.checked)}
 							/>
 							Visível publicamente
+						</label>
+						<label className="photo-card__edit-checkbox">
+							<input
+								type="checkbox"
+								checked={editedAdultContent}
+								onChange={(e) => setEditedAdultContent(e.target.checked)}
+							/>
+							<span style={{ color: '#ff6b6b' }}>Conteúdo adulto (+18)</span>
 						</label>
 						<div className="photo-card__edit-actions">
 							<button

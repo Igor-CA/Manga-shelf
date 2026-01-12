@@ -43,7 +43,7 @@ exports.createPhoto = [
 			return res.status(400).json({ msg: "Nenhuma foto enviada" });
 		}
 
-		const { description, date, order, isVisible } = req.body;
+		const { description, date, order, isVisible, isAdultContent } = req.body;
 
 		const photo = new CollectionPhoto({
 			user: req.user._id,
@@ -52,6 +52,7 @@ exports.createPhoto = [
 			date: date || new Date(),
 			order: order || 0,
 			isVisible: isVisible !== undefined ? isVisible : true,
+			isAdultContent: isAdultContent === 'true' || isAdultContent === true,
 		});
 
 		await photo.save();
@@ -73,6 +74,10 @@ exports.getUserPhotos = asyncHandler(async (req, res) => {
 	const query = { user: user._id };
 	if (!req.user || req.user._id.toString() !== user._id.toString()) {
 		query.isVisible = true;
+		// Hide adult content if user doesn't allow it
+		if (!req.user || !req.user.allowAdult) {
+			query.isAdultContent = false;
+		}
 	}
 
 	const photos = await CollectionPhoto.find(query)
@@ -95,7 +100,7 @@ exports.getUserPhotos = asyncHandler(async (req, res) => {
 // Update a photo
 exports.updatePhoto = asyncHandler(async (req, res) => {
 	const photoId = req.params.id;
-	const { description, date, order, isVisible } = req.body;
+	const { description, date, order, isVisible, isAdultContent } = req.body;
 
 	const photo = await CollectionPhoto.findById(photoId);
 
@@ -113,6 +118,7 @@ exports.updatePhoto = asyncHandler(async (req, res) => {
 	if (date !== undefined) photo.date = date;
 	if (order !== undefined) photo.order = order;
 	if (isVisible !== undefined) photo.isVisible = isVisible;
+	if (isAdultContent !== undefined) photo.isAdultContent = isAdultContent;
 
 	await photo.save();
 	res.json({ msg: "Foto atualizada com sucesso", photo });
