@@ -12,7 +12,7 @@ const SeriesSchema = new Schema(
 			enum: [
 				"Shounen",
 				"Seinen",
-				"Shojo",
+				"Shoujo",
 				"Josei",
 				"Kodomo",
 			],
