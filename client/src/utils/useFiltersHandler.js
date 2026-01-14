@@ -33,6 +33,8 @@ export const useFilterHandler = (
 	const [genreList, setGenresList] = useState([]);
 	const [publishersList, setPublishersList] = useState([]);
 	const [typesList, setTypesList] = useState([]);
+	const [originalYearList, setOriginalYearList] = useState([]);
+	const [localYearList, setLocalYearList] = useState([]);
 
 	const [searchBarValue, setSearchBarValue] = useState(
 		params["search-bar"] || params["search"] || ""
@@ -55,6 +57,8 @@ export const useFilterHandler = (
 				setGenresList(res.data.genres);
 				setPublishersList(res.data.publishers);
 				setTypesList(res.data.types);
+				setOriginalYearList(res.data.originalPublishedYears);
+				setLocalYearList(res.data.publishedYears);
 			} catch (err) {
 				const customErrorMessage =
 					err.response?.data?.msg || "Error fetching filter data";
@@ -84,21 +88,21 @@ export const useFilterHandler = (
 	};
 
 	const handleChange = (e) => {
-		const { name, value } = e.target;
-
+		const { name, value, type, checked } = e.target;
+		const finalValue = type === "checkbox" ? (checked ? value : "") : value;
 		if (name === "search" || name === "search-bar") {
-			setSearchBarValue(value);
+			setSearchBarValue(finalValue);
 
-			if (value.trim() !== "" || value === null) {
-				debouncedSearch(name, value);
+			if (finalValue.trim() !== "") {
+				debouncedSearch(name, finalValue);
 			} else {
 				const { [name]: removed, ...rest } = params;
 				setParams(rest);
 				if (useURLParams) setSearchParams(rest);
 			}
 		} else {
-			if (value.trim() !== "" || value === null) {
-				updateImmediate(name, value);
+			if (finalValue.trim() !== "") {
+				updateImmediate(name, finalValue);
 			} else {
 				const { [name]: removed, ...rest } = params;
 				setParams(rest);
@@ -112,6 +116,8 @@ export const useFilterHandler = (
 		genreList,
 		publishersList,
 		typesList,
+		localYearList,
+		originalYearList,
 		handleChange,
 		searchBarValue,
 	};
