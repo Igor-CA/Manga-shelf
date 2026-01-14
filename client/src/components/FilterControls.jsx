@@ -164,7 +164,7 @@ const FilterControls = ({
 
 				{availableFilters.includes("country") && (
 					<label htmlFor="country" className="filter__label">
-						País de origem	
+						País de origem
 						<select
 							name="country"
 							id="country"
@@ -220,36 +220,38 @@ const FilterControls = ({
 						</select>
 					</label>
 				)}
-				{availableFilters.includes("hideOwned") && (
-					<div className="filter__checkbox-container">
-						<label htmlFor="hideOwned" className="filter__label">
-							Esconder mangás nas suas lista
-							<input
-								type="checkbox"
-								name="hideOwned"
-								id="hideOwned"
-								className="filter__checkbox"
-								onChange={handleChange}
-								checked={values.hideOwned === "on"}
-							/>
-						</label>
-					</div>
-				)}
-				{availableFilters.includes("onlyOwned") && (
-					<div className="filter__checkbox-container">
-						<label htmlFor="onlyOwned" className="filter__label">
-							Mostrar apenas mangás nas suas lista
-							<input
-								type="checkbox"
-								name="onlyOwned"
-								id="onlyOwned"
-								className="filter__checkbox"
-								onChange={handleChange}
-								checked={values.onlyOwned === "on"}
-							/>
-						</label>
-					</div>
-				)}
+				{availableFilters.includes("hideOwned") &&
+					values.onlyOwned !== "on" && (
+						<div className="filter__checkbox-container">
+							<label htmlFor="hideOwned" className="filter__label">
+								Esconder mangás nas suas lista
+								<input
+									type="checkbox"
+									name="hideOwned"
+									id="hideOwned"
+									className="filter__checkbox"
+									onChange={handleChange}
+									checked={values.hideOwned === "on"}
+								/>
+							</label>
+						</div>
+					)}
+				{availableFilters.includes("onlyOwned") &&
+					values.hideOwned !== "on" && (
+						<div className="filter__checkbox-container">
+							<label htmlFor="onlyOwned" className="filter__label">
+								Mostrar apenas mangás nas suas lista
+								<input
+									type="checkbox"
+									name="onlyOwned"
+									id="onlyOwned"
+									className="filter__checkbox"
+									onChange={handleChange}
+									checked={values.onlyOwned === "on"}
+								/>
+							</label>
+						</div>
+					)}
 				{children}
 			</div>
 		</form>
