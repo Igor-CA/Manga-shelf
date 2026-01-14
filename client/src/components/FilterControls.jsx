@@ -1,5 +1,3 @@
-import React from "react";
-
 const FilterControls = ({
 	availableFilters,
 	values,
@@ -8,7 +6,13 @@ const FilterControls = ({
 	children,
 }) => {
 	const { searchBarValue } = values;
-	const { genreList, publishersList, typesList } = lists;
+	const {
+		genreList,
+		publishersList,
+		typesList,
+		localYearList,
+		originalYearList,
+	} = lists;
 
 	const searchName = availableFilters.includes("search-bar")
 		? "search-bar"
@@ -137,7 +141,7 @@ const FilterControls = ({
 
 				{availableFilters.includes("type") && (
 					<label htmlFor="type" className="filter__label">
-						Tipo	
+						Tipo
 						<select
 							name="type"
 							id="type"
@@ -155,6 +159,74 @@ const FilterControls = ({
 					</label>
 				)}
 
+				{availableFilters.includes("demographic") && (
+					<label htmlFor="publishedAtJp" className="filter__label">
+						Ano (Japão)
+						<select
+							name="publishedAtJp"
+							id="publishedAtJp"
+							className="form__input filter__input"
+							onChange={handleChange}
+							value={values.publishedAtJp || ""}
+						>
+							<option value="">Selecionar</option>
+							{originalYearList?.map((year, id) => (
+								<option value={year} key={id}>
+									{year}
+								</option>
+							))}
+						</select>
+					</label>
+				)}
+				{availableFilters.includes("demographic") && (
+					<label htmlFor="publishedAtBr" className="filter__label">
+						Ano (Brasil)
+						<select
+							name="publishedAtBr"
+							id="publishedAtBr"
+							className="form__input filter__input"
+							onChange={handleChange}
+							value={values.publishedAtBr || ""}
+						>
+							<option value="">Selecionar</option>
+							{localYearList?.map((year, id) => (
+								<option value={year} key={id}>
+									{year}
+								</option>
+							))}
+						</select>
+					</label>
+				)}
+				{availableFilters.includes("type") && (
+					<div className="filter__checkbox-container">
+						<label htmlFor="hideOwned" className="filter__label">
+							Esconder mangás nas suas lista
+							<input
+								type="checkbox"
+								name="hideOwned"
+								id="hideOwned"
+								className="filter__checkbox"
+								onChange={handleChange}
+								checked={values.hideOwned === "on"}
+							/>
+						</label>
+					</div>
+				)}
+				{availableFilters.includes("type") && (
+					<div className="filter__checkbox-container">
+						<label htmlFor="onlyOwned" className="filter__label">
+							Mostrar apenas mangás nas suas lista
+							<input
+								type="checkbox"
+								name="onlyOwned"
+								id="onlyOwned"
+								className="filter__checkbox"
+								onChange={handleChange}
+								checked={values.onlyOwned === "on"}
+							/>
+						</label>
+					</div>
+				)}
 				{children}
 			</div>
 		</form>

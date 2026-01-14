@@ -88,7 +88,17 @@ exports.browse = asyncHandler(async (req, res, next) => {
 
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
-	const { publisher, genre, status, demographic, type } = req.query;
+	const {
+		publisher,
+		genre,
+		status,
+		demographic,
+		type,
+		publishedAtJp,
+		publishedAtBr,
+		onlyOwned,
+		hideOwned,
+	} = req.query;
 	const search = req.query["search"];
 
 	const filter = {};
@@ -97,6 +107,28 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	if (status) filter["status"] = status;
 	if (demographic) filter["demographic"] = demographic;
 	if (type) filter["type"] = type;
+	if (onlyOwned) {
+		filter["$or"] = [{ inUserList: true }, { inWishlist: true }];
+	}
+	if (hideOwned) {
+		filter["$and"] = [{ inUserList: false }, { inWishlist: false }];
+	}
+
+	if (publishedAtBr) {
+		const year = parseInt(publishedAtBr);
+		filter["dates.publishedAt"] = {
+			$gte: new Date(Date.UTC(year, 0, 1)),
+			$lte: new Date(Date.UTC(year, 11, 31, 23, 59, 59)),
+		};
+	}
+
+	if (publishedAtJp) {
+		const year = parseInt(publishedAtJp);
+		filter["originalRun.dates.publishedAt"] = {
+			$gte: new Date(Date.UTC(year, 0, 1)),
+			$lte: new Date(Date.UTC(year, 11, 31, 23, 59, 59)),
+		};
+	}
 
 	const sortOptions = {
 		// Order 1 for ascending and 2 for descending
@@ -156,6 +188,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 			$match: {},
 		});
 	}
+	addUserListData(pipeline, req.user);
 	pipeline.push(
 		{
 			$lookup: {
@@ -188,7 +221,6 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		{ $match: filter },
 		{ $sort: sortStage }
 	);
-	addUserListData(pipeline, req.user);
 
 	if (isValidSearch) {
 		pipeline.push(
@@ -389,6 +421,24 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 						},
 					},
 				],
+				publishedYears: [
+					{ $match: { "dates.publishedAt": { $ne: null } } },
+					{
+						$group: {
+							_id: null,
+							years: { $addToSet: { $year: "$dates.publishedAt" } },
+						},
+					},
+				],
+				originalPublishedYears: [
+					{ $match: { "originalRun.dates.publishedAt": { $ne: null } } },
+					{
+						$group: {
+							_id: null,
+							years: { $addToSet: { $year: "$originalRun.dates.publishedAt" } },
+						},
+					},
+				],
 			},
 		},
 		{
@@ -429,9 +479,41 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 						[],
 					],
 				},
+				publishedYears: {
+					$cond: [
+						{ $gt: [{ $size: "$publishedYears" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$publishedYears.years", 0] },
+								sortBy: -1,
+							},
+						},
+						[],
+					],
+				},
+				originalPublishedYears: {
+					$cond: [
+						{ $gt: [{ $size: "$originalPublishedYears" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$originalPublishedYears.years", 0] },
+								sortBy: -1,
+							},
+						},
+						[],
+					],
+				},
 			},
 		},
 	]);
 
-	res.send(result[0] || { genres: [], publishers: [], types: [] });
+	res.send(
+		result[0] || {
+			genres: [],
+			publishers: [],
+			types: [],
+			publishedYears: [],
+			originalPublishedYears: [],
+		}
+	);
 });

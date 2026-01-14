@@ -22,6 +22,8 @@ export default function BrowsePage() {
 		genreList,
 		publishersList,
 		typesList,
+		originalYearList,
+		localYearList,
 		handleChange,
 		searchBarValue,
 	} = useFilterHandler(fetchFiltersUrl, true); // `true` to use URL search params
@@ -80,7 +82,7 @@ export default function BrowsePage() {
 				]}
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
-				lists={{ genreList, publishersList, typesList }}
+				lists={{ genreList, publishersList, typesList, originalYearList, localYearList }}
 			/>
 			<SeriesCardList
 				skeletonsCount={12}
