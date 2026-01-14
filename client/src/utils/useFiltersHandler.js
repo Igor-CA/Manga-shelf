@@ -35,6 +35,7 @@ export const useFilterHandler = (
 	const [typesList, setTypesList] = useState([]);
 	const [originalYearList, setOriginalYearList] = useState([]);
 	const [localYearList, setLocalYearList] = useState([]);
+	const [countryList, setCountryList] = useState([]);
 
 	const [searchBarValue, setSearchBarValue] = useState(
 		params["search-bar"] || params["search"] || ""
@@ -59,6 +60,7 @@ export const useFilterHandler = (
 				setTypesList(res.data.types);
 				setOriginalYearList(res.data.originalPublishedYears);
 				setLocalYearList(res.data.publishedYears);
+				setCountryList(res.data.countries);
 			} catch (err) {
 				const customErrorMessage =
 					err.response?.data?.msg || "Error fetching filter data";
@@ -117,6 +119,7 @@ export const useFilterHandler = (
 		publishersList,
 		typesList,
 		localYearList,
+		countryList,
 		originalYearList,
 		handleChange,
 		searchBarValue,

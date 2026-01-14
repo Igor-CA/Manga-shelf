@@ -10,6 +10,7 @@ const FilterControls = ({
 		genreList,
 		publishersList,
 		typesList,
+		countryList,
 		localYearList,
 		originalYearList,
 	} = lists;
@@ -112,6 +113,8 @@ const FilterControls = ({
 							<option value={"popularity"}>Popularidade</option>
 							<option value={"volumes"}>Tamanho</option>
 							<option value={"publisher"}>Editora</option>
+							<option value={"dateJp"}>Data de lançamento (JP)</option>
+							<option value={"dateBr"}>Data de lançamento (Br)</option>
 							{availableFilters.includes("ordering_percentage") && (
 								<option value={"status"}>Porcentagem de conclusão</option>
 							)}
@@ -159,7 +162,27 @@ const FilterControls = ({
 					</label>
 				)}
 
-				{availableFilters.includes("demographic") && (
+				{availableFilters.includes("country") && (
+					<label htmlFor="country" className="filter__label">
+						País de origem	
+						<select
+							name="country"
+							id="country"
+							className="form__input filter__input"
+							onChange={handleChange}
+							value={values.country || ""}
+						>
+							<option value="">Selecionar</option>
+							{countryList?.map((country, id) => (
+								<option value={country} key={id}>
+									{country}
+								</option>
+							))}
+						</select>
+					</label>
+				)}
+
+				{availableFilters.includes("publishedAtJp") && (
 					<label htmlFor="publishedAtJp" className="filter__label">
 						Ano (Japão)
 						<select
@@ -178,7 +201,7 @@ const FilterControls = ({
 						</select>
 					</label>
 				)}
-				{availableFilters.includes("demographic") && (
+				{availableFilters.includes("publishedAtBr") && (
 					<label htmlFor="publishedAtBr" className="filter__label">
 						Ano (Brasil)
 						<select
@@ -197,7 +220,7 @@ const FilterControls = ({
 						</select>
 					</label>
 				)}
-				{availableFilters.includes("type") && (
+				{availableFilters.includes("hideOwned") && (
 					<div className="filter__checkbox-container">
 						<label htmlFor="hideOwned" className="filter__label">
 							Esconder mangás nas suas lista
@@ -212,7 +235,7 @@ const FilterControls = ({
 						</label>
 					</div>
 				)}
-				{availableFilters.includes("type") && (
+				{availableFilters.includes("onlyOwned") && (
 					<div className="filter__checkbox-container">
 						<label htmlFor="onlyOwned" className="filter__label">
 							Mostrar apenas mangás nas suas lista
