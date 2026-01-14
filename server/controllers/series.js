@@ -98,6 +98,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		publishedAtBr,
 		onlyOwned,
 		hideOwned,
+		country,
 	} = req.query;
 	const search = req.query["search"];
 
@@ -107,6 +108,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	if (status) filter["status"] = status;
 	if (demographic) filter["demographic"] = demographic;
 	if (type) filter["type"] = type;
+	if (country) filter["originalRun.country"] = country;
 	if (onlyOwned) {
 		filter["$or"] = [{ inUserList: true }, { inWishlist: true }];
 	}
@@ -136,7 +138,8 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		title: { atribute: "title", order: 1 },
 		publisher: { atribute: "publisher", order: 1 },
 		volumes: { atribute: "volumesLength", order: -1 },
-		date: { atribute: "releaseDate", order: 1 },
+		dateJp: { atribute: "originalRun.dates.publishedAt", order: 1 },
+		dateBr: { atribute: "dates.publishedAt", order: 1 },
 	};
 	const ordering = req.query.ordering || "popularity";
 	const sortStage = {};
@@ -421,6 +424,15 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 						},
 					},
 				],
+				countries: [
+					{ $match: { "originalRun.country": { $ne: null } } },
+					{
+						$group: {
+							_id: null,
+							countries: { $addToSet: "$originalRun.country" },
+						},
+					},
+				],
 				publishedYears: [
 					{ $match: { "dates.publishedAt": { $ne: null } } },
 					{
@@ -479,6 +491,18 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 						[],
 					],
 				},
+				countries: {
+					$cond: [
+						{ $gt: [{ $size: "$countries" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$countries.countries", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
 				publishedYears: {
 					$cond: [
 						{ $gt: [{ $size: "$publishedYears" }, 0] },
@@ -512,6 +536,7 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 			genres: [],
 			publishers: [],
 			types: [],
+			countrys: [],
 			publishedYears: [],
 			originalPublishedYears: [],
 		}

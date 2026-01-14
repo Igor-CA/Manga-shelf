@@ -9,13 +9,7 @@ const SeriesSchema = new Schema(
 		authors: [{ type: String }],
 		demographic: {
 			type: String,
-			enum: [
-				"Shounen",
-				"Seinen",
-				"Shoujo",
-				"Josei",
-				"Kodomo",
-			],
+			enum: ["Shounen", "Seinen", "Shoujo", "Josei", "Kodomo"],
 		},
 		genres: [{ type: String }],
 		summary: [{ type: String }],
@@ -38,7 +32,7 @@ const SeriesSchema = new Schema(
 
 		specs: {
 			format: { type: String },
-			volumesInFormat: {type: Number, default:1},
+			volumesInFormat: { type: Number, default: 1 },
 			paper: { type: String },
 			cover: { type: String },
 			dimensions: {
@@ -49,6 +43,7 @@ const SeriesSchema = new Schema(
 
 		originalRun: {
 			publisher: { type: String },
+			country: { type: String },
 			status: { type: String },
 			dates: {
 				publishedAt: { type: Date },
