@@ -34,6 +34,8 @@ const buildSortStage = (ordering, field) => {
 		popularity: { atribute: `${field}.popularity`, order: -1 },
 		title: { atribute: `${field}.title`, order: 1 },
 		publisher: { atribute: `${field}.publisher`, order: 1 },
+		dateJp: { atribute: `${field}.originalRun.dates.publishedAt`, order: 1 },
+		dateBr: { atribute: `${field}.dates.publishedAt`, order: 1 },
 		volumes: { atribute: "volumesLength", order: -1 },
 		timestamp: { atribute: "userList.timestamp", order: 1 },
 		status: { atribute: "userList.completionPercentage", order: 1 },
