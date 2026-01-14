@@ -78,17 +78,11 @@ export default function BrowsePage() {
 					"publisher",
 					"ordering",
 					"status",
-					"type",
-					"demographic",
-					"publishedAtJp",
-					"publishedAtBr",
-					"onlyOwned",
-					"hideOwned",
-					"country"
 				]}
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
 				lists={{ genreList, publishersList, typesList, originalYearList, localYearList, countryList }}
+				secundaryFilters={true}
 			/>
 			<SeriesCardList
 				skeletonsCount={12}
