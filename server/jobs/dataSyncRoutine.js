@@ -7,10 +7,12 @@ const {
 	getNewUserSeriesStatus,
 } = require("../controllers/user/userActionsController");
 const logger = require("../Utils/logger");
+const volume = require("../models/volume");
 async function syncAndRecalculateData() {
 	await cleanUserDuplicates();
 	await recalculateUserListInfo();
 	await updateSeriesPopularity();
+	await updateSeriesMetadata();
 }
 
 async function cleanUserDuplicates() {
@@ -258,5 +260,120 @@ async function updateSeriesPopularity() {
 		throw error;
 	}
 }
+async function updateSeriesMetadata() {
+	logger.info("Starting sanitization of Series dates and status...");
 
+	let seriesProcessed = 0;
+	let seriesModified = 0;
+	let bulkOps = [];
+	const BATCH_SIZE = 500;
+
+	const cursor = Series.find({}).cursor();
+
+	try {
+		for (
+			let series = await cursor.next();
+			series != null;
+			series = await cursor.next()
+		) {
+			let wasModified = false;
+
+			const volumesData = await volume
+				.find({ serie: series._id })
+				.select("number date")
+				.sort({ number: 1 })
+				.lean();
+
+			const firstVol = volumesData.find((v) => v.number === 1);
+
+			if (firstVol && firstVol.date) {
+				if (
+					!series.dates.publishedAt ||
+					series.dates.publishedAt.getTime() !== firstVol.date.getTime()
+				) {
+					series.dates.publishedAt = firstVol.date;
+					wasModified = true;
+				}
+			}
+
+			if (series.originalRun && series.originalRun.status === "Finalizado") {
+				const volumesInFormat = series.specs?.volumesInFormat || 1;
+				const currentVolumeCount = series.volumes.length;
+
+				const equivalentVolumes = currentVolumeCount * volumesInFormat;
+
+				if (
+					series.originalRun.totalVolumes &&
+					equivalentVolumes < series.originalRun.totalVolumes
+				) {
+					if (series.status !== "Em publicação") {
+						series.status = "Em publicação";
+						wasModified = true;
+					}
+				} else {
+					if (series.status !== "Finalizado") {
+						series.status = "Finalizado";
+						wasModified = true;
+					}
+				}
+			} else if (series.originalRun && series.originalRun.status) {
+				if (series.status !== series.originalRun.status) {
+					series.status = series.originalRun.status;
+					wasModified = true;
+				}
+			}
+
+			if (series.status === "Finalizado" && volumesData.length > 0) {
+				const lastVol = volumesData[volumesData.length - 1];
+
+				if (lastVol && lastVol.date) {
+					if (
+						!series.dates.finishedAt ||
+						series.dates.finishedAt.getTime() !== lastVol.date.getTime()
+					) {
+						series.dates.finishedAt = lastVol.date;
+						wasModified = true;
+					}
+				}
+			}
+
+			if (wasModified) {
+				logger.warn(`Updated: ${series.title}`);
+				bulkOps.push({
+					updateOne: {
+						filter: { _id: series._id },
+						update: {
+							$set: {
+								"dates.publishedAt": series.dates.publishedAt,
+								"dates.finishedAt": series.dates.finishedAt,
+								status: series.status,
+							},
+						},
+					},
+				});
+				seriesModified++;
+			}
+
+			seriesProcessed++;
+
+			if (bulkOps.length >= BATCH_SIZE) {
+				await Series.bulkWrite(bulkOps);
+				bulkOps = [];
+			}
+		}
+
+		if (bulkOps.length > 0) {
+			await Series.bulkWrite(bulkOps);
+		}
+
+		logger.info(
+			`Series sanitization complete. Processed: ${seriesProcessed}, Modified: ${seriesModified}.`
+		);
+
+		return { seriesProcessed, seriesModified };
+	} catch (error) {
+		logger.error("Error sanitizing series metadata:", error);
+		throw error;
+	}
+}
 module.exports = { syncAndRecalculateData };
