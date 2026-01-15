@@ -31,18 +31,18 @@ const buildFilter = ({ publisher, genre, status, search }, field) => {
 const buildSortStage = (ordering, field) => {
 	const sortOptions = {
 		// Order 1 for ascending and 2 for descending
-		popularity: { atribute: `${field}.popularity`, order: -1 },
-		title: { atribute: `${field}.title`, order: 1 },
-		publisher: { atribute: `${field}.publisher`, order: 1 },
-		dateJp: { atribute: `${field}.originalRun.dates.publishedAt`, order: -1 },
-		dateBr: { atribute: `${field}.dates.publishedAt`, order: -1 },
-		volumes: { atribute: "volumesLength", order: -1 },
-		timestamp: { atribute: "userList.timestamp", order: 1 },
-		status: { atribute: "userList.completionPercentage", order: 1 },
+		popularity: { attribute: `${field}.popularity`, order: -1 },
+		title: { attribute: `${field}.title`, order: 1 },
+		publisher: { attribute: `${field}.publisher`, order: 1 },
+		dateJp: { attribute: `${field}.originalRun.dates.publishedAt`, order: -1 },
+		dateBr: { attribute: `${field}.dates.publishedAt`, order: -1 },
+		volumes: { attribute: "volumesLength", order: -1 },
+		timestamp: { attribute: "userList.timestamp", order: 1 },
+		status: { attribute: "userList.completionPercentage", order: 1 },
 	};
 
 	const sortStage = {
-		[sortOptions[ordering].atribute]: sortOptions[ordering].order,
+		[sortOptions[ordering].attribute]: sortOptions[ordering].order,
 		"userList.Series.title": 1,
 	};
 	return sortStage;
