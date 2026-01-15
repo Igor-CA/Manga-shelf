@@ -134,16 +134,16 @@ exports.browse = asyncHandler(async (req, res, next) => {
 
 	const sortOptions = {
 		// Order 1 for ascending and 2 for descending
-		popularity: { atribute: "popularity", order: -1 },
-		title: { atribute: "title", order: 1 },
-		publisher: { atribute: "publisher", order: 1 },
-		volumes: { atribute: "volumesLength", order: -1 },
-		dateJp: { atribute: "originalRun.dates.publishedAt", order: -1 },
-		dateBr: { atribute: "dates.publishedAt", order: -1 },
+		popularity: { attribute: "popularity", order: -1 },
+		title: { attribute: "title", order: 1 },
+		publisher: { attribute: "publisher", order: 1 },
+		volumes: { attribute: "volumesLength", order: -1 },
+		dateJp: { attribute: "originalRun.dates.publishedAt", order: -1 },
+		dateBr: { attribute: "dates.publishedAt", order: -1 },
 	};
 	const ordering = req.query.ordering || "popularity";
 	const sortStage = {};
-	sortStage[sortOptions[ordering].atribute] = sortOptions[ordering].order;
+	sortStage[sortOptions[ordering].attribute] = sortOptions[ordering].order;
 	sortStage["title"] = 1;
 	const isValidSearch = search && search.trim() !== "";
 
