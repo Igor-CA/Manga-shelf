@@ -138,8 +138,8 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		title: { atribute: "title", order: 1 },
 		publisher: { atribute: "publisher", order: 1 },
 		volumes: { atribute: "volumesLength", order: -1 },
-		dateJp: { atribute: "originalRun.dates.publishedAt", order: 1 },
-		dateBr: { atribute: "dates.publishedAt", order: 1 },
+		dateJp: { atribute: "originalRun.dates.publishedAt", order: -1 },
+		dateBr: { atribute: "dates.publishedAt", order: -1 },
 	};
 	const ordering = req.query.ordering || "popularity";
 	const sortStage = {};
