@@ -7,7 +7,7 @@ const VolumeSchema = new Schema(
 		number: { type: Number, required: true },
 		ISBN: { type: String },
 		pagesNumber: { type: Number },
-		date: { type: String },
+		date: { type: Date },
 		summary: [{ type: String }], //Separated by paragraphs
 		defaultPrice: { type: String },
 		freebies: [{ type: String }],
