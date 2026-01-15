@@ -118,8 +118,8 @@ const FilterControls = ({
 								<option value={"popularity"}>Popularidade</option>
 								<option value={"volumes"}>Tamanho</option>
 								<option value={"publisher"}>Editora</option>
-								<option value={"dateJp"}>Data de lançamento (JP)</option>
-								<option value={"dateBr"}>Data de lançamento (Br)</option>
+								<option value={"dateJp"}>Lançamentos Recentes (JP)</option>
+								<option value={"dateBr"}>Lançamentos Recentes (BR)</option>
 								{availableFilters.includes("ordering_percentage") && (
 									<option value={"status"}>Porcentagem de conclusão</option>
 								)}
