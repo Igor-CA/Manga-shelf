@@ -6,6 +6,19 @@ export const printArray = (list) => {
 	return `${allButLast} e ${list[listCount - 1]}`;
 };
 
+export const formatDate = (dateString) => {
+	const dateObj = new Date(dateString)	
+	if (!(dateObj instanceof Date) || isNaN(dateObj)) {
+		return "Invalid Date";
+	}
+
+	const day = String(dateObj.getUTCDate()).padStart(2, "0");
+	const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+	const year = dateObj.getUTCFullYear();
+
+	return `${day}/${month}/${year}`;
+};
+
 export const checkOwnedVolumes = (user, id) => {
 	return user?.ownedVolumes
 		? user.ownedVolumes.some(

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { printArray } from "../SeriesPage/utils";
+import { formatDate, printArray } from "../SeriesPage/utils";
 
 export default function VolumesOverallPage({ volume }) {
 	const {
@@ -18,7 +18,7 @@ export default function VolumesOverallPage({ volume }) {
 		return [
 			{ label: "Autores", value: printArray(serie.authors) },
 			{ label: "Número de páginas", value: pagesNumber },
-			{ label: "Data de lançamento", value: date },
+			{ label: "Data de lançamento", value:formatDate(date) },
 			{ label: "Preço de capa", value: defaultPrice },
 			{ label: "ISBN", value: ISBN },
 			{ label: "Capitulos", value: chapters },
