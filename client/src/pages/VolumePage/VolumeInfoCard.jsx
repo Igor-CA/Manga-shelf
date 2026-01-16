@@ -79,9 +79,8 @@ export default function VolumeInfoCard({ volumeData }) {
 				const ownedVolumeData = getOwnedVolumeInfo(user, id);
 				if (ownedVolumeData) {
 					openEditModal(ownedVolumeData);
-				}
-				else{
-					addMessage("Precisa adicionar esse volume primeiro")	
+				} else {
+					addMessage("Precisa adicionar esse volume primeiro");
 				}
 			},
 		},
@@ -154,11 +153,11 @@ export default function VolumeInfoCard({ volumeData }) {
 								<h1 className="content-title">{volumeData.serie?.title}</h1>
 								<h2>Volume {volumeData.number}</h2>
 							</div>
-							<span className="content-author">
-								Obra de:{" "}
-								{volumeData.serie?.authors &&
-									printArray(volumeData.serie?.authors)}
-							</span>
+							{volumeData.serie?.authors?.length > 0 && (
+								<span className="content-author">
+									Obra de: {volumeData.serie?.authors && printArray(volumeData.serie?.authors)}
+								</span>
+							)}
 						</div>
 						<div className="header__secondary-info">
 							<ul className="header__genres-list">

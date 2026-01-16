@@ -39,12 +39,13 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 			{ label: "Gêneros", value: printArray(genres) },
 			{
 				label: "Formato",
-				value: specs?.dimensions
-					? `${specs?.dimensions.width}cm x ${specs?.dimensions.height}cm`.replaceAll(
-							".",
-							","
-					  )
-					: null,
+				value:
+					specs?.dimensions?.width && specs?.dimensions?.height
+						? `${specs.dimensions.width}cm x ${specs.dimensions.height}cm`.replaceAll(
+								".",
+								","
+						  )
+						: null,
 			},
 			{ label: "Situação no Japão", value: status },
 			{ label: "Situação no Brasil", value: statusBrazil },

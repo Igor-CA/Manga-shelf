@@ -1,4 +1,7 @@
 export const printArray = (list) => {
+	if (list.length === 0){
+		return null
+	}
 	const listCount = list.length;
 	if (listCount === 1) return list[0];
 	if (listCount === 2) return `${list[0]} e ${list[1]}`;
@@ -7,6 +10,9 @@ export const printArray = (list) => {
 };
 
 export const formatDate = (dateString) => {
+	if(!dateString){
+		return null
+	}
 	const dateObj = new Date(dateString)	
 	if (!(dateObj instanceof Date) || isNaN(dateObj)) {
 		return "Invalid Date";
