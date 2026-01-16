@@ -142,9 +142,11 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 					<div className="header__main-info-container">
 						<div className="header__title-container">
 							<h1 className="content-title">{title}</h1>
-							<span className="content-author">
-								Obra de: {authors && printArray(authors)}
-							</span>
+							{authors?.length > 0 && (
+								<span className="content-author">
+									Obra de: {authors && printArray(authors)}
+								</span>
+							)}
 						</div>
 						<div className="header__secondary-info">
 							<ul className="header__genres-list">
