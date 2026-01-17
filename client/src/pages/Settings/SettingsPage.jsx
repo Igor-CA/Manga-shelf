@@ -2,14 +2,14 @@ import { useContext, useEffect, useState } from "react";
 import "../AuthenticationPage/Authentication.css";
 import "./Settings.css";
 import CustomCheckbox from "../../components/customInputs/CustomCheckbox";
-import ImageModal from "../../components/ImageModal";
+import ImageModal from "../../components/imageModal/ImageModal";
 import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
-import { messageContext } from "../../contexts/messageStateProvider";
 import { customWindowConfirm } from "../SeriesPage/utils";
 import PromptConfirm from "../../contexts/PromptConfirm";
 import { useNavigate } from "react-router-dom";
 import SideNavbar from "../../components/SideNavbar";
+import { messageContext } from "../../contexts/messageStateProvider";
 
 const navbarOptions = [
 	{

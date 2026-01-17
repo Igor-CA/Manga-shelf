@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState, useMemo } from "react";
-import ImageModal from "../../components/ImageModal";
+import ImageModal from "../../components/imageModal/ImageModal";
 import ContentNavbar from "../../components/contentNavbar/ContentNavbar";
 import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
