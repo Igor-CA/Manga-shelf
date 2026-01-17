@@ -4,7 +4,7 @@ import {
 	checkIfInWishlist,
 	getCompletionPercentage,
 	getSeriesStatus,
-} from "./utils";
+} from "../../utils/seriesDataFunctions";
 import ContentHeader from "../../components/contentHeader/contentHeader";
 
 export default function SeriesPageHeader({ seriesInfo, actions }) {
