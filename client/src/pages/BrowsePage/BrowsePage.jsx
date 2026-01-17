@@ -5,7 +5,7 @@ import debaunce from "../../utils/debaunce";
 
 import { Link, useSearchParams } from "react-router-dom";
 import SeriesCardList from "../../components/cards/SeriesCardList";
-import TogglePageButton from "../../components/TogglePageButton";
+import TogglePageButton from "../../components/customInputs/TogglePageButton";
 import { useContext } from "react";
 import { messageContext } from "../../contexts/messageStateProvider";
 import { useEffect } from "react";

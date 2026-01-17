@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
 import axios from "axios";
 import UserCardsList from "../../components/cards/UserCardsList";
-import TogglePageButton from "../../components/TogglePageButton";
+import TogglePageButton from "../../components/customInputs/TogglePageButton";
 
 export default function BrowseUser() {
 	const [searchParams, setSearchParams] = useSearchParams();
