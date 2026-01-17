@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
-import { checkOwnedVolumes, getOwnedVolumeInfo } from "./utils";
+import { getOwnedVolumeInfo } from "./utils";
 import { usePrompt } from "../../contexts/PromptContext";
 
 export const useSeriesLogic = (id) => {
