@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ActionDropdown from "../customInputs/ActionsDropdown";
-import "../../pages/SeriesPage/SeriesPage.css";
+import "./contentHeader.css";
 import ContentNavbar from "../navbars/ContentNavbar";
 import SkeletonHeader from "../SkeletonHeader";
 import { printArray } from "../../pages/SeriesPage/utils";

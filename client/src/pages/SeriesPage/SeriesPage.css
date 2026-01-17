@@ -1,59 +1,3 @@
-.content-header {
-	color: var(--text);
-	position: relative;
-	background-color: var(--foreground);
-}
-
-.header__bg-image-container {
-	display: none;
-}
-.header__cover-image-container {
-	display: block;
-	position: relative;
-	width: 100%;
-	overflow: hidden;
-	aspect-ratio: 465 / 695;
-	background-color: rgba(var(--gray));
-}
-.header__cover-image {
-	position: absolute;
-	left: 50%;
-	z-index: 0;
-	translate: -50%;
-	width: auto;
-	min-width: 100%;
-	height: 100%;
-	transition: opacity 0.3s ease-in-out;
-	opacity: 1;
-}
-.header__cover-image--loading {
-	opacity: 0;
-}
-.header__art-container {
-	position: relative;
-}
-.header__main-info-container {
-	padding: 0rem 0.75rem;
-	color: var(--text);
-}
-.header__title-container {
-	display: flex;
-	justify-content: space-between;
-	flex-direction: column;
-	position: relative;
-	color: var(--text);
-	padding-bottom: 0.75rem;
-}
-.header__secondary-info {
-	display: none;
-}
-.content-title {
-	font-weight: bold;
-	font-size: 2.5rem;
-}
-.content-author {
-	display: none;
-}
 .all-info-container {
 	margin: 0;
 	padding: 0.75rem;
@@ -149,24 +93,6 @@
 }
 .button-select__options-container > .button-select__option:last-child {
 	border-bottom: none;
-}
-
-.content__details-summary {
-	display: none;
-	color: var(--text);
-	padding: 0.75rem;
-	padding-bottom: 0;
-}
-.content__details-summary--mobile {
-	display: block;
-}
-.show-more__button {
-	display: none;
-}
-.content__summary {
-	text-indent: 2em;
-	text-align: justify;
-	line-height: 2em;
 }
 /* --- Volumes itemns list ---*/
 .series__volume-item {
@@ -352,82 +278,10 @@
 	padding: 2rem;
 }
 @media only screen and (min-width: 768px) {
-	.content-header {
-		background-color: var(--foreground);
-	}
-
-	.header__bg-image-container {
-		display: block;
-		position: relative;
-		overflow: hidden;
-		width: 100vw;
-		height: 400px;
-	}
-	.header__bg-image {
-		background-position: center 25%;
-		background-size: cover;
-		transition: width 0.15s ease-in-out;
-		width: 100%;
-		height: 100%;
-	}
-	.banner-shade {
-		-webkit-backdrop-filter: blur(4px);
-		backdrop-filter: blur(4px);
-		background: linear-gradient(
-			67.81deg,
-			rgba(0, 0, 0, 0.64) 35.51%,
-			transparent
-		);
-		height: auto;
-		width: auto;
-		pointer-events: none;
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		top: 0;
-	}
-	.header-container {
-		margin-top: -300px;
-		display: flex;
-		gap: 0.75rem;
-		flex-direction: row;
-		width: 100%;
-		padding: 0.75rem;
-	}
 	.series-card__adult-indicator {
 		top: auto;
 		bottom: 0.5rem;
 	}
-	.header__main-info-container {
-		padding: 0;
-	}
-	.header__cover-image-container {
-		display: block;
-		border-radius: 0.25rem;
-	}
-	.header__art-container {
-		flex: 0 0 250px;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.show-more__button {
-        display: block;
-        padding: 10px;
-        font-size: 1rem;
-        font-weight: 700;
-        color: inherit;
-        background: linear-gradient(#ffffff00, var(--foreground) 75%);
-        position: absolute;
-        bottom: 0;
-        z-index: 1;
-        width: 100%;
-        text-align: center;
-        cursor: pointer;
-        border: none;
-    }
 
 	.button-select__shadow-container {
 		padding: 0;
@@ -444,71 +298,6 @@
 		margin-bottom: 15px;
 		gap: 10px;
 		position: relative;
-	}
-	.header__title-container {
-		color: white;
-		height: 300px;
-	}
-	.content-title {
-		font-weight: bold;
-		font-size: 2.5rem;
-	}
-	.content-author {
-		display: block;
-		padding-bottom: 0.75rem;
-		font-size: 1.25rem;
-		font-weight: bold;
-	}
-	.header__secondary-info {
-		display: block;
-	}
-	.header__genres-list {
-		list-style: none;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-	}
-	.header__genre-tag {
-		background-color: var(--background);
-		color: var(--text);
-		border: 1px solid var(--text);
-		font-weight: bold;
-		padding: 0.5rem;
-		border-radius: 0.25rem;
-		font-size: 0.75rem;
-	}
-	.show-more__mark {
-		display: block;
-		padding: 10px;
-		font-size: 1rem;
-		font-weight: bold;
-		color: inherit;
-		background: linear-gradient(#ffffff00, var(--foreground) 50%);
-		position: absolute;
-		bottom: 0px;
-		z-index: 1;
-		width: 100%;
-		text-align: center;
-		cursor: pointer;
-		border: none;
-	}
-	.content__details-summary {
-		display: block;
-		padding: 0rem 0.75rem;
-		padding-bottom: 2rem;
-		position: relative;
-	}
-	.content__details-summary--mobile {
-		display: none;
-	}
-	.content__summary {
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 5;
-		overflow: hidden;
-	}
-	.content__summary--show-full {
-		display: block;
 	}
 	.all-info-container {
 		margin-bottom: 0.75rem;
