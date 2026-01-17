@@ -8,7 +8,7 @@ import axios from "axios";
 import { customWindowConfirm } from "../SeriesPage/utils";
 import PromptConfirm from "../../contexts/PromptConfirm";
 import { useNavigate } from "react-router-dom";
-import SideNavbar from "../../components/SideNavbar";
+import SideNavbar from "../../components/navbars/SideNavbar";
 import { messageContext } from "../../contexts/messageStateProvider";
 
 const navbarOptions = [
