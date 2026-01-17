@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import "../AuthenticationPage/Authentication.css";
 import "./Settings.css";
-import CustomCheckbox from "../../components/CustomCheckbox";
+import CustomCheckbox from "../../components/customInputs/CustomCheckbox";
 import ImageModal from "../../components/ImageModal";
 import { UserContext } from "../../components/userProvider";
 import axios from "axios";
