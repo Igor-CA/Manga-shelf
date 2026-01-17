@@ -2,7 +2,7 @@ import { useContext, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
-import SkeletonHeader from "../../components/skeletons/SkeletonPage";
+import SkeletonHeader from "../../components/SkeletonPage";
 
 import "../SeriesPage/SeriesPage.css";
 import ActionDropdown from "../SeriesPage/ActionsDropdown";

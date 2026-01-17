@@ -8,7 +8,7 @@ import {
 	printArray,
 } from "./utils";
 import { UserContext } from "../../contexts/userProvider";
-import SkeletonHeader from "../../components/SkeletonPage";
+import SkeletonHeader from "../../components/SkeletonHeader";
 import ContentNavbar from "../../components/navbars/ContentNavbar";
 
 export default function SeriesPageHeader({ seriesInfo, actions }) {
