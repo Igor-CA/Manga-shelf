@@ -9,7 +9,7 @@ import {
 } from "./utils";
 import { UserContext } from "../../contexts/userProvider";
 import SkeletonHeader from "../../components/SkeletonPage";
-import ContentNavbar from "../../components/contentNavbar/ContentNavbar";
+import ContentNavbar from "../../components/navbars/ContentNavbar";
 
 export default function SeriesPageHeader({ seriesInfo, actions }) {
 	const { user } = useContext(UserContext);
