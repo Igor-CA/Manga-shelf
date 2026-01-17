@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import { Link, useNavigate } from "react-router-dom";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import SideNavbar from "../../components/SideNavbar";

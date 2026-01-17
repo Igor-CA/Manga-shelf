@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { FaMinus, FaPlus } from "react-icons/fa";
 
 import { FaPencil, FaRegBookmark } from "react-icons/fa6";
-import { UserContext } from "../userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
 import { messageContext } from "../messageStateProvider";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";

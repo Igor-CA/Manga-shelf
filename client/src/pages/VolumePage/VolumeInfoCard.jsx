@@ -1,6 +1,6 @@
 import { useContext, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
 import SkeletonHeader from "../../components/skeletons/SkeletonPage";
 

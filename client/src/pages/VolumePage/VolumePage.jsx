@@ -2,7 +2,7 @@ import { Suspense, useContext, useEffect, useState } from "react";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import VolumeInfoCard from "./VolumeInfoCard";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 
 import "../SeriesPage/SeriesPage.css";
 import { LoadingPageComponent } from "../../App";
