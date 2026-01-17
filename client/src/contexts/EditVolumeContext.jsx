@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useRef } from "react";
 import { useEffect } from "react";
 import "./EditVolumeModal.css";
-import { messageContext } from "./messageStateProvider";
+import { messageContext } from "../components/messageStateProvider";
 import axios from "axios";
-import { UserContext } from "./userProvider";
+import { UserContext } from "../components/userProvider";
 
 const EditVolumeContext = createContext();
 

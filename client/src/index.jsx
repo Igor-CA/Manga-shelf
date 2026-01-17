@@ -4,7 +4,7 @@ import App from "./App";
 import { UserProvider } from "./components/userProvider";
 import { MessageProvider } from "./components/messageStateProvider";
 import { PromptProvider } from "./components/PromptContext";
-import { EditVolumeProvider } from "./components/EditVolumeContext";
+import { EditVolumeProvider } from "./contexts/EditVolumeContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

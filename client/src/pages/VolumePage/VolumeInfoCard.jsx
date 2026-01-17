@@ -2,12 +2,12 @@ import { useContext, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../../components/userProvider";
 import axios from "axios";
-import SkeletonHeader from "../../components/SkeletonPage";
+import SkeletonHeader from "../../components/skeletons/SkeletonPage";
 
 import "../SeriesPage/SeriesPage.css";
 import ActionDropdown from "../SeriesPage/ActionsDropdown";
 import { getOwnedVolumeInfo, printArray } from "../SeriesPage/utils";
-import { useEditVolume } from "../../components/EditVolumeContext";
+import { useEditVolume } from "../../contexts/EditVolumeContext";
 import { messageContext } from "../../components/messageStateProvider";
 export default function VolumeInfoCard({ volumeData }) {
 	const { id } = useParams();
