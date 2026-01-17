@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useRef } from "react";
 import { useEffect } from "react";
 import "./EditVolumeModal.css";
-import { messageContext } from "../components/messageStateProvider";
+import { messageContext } from "./messageStateProvider";
 import axios from "axios";
 import { UserContext } from "./userProvider";
 

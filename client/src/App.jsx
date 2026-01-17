@@ -3,7 +3,7 @@ import { useContext, useEffect, lazy, Suspense } from "react";
 import { UserContext } from "./contexts/userProvider";
 import NavBar from "./components/NavBar";
 import ScrollToTop from "./utils/ScrollToTop";
-import MessageComponent from "./components/MessageComponent";
+import MessageComponent from "./contexts/MessageComponent";
 import "./App.css";
 import AdultPageRedirect from "./pages/AdultPageRedirect/AdultPageRedirect";
 

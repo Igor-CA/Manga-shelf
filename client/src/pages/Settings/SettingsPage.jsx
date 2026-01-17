@@ -5,7 +5,7 @@ import CustomCheckbox from "../../components/customInputs/CustomCheckbox";
 import ImageModal from "../../components/ImageModal";
 import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import { customWindowConfirm } from "../SeriesPage/utils";
 import PromptConfirm from "../../components/PromptConfirm";
 import { useNavigate } from "react-router-dom";

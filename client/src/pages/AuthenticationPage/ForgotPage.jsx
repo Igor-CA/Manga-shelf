@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 
 import "./Authentication.css";
 export default function ForgotPage() {
