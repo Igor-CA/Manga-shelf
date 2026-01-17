@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import { checkOwnedVolumes, getOwnedVolumeInfo } from "./utils";
-import { usePrompt } from "../../components/PromptContext";
+import { usePrompt } from "../../contexts/PromptContext";
 
 export const useSeriesLogic = (id) => {
 	const navigate = useNavigate();
