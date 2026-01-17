@@ -3,7 +3,7 @@ import ActionDropdown from "../customInputs/ActionsDropdown";
 import "./contentHeader.css";
 import ContentNavbar from "../navbars/ContentNavbar";
 import SkeletonHeader from "../SkeletonHeader";
-import { printArray } from "../../pages/SeriesPage/utils";
+import { printArray } from "../../utils/seriesDataFunctions";
 
 export default function ContentHeader({
 	data,

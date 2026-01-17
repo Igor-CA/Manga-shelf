@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../../components/userProvider";
 import axios from "axios";
-import { getOwnedVolumeInfo } from "../SeriesPage/utils";
+import { getOwnedVolumeInfo } from "../../utils/seriesDataFunctions";
 import { useEditVolume } from "../../components/EditVolumeContext";
 import { messageContext } from "../../components/messageStateProvider";
 import ContentHeader from "../../components/contentHeader/contentHeader";
