@@ -1,5 +1,5 @@
 import axios from "axios";
-import UserCardsList from "../../components/UserCardsList";
+import UserCardsList from "../../components/cards/UserCardsList";
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 
