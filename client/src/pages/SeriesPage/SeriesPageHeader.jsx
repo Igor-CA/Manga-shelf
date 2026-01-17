@@ -7,7 +7,7 @@ import {
 	getSeriesStatus,
 	printArray,
 } from "./utils";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import SkeletonHeader from "../../components/SkeletonPage";
 import ContentNavbar from "../../components/contentNavbar/ContentNavbar";
 

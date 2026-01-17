@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import "./EditVolumeModal.css";
 import { messageContext } from "../components/messageStateProvider";
 import axios from "axios";
-import { UserContext } from "../components/userProvider";
+import { UserContext } from "./userProvider";
 
 const EditVolumeContext = createContext();
 

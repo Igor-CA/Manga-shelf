@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { UserProvider } from "./components/userProvider";
+import { UserProvider } from "./contexts/userProvider";
 import { MessageProvider } from "./components/messageStateProvider";
 import { PromptProvider } from "./components/PromptContext";
 import { EditVolumeProvider } from "./contexts/EditVolumeContext";

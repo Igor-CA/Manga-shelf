@@ -3,7 +3,7 @@ import "../AuthenticationPage/Authentication.css";
 import "./Settings.css";
 import CustomCheckbox from "../../components/customInputs/CustomCheckbox";
 import ImageModal from "../../components/ImageModal";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
 import { messageContext } from "../../components/messageStateProvider";
 import { customWindowConfirm } from "../SeriesPage/utils";

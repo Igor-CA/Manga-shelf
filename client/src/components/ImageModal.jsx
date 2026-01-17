@@ -4,7 +4,7 @@ import axios from "axios";
 import ImageCropper from "./ImageCropper";
 import "./ImageModal.css";
 import { messageContext } from "./messageStateProvider";
-import { UserContext } from "./userProvider";
+import { UserContext } from "../contexts/userProvider";
 
 function dataURLtoFile(dataurl, filename) {
 	const dataArray = dataurl.split(",");

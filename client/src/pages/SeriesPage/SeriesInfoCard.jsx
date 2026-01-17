@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../context/userProvider";
 import {
 	checkIfInWishlist,
 	getCompletionPercentage,

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import VolumeItem from "./VolumeItem";
 
 export default function SeriesVolumesList({

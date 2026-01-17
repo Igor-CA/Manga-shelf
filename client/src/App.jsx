@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { useContext, useEffect, lazy, Suspense } from "react";
-import { UserContext } from "./components/userProvider";
+import { UserContext } from "./contexts/userProvider";
 import NavBar from "./components/NavBar";
 import ScrollToTop from "./utils/ScrollToTop";
 import MessageComponent from "./components/MessageComponent";

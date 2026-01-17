@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../components/messageStateProvider";
 import { checkOwnedVolumes, getOwnedVolumeInfo } from "./utils";
 import { usePrompt } from "../../components/PromptContext";
