@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useContext, useState } from "react";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import { UserContext } from "../../contexts/userProvider";
 
 import "./Authentication.css";

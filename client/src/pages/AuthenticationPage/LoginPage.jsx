@@ -3,7 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import "./Authentication.css";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 
 export default function LoginPage() {
 	const navigate = useNavigate();

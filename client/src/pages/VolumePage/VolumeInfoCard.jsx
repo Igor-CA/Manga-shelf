@@ -8,7 +8,7 @@ import "../SeriesPage/SeriesPage.css";
 import ActionDropdown from "../SeriesPage/ActionsDropdown";
 import { getOwnedVolumeInfo, printArray } from "../SeriesPage/utils";
 import { useEditVolume } from "../../contexts/EditVolumeContext";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 export default function VolumeInfoCard({ volumeData }) {
 	const { id } = useParams();
 	const seriesSummarry = useRef(null);

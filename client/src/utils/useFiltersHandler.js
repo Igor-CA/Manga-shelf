@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import debaunce from "../utils/debaunce";
 import { useContext } from "react";
-import { messageContext } from "../components/messageStateProvider";
+import { messageContext } from "../contexts/messageStateProvider";
 
 export const useFilterHandler = (
 	fetchFiltersUrl,

@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { UserProvider } from "./contexts/userProvider";
-import { MessageProvider } from "./components/messageStateProvider";
+import { MessageProvider } from "./contexts/messageStateProvider";
 import { PromptProvider } from "./components/PromptContext";
 import { EditVolumeProvider } from "./contexts/EditVolumeContext";
 

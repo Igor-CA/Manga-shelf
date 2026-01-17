@@ -7,7 +7,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import SeriesCardList from "../../components/cards/SeriesCardList";
 import TogglePageButton from "../../components/TogglePageButton";
 import { useContext } from "react";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import { useEffect } from "react";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import FilterControls from "../../components/FilterControls";

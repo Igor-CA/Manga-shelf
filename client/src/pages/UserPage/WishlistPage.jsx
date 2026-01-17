@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
 import { useEffect } from "react";
 import { useContext } from "react";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import FilterControls from "../../components/FilterControls";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 

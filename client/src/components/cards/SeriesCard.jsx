@@ -6,7 +6,7 @@ import { FaMinus, FaPlus } from "react-icons/fa";
 import { FaPencil, FaRegBookmark } from "react-icons/fa6";
 import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
-import { messageContext } from "../messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { useEditVolume } from "../../contexts/EditVolumeContext";
 export function SeriesCard({ itemDetails, itemType, showActions = false }) {
