@@ -1,5 +1,6 @@
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { useState, useRef, useEffect } from "react";
+import "./actionsDropdown.css"
 
 export default function ActionDropdown({
 	mainAction,
