@@ -15,7 +15,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "./NavBar.css";
 import { useContext, useEffect, useState } from "react";
-import { UserContext } from "../contexts/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import { LuMoonStar, LuSunDim } from "react-icons/lu";
 
 function NavLink({ to, icon, label, notification = 0 }) {
