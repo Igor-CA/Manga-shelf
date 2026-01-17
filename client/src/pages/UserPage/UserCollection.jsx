@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import SeriesCardList from "../../components/SeriesCardList";
+import SeriesCardList from "../../components/cards/SeriesCardList";
 import axios from "axios";
 import { useCallback, useState } from "react";
 import debaunce from "../../utils/debaunce";

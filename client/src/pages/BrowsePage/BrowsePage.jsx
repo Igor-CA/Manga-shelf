@@ -4,7 +4,7 @@ import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
 
 import { Link, useSearchParams } from "react-router-dom";
-import SeriesCardList from "../../components/SeriesCardList";
+import SeriesCardList from "../../components/cards/SeriesCardList";
 import TogglePageButton from "../../components/TogglePageButton";
 import { useContext } from "react";
 import { messageContext } from "../../components/messageStateProvider";

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
-import SeriesCardList from "../../components/SeriesCardList";
+import SeriesCardList from "../../components/cards/SeriesCardList";
 import { useCallback, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
 import { useEffect } from "react";
