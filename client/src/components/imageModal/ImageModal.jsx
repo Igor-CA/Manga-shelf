@@ -3,8 +3,8 @@ import { useContext, useRef } from "react";
 import axios from "axios";
 import ImageCropper from "./ImageCropper";
 import "./ImageModal.css";
-import { messageContext } from "../contexts/messageStateProvider";
-import { UserContext } from "../contexts/userProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
+import { UserContext } from "../../contexts/userProvider";
 
 function dataURLtoFile(dataurl, filename) {
 	const dataArray = dataurl.split(",");
