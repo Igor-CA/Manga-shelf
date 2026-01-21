@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { FaUpload, FaImage } from "react-icons/fa";
 import "./PhotoUploadForm.css";
+import CustomCheckbox from "./customInputs/CustomCheckbox";
 
 export default function PhotoUploadForm({ onPhotoAdded }) {
 	const [selectedFile, setSelectedFile] = useState(null);
@@ -17,14 +18,12 @@ export default function PhotoUploadForm({ onPhotoAdded }) {
 	const handleFileChange = (e) => {
 		const file = e.target.files[0];
 		if (file) {
-			// Validate file type
 			const validTypes = ["image/jpeg", "image/png", "image/webp"];
 			if (!validTypes.includes(file.type)) {
 				setError("Apenas arquivos JPEG, PNG e WEBP são permitidos");
 				return;
 			}
 
-			// Validate file size (10MB)
 			if (file.size > 10 * 1024 * 1024) {
 				setError("O arquivo deve ter no máximo 10MB");
 				return;
@@ -33,7 +32,6 @@ export default function PhotoUploadForm({ onPhotoAdded }) {
 			setError("");
 			setSelectedFile(file);
 
-			// Create preview
 			const reader = new FileReader();
 			reader.onloadend = () => {
 				setPreview(reader.result);
@@ -84,10 +82,7 @@ export default function PhotoUploadForm({ onPhotoAdded }) {
 
 			onPhotoAdded();
 		} catch (error) {
-			console.error("Erro ao fazer upload:", error);
-			setError(
-				error.response?.data?.msg || "Erro ao fazer upload da foto"
-			);
+			setError(error.response?.data?.msg || "Erro ao fazer upload da foto");
 		} finally {
 			setUploading(false);
 		}
@@ -163,35 +158,28 @@ export default function PhotoUploadForm({ onPhotoAdded }) {
 							/>
 						</div>
 					</div>
+					<CustomCheckbox
+						htmlId={"isVisible"}
+						label={"Visível publicamente"}
+						defaultValue={isVisible}
+						handleChange={(e) => setIsVisible(e.target.checked)}
+					></CustomCheckbox>
 
-					<div className="photo-upload-form__field">
-						<label className="photo-upload-form__checkbox">
-							<input
-								type="checkbox"
-								checked={isVisible}
-								onChange={(e) => setIsVisible(e.target.checked)}
-							/>
-							Tornar foto visível publicamente
-						</label>
-					</div>
-
-					<div className="photo-upload-form__field">
-						<label className="photo-upload-form__checkbox">
-							<input
-								type="checkbox"
-								checked={isAdultContent}
-								onChange={(e) => setIsAdultContent(e.target.checked)}
-							/>
-							<span style={{ color: '#ff6b6b' }}>Conteúdo adulto (+18)</span>
-						</label>
-					</div>
+					<CustomCheckbox
+						htmlId={"isAdultContent"}
+						label={
+							<span style={{ color: "var(--red)" }}>Conteúdo adulto (+18)</span>
+						}
+						defaultValue={isAdultContent}
+						handleChange={(e) => setIsAdultContent(e.target.checked)}
+					></CustomCheckbox>
 
 					{error && <div className="photo-upload-form__error">{error}</div>}
 
 					<button
 						type="submit"
 						disabled={uploading || !selectedFile}
-						className="button photo-upload-form__submit"
+						className="button"
 					>
 						{uploading ? "Enviando..." : "Adicionar Foto"}
 					</button>
