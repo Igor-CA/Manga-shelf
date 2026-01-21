@@ -1,10 +1,10 @@
 import { useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
 import { getOwnedVolumeInfo } from "../../utils/seriesDataFunctions";
-import { useEditVolume } from "../../components/EditVolumeContext";
-import { messageContext } from "../../components/messageStateProvider";
+import { useEditVolume } from "../../contexts/EditVolumeContext";
+import { messageContext } from "../../contexts/messageStateProvider";
 import ContentHeader from "../../components/contentHeader/contentHeader";
 
 export default function VolumeInfoCard({ volumeData }) {
@@ -68,6 +68,7 @@ export default function VolumeInfoCard({ volumeData }) {
 			checked: true,
 			onChange: () => {
 				const ownedVolumeData = getOwnedVolumeInfo(user, id);
+				ownedVolumeData._id = id;
 				if (ownedVolumeData) {
 					openEditModal(ownedVolumeData);
 				} else {
