@@ -133,12 +133,12 @@ export default function CollectionGallery() {
 						.map((date) => (
 							<div key={date} className="gallery-date-group">
 								<h3 className="gallery-date-title" onView={handleViewPhoto}>
-									{new Date(date).toLocaleDateString("pt-BR", {
+									{new Date(date + "T00:00:00").toLocaleDateString("pt-BR", {
 										year: "numeric",
 										month: "long",
 										day: "numeric",
 									})}
-								</h3> 
+								</h3>
 								<div className="gallery-photos-grid">
 									{photosByDate[date]
 										.sort((a, b) => a.order - b.order)
