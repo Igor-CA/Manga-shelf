@@ -137,6 +137,48 @@ const notesValidation = body("notes")
 	.withMessage("As anotações não podem exceder 500 caracteres.")
 	.escape();
 
+const photoDescriptionValidation = body("description")
+  .optional()
+  .trim()
+  .isLength({ max: 1000 }) 
+  .withMessage("A descrição não pode exceder 1000 caracteres.")
+  .escape();
+
+const photoDateValidation = body("date")
+  .optional()
+  .trim()
+  .isISO8601()
+  .withMessage("Data inválida.")
+  .toDate();
+
+const photoOrderValidation = body("order")
+  .optional()
+  .isInt()
+  .withMessage("A ordem deve ser um número inteiro.")
+  .toInt();
+
+const photoVisibleValidation = body("isVisible")
+  .optional()
+  .customSanitizer(value => {
+      if (value === 'true') return true;
+      if (value === 'false') return false;
+      return value;
+  })
+  .isBoolean()
+  .withMessage("isVisible deve ser verdadeiro ou falso.")
+  .toBoolean();
+
+const photoAdultValidation = body("isAdultContent")
+  .optional()
+  .customSanitizer(value => {
+      if (value === 'true') return true;
+      if (value === 'false') return false;
+      return value;
+  })
+  .isBoolean()
+  .withMessage("isAdultContent deve ser verdadeiro ou falso.")
+  .toBoolean();
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -172,6 +214,13 @@ const editOwnedValidation = [
 	isReadValidation,
 	notesValidation,
 ];
+const photoValidation = [
+  photoDescriptionValidation,
+  photoDateValidation,
+  photoOrderValidation,
+  photoVisibleValidation,
+  photoAdultValidation
+];
 // Middleware to handle validation errors
 const validateRequest = (req, res, next) => {
 	const errors = validationResult(req);
@@ -194,5 +243,6 @@ module.exports = {
 	changePasswordValidator,
 	reportsValidation,
 	editOwnedValidation,
+	photoValidation,
 	validateRequest,
 };

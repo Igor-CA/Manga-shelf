@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 
-const userController = require("../controllers/user");
 const {
 	authController,
 	profileController,
@@ -24,6 +23,7 @@ const {
 	changeEmailValidator,
 	reportsValidation,
 	editOwnedValidation,
+	photoValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -31,40 +31,40 @@ router.post(
 	"/signup",
 	signupValidation,
 	validateRequest,
-	authController.signup
+	authController.signup,
 );
 router.post("/login", loginValidation, validateRequest, authController.login);
 router.get("/logout", requireAuth, authController.logout);
 router.get(
 	"/login/auth/google",
-	passport.authenticate("google", { scope: ["profile", "email"] })
+	passport.authenticate("google", { scope: ["profile", "email"] }),
 );
 router.get(
 	"/auth/google/callback",
 	passport.authenticate("google", { failureRedirect: "/login" }),
 	(req, res) => {
 		res.redirect("/");
-	}
+	},
 );
 
 router.post(
 	"/forgot",
 	forgotPasswordValidation,
 	validateRequest,
-	authController.sendResetEmail
+	authController.sendResetEmail,
 );
 
 router.post(
 	"/reset-password",
 	newPasswordValidator,
 	validateRequest,
-	authController.resetPassword
+	authController.resetPassword,
 );
 router.post(
 	"/report",
 	reportsValidation,
 	validateRequest,
-	reportController.createReport
+	reportController.createReport,
 );
 
 //
@@ -72,14 +72,14 @@ router.post("/add-series", requireAuth, userActionsController.addSeries);
 router.post(
 	"/add-to-wishlist",
 	requireAuth,
-	userActionsController.addToWishlist
+	userActionsController.addToWishlist,
 );
 router.post("/add-volume", requireAuth, userActionsController.addVolume);
 router.post("/remove-series", requireAuth, userActionsController.removeSeries);
 router.post(
 	"/remove-from-wishlist",
 	requireAuth,
-	userActionsController.removeFromWishList
+	userActionsController.removeFromWishList,
 );
 router.post("/remove-volume", requireAuth, userActionsController.removeVolume);
 router.post("/drop-series", requireAuth, userActionsController.dropSeries);
@@ -87,91 +87,92 @@ router.post("/undrop-series", requireAuth, userActionsController.undropSeries);
 router.post(
 	"/toggle-read",
 	requireAuth,
-	userActionsController.toggleVolumeRead
+	userActionsController.toggleVolumeRead,
 );
 router.post(
 	"/set-read-status",
 	requireAuth,
-	userActionsController.setVolumesReadStatus
+	userActionsController.setVolumesReadStatus,
 );
 router.put(
 	"/edit-owned-volumes",
 	requireAuth,
 	editOwnedValidation,
 	validateRequest,
-	userActionsController.editOwnedVolumes
+	userActionsController.editOwnedVolumes,
 );
 router.put(
 	"/set-username",
 	requireAuth,
 	changeUsernameValidator,
 	validateRequest,
-	profileController.setUserName
+	profileController.setUserName,
 );
 router.put(
 	"/change-profile-pic",
 	requireAuth,
-	profileController.changeProfilePicture
+	profileController.changeProfilePicture,
 );
 router.put(
 	"/change-profile-banner",
 	requireAuth,
-	profileController.changeProfileBanner
+	profileController.changeProfileBanner,
 );
 router.put(
 	"/change-password",
 	requireAuth,
 	changePasswordValidator,
 	validateRequest,
-	profileController.changePassword
+	profileController.changePassword,
 );
 router.put(
 	"/change-email",
 	requireAuth,
 	changeEmailValidator,
 	validateRequest,
-	profileController.changeEmail
+	profileController.changeEmail,
 );
 router.put("/allow-adult", requireAuth, profileController.allowAdultContent);
 router.put(
 	"/toggle-follow",
 	requireAuth,
-	userActionsController.toggleFollowUser
+	userActionsController.toggleFollowUser,
 );
 router.put(
 	"/set-notifications",
 	requireAuth,
-	profileController.setUserNotifications
+	profileController.setUserNotifications,
 );
 router.put(
 	"/mark-notification-seen",
 	requireAuth,
-	notificationsController.setNotificationAsSeen
+	notificationsController.setNotificationAsSeen,
 );
 
 // Collection photos routes
 router.post(
 	"/collection-photos",
 	requireAuth,
-	collectionPhotosController.createPhoto
+	photoValidation,
+	validateRequest,
+	collectionPhotosController.createPhoto,
 );
 router.get(
 	"/:username/collection-photos",
-	collectionPhotosController.getUserPhotos
+	collectionPhotosController.getUserPhotos,
 );
-router.get(
-	"/collection-photos/:id",
-	collectionPhotosController.getPhoto
-);
+router.get("/collection-photos/:id", collectionPhotosController.getPhoto);
 router.put(
 	"/collection-photos/:id",
+	photoValidation,
+	validateRequest,
 	requireAuth,
-	collectionPhotosController.updatePhoto
+	collectionPhotosController.updatePhoto,
 );
 router.delete(
 	"/collection-photos/:id",
 	requireAuth,
-	collectionPhotosController.deletePhoto
+	collectionPhotosController.deletePhoto,
 );
 
 module.exports = router;
