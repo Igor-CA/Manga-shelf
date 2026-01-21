@@ -150,8 +150,8 @@ const EditVolumeModal = () => {
 							className="filter__checkbox"
 						/>
 					</label>
-					<div className="input-group input-group--column">
-						<label className="input-group">
+					<div className="input-group">
+						<label className="input-container">
 							<span className="label-text">Data de leitura</span>
 							<input
 								type="date"
@@ -161,7 +161,7 @@ const EditVolumeModal = () => {
 								className="form__input"
 							/>
 						</label>
-						<label className="input-group">
+						<label className="input-container">
 							<span className="label-text">Vezes Lido</span>
 							<input
 								type="number"
@@ -173,8 +173,8 @@ const EditVolumeModal = () => {
 						</label>
 					</div>
 
-					<div className="input-group input-group--column">
-						<label className="input-group">
+					<div className="input-group">
+						<label className="input-container">
 							<span className="label-text">Data de Aquisição</span>
 							<input
 								type="date"
@@ -183,7 +183,7 @@ const EditVolumeModal = () => {
 								className="form__input"
 							/>
 						</label>
-						<label className="input-group">
+						<label className="input-container">
 							<span className="label-text">Preço pago</span>
 							<input
 								type="number"
@@ -194,7 +194,7 @@ const EditVolumeModal = () => {
 							/>
 						</label>
 					</div>
-					<label className="input-group">
+					<label className="input-container">
 						<span className="label-text">Quantidade de cópias</span>
 						<input
 							type="number"
@@ -203,7 +203,7 @@ const EditVolumeModal = () => {
 							className="form__input"
 						/>
 					</label>
-					<label className="input-group">
+					<label className="input-container">
 						<span className="label-text">Anotações pessoais</span>
 						<textarea
 							name="notes"
