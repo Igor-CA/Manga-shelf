@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import debaunce from "../utils/debaunce";
 import { useContext } from "react";
-import { messageContext } from "../components/messageStateProvider";
+import { messageContext } from "../contexts/messageStateProvider";
 
 export const useFilterHandler = (
 	fetchFiltersUrl,
@@ -32,6 +32,10 @@ export const useFilterHandler = (
 	});
 	const [genreList, setGenresList] = useState([]);
 	const [publishersList, setPublishersList] = useState([]);
+	const [typesList, setTypesList] = useState([]);
+	const [originalYearList, setOriginalYearList] = useState([]);
+	const [localYearList, setLocalYearList] = useState([]);
+	const [countryList, setCountryList] = useState([]);
 
 	const [searchBarValue, setSearchBarValue] = useState(
 		params["search-bar"] || params["search"] || ""
@@ -53,6 +57,10 @@ export const useFilterHandler = (
 				});
 				setGenresList(res.data.genres);
 				setPublishersList(res.data.publishers);
+				setTypesList(res.data.types);
+				setOriginalYearList(res.data.originalPublishedYears);
+				setLocalYearList(res.data.publishedYears);
+				setCountryList(res.data.countries);
 			} catch (err) {
 				const customErrorMessage =
 					err.response?.data?.msg || "Error fetching filter data";
@@ -73,29 +81,46 @@ export const useFilterHandler = (
 		[params, useURLParams, setSearchParams]
 	);
 
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-
-		if (name === "search" || name === "search-bar") {
-			setSearchBarValue(value);
-		}
-
-		if (value.trim() !== "" || value === null) {
-			debouncedSearch(name, value);
-		} else {
-			const { [name]: removed, ...rest } = params;
-			setParams(rest);
-			if (useURLParams) {
-				setSearchParams(rest);
-			}
+	const updateImmediate = (name, value) => {
+		const newParams = { ...params, [name]: value };
+		setParams(newParams);
+		if (useURLParams) {
+			setSearchParams(newParams);
 		}
 	};
 
+	const handleChange = (e) => {
+		const { name, value, type, checked } = e.target;
+		const finalValue = type === "checkbox" ? (checked ? value : "") : value;
+		if (name === "search" || name === "search-bar") {
+			setSearchBarValue(finalValue);
+
+			if (finalValue.trim() !== "") {
+				debouncedSearch(name, finalValue);
+			} else {
+				const { [name]: removed, ...rest } = params;
+				setParams(rest);
+				if (useURLParams) setSearchParams(rest);
+			}
+		} else {
+			if (finalValue.trim() !== "") {
+				updateImmediate(name, finalValue);
+			} else {
+				const { [name]: removed, ...rest } = params;
+				setParams(rest);
+				if (useURLParams) setSearchParams(rest);
+			}
+		}
+	};
 	return {
 		params,
 		functionArguments,
 		genreList,
 		publishersList,
+		typesList,
+		localYearList,
+		countryList,
+		originalYearList,
 		handleChange,
 		searchBarValue,
 	};

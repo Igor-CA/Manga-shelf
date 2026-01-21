@@ -4,10 +4,10 @@ import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
 
 import { Link, useSearchParams } from "react-router-dom";
-import SeriesCardList from "../../components/SeriesCardList";
-import TogglePageButton from "../../components/TogglePageButton";
+import SeriesCardList from "../../components/cards/SeriesCardList";
+import TogglePageButton from "../../components/customInputs/TogglePageButton";
 import { useContext } from "react";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import { useEffect } from "react";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import FilterControls from "../../components/FilterControls";
@@ -21,6 +21,10 @@ export default function BrowsePage() {
 		functionArguments,
 		genreList,
 		publishersList,
+		typesList,
+		originalYearList,
+		countryList,
+		localYearList,
 		handleChange,
 		searchBarValue,
 	} = useFilterHandler(fetchFiltersUrl, true); // `true` to use URL search params
@@ -77,7 +81,8 @@ export default function BrowsePage() {
 				]}
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
-				lists={{ genreList, publishersList }}
+				lists={{ genreList, publishersList, typesList, originalYearList, localYearList, countryList }}
+				secundaryFilters={true}
 			/>
 			<SeriesCardList
 				skeletonsCount={12}

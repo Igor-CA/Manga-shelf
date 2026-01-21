@@ -4,7 +4,7 @@ import ReactCrop, {
 	convertToPixelCrop,
 	makeAspectCrop,
 } from "react-image-crop";
-import setCanvasPreview from "../utils/setCanvasPreview";
+import setCanvasPreview from "../../utils/setCanvasPreview";
 import "./ImageModal.css"
 import "react-image-crop/dist/ReactCrop.css";
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import PieChartComponent from "../../components/PieChart";
+import PieChartComponent from "../../components/graphs/PieChart";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import BarChartComponent from "../../components/BarChart";
+import BarChartComponent from "../../components/graphs/BarChart";
 
 export default function UserStatsPage() {
 	const { username } = useParams();

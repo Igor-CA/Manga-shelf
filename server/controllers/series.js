@@ -88,25 +88,62 @@ exports.browse = asyncHandler(async (req, res, next) => {
 
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
-	const { publisher, genre, status } = req.query;
+	const {
+		publisher,
+		genre,
+		status,
+		demographic,
+		type,
+		publishedAtJp,
+		publishedAtBr,
+		onlyOwned,
+		hideOwned,
+		country,
+	} = req.query;
 	const search = req.query["search"];
 
 	const filter = {};
 	if (genre) filter["genres"] = { $in: [genre] };
 	if (publisher) filter["publisher"] = publisher;
 	if (status) filter["status"] = status;
+	if (demographic) filter["demographic"] = demographic;
+	if (type) filter["type"] = type;
+	if (country) filter["originalRun.country"] = country;
+	if (onlyOwned) {
+		filter["$or"] = [{ inUserList: true }, { inWishlist: true }];
+	}
+	if (hideOwned) {
+		filter["$and"] = [{ inUserList: false }, { inWishlist: false }];
+	}
+
+	if (publishedAtBr) {
+		const year = parseInt(publishedAtBr);
+		filter["dates.publishedAt"] = {
+			$gte: new Date(Date.UTC(year, 0, 1)),
+			$lte: new Date(Date.UTC(year, 11, 31, 23, 59, 59)),
+		};
+	}
+
+	if (publishedAtJp) {
+		const year = parseInt(publishedAtJp);
+		filter["originalRun.dates.publishedAt"] = {
+			$gte: new Date(Date.UTC(year, 0, 1)),
+			$lte: new Date(Date.UTC(year, 11, 31, 23, 59, 59)),
+		};
+	}
 
 	const sortOptions = {
 		// Order 1 for ascending and 2 for descending
-		popularity: { atribute: "popularity", order: -1 },
-		title: { atribute: "title", order: 1 },
-		publisher: { atribute: "publisher", order: 1 },
-		volumes: { atribute: "volumesLength", order: -1 },
-		date: { atribute: "releaseDate", order: 1 },
+		popularity: { attribute: "popularity", order: -1 },
+		title: { attribute: "title", order: 1 },
+		publisher: { attribute: "publisher", order: 1 },
+		volumes: { attribute: "volumesLength", order: -1 },
+		dateJp: { attribute: "originalRun.dates.publishedAt", order: -1 },
+		dateBr: { attribute: "dates.publishedAt", order: -1 },
 	};
 	const ordering = req.query.ordering || "popularity";
 	const sortStage = {};
-	sortStage[sortOptions[ordering].atribute] = sortOptions[ordering].order;
+	sortStage[sortOptions[ordering].attribute] = sortOptions[ordering].order;
 	sortStage["title"] = 1;
 	const isValidSearch = search && search.trim() !== "";
 
@@ -154,6 +191,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 			$match: {},
 		});
 	}
+	addUserListData(pipeline, req.user);
 	pipeline.push(
 		{
 			$lookup: {
@@ -186,7 +224,6 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		{ $match: filter },
 		{ $sort: sortStage }
 	);
-	addUserListData(pipeline, req.user);
 
 	if (isValidSearch) {
 		pipeline.push(
@@ -341,13 +378,17 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	const relatedInfoImages = desiredSeries.related.map((series) => {
 		return {
 			image: getSeriesCoverURL(series),
-			...series
+			...series,
 		};
 	});
 
-
 	const { _id: id, __v, ...rest } = desiredSeries;
-	const jsonResponse = { id, ...rest, volumes: volumesWithImages, related: relatedInfoImages };
+	const jsonResponse = {
+		id,
+		...rest,
+		volumes: volumesWithImages,
+		related: relatedInfoImages,
+	};
 	res.send(jsonResponse);
 });
 
@@ -371,6 +412,42 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 						$group: {
 							_id: null,
 							publishers: { $addToSet: "$publisher" },
+						},
+					},
+				],
+				types: [
+					{ $match: { type: { $ne: null, $nin: [""] } } },
+					{
+						$group: {
+							_id: null,
+							types: { $addToSet: "$type" },
+						},
+					},
+				],
+				countries: [
+					{ $match: { "originalRun.country": { $ne: null } } },
+					{
+						$group: {
+							_id: null,
+							countries: { $addToSet: "$originalRun.country" },
+						},
+					},
+				],
+				publishedYears: [
+					{ $match: { "dates.publishedAt": { $ne: null } } },
+					{
+						$group: {
+							_id: null,
+							years: { $addToSet: { $year: "$dates.publishedAt" } },
+						},
+					},
+				],
+				originalPublishedYears: [
+					{ $match: { "originalRun.dates.publishedAt": { $ne: null } } },
+					{
+						$group: {
+							_id: null,
+							years: { $addToSet: { $year: "$originalRun.dates.publishedAt" } },
 						},
 					},
 				],
@@ -402,9 +479,66 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 						[],
 					],
 				},
+				types: {
+					$cond: [
+						{ $gt: [{ $size: "$types" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$types.types", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
+				countries: {
+					$cond: [
+						{ $gt: [{ $size: "$countries" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$countries.countries", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
+				publishedYears: {
+					$cond: [
+						{ $gt: [{ $size: "$publishedYears" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$publishedYears.years", 0] },
+								sortBy: -1,
+							},
+						},
+						[],
+					],
+				},
+				originalPublishedYears: {
+					$cond: [
+						{ $gt: [{ $size: "$originalPublishedYears" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$originalPublishedYears.years", 0] },
+								sortBy: -1,
+							},
+						},
+						[],
+					],
+				},
 			},
 		},
 	]);
 
-	res.send(result[0] || { genres: [], publishers: [] });
+	res.send(
+		result[0] || {
+			genres: [],
+			publishers: [],
+			types: [],
+			countrys: [],
+			publishedYears: [],
+			originalPublishedYears: [],
+		}
+	);
 });

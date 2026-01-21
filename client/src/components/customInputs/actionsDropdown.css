@@ -1,0 +1,101 @@
+.button-select__shadow-container {
+	padding: 0rem 0.75rem;
+	width: 100%;
+	background: linear-gradient(#ffffff00, var(--foreground) 100px);
+	position: absolute;
+	bottom: 0;
+	color: var(--text);
+}
+
+.button-select__container {
+	margin-top: 50px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: stretch;
+	margin-bottom: 15px;
+	gap: 10px;
+	position: relative;
+}
+.button-select {
+	text-align: center;
+	font-size: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-radius: 0.25rem;
+	border: none;
+	background-color: var(--accent);
+	color: white;
+	font-weight: bold;
+	cursor: pointer;
+	overflow: hidden;
+}
+.button-select--disabled {
+	background-color: var(--text);
+	color: var(--background);
+	opacity: 0.6;
+}
+.button-select--red {
+	background-color: var(--red);
+}
+.button-select__option {
+	flex-grow: 1;
+	padding: 20px;
+	cursor: pointer;
+}
+.button-select__dropdown {
+	background-color: rgba(255, 255, 255, 0.2);
+	font-size: 2rem;
+	padding: 10px 20px;
+}
+.button-select__options-container {
+	position: absolute;
+	bottom: 100%;
+	width: 100%;
+	margin-bottom: 10px;
+	text-align: center;
+	font-size: 1rem;
+	display: flex;
+	flex-direction: column;
+	border-radius: 0.25rem;
+	border: none;
+	background-color: var(--accent);
+	color: white;
+	font-weight: bold;
+	cursor: pointer;
+	overflow: hidden;
+	transition: 0.2s;
+	opacity: 1;
+	z-index: 10;
+}
+.button-select__options-container--hidden {
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+}
+.button-select__options-container > .button-select__option {
+	border-bottom: 2px solid white;
+}
+.button-select__options-container > .button-select__option:last-child {
+	border-bottom: none;
+}
+
+@media only screen and (min-width: 768px) {
+	.button-select__shadow-container {
+		padding: 0;
+		position: static;
+		background: none;
+	}
+
+	.button-select__container {
+		margin-top: 0px;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: stretch;
+		margin-bottom: 15px;
+		gap: 10px;
+		position: relative;
+	}
+}

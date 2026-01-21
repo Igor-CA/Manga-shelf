@@ -7,10 +7,229 @@ const {
 	getNewUserSeriesStatus,
 } = require("../controllers/user/userActionsController");
 const logger = require("../Utils/logger");
+const volume = require("../models/volume");
+
+const INTERNAL_RELATIONS = ["Outra Edição", "Mesmo Autor(a)"];
+const FRANCHISE_LINKS = [
+	"Antecedente",
+	"Continuação",
+	"História Principal",
+	"História Paralela",
+	"Versão Alternativa",
+	"Spin-off",
+	"Adaptação",
+	"Material Original",
+	"Outro",
+];
+
+function cleanAuthorName(name) {
+	if (!name) return "";
+	let cleaned = name.replace(/\s*\(.*?\)\s*/g, "");
+	return cleaned.trim();
+}
+
+function escapeRegex(text) {
+	return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+}
+
+async function resolveAuthorsAndFranchise(currentSeries) {
+	if (!currentSeries.authors || currentSeries.authors.length === 0) return [];
+
+	const authorRegexes = currentSeries.authors
+		.map((rawName) => cleanAuthorName(rawName))
+		.filter((name) => name.length > 0)
+		.map((cleanName) => {
+			const escaped = escapeRegex(cleanName);
+			return new RegExp(`^\\s*${escaped}\\s*(\\(.*\\))?\\s*$`, "i");
+		});
+
+	if (authorRegexes.length === 0) return [];
+
+	const authorWorks = await Series.find({
+		authors: { $in: authorRegexes },
+		_id: { $ne: currentSeries._id },
+	}).select("title relatedSeries authors anilistId");
+
+	if (authorWorks.length === 0) return [];
+
+	const adjList = new Map();
+	const addEdge = (a, b) => {
+		if (!adjList.has(a)) adjList.set(a, []);
+		if (!adjList.has(b)) adjList.set(b, []);
+		adjList.get(a).push(b);
+	};
+
+	if (currentSeries.relatedSeries) {
+		currentSeries.relatedSeries.forEach((rel) => {
+			if (rel.series && FRANCHISE_LINKS.includes(rel.relation)) {
+				addEdge(currentSeries._id.toString(), rel.series.toString());
+			}
+		});
+	}
+
+	authorWorks.forEach((work) => {
+		if (work.relatedSeries) {
+			work.relatedSeries.forEach((rel) => {
+				if (rel.series && FRANCHISE_LINKS.includes(rel.relation)) {
+					addEdge(work._id.toString(), rel.series.toString());
+				}
+			});
+		}
+	});
+
+	const visited = new Set();
+	const queue = [currentSeries._id.toString()];
+	visited.add(currentSeries._id.toString());
+
+	while (queue.length > 0) {
+		const curr = queue.shift();
+		const neighbors = adjList.get(curr) || [];
+		for (const next of neighbors) {
+			if (!visited.has(next)) {
+				visited.add(next);
+				queue.push(next);
+			}
+		}
+	}
+
+	const sameAuthorRelations = [];
+	for (const work of authorWorks) {
+		if (currentSeries.anilistId && work.anilistId === currentSeries.anilistId)
+			continue;
+
+		if (!visited.has(work._id.toString())) {
+			sameAuthorRelations.push({
+				series: work._id,
+				relation: "Mesmo Autor(a)",
+			});
+		}
+	}
+
+	return sameAuthorRelations;
+}
 async function syncAndRecalculateData() {
 	await cleanUserDuplicates();
 	await recalculateUserListInfo();
 	await updateSeriesPopularity();
+	await updateSeriesMetadata();
+	await updateSeriesRelations(); 
+}
+
+async function updateSeriesRelations() {
+	logger.info("Starting Internal Linking (Smart Deduplication Mode)...");
+
+	let seriesProcessed = 0;
+	let seriesModified = 0;
+	let bulkOps = [];
+	const BATCH_SIZE = 500;
+
+	const cursor = Series.find({}).cursor();
+
+	try {
+		for (
+			let series = await cursor.next();
+			series != null;
+			series = await cursor.next()
+		) {
+			let wasModified = false;
+
+			const preservedRelations = (series.relatedSeries || []).filter(
+				(rel) => !INTERNAL_RELATIONS.includes(rel.relation)
+			);
+
+			const existingIds = new Set(
+				preservedRelations.map((rel) => rel.series.toString())
+			);
+
+			let newEditionRelations = [];
+			if (series.anilistId) {
+				const otherEditions = await Series.find({
+					anilistId: series.anilistId,
+					_id: { $ne: series._id },
+				}).select("_id title");
+
+				newEditionRelations = otherEditions
+					.filter((s) => !existingIds.has(s._id.toString()))
+					.map((s) => ({
+						series: s._id,
+						relation: "Outra Edição",
+						_debugTitle: s.title,
+					}));
+			}
+
+			if (newEditionRelations.length > 0) {
+				const names = newEditionRelations.map((e) => e._debugTitle).join(", ");
+				logger.info(
+					`[${series.title}] Adding ${newEditionRelations.length} other editions: ${names}`
+				);
+			}
+
+			newEditionRelations.forEach((r) => existingIds.add(r.series.toString()));
+
+			const rawAuthorRelations = await resolveAuthorsAndFranchise(series);
+
+			const newAuthorRelations = rawAuthorRelations.filter(
+				(rel) => !existingIds.has(rel.series.toString())
+			);
+
+			if (newAuthorRelations.length > 0) {
+				const foundIds = newAuthorRelations.map((r) => r.series);
+				const foundDocs = await Series.find({ _id: { $in: foundIds } }).select(
+					"title"
+				);
+				const names = foundDocs.map((d) => d.title).join(", ");
+				logger.info(
+					`[${series.title}] Adding ${newAuthorRelations.length} same author works: ${names}`
+				);
+			}
+
+			if (newEditionRelations.length > 0 || newAuthorRelations.length > 0) {
+				wasModified = true;
+			}
+
+			if (wasModified) {
+				const finalEditionRelations = newEditionRelations.map(
+					({ _debugTitle, ...rest }) => rest
+				);
+
+				const updatedRelatedSeries = [
+					...preservedRelations,
+					...finalEditionRelations,
+					...newAuthorRelations,
+				];
+
+				bulkOps.push({
+					updateOne: {
+						filter: { _id: series._id },
+						update: {
+							$set: {
+								relatedSeries: updatedRelatedSeries,
+							},
+						},
+					},
+				});
+				seriesModified++;
+			}
+
+			seriesProcessed++;
+
+			if (bulkOps.length >= BATCH_SIZE) {
+				await Series.bulkWrite(bulkOps);
+				bulkOps = [];
+			}
+		}
+
+		if (bulkOps.length > 0) {
+			await Series.bulkWrite(bulkOps);
+		}
+
+		logger.info(
+			`Internal Linking Complete. Processed: ${seriesProcessed}, Modified: ${seriesModified}.`
+		);
+	} catch (error) {
+		logger.error("Error linking internal relations:", error);
+		throw error;
+	}
 }
 
 async function cleanUserDuplicates() {
@@ -116,6 +335,7 @@ async function cleanUserDuplicates() {
 		throw error;
 	}
 }
+
 async function recalculateUserListInfo() {
 	logger.info("Checking userList related info");
 	let usersProcessed = 0;
@@ -216,6 +436,7 @@ async function recalculateUserListInfo() {
 		throw error;
 	}
 }
+
 async function updateSeriesPopularity() {
 	try {
 		logger.info("Calculating series popularity");
@@ -255,6 +476,123 @@ async function updateSeriesPopularity() {
 		await Series.bulkWrite(bulkOps);
 	} catch (error) {
 		logger.error("Error updating series popularity:", error);
+		throw error;
+	}
+}
+
+async function updateSeriesMetadata() {
+	logger.info("Starting sanitization of Series dates and status...");
+
+	let seriesProcessed = 0;
+	let seriesModified = 0;
+	let bulkOps = [];
+	const BATCH_SIZE = 500;
+
+	const cursor = Series.find({}).cursor();
+
+	try {
+		for (
+			let series = await cursor.next();
+			series != null;
+			series = await cursor.next()
+		) {
+			let wasModified = false;
+
+			const volumesData = await volume
+				.find({ serie: series._id })
+				.select("number date")
+				.sort({ number: 1 })
+				.lean();
+
+			const firstVol = volumesData.find((v) => v.number === 1);
+
+			if (firstVol && firstVol.date) {
+				if (
+					!series.dates.publishedAt ||
+					series.dates.publishedAt.getTime() !== firstVol.date.getTime()
+				) {
+					series.dates.publishedAt = firstVol.date;
+					wasModified = true;
+				}
+			}
+
+			if (series.originalRun && series.originalRun.status === "Finalizado") {
+				const volumesInFormat = series.specs?.volumesInFormat || 1;
+				const currentVolumeCount = series.volumes.length;
+
+				const equivalentVolumes = currentVolumeCount * volumesInFormat;
+
+				if (
+					series.originalRun.totalVolumes &&
+					equivalentVolumes < series.originalRun.totalVolumes
+				) {
+					if (series.status !== "Em publicação") {
+						series.status = "Em publicação";
+						wasModified = true;
+					}
+				} else {
+					if (series.status !== "Finalizado") {
+						series.status = "Finalizado";
+						wasModified = true;
+					}
+				}
+			} else if (series.originalRun && series.originalRun.status) {
+				if (series.status !== series.originalRun.status) {
+					series.status = series.originalRun.status;
+					wasModified = true;
+				}
+			}
+
+			if (series.status === "Finalizado" && volumesData.length > 0) {
+				const lastVol = volumesData[volumesData.length - 1];
+
+				if (lastVol && lastVol.date) {
+					if (
+						!series.dates.finishedAt ||
+						series.dates.finishedAt.getTime() !== lastVol.date.getTime()
+					) {
+						series.dates.finishedAt = lastVol.date;
+						wasModified = true;
+					}
+				}
+			}
+
+			if (wasModified) {
+				logger.warn(`Updated: ${series.title}`);
+				bulkOps.push({
+					updateOne: {
+						filter: { _id: series._id },
+						update: {
+							$set: {
+								"dates.publishedAt": series.dates.publishedAt,
+								"dates.finishedAt": series.dates.finishedAt,
+								status: series.status,
+							},
+						},
+					},
+				});
+				seriesModified++;
+			}
+
+			seriesProcessed++;
+
+			if (bulkOps.length >= BATCH_SIZE) {
+				await Series.bulkWrite(bulkOps);
+				bulkOps = [];
+			}
+		}
+
+		if (bulkOps.length > 0) {
+			await Series.bulkWrite(bulkOps);
+		}
+
+		logger.info(
+			`Series sanitization complete. Processed: ${seriesProcessed}, Modified: ${seriesModified}.`
+		);
+
+		return { seriesProcessed, seriesModified };
+	} catch (error) {
+		logger.error("Error sanitizing series metadata:", error);
 		throw error;
 	}
 }

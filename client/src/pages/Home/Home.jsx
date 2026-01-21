@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import "./Home.css";
 import BrowsePage from "../BrowsePage/BrowsePage";
 import { useContext } from "react";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 
 export default function Home() {
 	const { user } = useContext(UserContext);

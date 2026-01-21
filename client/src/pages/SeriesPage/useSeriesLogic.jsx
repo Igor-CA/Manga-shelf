@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../components/userProvider";
-import { messageContext } from "../../components/messageStateProvider";
-import { checkOwnedVolumes, getOwnedVolumeInfo } from "./utils";
-import { usePrompt } from "../../components/PromptContext";
+import { UserContext } from "../../contexts/userProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
+import { getOwnedVolumeInfo } from "../../utils/seriesDataFunctions";
+import { usePrompt } from "../../contexts/PromptContext";
 
 export const useSeriesLogic = (id) => {
 	const navigate = useNavigate();
@@ -33,7 +33,7 @@ export const useSeriesLogic = (id) => {
 			}
 		};
 		fetchSeriesData();
-	}, [id, navigate]);
+	}, [id]);
 
 	useEffect(() => {
 		if (!isFetching && !user?.allowAdult && series?.isAdult) {

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
-import SeriesCardList from "../../components/SeriesCardList";
+import SeriesCardList from "../../components/cards/SeriesCardList";
 import FilterControls from "../../components/FilterControls";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { useCallback } from "react";

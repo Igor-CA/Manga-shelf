@@ -1,23 +1,32 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import ImageModal from "../../components/ImageModal";
+import { useContext, useEffect, useRef, useState, useMemo } from "react";
+import ImageModal from "../../components/imageModal/ImageModal";
+import ContentNavbar from "../../components/navbars/ContentNavbar";
 import axios from "axios";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 
 export default function ProfileHeader({ user }) {
 	const [loaded, setLoaded] = useState(false);
 	const [showModal, setShowModal] = useState(false);
-	const location = useLocation();
 	const { user: loggedUser } = useContext(UserContext);
-	const [activeLink, setActiveLink] = useState(
-		location.pathname.replace(`/user/${user}`, "")
-	);
+
 	const [following, setFollowing] = useState(false);
 	const [banner, setBanner] = useState();
 	const avatarUrl = useRef("");
 
 	const [cropperAspectRatio, setCropperAspectRatio] = useState(1);
 	const [cropperApiRoute, setCropperApiRoute] = useState("");
+
+	const navLinks = useMemo(
+		() => [
+			{ to: `/user/${user}`, label: "Estante", end: true },
+			{ to: `/user/${user}/missing`, label: "Volumes faltosos" },
+			{ to: `/user/${user}/volumes`, label: "Lista de leitura" },
+			{ to: `/user/${user}/wishlist`, label: "Lista de desejos" },
+			{ to: `/user/${user}/stats`, label: "Informações" },
+			{ to: `/user/${user}/socials`, label: "Social" },
+		],
+		[user]
+	);
 
 	useEffect(() => {
 		const getProfilePicture = async (page) => {
@@ -29,13 +38,12 @@ export default function ProfileHeader({ user }) {
 					headers: {
 						Authorization: import.meta.env.REACT_APP_API_KEY,
 					},
-					params: {
-						p: page,
-					},
+					params: { p: page },
 					url: `${
 						import.meta.env.REACT_APP_HOST_ORIGIN
 					}/api/data/get-user-info/${user}`,
 				});
+
 				avatarUrl.current = res.data?.profileImageUrl
 					? `${import.meta.env.REACT_APP_HOST_ORIGIN}${
 							res.data.profileImageUrl
@@ -47,6 +55,7 @@ export default function ProfileHeader({ user }) {
 				setFollowing(res.data.following);
 				setBanner(res.data.profileBannerUrl);
 			} catch (error) {
+				// Handle error
 			} finally {
 				setLoaded(true);
 			}
@@ -54,57 +63,41 @@ export default function ProfileHeader({ user }) {
 		getProfilePicture();
 	}, [user]);
 
-	useEffect(() => {
-		setActiveLink(location.pathname.replace(`/user/${user}`, ""));
-	}, [location, user]);
-
-	const toggleModal = () => {
-		setShowModal((prev) => !prev);
-	};
+	const toggleModal = () => setShowModal((prev) => !prev);
 
 	const configureCropToPic = () => {
 		setCropperAspectRatio(1);
 		setCropperApiRoute(
-			`${
-				import.meta.env.REACT_APP_HOST_ORIGIN
-			}/api/user/change-profile-pic`
-		);
-		toggleModal();
-	};
-	const configureCropToBanner = () => {
-		setCropperAspectRatio(5);
-		setCropperApiRoute(
-			`${
-				import.meta.env.REACT_APP_HOST_ORIGIN
-			}/api/user/change-profile-banner`
+			`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-pic`
 		);
 		toggleModal();
 	};
 
-	const handleLoading = () => {
-		setLoaded(true);
+	const configureCropToBanner = () => {
+		setCropperAspectRatio(5);
+		setCropperApiRoute(
+			`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/change-profile-banner`
+		);
+		toggleModal();
 	};
+
+	const handleLoading = () => setLoaded(true);
+
 	const followUser = async () => {
 		try {
 			await axios({
 				method: "PUT",
 				withCredentials: true,
-				headers: {
-					Authorization: import.meta.env.REACT_APP_API_KEY,
-				},
-				data: {
-					targetUser: user,
-					follow: !following,
-				},
-				url: `${
-					import.meta.env.REACT_APP_HOST_ORIGIN
-				}/api/user/toggle-follow`,
+				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+				data: { targetUser: user, follow: !following },
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/toggle-follow`,
 			});
 			setFollowing((prev) => !prev);
 		} catch (error) {
 			console.log("Error", error);
 		}
 	};
+
 	return (
 		<div>
 			{showModal && (
@@ -112,7 +105,7 @@ export default function ProfileHeader({ user }) {
 					closeModal={toggleModal}
 					apiUrl={cropperApiRoute}
 					aspectRatio={cropperAspectRatio}
-				></ImageModal>
+				/>
 			)}
 			<header
 				className="profile-header"
@@ -136,13 +129,11 @@ export default function ProfileHeader({ user }) {
 								!loaded && "profile-header__picture--loading"
 							}`}
 							onLoad={handleLoading}
-						></img>
+						/>
 						{loggedUser?.username === user && (
 							<button
 								className="profile-header__change-picture-button"
-								onClick={() => {
-									configureCropToPic();
-								}}
+								onClick={configureCropToPic}
 							>
 								Mudar foto de perfil
 							</button>
@@ -162,82 +153,14 @@ export default function ProfileHeader({ user }) {
 				{loggedUser?.username === user && (
 					<button
 						className="profile-header__change-picture-button"
-						onClick={() => {
-							configureCropToBanner();
-						}}
+						onClick={configureCropToBanner}
 					>
-						Mudar foto de fundo 
+						Mudar foto de fundo
 					</button>
 				)}
 			</header>
-			<div className="profile-header__navbar">
-				<nav className="container">
-					<ul className="profile-header__navbar__list">
-						<li>
-							<Link
-								to={`/user/${user}`}
-								className={getStyle(activeLink === "")}
-							>
-								Estante
-							</Link>
-						</li>
-						<li>
-							<Link
-								to={`/user/${user}/missing`}
-								className={getStyle(activeLink === "/missing")}
-							>
-								Volumes faltosos
-							</Link>
-						</li>
-						<li>
-							<Link
-								to={`/user/${user}/volumes`}
-								className={getStyle(activeLink === "/volumes")}
-							>
-								Lista de leitura	
-							</Link>
-						</li>
-						<li>
-							<Link
-								to={`/user/${user}/wishlist`}
-								className={getStyle(activeLink === "/wishlist")}
-							>
-								Lista de desejos
-							</Link>
-						</li>
-						<li>
-							<Link
-								to={`/user/${user}/stats`}
-								className={getStyle(activeLink === "/stats")}
-							>
-								Informações
-							</Link>
-						</li>
-						<li>
-							<Link
-								to={`/user/${user}/gallery`}
-								className={getStyle(activeLink === "/gallery")}
-							>
-								Galeria
-							</Link>
-						</li>
-						<li>
-							<Link
-								to={`/user/${user}/socials`}
-								className={getStyle(activeLink === "/socials")}
-							>
-								Social
-							</Link>
-						</li>
-					</ul>
-				</nav>
-			</div>
+
+			<ContentNavbar links={navLinks} />
 		</div>
 	);
 }
-
-const getStyle = (condition) => {
-	return condition
-		? "profile-header__navbar__link profile-header__navbar__link--active"
-		: "profile-header__navbar__link";
-};

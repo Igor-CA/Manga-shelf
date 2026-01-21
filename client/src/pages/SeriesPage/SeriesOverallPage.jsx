@@ -1,71 +1,84 @@
-import { useMemo } from "react";
-import { printArray } from "./utils";
+import { useMemo, useRef, useState } from "react";
+import { formatDate, printArray } from "../../utils/seriesDataFunctions";
 import SeriesVolumesList from "./SeriesVolumesList";
 import RelatedCard from "./RelatedCard";
 
 export default function SeriesOverallPage({ series, volumesState, actions }) {
+	const [showingMore, setShowingMore] = useState(false);
+	const seriesSummarry = useRef(null);
 	const {
-		authors,
-		publisher,
-		genres,
-		specs,
-		status,
-		statusBrazil,
-		chaptersCount,
-		volumesJapan,
-		releaseDateJapan,
-		releaseDateBrazil,
-		endDateJapan,
-		endDateBrasil,
-		paperType,
-		coverType,
-		popularity,
-		type,
-		demographic,
-		volumes,
 		related,
+		summary,
 	} = series;
-	const normalVolumes = volumes.filter((v) => !v.isVariant);
-	const variants = volumes.filter((v) => v.isVariant);
 	const detailsSchema = useMemo(() => {
 		if (!series) return [];
+
+		const {
+			authors,
+			publisher,
+			genres,
+			specs,
+			status,
+			popularity,
+			type,
+			demographic,
+			volumes,
+			originalRun,
+			dates,
+		} = series;
+
+		const formattedDimensions =
+			specs?.dimensions?.width && specs?.dimensions?.height
+				? `${specs.dimensions.width}cm x ${specs.dimensions.height}cm`.replaceAll(
+						".",
+						","
+				  )
+				: null;
+
+		const normalVolumes = volumes?.filter((v) => !v.isVariant) || [];
+		const variants = volumes?.filter((v) => v.isVariant) || [];
+		const variantSuffix =
+			variants.length > 0 ? ` + ${variants.length} capas variantes` : "";
 
 		return [
 			{ label: "Autores", value: printArray(authors) },
 			{ label: "Editora", value: publisher },
 			{ label: "Gêneros", value: printArray(genres) },
-			{
-				label: "Formato",
-				value: specs?.dimensions
-					? `${specs?.dimensions.width}cm x ${specs?.dimensions.height}cm`.replaceAll(
-							".",
-							","
-					  )
-					: null,
-			},
-			{ label: "Situação no Japão", value: status },
-			{ label: "Situação no Brasil", value: statusBrazil },
-			{ label: "Quantidade de capítulos", value: chaptersCount },
-			{ label: "Volumes no Japão", value: volumesJapan },
+			{ label: "Formato", value: formattedDimensions },
+			{ label: "Demografia", value: demographic },
+			{ label: "Situação no Japão", value: originalRun?.status },
+			{ label: "Situação no Brasil", value: status },
+			{ label: "Total de capítulos", value: originalRun?.totalChapters },
+			{ label: "Volumes no Japão", value: originalRun?.totalVolumes },
 			{
 				label: "Volumes no Brasil",
 				value: normalVolumes.length,
-				suffix:
-					variants.length > 0 ? ` + ${variants.length} capas variantes` : "",
+				suffix: variantSuffix,
 			},
-			{ label: "Data de lançamento no Japão", value: releaseDateJapan },
-			{ label: "Data de lançamento no Brasil", value: releaseDateBrazil },
-			{ label: "Data de conclusão no Japão", value: endDateJapan },
-			{ label: "Data de conclusão no Brasil", value: endDateBrasil },
-			{ label: "Tipo de papel", value: paperType },
-			{ label: "Tipo de capa", value: coverType },
+			{
+				label: "Data de lançamento no Japão",
+				value: formatDate(originalRun?.dates?.publishedAt),
+			},
+			{
+				label: "Data de lançamento no Brasil",
+				value: formatDate(dates?.publishedAt),
+			},
+			{
+				label: "Data de conclusão no Japão",
+				value: formatDate(originalRun?.dates?.finishedAt),
+			},
+			{
+				label: "Data de conclusão no Brasil",
+				value: formatDate(dates?.finishedAt),
+			},
+			{ label: "Tipo de papel", value: specs?.paper },
+			{ label: "Tipo de capa", value: specs?.cover },
 			{
 				label: "Popularidade",
 				value: popularity,
 				suffix: " usuários possuem ou querem essa obra",
 			},
 			{ label: "Tipo", value: type },
-			{ label: "Demografia", value: demographic },
 		];
 	}, [series]);
 	const { handleVolumeChange, handleReadToggle } = actions;
@@ -73,6 +86,30 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 	return (
 		<div className="container">
 			<div className="content-overall__container">
+				{summary?.length > 0 && (
+					<div className="content__details-summary content__details-summary--mobile">
+						<strong>Sinopse:</strong>
+						<div
+							ref={seriesSummarry}
+							className={`content__summary ${
+								showingMore ? "content__summary--show-full" : ""
+							}`}
+						>
+							{summary.map((paragraph, i) => (
+								<p key={i}>{paragraph}</p>
+							))}
+						</div>
+						{!showingMore && (
+							<button
+								className="show-more__button"
+								aria-label="Mostrar mais"
+								onClick={() => setShowingMore(true)}
+							>
+								Mostrar mais
+							</button>
+						)}
+					</div>
+				)}
 				<ul className="all-info-container">
 					{detailsSchema.map((item, index) => {
 						if (
@@ -114,7 +151,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 						volumes={series.volumes}
 						localVolumesList={volumesState}
 						handleChange={handleVolumeChange}
-						handleReadToggle={handleReadToggle} 
+						handleReadToggle={handleReadToggle}
 					></SeriesVolumesList>
 				</div>
 			</div>
