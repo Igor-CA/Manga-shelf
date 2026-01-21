@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { FaTrash, FaEdit, FaEye, FaEyeSlash, FaSearchPlus } from "react-icons/fa";
-import PromptConfirm from "./PromptConfirm";
+import PromptConfirm from "../contexts/PromptConfirm";
 import "./PhotoCard.css";
 
 export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }) {

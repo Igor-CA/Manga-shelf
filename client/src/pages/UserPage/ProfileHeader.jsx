@@ -23,6 +23,7 @@ export default function ProfileHeader({ user }) {
 			{ to: `/user/${user}/volumes`, label: "Lista de leitura" },
 			{ to: `/user/${user}/wishlist`, label: "Lista de desejos" },
 			{ to: `/user/${user}/stats`, label: "Informações" },
+			{ to: `/user/${user}/gallery`, label: "Galeria" },
 			{ to: `/user/${user}/socials`, label: "Social" },
 		],
 		[user]
