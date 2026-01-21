@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { formatDate, printArray } from "../SeriesPage/utils";
+import { formatDate, printArray } from "../../utils/seriesDataFunctions";
 
 export default function VolumesOverallPage({ volume }) {
 	const {

@@ -1,4 +1,4 @@
-import useActiveHeader from "../utils/useActiveHeading";
+import useActiveHeader from "../../utils/useActiveHeading";
 import "./NavBar.css";
 
 export default function SideNavbar({title, options}) {

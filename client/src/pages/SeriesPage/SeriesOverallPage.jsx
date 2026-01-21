@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { formatDate, printArray } from "./utils";
+import { formatDate, printArray } from "../../utils/seriesDataFunctions";
 import SeriesVolumesList from "./SeriesVolumesList";
 import RelatedCard from "./RelatedCard";
 

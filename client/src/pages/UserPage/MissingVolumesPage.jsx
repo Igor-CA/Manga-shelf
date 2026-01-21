@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
-import SeriesCardList from "../../components/SeriesCardList";
+import SeriesCardList from "../../components/cards/SeriesCardList";
 export default function MissingVolumesPage() {
 	const { username } = useParams();
 	const navigate = useNavigate();

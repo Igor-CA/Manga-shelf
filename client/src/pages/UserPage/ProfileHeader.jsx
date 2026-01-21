@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef, useState, useMemo } from "react";
-import ImageModal from "../../components/ImageModal";
-import ContentNavbar from "../../components/ContentNavbar";
+import ImageModal from "../../components/imageModal/ImageModal";
+import ContentNavbar from "../../components/navbars/ContentNavbar";
 import axios from "axios";
-import { UserContext } from "../../components/userProvider";
+import { UserContext } from "../../contexts/userProvider";
 
 export default function ProfileHeader({ user }) {
 	const [loaded, setLoaded] = useState(false);

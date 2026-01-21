@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import axios from "axios";
 import "./Authentication.css";
 import { Link, useNavigate } from "react-router-dom";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 
 export default function SignupPage() {
 	const navigate = useNavigate();

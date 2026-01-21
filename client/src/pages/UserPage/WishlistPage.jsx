@@ -1,12 +1,12 @@
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
-import SeriesCardList from "../../components/SeriesCardList";
+import SeriesCardList from "../../components/cards/SeriesCardList";
 import { useCallback, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
 import { useEffect } from "react";
 import { useContext } from "react";
-import { messageContext } from "../../components/messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import FilterControls from "../../components/FilterControls";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 

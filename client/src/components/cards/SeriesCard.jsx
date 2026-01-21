@@ -4,11 +4,11 @@ import { Link, useParams } from "react-router-dom";
 import { FaMinus, FaPlus } from "react-icons/fa";
 
 import { FaPencil, FaRegBookmark } from "react-icons/fa6";
-import { UserContext } from "./userProvider";
+import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
-import { messageContext } from "./messageStateProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
-import { useEditVolume } from "./EditVolumeContext";
+import { useEditVolume } from "../../contexts/EditVolumeContext";
 export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	const [loaded, setLoaded] = useState(false);
 	const [inUserList, setInUserList] = useState(itemDetails.inUserList);
