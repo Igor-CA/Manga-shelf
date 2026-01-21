@@ -1,73 +1,67 @@
-.gallery-container {
-	padding: 20px;
-	max-width: 1400px;
-	margin: 0 auto;
-}
-
 .gallery-header {
+	padding: 1rem;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 30px;
 	flex-wrap: wrap;
 	gap: 15px;
 }
 
 .gallery-header h2 {
-	font-size: 2rem;
-	color: var(--text-color);
+	font-size: 1.5rem;
+	color: var(--text);
 	margin: 0;
-}
-
-.gallery-add-button {
-	padding: 10px 20px;
-	font-size: 1rem;
 }
 
 .loading-message,
 .empty-gallery {
 	text-align: center;
 	padding: 60px 20px;
-	color: var(--text-color-secondary);
+	color: var(--text);
 	font-size: 1.1rem;
 }
 
 .gallery-content {
+	padding: 1rem;
 	display: flex;
 	flex-direction: column;
-	gap: 40px;
+	gap: 0;
 }
 
 .gallery-date-group {
-	border-bottom: 1px solid var(--border-color);
-	padding-bottom: 30px;
+	border-bottom: 1px solid var(--text);
+	border-top: 1px solid var(--text);
+	padding: 2rem 0;
 }
 
 .gallery-date-title {
-	font-size: 1.5rem;
-	color: var(--primary-color);
+	font-size: 1.25rem;
+	color: var(--text);
 	margin-bottom: 20px;
-	padding-bottom: 10px;
-	border-bottom: 2px solid var(--primary-color);
 }
 
 .gallery-photos-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-	gap: 20px;
+	grid-template-columns: repeat(1, 1fr);
+	gap: 1rem;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 768px) {
 	.gallery-header h2 {
-		font-size: 1.5rem;
+		font-size: 2rem;
 	}
 
 	.gallery-photos-grid {
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-		gap: 15px;
+		grid-template-columns: repeat(2, 1fr);
 	}
 
 	.gallery-date-title {
-		font-size: 1.2rem;
+		font-size: 1.5rem;
+	}
+}
+
+@media only screen and (min-width: 1024px) {
+	.gallery-photos-grid {
+		grid-template-columns: repeat(3, 1fr);
 	}
 }

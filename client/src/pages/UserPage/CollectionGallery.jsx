@@ -56,7 +56,7 @@ export default function CollectionGallery() {
 	};
 
 	const handleViewPhoto = (photo) => {
-		const index = photos.findIndex(p => p._id === photo._id);
+		const index = photos.findIndex((p) => p._id === photo._id);
 		setSelectedPhotoIndex(index);
 		setSelectedPhoto(photo);
 	};
@@ -83,14 +83,14 @@ export default function CollectionGallery() {
 
 	if (loading) {
 		return (
-			<div className="gallery-container">
+			<div className="container">
 				<div className="loading-message">Carregando galeria...</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className="gallery-container">
+		<div className="container">
 			{selectedPhoto && (
 				<PhotoLightbox
 					photo={selectedPhoto}
@@ -106,10 +106,10 @@ export default function CollectionGallery() {
 				<h2>Galeria da Coleção</h2>
 				{isOwner && (
 					<button
-						className="button gallery-add-button"
+						className="button"
 						onClick={() => setShowUploadForm(!showUploadForm)}
 					>
-						{showUploadForm ? "Cancelar" : "+ Adicionar Foto"}
+						{showUploadForm ? "Cancelar" : "Adicionar Foto"}
 					</button>
 				)}
 			</div>

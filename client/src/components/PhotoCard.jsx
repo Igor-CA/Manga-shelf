@@ -1,19 +1,32 @@
 import { useState } from "react";
 import axios from "axios";
-import { FaTrash, FaEdit, FaEye, FaEyeSlash, FaSearchPlus } from "react-icons/fa";
+import {
+	FaTrash,
+	FaEdit,
+	FaEye,
+	FaEyeSlash,
+	FaSearchPlus,
+} from "react-icons/fa";
 import PromptConfirm from "../contexts/PromptConfirm";
 import "./PhotoCard.css";
+import CustomCheckbox from "./customInputs/CustomCheckbox";
 
-export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }) {
+export default function PhotoCard({
+	photo,
+	isOwner,
+	onDelete,
+	onUpdate,
+	onView,
+}) {
 	const [showDeletePrompt, setShowDeletePrompt] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedDescription, setEditedDescription] = useState(photo.description);
-	const [editedDate, setEditedDate] = useState(
-		photo.date.split("T")[0]
-	);
+	const [editedDate, setEditedDate] = useState(photo.date.split("T")[0]);
 	const [editedOrder, setEditedOrder] = useState(photo.order);
 	const [editedVisible, setEditedVisible] = useState(photo.isVisible);
-	const [editedAdultContent, setEditedAdultContent] = useState(photo.isAdultContent);
+	const [editedAdultContent, setEditedAdultContent] = useState(
+		photo.isAdultContent,
+	);
 	const [loading, setLoading] = useState(false);
 
 	const handleDelete = async () => {
@@ -50,7 +63,9 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 					description: editedDescription,
 					date: editedDate,
 					order: Number(editedOrder),
-					isVisible: editedVisible,					isAdultContent: editedAdultContent,				},
+					isVisible: editedVisible,
+					isAdultContent: editedAdultContent,
+				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/collection-photos/${photo._id}`,
 			});
 			setIsEditing(false);
@@ -72,7 +87,7 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 	};
 
 	return (
-		<div className={`photo-card ${!photo.isVisible ? "photo-card--hidden" : ""}`}>
+		<div className={"photo-card"}>
 			{showDeletePrompt && (
 				<PromptConfirm
 					message="Tem certeza que deseja deletar esta foto?"
@@ -81,16 +96,21 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 				/>
 			)}
 
-			<div className="photo-card__image-container">
+			<div
+				className={`photo-card__image-container ${!photo.isVisible ? "photo-card--hidden" : ""}`}
+			>
 				<img
 					src={`${import.meta.env.REACT_APP_HOST_ORIGIN}${photo.imageUrl}`}
 					alt={photo.description || "Foto da coleção"}
 					className="photo-card__image"
 					loading="lazy"
 					onClick={() => onView(photo)}
-					style={{ cursor: 'pointer' }}
+					style={{ cursor: "pointer" }}
 				/>
-				<div className="photo-card__image-overlay" onClick={() => onView(photo)}>
+				<div
+					className="photo-card__image-overlay"
+					onClick={() => onView(photo)}
+				>
 					<FaSearchPlus className="photo-card__zoom-icon" />
 				</div>
 				{!photo.isVisible && isOwner && (
@@ -99,9 +119,7 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 					</div>
 				)}
 				{photo.isAdultContent && (
-					<div className="photo-card__adult-badge">
-						+18
-					</div>
+					<div className="photo-card__adult-badge">+18</div>
 				)}
 			</div>
 
@@ -115,55 +133,55 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 							className="photo-card__edit-textarea"
 							rows="3"
 						/>
-						<div className="photo-card__edit-row">
-							<label>
-								Data:
-								<input
-									type="date"
-									value={editedDate}
-									onChange={(e) => setEditedDate(e.target.value)}
-									className="photo-card__edit-input"
-								/>
-							</label>
-							<label>
-								Ordem:
-								<input
-									type="number"
-									value={editedOrder}
-									onChange={(e) => setEditedOrder(e.target.value)}
-									className="photo-card__edit-input"
-									min="0"
-								/>
-							</label>
-						</div>
-						<label className="photo-card__edit-checkbox">
+						<label className="photo-card__edit__input-label">
+							Data:
 							<input
-								type="checkbox"
-								checked={editedVisible}
-								onChange={(e) => setEditedVisible(e.target.checked)}
+								type="date"
+								value={editedDate}
+								onChange={(e) => setEditedDate(e.target.value)}
+								className="photo-card__edit-input"
 							/>
-							Visível publicamente
 						</label>
-						<label className="photo-card__edit-checkbox">
+						<label className="photo-card__edit__input-label">
+							Ordem:
 							<input
-								type="checkbox"
-								checked={editedAdultContent}
-								onChange={(e) => setEditedAdultContent(e.target.checked)}
+								type="number"
+								value={editedOrder}
+								onChange={(e) => setEditedOrder(e.target.value)}
+								className="photo-card__edit-input"
+								min="0"
 							/>
-							<span style={{ color: '#ff6b6b' }}>Conteúdo adulto (+18)</span>
 						</label>
+						<CustomCheckbox
+							htmlId={"isVisible"}
+							label={"Visível publicamente"}
+							defaultValue={editedVisible}
+							handleChange={(e) => setEditedVisible(e.target.checked)}
+						></CustomCheckbox>
+
+						<CustomCheckbox
+							htmlId={"isAdultContent"}
+							label={
+								<span style={{ color: "var(--red)" }}>
+									Conteúdo adulto (+18)
+								</span>
+							}
+							defaultValue={editedAdultContent}
+							handleChange={(e) => setEditedAdultContent(e.target.checked)}
+						></CustomCheckbox>
+
 						<div className="photo-card__edit-actions">
 							<button
 								onClick={handleUpdate}
 								disabled={loading}
-								className="button button--small button--primary"
+								className="button button--grow button--primary"
 							>
 								{loading ? "Salvando..." : "Salvar"}
 							</button>
 							<button
 								onClick={cancelEdit}
 								disabled={loading}
-								className="button button--small button--secondary"
+								className="button button--red"
 							>
 								Cancelar
 							</button>
@@ -191,14 +209,14 @@ export default function PhotoCard({ photo, isOwner, onDelete, onUpdate, onView }
 				<div className="photo-card__actions">
 					<button
 						onClick={() => setIsEditing(true)}
-						className="photo-card__action-btn photo-card__action-btn--edit"
+						className="button button--grow button--primary"
 						title="Editar"
 					>
 						<FaEdit />
 					</button>
 					<button
 						onClick={() => setShowDeletePrompt(true)}
-						className="photo-card__action-btn photo-card__action-btn--delete"
+						className="button button--grow button--red"
 						title="Deletar"
 					>
 						<FaTrash />
