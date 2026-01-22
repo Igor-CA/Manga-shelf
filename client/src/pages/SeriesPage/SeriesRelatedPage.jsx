@@ -11,7 +11,7 @@ export default function SeriesRelatedPage({ series }) {
 					<h2 className="collection-lable">Obras relacionadas</h2>
 					{related && related.length > 0 ? (
 						<>
-							<ul className="related-cards__container">
+							<ul className="related-cards__container related-cards__cotnainer--fullpage">
 								{related.map((series) => {
 									return (
 										<RelatedCard
