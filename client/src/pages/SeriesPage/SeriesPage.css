@@ -149,10 +149,17 @@
 	scroll-behavior: smooth;
 	-webkit-overflow-scrolling: touch;
 }
+.related-cards__cotnainer--fullpage{
+	flex-direction: column;
+}
+.related-cards__cotnainer--fullpage .related-card,
+.related-cards__container > * {
+	width: 100%;
+}
 .related-card,
 .related-cards__container > * {
 	flex-shrink: 0;
-	width: 400px;
+	width: 300px;
 }
 .related-card {
 	background-color: var(--foreground);

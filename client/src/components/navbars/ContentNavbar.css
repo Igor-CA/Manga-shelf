@@ -8,6 +8,7 @@
 	display: flex;
 	list-style: none;
 	flex-direction: row;
+	justify-content: space-evenly;
 }
 .content-navbar__link {
 	position: relative;
