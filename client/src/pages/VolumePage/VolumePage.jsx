@@ -6,7 +6,7 @@ import { UserContext } from "../../contexts/userProvider";
 import "../SeriesPage/SeriesPage.css";
 import { LoadingPageComponent } from "../../App";
 import VolumesOverallPage from "./VolumesOverallPage";
-import VolumeInfoCard from "./VolumePageHeader";
+import VolumeHeader from "./VolumePageHeader";
 export default function VolumePage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
@@ -52,7 +52,7 @@ export default function VolumePage() {
 
 	return (
 		<div className="page-content">
-			<VolumeInfoCard volumeData={volumeData}></VolumeInfoCard>
+			<VolumeHeader volumeData={volumeData}></VolumeHeader>
 			{volumeData && (
 				<Suspense fallback={<LoadingPageComponent />}>
 					<Routes>
