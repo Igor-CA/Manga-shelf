@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
@@ -7,7 +7,7 @@ import { useEditVolume } from "../../contexts/EditVolumeContext";
 import { messageContext } from "../../contexts/messageStateProvider";
 import ContentHeader from "../../components/contentHeader/contentHeader";
 
-export default function VolumeInfoCard({ volumeData }) {
+export default function VolumeHeader({ volumeData }) {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const { openEditModal } = useEditVolume();
@@ -77,7 +77,18 @@ export default function VolumeInfoCard({ volumeData }) {
 			},
 		},
 	];
-
+	/*
+	const navLinks = useMemo(
+		() => [
+			
+			{ to: `/volume/${id}`, label: "Geral", end: true },
+			{ to: `/volume/${id}/reviews`, label: "Reviews" },
+			{ to: `/volume/${id}/prices`, label: "Histórico de preços" },
+			
+		],
+		[id],
+	);
+	*/
 	const mainAction = {
 		label: checkOwnedVolume() ? "Remover volume" : "Adicionar Volume",
 		isRed: user && checkOwnedVolume(),
@@ -98,7 +109,7 @@ export default function VolumeInfoCard({ volumeData }) {
 			isAdult={volumeData?.serie?.isAdult}
 			summary={volumeData?.summary}
 			actions={{ mainAction, dropdownOptions, isDisabled: !user }}
-			// navLinks={navLinks}
+			//navLinks={navLinks}
 		/>
 	);
 }
