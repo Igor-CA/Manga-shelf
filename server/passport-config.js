@@ -64,6 +64,7 @@ module.exports = function (passport) {
 				username: user.username,
 				following: user.following,
 				allowAdult: user.allowAdult,
+				isAdmin: user.isAdmin,
 			};
 			done(null, userInfo);
 		})

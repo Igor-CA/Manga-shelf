@@ -21,6 +21,7 @@ const OwnedVolumeSchema = new Schema(
 );
 
 const UserSchema = new Schema({
+	isAdmin: {type: Boolean, default: false },
 	username: { type: String },
 	email: { type: String, required: true },
 	password: { type: String },
@@ -79,5 +80,6 @@ const UserSchema = new Schema({
 		},
 	],
 });
+UserSchema.index({ "ownedVolumes.volume": 1 });
 
 module.exports = mongoose.model("User", UserSchema);
