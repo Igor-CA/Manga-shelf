@@ -15,7 +15,7 @@ exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 	User.findOneAndUpdate(
 		{ _id: req.user._id, "notifications._id": seenNotification },
 		{ $set: { "notifications.$.seen": true } },
-		{ new: true }
+		{ new: true },
 	)
 		.then(() => res.send({ msg: "Updated" }))
 		.catch((error) => res.send(error));
@@ -49,18 +49,72 @@ exports.getUserNotifications = asyncHandler(async (req, res, next) => {
 				page: page || 1,
 				limit: 10,
 			},
-			type
+			type,
 		);
 		res.send(notifications);
 	}
 });
 
+const populateAssociatedObject = [
+	{
+		$lookup: {
+			from: "users",
+			localField: "associatedObject",
+			foreignField: "_id",
+			pipeline: [{ $project: { username: 1, profileImageUrl: 1 } }],
+			as: "userObj",
+		},
+	},
+	{
+		$lookup: {
+			from: "volumes",
+			localField: "associatedObject",
+			foreignField: "_id",
+			pipeline: [{ $project: { number: 1, serie: 1 } }], 
+			as: "volumeObj",
+		},
+	},
+	{
+		$lookup: {
+			from: "series", 
+			localField: "associatedObject",
+			foreignField: "_id",
+			pipeline: [{ $project: { title: 1, coverImage: 1 } }],
+			as: "seriesObj",
+		},
+	},
+	{
+		$addFields: {
+			associatedObject: {
+				$switch: {
+					branches: [
+						{
+							case: { $eq: ["$objectType", "User"] },
+							then: { $arrayElemAt: ["$userObj", 0] },
+						},
+						{
+							case: { $eq: ["$objectType", "Volume"] },
+							then: { $arrayElemAt: ["$volumeObj", 0] },
+						},
+						{
+							case: { $eq: ["$objectType", "Series"] },
+							then: { $arrayElemAt: ["$seriesObj", 0] },
+						},
+					],
+					default: "$associatedObject",
+				},
+			},
+		},
+	},
+	{ $project: { userObj: 0, volumeObj: 0, seriesObj: 0 } },
+];
+
 async function getAllNotifications(userId, paginationOptions) {
 	const {
 		followersPage = 1,
 		followersLimit = 10,
-		volumesPage = 1,
-		volumesLimit = 10,
+		mediaPage = 1,
+		mediaLimit = 10,
 		updatesPage = 1,
 		updatesLimit = 10,
 	} = paginationOptions;
@@ -85,9 +139,7 @@ async function getAllNotifications(userId, paginationOptions) {
 				"notificationDetails.id": "$notifications._id",
 			},
 		},
-		{
-			$replaceRoot: { newRoot: "$notificationDetails" },
-		},
+		{ $replaceRoot: { newRoot: "$notificationDetails" } },
 		{
 			$facet: {
 				followers: [
@@ -95,12 +147,22 @@ async function getAllNotifications(userId, paginationOptions) {
 					{ $sort: { date: -1 } },
 					{ $skip: (followersPage - 1) * followersLimit },
 					{ $limit: followersLimit },
+					...populateAssociatedObject,
 				],
-				volumes: [
-					{ $match: { type: "volumes" } },
+				media: [
+					{
+						$match: {
+							$or: [
+								{ type: "volumes" },
+								{ objectType: "Volume" },
+								{ objectType: "Series" },
+							],
+						},
+					},
 					{ $sort: { date: -1 } },
-					{ $skip: (volumesPage - 1) * volumesLimit },
-					{ $limit: volumesLimit },
+					{ $skip: (mediaPage - 1) * mediaLimit },
+					{ $limit: mediaLimit },
+					...populateAssociatedObject,
 				],
 				updates: [
 					{ $match: { type: "site" } },
@@ -116,6 +178,20 @@ async function getAllNotifications(userId, paginationOptions) {
 }
 async function getTypeNotifications(userId, paginationOptions, type) {
 	const { page = 1, limit = 10 } = paginationOptions;
+	let matchStage = {};
+	if (type === "media") {
+		matchStage = {
+			$or: [
+				{ type: "volumes" },
+				{ objectType: "Volume" },
+				{ objectType: "Series" },
+			],
+		};
+	} else if (type === "followers") {
+		matchStage = { type: "followers" }; 
+	} else if (type === "site") {
+		matchStage = { type: "site" };
+	}
 
 	const results = await User.aggregate([
 		{ $match: { _id: userId } },
@@ -137,18 +213,18 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 				"notificationDetails.id": "$notifications._id",
 			},
 		},
-		{
-			$replaceRoot: { newRoot: "$notificationDetails" },
-		},
-		{ $match: { type } },
+		{ $replaceRoot: { newRoot: "$notificationDetails" } },
+
+		{ $match: matchStage },
+
 		{ $sort: { date: -1 } },
 		{ $skip: (page - 1) * limit },
 		{ $limit: limit },
+		...populateAssociatedObject,
 	]);
 
 	return results;
 }
-
 exports.sendSiteNewsNotification = async (updatesList) => {
 	const notification = await createSiteNewsNotification(updatesList);
 	const users = await User.find({});
@@ -182,12 +258,12 @@ async function createNewVolumeNotification(newVolume) {
 
 	const newNotification = new Notification({
 		type: "volumes",
-		text: `Um novo volume de ${newVolume.serie.title} foi adicionado ao site`,
+		text: `Um novo volume de [[${newVolume.serie.title}|/series/${newVolume.series._id}]] foi adicionado ao site.`,
 		imageUrl: getVolumeCoverURL(
 			newVolume.serie,
 			newVolume.number,
 			newVolume.isVariant,
-			newVolume.variantNumber
+			newVolume.variantNumber,
 		),
 		associatedObject: newVolume._id,
 		objectType: "Volume",
@@ -261,7 +337,7 @@ async function createFollowingNotification(userId) {
 
 	const newNotification = new Notification({
 		type: "followers",
-		text: `${user.username} Começou a te seguir`,
+		text: `[[${user.username}|/user/${user.username}]] Começou a te seguir`,
 		imageUrl: user.profileImageUrl,
 		associatedObject: userId,
 		objectType: "User",
@@ -285,7 +361,7 @@ async function checkNotificationSettings(userId, type) {
 const sendEmailNotification = async (
 	notification,
 	targetUserId,
-	volumesList
+	volumesList,
 ) => {
 	const targetUser = await User.findById(targetUserId);
 
@@ -312,7 +388,7 @@ const sendEmailNotification = async (
 					cid: "img1.webp",
 					contentType: "img/webp",
 				},
-			]
+			],
 		);
 	}
 	if (notification.type === "volumes") {
@@ -322,13 +398,13 @@ const sendEmailNotification = async (
 					volume.serie,
 					volume.number,
 					volume.isVariant,
-					volume.variantNumber
+					volume.variantNumber,
 				),
 				path: `${process.env.SITE_DOMAIN}/images/medium/${getVolumeCoverURL(
 					volume.serie,
 					volume.number,
 					volume.isVariant,
-					volume.variantNumber
+					volume.variantNumber,
 				)}`,
 				contentDisposition: "inline",
 				cid: `img${id + 1}.webp`,
@@ -343,7 +419,7 @@ const sendEmailNotification = async (
 				username: targetUser.username,
 				volumes: volumesList,
 			},
-			attachments
+			attachments,
 		);
 	}
 	if (notification.type === "site") {
@@ -354,7 +430,7 @@ const sendEmailNotification = async (
 			{
 				username: targetUser.username,
 				notification,
-			}
+			},
 		);
 	}
 
@@ -364,7 +440,7 @@ const sendSiteNotification = async (notificationId, targetUserId) => {
 	await User.findByIdAndUpdate(
 		targetUserId,
 		{ $push: { notifications: { notification: notificationId } } },
-		{ new: true }
+		{ new: true },
 	);
 	return;
 };
