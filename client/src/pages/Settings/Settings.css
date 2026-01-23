@@ -60,7 +60,8 @@
 	font-size: 1.5em;
 	color: var(--text);
 }
-.input_label {
+.input_label,
+.settings-group .custom-checkbox {
 	font-weight: bold;
 	color: var(--text);
 	display: block;
