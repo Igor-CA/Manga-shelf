@@ -72,8 +72,8 @@
 	display: grid;
 	align-self: start;
 	justify-self: end;
-	width: 20rem;
-	flex: 0 0 20rem;
+	width: 15rem;
+	flex: 0 0 15rem;
 }
 .side-navbar-container {
 	display: none;
