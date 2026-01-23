@@ -295,11 +295,7 @@ const parseMessage = (message) => {
 		),
 	);
 };
-const NotificationImage = ({
-	imageUrl,
-	objectType,
-	associatedObject,
-}) => {
+const NotificationImage = ({ imageUrl, objectType, associatedObject }) => {
 	const hostOrigin = import.meta.env.REACT_APP_HOST_ORIGIN;
 	const pictureSRC = `${hostOrigin}/images`;
 
@@ -313,9 +309,9 @@ const NotificationImage = ({
 		} else {
 			linkTo = `/user/${associatedObject}`;
 		}
-	} else if (objectType === "Volume") {
+	} else if (objectType === "Volume" && associatedObject) {
 		linkTo = `/volume/${getId(associatedObject)}`;
-	} else if (objectType === "Series") {
+	} else if (objectType === "Series" && associatedObject) {
 		linkTo = `/series/${getId(associatedObject)}`;
 	}
 
@@ -347,16 +343,25 @@ const NotificationImage = ({
 			{isPoster ? (
 				<img
 					src={finalImageSrc}
-					srcSet={`
-						${pictureSRC}/small/${imageUrl} 100w,
-						${pictureSRC}/medium/${imageUrl} 400w, 
-						${pictureSRC}/large/${imageUrl} 700w,
-						${pictureSRC}/extralarge/${imageUrl} 1000w,`}
-					sizes=" (min-width: 1024px) 15vw, 
-					(min-width: 768px) 20vw, 
-					(min-width: 360px) and (max-width: 768px) 35vw, 
-					(max-width: 320px) 50vw"
-					alt={`notification picture`}
+					srcSet={
+						imageUrl
+							? `
+								${pictureSRC}/small/${imageUrl} 100w,
+								${pictureSRC}/medium/${imageUrl} 400w,
+								${pictureSRC}/large/${imageUrl} 700w,
+								${pictureSRC}/extralarge/${imageUrl} 1000w`
+							: undefined
+					}
+					sizes={
+						imageUrl
+							? `
+								(min-width: 1024px) 15vw,
+								(min-width: 768px) 20vw,
+								(min-width: 360px) and (max-width: 768px) 35vw,
+								(max-width: 320px) 50vw`
+							: undefined
+					}
+					altalt={`notification picture`}
 					className="notification-image"
 				/>
 			) : (
