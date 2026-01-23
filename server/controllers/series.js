@@ -82,7 +82,7 @@ const addUserListData = (pipeline, user) => {
 			$project: {
 				userData: 0,
 			},
-		}
+		},
 	);
 };
 
@@ -225,7 +225,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{ $match: filter },
-		{ $sort: sortStage }
+		{ $sort: sortStage },
 	);
 
 	if (isValidSearch) {
@@ -240,7 +240,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 					score: { $gte: MIN_SCORE },
 				},
 			},
-			{ $sort: { score: -1, ...sortStage } }
+			{ $sort: { score: -1, ...sortStage } },
 		);
 	}
 	pipeline.push(
@@ -254,7 +254,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{ $skip: skip },
-		{ $limit: ITEMS_PER_PAGE }
+		{ $limit: ITEMS_PER_PAGE },
 	);
 	const seriesList = await Series.aggregate(pipeline).exec();
 
@@ -372,7 +372,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 			desiredSeries,
 			volume.number,
 			volume.isVariant,
-			volume.variantNumber
+			volume.variantNumber,
 		),
 		isAdult: desiredSeries.isAdult,
 		isVariant: volume.isVariant,
@@ -542,7 +542,7 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 			countrys: [],
 			publishedYears: [],
 			originalPublishedYears: [],
-		}
+		},
 	);
 });
 
@@ -550,7 +550,9 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 	const { seriesId, reason } = req.body;
 
 	if (!seriesId || !reason) {
-		return res.status(400).json({ message: "Series ID and Reason are required." });
+		return res
+			.status(400)
+			.json({ message: "Series ID and Reason are required." });
 	}
 
 	const session = await mongoose.startSession();
@@ -566,26 +568,26 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 		const relatedVolumes = await Volume.find({ serie: seriesId })
 			.select("_id")
 			.session(session);
-		
+
 		const relatedVolumeIds = relatedVolumes.map((v) => v._id);
 
 		const affectedUsers = await User.find({
 			$or: [
 				{ "userList.Series": seriesId },
-				{ "wishList": seriesId },
-				{ "ownedVolumes.volume": { $in: relatedVolumeIds } }
-			]
-		}).select("_id").session(session);
+				{ wishList: seriesId },
+				{ "ownedVolumes.volume": { $in: relatedVolumeIds } },
+			],
+		})
+			.select("_id")
+			.session(session);
 
 		const affectedUserIds = affectedUsers.map((u) => u._id);
 
 		const deletionNotification = new Notification({
 			type: "volumes",
 			text: `A obra **${series.title}** foi removido do site.`,
-			details: [
-				`Motivo: ${reason}`
-			],
-			objectType: "Series", 
+			details: [`Motivo: ${reason}`],
+			objectType: "Series",
 		});
 
 		await deletionNotification.save({ session });
@@ -595,55 +597,64 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 				{ _id: { $in: affectedUserIds } },
 				{
 					$pull: {
-						userList: { Series: seriesId }, 
-						wishList: seriesId,             
-						ownedVolumes: { volume: { $in: relatedVolumeIds } } 
+						userList: { Series: seriesId },
+						wishList: seriesId,
+						ownedVolumes: { volume: { $in: relatedVolumeIds } },
 					},
 					$push: {
 						notifications: {
 							notification: deletionNotification._id,
 							seen: false,
-							date: new Date()
-						}
-					}
-				}
+							date: new Date(),
+						},
+					},
+				},
 			).session(session);
 		}
 
 		const oldNotifications = await Notification.find({
 			$or: [
 				{ associatedObject: seriesId, objectType: "Series" },
-				{ associatedObject: { $in: relatedVolumeIds }, objectType: "Volume" }
-			]
+				{ associatedObject: { $in: relatedVolumeIds }, objectType: "Volume" },
+			],
 		}).session(session);
 
-		const oldNotificationIds = oldNotifications.map(n => n._id);
+		const oldNotificationIds = oldNotifications.map((n) => n._id);
 
 		if (oldNotificationIds.length > 0) {
 			await User.updateMany(
 				{ "notifications.notification": { $in: oldNotificationIds } },
-				{ $pull: { notifications: { notification: { $in: oldNotificationIds } } } }
+				{
+					$pull: {
+						notifications: { notification: { $in: oldNotificationIds } },
+					},
+				},
 			).session(session);
 
-			await Notification.deleteMany({ _id: { $in: oldNotificationIds } }).session(session);
+			await Notification.deleteMany({
+				_id: { $in: oldNotificationIds },
+			}).session(session);
 		}
 
 		await Volume.deleteMany({ serie: seriesId }).session(session);
-		
+
 		await Series.deleteOne({ _id: seriesId }).session(session);
 
 		await session.commitTransaction();
 		session.endSession();
 
+		logger.warn(`Series removed by ${req.user.username}`);
+
 		return res.status(200).json({
 			success: true,
 			message: `Series "${series.title}" and ${relatedVolumeIds.length} volumes deleted. ${affectedUserIds.length} users notified.`,
 		});
-
 	} catch (error) {
 		await session.abortTransaction();
 		session.endSession();
-		console.error("Delete Series Error:", error);
-		return res.status(500).json({ message: "Internal Server Error", error: error.message });
+		logger.error("Delete Series Error:", error);
+		return res
+			.status(500)
+			.json({ message: "Internal Server Error", error: error.message });
 	}
 };

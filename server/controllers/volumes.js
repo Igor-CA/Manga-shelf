@@ -138,6 +138,7 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 
 		await session.commitTransaction();
 		session.endSession();
+		logger.warn(`Series removed by ${req.user.username}`);
 
 		return res.status(200).json({
 			success: true,
@@ -146,7 +147,7 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 	} catch (error) {
 		await session.abortTransaction();
 		session.endSession();
-		console.error("Delete Volume Error:", error);
+		logger.error("Delete Volume Error:", error);
 		return res
 			.status(500)
 			.json({ message: "Internal Server Error", error: error.message });
