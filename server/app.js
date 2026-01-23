@@ -53,7 +53,23 @@ const apiKeyAuth = (req, res, next) => {
 	}
 	next();
 };
+//Middleware for admin routes
+const checkAdmin = (req, res, next) => {
+	const user = req.user;
 
+	if (!user) {
+		return res.status(401).json({ msg: "Usuário deve estar logado" });
+	}
+
+	const isAdmin = user.isAdmin || false;
+
+	if (!isAdmin) {
+		return res
+			.status(403)
+			.json({ msg: "Você não tem autorização pra esse recurso" });
+	}
+	next();
+};
 
 const mongoDB = process.env.MONGODB_URI;
 mongoose
@@ -103,8 +119,8 @@ require("./passport-config")(passport);
 app.use(express.static(path.resolve(__dirname, "public")));
 
 app.use("/api/user", apiKeyAuth, userRouter);
-app.use("/admin", apiKeyAuth, adminRouter);
 app.use("/api/data", apiKeyAuth, apiRouter);
+app.use("/admin", apiKeyAuth, checkAdmin, adminRouter);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../client/dist")));
