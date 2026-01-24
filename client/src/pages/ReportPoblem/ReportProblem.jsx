@@ -3,6 +3,7 @@ import { useContext, useState } from "react";
 import { messageContext } from "../../contexts/messageStateProvider";
 
 import "../AuthenticationPage/Authentication.css";
+import CustomCheckbox from "../../components/customInputs/CustomCheckbox";
 export default function ReportProblem() {
 	const [formData, setFormData] = useState({
 		type: "",
@@ -10,12 +11,14 @@ export default function ReportProblem() {
 		details: "",
 		page: "",
 		user: "",
+		wantAnswer: "",
 	});
 	const [loading, setLoading] = useState(false);
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const handleChange = (e) => {
-		const { name, value } = e.target;
-		setFormData({ ...formData, [name]: value });
+		const { name, value, type, checked } = e.target;
+		const finalValue = type === "checkbox" ? checked : value;
+		setFormData({ ...formData, [name]: finalValue });
 	};
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -36,6 +39,7 @@ export default function ReportProblem() {
 				details: "",
 				page: "",
 				user: "",
+				wantAnswer: false,
 			});
 			const customErrorMessage = response.data.msg;
 			addMessage(customErrorMessage);
@@ -68,9 +72,7 @@ export default function ReportProblem() {
 				<form
 					method="post"
 					className="autentication-form"
-					onSubmit={(e) => {
-						handleSubmit(e);
-					}}
+					onSubmit={handleSubmit}
 				>
 					<label
 						htmlFor="type"
@@ -82,32 +84,19 @@ export default function ReportProblem() {
 						name="type"
 						id="type"
 						className="autentication-form__input"
-						onChange={(e) => {
-							handleChange(e);
-						}}
-						onInvalid={(e) => {
-							handleInvalid(e);
-						}}
+						onChange={handleChange}
+						onInvalid={handleInvalid}
 						required
-						defaultValue={""}
 						value={formData.type}
 					>
 						<option value="" disabled>
 							Escolha o tipo de problema
 						</option>
 						<option value="Wrong info">Informação errada</option>
-						<option value="Missing info">
-							Informação faltando
-						</option>
-						<option value="Bug">
-							Ocorrencia de problemas/bugs
-						</option>
-						<option value="Change suggestion">
-							Sugestão de mudança
-						</option>
-						<option value="New feature">
-							Sugestão de nova função
-						</option>
+						<option value="Missing info">Informação faltando</option>
+						<option value="Bug">Ocorrencia de problemas/bugs</option>
+						<option value="Change suggestion">Sugestão de mudança</option>
+						<option value="New feature">Sugestão de nova função</option>
 						<option value="Other">Outro</option>
 					</select>
 					<label
@@ -120,33 +109,20 @@ export default function ReportProblem() {
 						name="local"
 						id="local"
 						className="autentication-form__input"
-						onChange={(e) => {
-							handleChange(e);
-						}}
-						onInvalid={(e) => {
-							handleInvalid(e);
-						}}
+						onChange={handleChange}
+						onInvalid={handleInvalid}
 						required
-						defaultValue={""}
 						value={formData.local}
 					>
 						<option value="" disabled>
 							Escolha onde ocorreu o problema
 						</option>
 						<option value="User profile">Perfis de usuário</option>
-						<option value="Missing volumes">
-							Página de Volumes faltosos
-						</option>
-						<option value="Volumes page">
-							Página de um Volume
-						</option>
-						<option value="Series page">
-							Página de uma coleção
-						</option>
+						<option value="Missing volumes">Página de Volumes faltosos</option>
+						<option value="Volumes page">Página de um Volume</option>
+						<option value="Series page">Página de uma coleção</option>
 						<option value="Search page">Pagina de busca</option>
-						<option value="Search result">
-							Resultado em busca
-						</option>
+						<option value="Search result">Resultado em busca</option>
 						<option value="Authentication">Login/Cadastro</option>
 						<option value="Other">Outro</option>
 					</select>
@@ -162,12 +138,8 @@ export default function ReportProblem() {
 						id="details"
 						rows={5}
 						value={formData.details}
-						onChange={(e) => {
-							handleChange(e);
-						}}
-						onInvalid={(e) => {
-							handleInvalid(e);
-						}}
+						onChange={handleChange}
+						onInvalid={handleInvalid}
 						required
 						className="autentication-form__input"
 					></textarea>
@@ -184,12 +156,8 @@ export default function ReportProblem() {
 						placeholder="Ex: Volume 10 de My Hero Academia"
 						className="autentication-form__input"
 						value={formData.page}
-						onChange={(e) => {
-							handleChange(e);
-						}}
-						onInvalid={(e) => {
-							handleInvalid(e);
-						}}
+						onChange={handleChange}
+						onInvalid={handleInvalid}
 						required
 					/>
 					<label
@@ -205,17 +173,21 @@ export default function ReportProblem() {
 						placeholder="Seu Usuário ou email"
 						className="autentication-form__input"
 						value={formData.user}
-						onChange={(e) => {
-							handleChange(e);
-						}}
-						onInvalid={(e) => {
-							handleInvalid(e);
-						}}
+						onChange={handleChange}
+						onInvalid={handleInvalid}
 					/>
+					<CustomCheckbox
+						htmlId={"wantAnswer"}
+						label={
+							<strong>
+								Deseja Receber resposta dessa suggestão pelo email?
+							</strong>
+						}
+						defaultValue={formData.wantAnswer}
+						handleChange={handleChange}
+					></CustomCheckbox>
 					<button
-						className={`button ${
-							loading ? "button--disabled" : ""
-						}`}
+						className={`button ${loading ? "button--disabled" : ""}`}
 						disabled={loading}
 					>
 						Enviar sugestão
