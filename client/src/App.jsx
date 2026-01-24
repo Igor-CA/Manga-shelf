@@ -31,6 +31,7 @@ const UserNameModal = lazy(() =>
 const BrowseUser = lazy(() => import("./pages/BrowsePage/BrowseUser"));
 const SettingsPage = lazy(() => import("./pages/Settings/SettingsPage"));
 const NotificationsPage = lazy(() => import("./pages/Notifications/NotificationsPage"));
+const SeriesSubmissionPage = lazy(() => import("./pages/SubmissionsPage/SeriesSubmissionPage"));
 
 export const LoadingPageComponent = () => {
 	return (
@@ -79,6 +80,7 @@ function App() {
 						<Route path="/settings" element={<SettingsPage />}></Route>
 						<Route path="/notifications" element={<NotificationsPage />}></Route>
 						<Route path="/adult-block" element={<AdultPageRedirect />}></Route>
+						<Route path="/submissions/series/:id" element={<SeriesSubmissionPage />}></Route>
 						<Route path="*" element={<NotFound />}></Route>
 					</Routes>
 				</Suspense>
