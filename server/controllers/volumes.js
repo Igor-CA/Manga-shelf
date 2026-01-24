@@ -77,7 +77,7 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 		const affectedUserIds = affectedUsers.map((u) => u._id);
 
 		const deletionNotification = new Notification({
-			type: "volumes",
+			type: "media",
 			text: `Um volume que você possuía de [[${volume.serie.title}|/series/${volume.serie._id}]] foi removido do site.`,
 			details: [`Motivo: ${reason}`],
 			objectType: "Volume",
