@@ -24,7 +24,7 @@ export default function VolumesOverallPage({ volume }) {
 			{ label: "Data de lançamento", value: formatDate(date) },
 			{ label: "Preço de capa", value: defaultPrice },
 			{ label: "ISBN", value: ISBN },
-			{ label: "Capitulos", value: chapters },
+			{ label: "Capítulos", value: chapters },
 			{ label: "Possui Capas variantes", value: hasVariant },
 			/*
             //Will uncomment after collecting a decent amount of data for it
