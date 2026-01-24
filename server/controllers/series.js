@@ -545,7 +545,6 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 		},
 	);
 });
-
 exports.deleteSeriesAndNotify = async (req, res) => {
 	const { seriesId, reason } = req.body;
 
@@ -584,8 +583,8 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 		const affectedUserIds = affectedUsers.map((u) => u._id);
 
 		const deletionNotification = new Notification({
-			type: "volumes",
-			text: `A obra **${series.title}** foi removido do site.`,
+			type: "media", 
+			text: `A obra **${series.title}** foi removida do site.`,
 			details: [`Motivo: ${reason}`],
 			objectType: "Series",
 		});
@@ -635,6 +634,11 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 				_id: { $in: oldNotificationIds },
 			}).session(session);
 		}
+
+		await Series.updateMany(
+			{ "relatedSeries.series": seriesId },
+			{ $pull: { relatedSeries: { series: seriesId } } }
+		).session(session);
 
 		await Volume.deleteMany({ serie: seriesId }).session(session);
 
