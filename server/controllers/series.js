@@ -385,7 +385,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		};
 	});
 
-	const { _id: id, __v, ...rest } = desiredSeries;
+	const { _id: id, __v, anilistId, shouldBeUpdated, synonyms, updatedAt, createdAt, ...rest } = desiredSeries;
 	const jsonResponse = {
 		id,
 		...rest,
