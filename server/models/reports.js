@@ -6,7 +6,8 @@ const ReportSchema = new Schema({
 	local: { type: String, required: true },
 	page: { type: String, required: true },
 	details: { type: String, required: true },
-	user: {type: String} 
+	user: {type: String},
+	wantAnswer: {type: Boolean, default: false}
 });
 
 module.exports = mongoose.model("Report", ReportSchema);
