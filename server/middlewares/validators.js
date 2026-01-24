@@ -27,7 +27,7 @@ const usernameValidation = body("username")
 	.withMessage("É obrigatório informar um nome de usuário.")
 	.matches(/^[A-Za-z0-9]{3,16}$/)
 	.withMessage(
-		"O nome de usuário não pode ter caracteres especiais (!@#$%^&* ) e deve ter entre 3 e 16 caracteres."
+		"O nome de usuário não pode ter caracteres especiais (!@#$%^&* ) e deve ter entre 3 e 16 caracteres.",
 	)
 	.escape();
 
@@ -36,10 +36,10 @@ const newPasswordValidation = body("password")
 	.notEmpty()
 	.withMessage("É obrigatório informar uma senha.")
 	.matches(
-		/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/
+		/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/,
 	)
 	.withMessage(
-		"A senha deve conter pelo menos uma letra, número e caractere especial(!@#$%^&*) e ter entre 8 e 20 caracteres."
+		"A senha deve conter pelo menos uma letra, número e caractere especial(!@#$%^&*) e ter entre 8 e 20 caracteres.",
 	);
 
 const confirmPasswordValidation = body("confirm-password")
@@ -138,46 +138,109 @@ const notesValidation = body("notes")
 	.escape();
 
 const photoDescriptionValidation = body("description")
-  .optional()
-  .trim()
-  .isLength({ max: 1000 }) 
-  .withMessage("A descrição não pode exceder 1000 caracteres.")
-  .escape();
+	.optional()
+	.trim()
+	.isLength({ max: 1000 })
+	.withMessage("A descrição não pode exceder 1000 caracteres.")
+	.escape();
 
 const photoDateValidation = body("date")
-  .optional()
-  .trim()
-  .isISO8601()
-  .withMessage("Data inválida.")
-  .toDate();
+	.optional()
+	.trim()
+	.isISO8601()
+	.withMessage("Data inválida.")
+	.toDate();
 
 const photoOrderValidation = body("order")
-  .optional()
-  .isInt()
-  .withMessage("A ordem deve ser um número inteiro.")
-  .toInt();
+	.optional()
+	.isInt()
+	.withMessage("A ordem deve ser um número inteiro.")
+	.toInt();
 
 const photoVisibleValidation = body("isVisible")
-  .optional()
-  .customSanitizer(value => {
-      if (value === 'true') return true;
-      if (value === 'false') return false;
-      return value;
-  })
-  .isBoolean()
-  .withMessage("isVisible deve ser verdadeiro ou falso.")
-  .toBoolean();
+	.optional()
+	.customSanitizer((value) => {
+		if (value === "true") return true;
+		if (value === "false") return false;
+		return value;
+	})
+	.isBoolean()
+	.withMessage("isVisible deve ser verdadeiro ou falso.")
+	.toBoolean();
 
 const photoAdultValidation = body("isAdultContent")
-  .optional()
-  .customSanitizer(value => {
-      if (value === 'true') return true;
-      if (value === 'false') return false;
-      return value;
-  })
-  .isBoolean()
-  .withMessage("isAdultContent deve ser verdadeiro ou falso.")
-  .toBoolean();
+	.optional()
+	.customSanitizer((value) => {
+		if (value === "true") return true;
+		if (value === "false") return false;
+		return value;
+	})
+	.isBoolean()
+	.withMessage("isAdultContent deve ser verdadeiro ou falso.")
+	.toBoolean();
+
+//Submissions
+const submissionTargetModelValidation = body("targetModel")
+	.trim()
+	.notEmpty()
+	.withMessage("O modelo alvo (Series/Volume) é obrigatório.")
+	.isIn(["Series", "Volume"])
+	.withMessage("O alvo deve ser 'Series' ou 'Volume'.");
+
+const submissionTargetIdValidation = body("targetId")
+	.optional({ nullable: true, checkFalsy: true })
+	.isMongoId()
+	.withMessage("ID do alvo inválido.");
+
+const submissionNotesValidation = body("notes")
+	.trim()
+	.notEmpty()
+	.withMessage("É obrigatório informar anotações/notas.")
+	.escape();
+
+const payloadValidation = body("payload")
+	.exists()
+	.withMessage("O payload da submissão está vazio.")
+	.isObject()
+	.withMessage("O payload deve ser um objeto.");
+
+const payloadTitleValidation = body("payload.title")
+	.optional()
+	.trim()
+	.notEmpty()
+	.withMessage("O título não pode estar vazio.")
+	.escape();
+
+const payloadArrayValidation = body([
+	"payload.authors",
+	"payload.synonyms",
+	"payload.summary",
+])
+	.optional()
+	.isArray()
+	.withMessage("Autores, Sinônimos e Sinopse devem ser listas (arrays).");
+
+const payloadDatesValidation = body([
+	"payload.dates.publishedAt",
+	"payload.dates.finishedAt",
+])
+	.optional({ checkFalsy: true, nullable: true })
+	.trim()
+	.isISO8601()
+	.withMessage("Datas devem estar no formato válido (YYYY-MM-DD).")
+	.toDate();
+
+const payloadNumbersValidation = body([
+	"payload.specs.dimensions.width",
+	"payload.specs.dimensions.height",
+	"payload.specs.volumesInFormat",
+	"payload.originalRun.totalVolumes",
+	"payload.originalRun.totalChapters",
+])
+	.optional({ checkFalsy: true })
+	.isFloat({ min: 0 })
+	.withMessage("Dimensões e totais devem ser números positivos.")
+	.toFloat();
 
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
@@ -215,11 +278,22 @@ const editOwnedValidation = [
 	notesValidation,
 ];
 const photoValidation = [
-  photoDescriptionValidation,
-  photoDateValidation,
-  photoOrderValidation,
-  photoVisibleValidation,
-  photoAdultValidation
+	photoDescriptionValidation,
+	photoDateValidation,
+	photoOrderValidation,
+	photoVisibleValidation,
+	photoAdultValidation,
+];
+
+const submissionValidation = [
+	submissionTargetModelValidation,
+	submissionTargetIdValidation,
+	submissionNotesValidation,
+	payloadValidation,
+	payloadTitleValidation,
+	payloadArrayValidation,
+	payloadDatesValidation,
+	payloadNumbersValidation,
 ];
 // Middleware to handle validation errors
 const validateRequest = (req, res, next) => {
@@ -244,5 +318,6 @@ module.exports = {
 	reportsValidation,
 	editOwnedValidation,
 	photoValidation,
+	submissionValidation,
 	validateRequest,
 };

@@ -11,6 +11,7 @@ const {
 const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
 const collectionPhotosController = require("../controllers/collectionPhotos");
+const submissionController = require("../controllers/submission");
 const { requireAuth } = require("../middlewares/authentications");
 const {
 	signupValidation,
@@ -24,6 +25,7 @@ const {
 	reportsValidation,
 	editOwnedValidation,
 	photoValidation,
+	submissionValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -173,6 +175,16 @@ router.delete(
 	"/collection-photos/:id",
 	requireAuth,
 	collectionPhotosController.deletePhoto,
+);
+
+// Submissions
+
+router.post(
+	"/submission",
+	requireAuth,
+	submissionValidation,
+	validateRequest,
+	submissionController.createSubmission
 );
 
 module.exports = router;
