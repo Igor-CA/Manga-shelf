@@ -4,7 +4,7 @@ import { messageContext } from "../../contexts/messageStateProvider";
 import SideNavbar from "../../components/navbars/SideNavbar";
 import axios from "axios";
 import "../Settings/Settings.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { getChangedValues } from "../../utils/getChangedValues";
 
@@ -41,6 +41,7 @@ const INITIAL_STATE = {
 export default function SeriesSubmissionPage() {
 	const { id } = useParams();
 	const { user } = useContext(UserContext);
+	const navigate = useNavigate();
 	const { addMessage, setMessageType } = useContext(messageContext);
 
 	const [formData, setFormData] = useState(INITIAL_STATE);
@@ -169,6 +170,7 @@ export default function SeriesSubmissionPage() {
 			);
 			setMessageType("Success");
 			addMessage("Sugestão enviada para aprovação!");
+            navigate(`/series/${id}`)
 		} catch (error) {
 			addMessage("Erro ao enviar sugestão.");
 		}
