@@ -1,9 +1,10 @@
 const Submission = require("../models/Submission");
 const Series = require("../models/Series");
 const volume = require("../models/volume");
-const expressAsyncHandler = require("express-async-handler");
+const _ = require("lodash");
+const asyncHandler = require("express-async-handler");
 
-exports.createSubmission = expressAsyncHandler(async (req, res, next) => {
+exports.createSubmission = asyncHandler(async (req, res, next) => {
 	const { targetModel, targetId, payload, notes } = req.body;
 	const userId = req.user._id;
 
@@ -40,4 +41,48 @@ exports.createSubmission = expressAsyncHandler(async (req, res, next) => {
 		msg: "Sugestão enviada com sucesso! Aguardando análise da moderação.",
 		submissionId: newSubmission._id,
 	});
+});
+
+exports.approveSubmission = asyncHandler(async (req, res, next) => {
+	const { id } = req.params;
+
+	const submission = await Submission.findById(id);
+	if (!submission)
+		return res.status(404).json({ msg: "Submissão não encontrada" });
+
+	if (submission.status !== "Pendente") {
+		return res.status(400).json({ msg: "Esta submissão já foi processada." });
+	}
+
+	let targetDocument;
+
+	if (submission.targetModel === "Series") {
+		if (submission.targetId) {
+			targetDocument = await Series.findById(submission.targetId);
+		}
+	}
+	// else if (submission.targetModel === "Volume") { ... }
+
+	if (!targetDocument)
+		return res.status(404).json({ msg: "Obra alvo não encontrada." });
+
+	const customizer = (objValue, srcValue) => {
+		if (_.isArray(srcValue)) {
+			return srcValue;
+		}
+	};
+
+	_.mergeWith(targetDocument, submission.payload, customizer);
+
+	targetDocument.markModified("specs");
+	targetDocument.markModified("dates");
+
+	await targetDocument.save();
+
+	submission.status = "Aprovado";
+	submission.adminComment = req.body.adminComment;
+	submission.reviewedBy = req.user.userId;
+	await submission.save();
+
+	res.json({ msg: "Aprovação realizada com sucesso!", data: targetDocument });
 });
