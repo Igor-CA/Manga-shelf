@@ -109,10 +109,10 @@ async function resolveAuthorsAndFranchise(currentSeries) {
 }
 async function syncAndRecalculateData() {
 	await cleanUserDuplicates();
+	await updateSeriesMetadata();
+	await updateSeriesRelations();
 	await recalculateUserListInfo();
 	await updateSeriesPopularity();
-	await updateSeriesMetadata();
-	await updateSeriesRelations(); 
 }
 
 async function updateSeriesRelations() {
@@ -132,70 +132,68 @@ async function updateSeriesRelations() {
 			series = await cursor.next()
 		) {
 			let wasModified = false;
+			const currentRelations = series.relatedSeries || [];
 
-			const preservedRelations = (series.relatedSeries || []).filter(
-				(rel) => !INTERNAL_RELATIONS.includes(rel.relation)
+			const preservedRelations = currentRelations.filter(
+				(rel) => !INTERNAL_RELATIONS.includes(rel.relation),
+			);
+			const existingInternalIds = new Set(
+				currentRelations
+					.filter((rel) => INTERNAL_RELATIONS.includes(rel.relation))
+					.map((rel) => rel.series.toString()),
 			);
 
-			const existingIds = new Set(
-				preservedRelations.map((rel) => rel.series.toString())
+			const blockedIds = new Set(
+				preservedRelations.map((rel) => rel.series.toString()),
 			);
 
-			let newEditionRelations = [];
+			let calculatedEditionRelations = [];
 			if (series.anilistId) {
 				const otherEditions = await Series.find({
 					anilistId: series.anilistId,
 					_id: { $ne: series._id },
 				}).select("_id title");
 
-				newEditionRelations = otherEditions
-					.filter((s) => !existingIds.has(s._id.toString()))
+				calculatedEditionRelations = otherEditions
+					.filter((s) => !blockedIds.has(s._id.toString()))
 					.map((s) => ({
 						series: s._id,
 						relation: "Outra Edição",
-						_debugTitle: s.title,
 					}));
 			}
 
-			if (newEditionRelations.length > 0) {
-				const names = newEditionRelations.map((e) => e._debugTitle).join(", ");
-				logger.info(
-					`[${series.title}] Adding ${newEditionRelations.length} other editions: ${names}`
-				);
-			}
-
-			newEditionRelations.forEach((r) => existingIds.add(r.series.toString()));
-
-			const rawAuthorRelations = await resolveAuthorsAndFranchise(series);
-
-			const newAuthorRelations = rawAuthorRelations.filter(
-				(rel) => !existingIds.has(rel.series.toString())
+			calculatedEditionRelations.forEach((r) =>
+				blockedIds.add(r.series.toString()),
 			);
 
-			if (newAuthorRelations.length > 0) {
-				const foundIds = newAuthorRelations.map((r) => r.series);
-				const foundDocs = await Series.find({ _id: { $in: foundIds } }).select(
-					"title"
-				);
-				const names = foundDocs.map((d) => d.title).join(", ");
-				logger.info(
-					`[${series.title}] Adding ${newAuthorRelations.length} same author works: ${names}`
-				);
-			}
+			const rawAuthorRelations = await resolveAuthorsAndFranchise(series);
+			const calculatedAuthorRelations = rawAuthorRelations.filter(
+				(rel) => !blockedIds.has(rel.series.toString()),
+			);
 
-			if (newEditionRelations.length > 0 || newAuthorRelations.length > 0) {
+			const allCalculatedInternal = [
+				...calculatedEditionRelations,
+				...calculatedAuthorRelations,
+			];
+
+			if (allCalculatedInternal.length !== existingInternalIds.size) {
 				wasModified = true;
+			} else {
+				const allNewIds = allCalculatedInternal.map((r) => r.series.toString());
+				const hasNewId = allNewIds.some((id) => !existingInternalIds.has(id));
+
+				if (hasNewId) {
+					wasModified = true;
+				}
 			}
 
 			if (wasModified) {
-				const finalEditionRelations = newEditionRelations.map(
-					({ _debugTitle, ...rest }) => rest
-				);
+				logger.warn(`Updating relations for ${series.title}`); 
 
 				const updatedRelatedSeries = [
 					...preservedRelations,
-					...finalEditionRelations,
-					...newAuthorRelations,
+					...calculatedEditionRelations, 
+					...calculatedAuthorRelations,
 				];
 
 				bulkOps.push({
@@ -224,14 +222,13 @@ async function updateSeriesRelations() {
 		}
 
 		logger.info(
-			`Internal Linking Complete. Processed: ${seriesProcessed}, Modified: ${seriesModified}.`
+			`Internal Linking Complete. Processed: ${seriesProcessed}, Modified: ${seriesModified}.`,
 		);
 	} catch (error) {
 		logger.error("Error linking internal relations:", error);
 		throw error;
 	}
 }
-
 async function cleanUserDuplicates() {
 	logger.info("Starting cleanup of duplicate data (New Schema)...");
 
@@ -256,7 +253,7 @@ async function cleanUserDuplicates() {
 
 			if (uniqueWishListStrings.length < user.wishList.length) {
 				user.wishList = uniqueWishListStrings.map(
-					(id) => new mongoose.Types.ObjectId(id)
+					(id) => new mongoose.Types.ObjectId(id),
 				);
 				wasModified = true;
 			}
@@ -298,6 +295,7 @@ async function cleanUserDuplicates() {
 			}
 
 			if (wasModified) {
+				logger.warn(`${user.username} Had duplicates`);
 				bulkOps.push({
 					updateOne: {
 						filter: { _id: user._id },
@@ -326,7 +324,7 @@ async function cleanUserDuplicates() {
 		}
 
 		logger.info(
-			`Cleanup complete. Processed: ${usersProcessed}, Modified: ${usersModified}.`
+			`Cleanup complete. Processed: ${usersProcessed}, Modified: ${usersModified}.`,
 		);
 
 		return { usersProcessed, usersModified };
@@ -344,7 +342,7 @@ async function recalculateUserListInfo() {
 	await User.updateMany(
 		{ "userList.status": { $exists: false } },
 		{ $set: { "userList.$[element].status": "Collecting" } },
-		{ arrayFilters: [{ "element.status": { $exists: false } }] }
+		{ arrayFilters: [{ "element.status": { $exists: false } }] },
 	);
 
 	const cursor = User.find({ "userList.0": { $exists: true } }).cursor();
@@ -358,7 +356,7 @@ async function recalculateUserListInfo() {
 			let wasModified = false;
 
 			const ownedVolumesSet = new Set(
-				user.ownedVolumes.map((item) => item.volume.toString())
+				user.ownedVolumes.map((item) => item.volume.toString()),
 			);
 
 			const seriesIds = user.userList.map((item) => item.Series);
@@ -374,7 +372,7 @@ async function recalculateUserListInfo() {
 				seriesDocs.map((s) => [
 					s._id.toString(),
 					{ volumes: s.volumes, status: s.status },
-				])
+				]),
 			);
 
 			user.userList.forEach((listItem) => {
@@ -394,11 +392,11 @@ async function recalculateUserListInfo() {
 
 				if (totalStandardCount > 0) {
 					const ownedVolumeObjects = allVolumes.filter((vol) =>
-						ownedVolumesSet.has(vol._id.toString())
+						ownedVolumesSet.has(vol._id.toString()),
 					);
 
 					const uniqueOwnedCount = new Set(
-						ownedVolumeObjects.map((v) => v.number)
+						ownedVolumeObjects.map((v) => v.number),
 					).size;
 
 					newPercentage = uniqueOwnedCount / totalStandardCount;
@@ -412,7 +410,7 @@ async function recalculateUserListInfo() {
 				}
 				let newStatus = getNewUserSeriesStatus(
 					seriesStatus,
-					listItem.completionPercentage
+					listItem.completionPercentage,
 				);
 				if (listItem.status != "Dropped" && newStatus != listItem.status) {
 					listItem.status = newStatus;
@@ -587,7 +585,7 @@ async function updateSeriesMetadata() {
 		}
 
 		logger.info(
-			`Series sanitization complete. Processed: ${seriesProcessed}, Modified: ${seriesModified}.`
+			`Series sanitization complete. Processed: ${seriesProcessed}, Modified: ${seriesModified}.`,
 		);
 
 		return { seriesProcessed, seriesModified };
