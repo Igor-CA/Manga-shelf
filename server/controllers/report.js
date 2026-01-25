@@ -9,7 +9,7 @@ exports.createReport = asyncHandler(async (req, res, next) => {
 		page,
 		type,
 		user,
-		wantAnswer,
+		wantAnswer: wantAnswer ? wantAnswer : false,
 	});
 	await newReport.save();
 	res.status(201).json({ msg: "Sugestão criada com sucesso" });
