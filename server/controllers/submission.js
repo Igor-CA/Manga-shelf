@@ -60,11 +60,14 @@ exports.approveSubmission = asyncHandler(async (req, res, next) => {
 		if (submission.targetId) {
 			targetDocument = await Series.findById(submission.targetId);
 		}
+	} else if (submission.targetModel === "Volume") {
+		targetDocument = await volume.findById(submission.targetId);
 	}
-	// else if (submission.targetModel === "Volume") { ... }
 
 	if (!targetDocument)
 		return res.status(404).json({ msg: "Obra alvo não encontrada." });
+
+	delete submission.payload._id;
 
 	const customizer = (objValue, srcValue) => {
 		if (_.isArray(srcValue)) {
@@ -74,14 +77,16 @@ exports.approveSubmission = asyncHandler(async (req, res, next) => {
 
 	_.mergeWith(targetDocument, submission.payload, customizer);
 
-	targetDocument.markModified("specs");
-	targetDocument.markModified("dates");
-
+	if (submission.targetModel === "Series") {
+		targetDocument.markModified("specs");
+		targetDocument.markModified("dates");
+		targetDocument.markModified("originalRun");
+	}
 	await targetDocument.save();
 
 	submission.status = "Aprovado";
 	submission.adminComment = req.body.adminComment;
-	submission.reviewedBy = req.user.userId;
+	submission.reviewedBy = req.user._id;
 	await submission.save();
 
 	res.json({ msg: "Aprovação realizada com sucesso!", data: targetDocument });
@@ -99,7 +104,7 @@ exports.rejectSubmission = asyncHandler(async (req, res) => {
 
 	submission.status = "Rejeitado";
 	submission.adminComment = req.body.adminComment;
-	submission.reviewedBy = req.user.userId;
+	submission.reviewedBy = req.user._id;
 	await submission.save();
 
 	res.json({ msg: "Submissão rejeitada com sucesso!" });
@@ -108,8 +113,14 @@ exports.rejectSubmission = asyncHandler(async (req, res) => {
 exports.getPendingSubmissions = asyncHandler(async (req, res) => {
 	const submissions = await Submission.find({ status: "Pendente" })
 		.populate("user", "username email")
-		.populate("targetId")
+		.populate({
+			path: "targetId",
+			populate: {
+				path: "serie",
+				select: "title",
+				strictPopulate: false, 
+			},
+		})
 		.sort({ createdAt: 1 });
-
 	res.json(submissions);
 });

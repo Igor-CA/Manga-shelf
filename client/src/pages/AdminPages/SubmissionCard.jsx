@@ -50,19 +50,20 @@ export default function SubmissionCard({ submission, onProcess }) {
 				{ adminComment: comment },
 				{ withCredentials: true },
 			);
-			setMessageType("Success")
-			addMessage(response.data?.msg)
+			setMessageType("Success");
+			addMessage(response.data?.msg);
 			onProcess(submission._id); // Tell parent to remove this card from list
 		} catch (err) {
-			addMessage(`Erro ao processar: ${err}`);
-			//alert("Erro ao processar");
+			addMessage(`Erro ao processar: ${err?.response?.data?.msg}`);
 		}
 	};
 
 	return (
 		<div className="submission-card">
 			<h3>
-				Mudança em {submission.targetModel}: {originalData.title || "Nova Obra"}
+				{submission.targetModel === "Volume"
+					? `Mudança no volume ${originalData.number} de ${originalData?.serie?.title}`
+					: `Mudança na Obra de ${originalData?.title}`}
 			</h3>
 			<span>
 				<strong>Usuário:</strong> {submission.user?.username || submission.user}

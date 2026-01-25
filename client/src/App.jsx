@@ -36,6 +36,9 @@ const NotificationsPage = lazy(
 const SeriesSubmissionPage = lazy(
 	() => import("./pages/SubmissionsPage/SeriesSubmissionPage"),
 );
+const VolumeSubmissionPage = lazy(
+	() => import("./pages/SubmissionsPage/VolumesSubmissionPage"),
+);
 const AdminDashboard = lazy(() => import("./pages/AdminPages/AdminDashboard"));
 
 export const LoadingPageComponent = () => {
@@ -91,6 +94,10 @@ function App() {
 						<Route
 							path="/submissions/series/:id"
 							element={<SeriesSubmissionPage />}
+						></Route>
+						<Route
+							path="/submissions/volume/:id"
+							element={<VolumeSubmissionPage />}
 						></Route>
 						<Route path="/admin" element={<AdminDashboard />}></Route>
 
