@@ -15,8 +15,8 @@ const LoginPage = lazy(() => import("./pages/AuthenticationPage/LoginPage"));
 const UserPage = lazy(() => import("./pages/UserPage/UserPage"));
 const BrowsePage = lazy(() => import("./pages/BrowsePage/BrowsePage"));
 const ForgotPage = lazy(() => import("./pages/AuthenticationPage/ForgotPage"));
-const ResetPasswordPage = lazy(() =>
-	import("./pages/AuthenticationPage/ResetPasswordPage")
+const ResetPasswordPage = lazy(
+	() => import("./pages/AuthenticationPage/ResetPasswordPage"),
 );
 const ReportProblem = lazy(() => import("./pages/ReportPoblem/ReportProblem"));
 const Home = lazy(() => import("./pages/Home/Home"));
@@ -25,13 +25,18 @@ const AboutPage = lazy(() => import("./pages/About/AboutPage"));
 const NotFound = lazy(() => import("./pages/404Page/NotFound"));
 const ToSPage = lazy(() => import("./pages/Tos/ToSPage"));
 const LogoutPage = lazy(() => import("./pages/AuthenticationPage/LogoutPage"));
-const UserNameModal = lazy(() =>
-	import("./pages/AuthenticationPage/UserNameModal")
+const UserNameModal = lazy(
+	() => import("./pages/AuthenticationPage/UserNameModal"),
 );
 const BrowseUser = lazy(() => import("./pages/BrowsePage/BrowseUser"));
 const SettingsPage = lazy(() => import("./pages/Settings/SettingsPage"));
-const NotificationsPage = lazy(() => import("./pages/Notifications/NotificationsPage"));
-const SeriesSubmissionPage = lazy(() => import("./pages/SubmissionsPage/SeriesSubmissionPage"));
+const NotificationsPage = lazy(
+	() => import("./pages/Notifications/NotificationsPage"),
+);
+const SeriesSubmissionPage = lazy(
+	() => import("./pages/SubmissionsPage/SeriesSubmissionPage"),
+);
+const AdminDashboard = lazy(() => import("./pages/AdminPages/AdminDashboard"));
 
 export const LoadingPageComponent = () => {
 	return (
@@ -78,9 +83,17 @@ function App() {
 						<Route path="/volume/:id/*" element={<VolumePage />}></Route>
 						<Route path="/user/:username/*" element={<UserPage />}></Route>
 						<Route path="/settings" element={<SettingsPage />}></Route>
-						<Route path="/notifications" element={<NotificationsPage />}></Route>
+						<Route
+							path="/notifications"
+							element={<NotificationsPage />}
+						></Route>
 						<Route path="/adult-block" element={<AdultPageRedirect />}></Route>
-						<Route path="/submissions/series/:id" element={<SeriesSubmissionPage />}></Route>
+						<Route
+							path="/submissions/series/:id"
+							element={<SeriesSubmissionPage />}
+						></Route>
+						<Route path="/admin" element={<AdminDashboard />}></Route>
+
 						<Route path="*" element={<NotFound />}></Route>
 					</Routes>
 				</Suspense>

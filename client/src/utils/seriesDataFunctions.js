@@ -74,3 +74,10 @@ export const customWindowConfirm = (
 	setConfirmationMessage(message);
 	setShowConfirmation(true);
 };
+export const getValueByPath = (obj, path) => {
+  if (!obj || !path) return undefined;
+  
+  return path.split('.').reduce((acc, part) => {
+    return acc && acc[part] !== undefined ? acc[part] : undefined;
+  }, obj);
+};
