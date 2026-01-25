@@ -44,17 +44,26 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 			{ label: "Autores", value: printArray(authors) },
 			{ label: "Editora", value: publisher },
 			{ label: "Gêneros", value: printArray(genres) },
-			{ label: "Formato", value: formattedDimensions },
+			{ label: "Tamanho", value: formattedDimensions },
+			{ label: "Formato", value: specs?.format },
 			{ label: "Demografia", value: demographic },
-			{ label: "Situação no Japão", value: originalRun?.status },
-			{ label: "Situação no Brasil", value: status },
+			{ label: "Papel", value: specs?.paper },
+			{ label: "Tipo de capa", value: specs?.cover },
 			{ label: "Total de capítulos", value: originalRun?.totalChapters },
-			{ label: "Volumes no Japão", value: originalRun?.totalVolumes },
+			{ label: `Volumes ${originalRun?.country === "Japão"?"no":"na"} ${originalRun?.country || "Japão"}`, value: originalRun?.totalVolumes },
 			{
 				label: "Volumes no Brasil",
 				value: normalVolumes.length,
 				suffix: variantSuffix,
 			},
+			{ label: "Tipo", value: type },
+			{
+				label: "Popularidade",
+				value: popularity,
+				suffix: " usuários possuem ou querem essa obra",
+			},
+			{ label: "Situação no Japão", value: originalRun?.status },
+			{ label: "Situação no Brasil", value: status },
 			{
 				label: "Data de lançamento no Japão",
 				value: formatDate(originalRun?.dates?.publishedAt),
@@ -71,14 +80,6 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 				label: "Data de conclusão no Brasil",
 				value: formatDate(dates?.finishedAt),
 			},
-			{ label: "Tipo de papel", value: specs?.paper },
-			{ label: "Tipo de capa", value: specs?.cover },
-			{
-				label: "Popularidade",
-				value: popularity,
-				suffix: " usuários possuem ou querem essa obra",
-			},
-			{ label: "Tipo", value: type },
 		];
 	}, [series]);
 	const { handleVolumeChange, handleReadToggle } = actions;
