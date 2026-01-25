@@ -86,3 +86,30 @@ exports.approveSubmission = asyncHandler(async (req, res, next) => {
 
 	res.json({ msg: "Aprovação realizada com sucesso!", data: targetDocument });
 });
+exports.rejectSubmission = asyncHandler(async (req, res) => {
+	const { id } = req.params;
+
+	const submission = await Submission.findById(id);
+	if (!submission)
+		return res.status(404).json({ msg: "Submissão não encontrada" });
+
+	if (submission.status !== "Pendente") {
+		return res.status(400).json({ msg: "Esta submissão já foi processada." });
+	}
+
+	submission.status = "Rejeitado";
+	submission.adminComment = req.body.adminComment;
+	submission.reviewedBy = req.user.userId;
+	await submission.save();
+
+	res.json({ msg: "Submissão rejeitada com sucesso!" });
+});
+
+exports.getPendingSubmissions = asyncHandler(async (req, res) => {
+	const submissions = await Submission.find({ status: "Pendente" })
+		.populate("user", "username email")
+		.populate("targetId")
+		.sort({ createdAt: 1 });
+
+	res.json(submissions);
+});
