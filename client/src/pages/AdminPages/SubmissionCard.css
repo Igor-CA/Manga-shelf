@@ -1,0 +1,53 @@
+.submission-card {
+	padding: 1.5rem 0;
+	border-top: 1px solid var(--text);
+	border-bottom: 1px solid var(--text);
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.table table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 1rem;
+	border-radius: 0.5rem;
+	overflow: hidden;
+	box-shadow: var(--box-shadow);
+}
+
+.table td,
+.table th {
+	padding: 0.5rem;
+	text-align: left;
+}
+
+.table th {
+	background-color: var(--primary);
+	color: white;
+}
+
+.field-name {
+	color: var(--text);
+	font-family: monospace;
+	width: 20%;
+}
+
+.field-old-value {
+	color: var(--red);
+	text-decoration: line-through; 
+}
+
+.field-new-value {
+	color: var(--green);
+	font-weight: bold;
+}
+.admin-actions {
+	display: flex;
+	gap: 10px;
+	margin-top: 15px;
+}
+.buttons-container {
+	display: flex;
+	gap: 1rem;
+}
