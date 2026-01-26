@@ -2,14 +2,13 @@ import { useMemo, useRef, useState } from "react";
 import { formatDate, printArray } from "../../utils/seriesDataFunctions";
 import SeriesVolumesList from "./SeriesVolumesList";
 import RelatedCard from "./RelatedCard";
+import { Link } from "react-router-dom";
+import { FaPencilAlt } from "react-icons/fa";
 
 export default function SeriesOverallPage({ series, volumesState, actions }) {
 	const [showingMore, setShowingMore] = useState(false);
 	const seriesSummarry = useRef(null);
-	const {
-		related,
-		summary,
-	} = series;
+	const { related, summary } = series;
 	const detailsSchema = useMemo(() => {
 		if (!series) return [];
 
@@ -31,8 +30,8 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 			specs?.dimensions?.width && specs?.dimensions?.height
 				? `${specs.dimensions.width}cm x ${specs.dimensions.height}cm`.replaceAll(
 						".",
-						","
-				  )
+						",",
+					)
 				: null;
 
 		const normalVolumes = volumes?.filter((v) => !v.isVariant) || [];
@@ -50,7 +49,10 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 			{ label: "Papel", value: specs?.paper },
 			{ label: "Tipo de capa", value: specs?.cover },
 			{ label: "Total de capítulos", value: originalRun?.totalChapters },
-			{ label: `Volumes ${originalRun?.country === "Japão"?"no":"na"} ${originalRun?.country || "Japão"}`, value: originalRun?.totalVolumes },
+			{
+				label: `Volumes ${originalRun?.country === "Japão" ? "no" : "na"} ${originalRun?.country || "Japão"}`,
+				value: originalRun?.totalVolumes,
+			},
 			{
 				label: "Volumes no Brasil",
 				value: normalVolumes.length,
@@ -128,6 +130,9 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 							</li>
 						);
 					})}
+					<Link className="button" to={`/submissions/series/${series.id}`}>
+						<FaPencilAlt /> Editar informações
+					</Link>
 				</ul>
 				<div className="overall-content__container">
 					{related && related.length > 0 && (
