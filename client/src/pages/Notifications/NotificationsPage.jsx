@@ -47,27 +47,43 @@ const fetchNotifications = async (page, type) => {
 
 const RichText = ({ text }) => {
 	if (!text) return null;
-	const regex = /([\[]{2}.*?\|.*?[\]]{2})|(\*{2}.*?\*{2})/g;
 
-	return text
-		.split(regex)
-		.filter(Boolean)
-		.map((part, index) => {
-			if (part.startsWith("[[") && part.endsWith("]]")) {
-				const [label, url] = part.slice(2, -2).split("|");
-				return (
-					<Link key={index} to={url}>
-						{label}
-					</Link>
-				);
-			}
-			if (part.startsWith("**") && part.endsWith("**")) {
-				return <strong key={index}>{part.slice(2, -2)}</strong>;
-			}
-			return part;
-		});
+	const regex = /(\[\[.*?\|.*?\]\])|(\*\*.*?\*\*)|(@\w+)/g;
+
+	return (
+		<>
+			{text
+				.split(regex)
+				.filter(Boolean)
+				.map((part, index) => {
+					if (part.startsWith("[[") && part.endsWith("]]")) {
+						const content = part.slice(2, -2);
+						const [label, url] = content.split("|");
+						return (
+							<Link key={index} to={url} className="notification-link">
+								{label}
+							</Link>
+						);
+					}
+
+					if (part.startsWith("**") && part.endsWith("**")) {
+						return <strong key={index}>{part.slice(2, -2)}</strong>;
+					}
+
+					if (part.startsWith("@")) {
+						const username = part.slice(1);
+						return (
+							<Link key={index} to={`/user/${username}`} className="mention">
+								{part}
+							</Link>
+						);
+					}
+
+					return <span key={index}>{part}</span>;
+				})}
+		</>
+	);
 };
-
 export default function NotificationsPage() {
 	const { user, isFetching } = useContext(UserContext);
 	const navigate = useNavigate();
@@ -271,7 +287,7 @@ function Notification({ notification }) {
 					{details.map((detail, id) => {
 						return (
 							<li key={id} className="notifications__list__item">
-								{parseMessage(detail)}
+								<RichText text={detail} />
 							</li>
 						);
 					})}
@@ -281,20 +297,6 @@ function Notification({ notification }) {
 		</li>
 	);
 }
-const parseMessage = (message) => {
-	const regex = /@(\w+)/g;
-	const parts = message.split(regex);
-
-	return parts.map((part, index) =>
-		index % 2 === 0 ? (
-			part
-		) : (
-			<Link key={index} to={`/user/${part}`} className="mention">
-				@{part}
-			</Link>
-		),
-	);
-};
 const NotificationImage = ({ imageUrl, objectType, associatedObject }) => {
 	const hostOrigin = import.meta.env.REACT_APP_HOST_ORIGIN;
 	const pictureSRC = `${hostOrigin}/images`;
