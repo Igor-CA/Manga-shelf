@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { formatDate, printArray } from "../../utils/seriesDataFunctions";
+import { Link } from "react-router-dom";
+import { FaPencilAlt } from "react-icons/fa";
 
 export default function VolumesOverallPage({ volume }) {
 	const {
@@ -80,6 +82,9 @@ export default function VolumesOverallPage({ volume }) {
 							</li>
 						);
 					})}
+					<Link className="button" to={`/submissions/volume/${volume._id}`}>
+						<FaPencilAlt /> Editar informações
+					</Link>
 				</ul>
 			</div>
 		</div>
