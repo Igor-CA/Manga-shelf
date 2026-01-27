@@ -209,6 +209,77 @@
 	color: var(--background);
 	border: none;
 }
+.submission-page__header{
+	color: var(--text);
+	padding: 0.75rem;
+}
+.submissions-container {
+	padding: 0.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+.submission {
+	background-color: var(--foreground);
+	color: var(--text);
+	display: flex;
+	overflow: hidden;
+	border-radius: 0.75rem;
+	box-shadow: var(--box-shadow);
+}
+.submission-image-container {
+	display: block;
+	position: relative;
+	width: 100%;
+	height: auto;
+	overflow: hidden;
+	max-width: 20vw;
+	min-width: 50px;
+	align-self: stretch;
+}
+.submission-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center center;
+	display: block;
+}
+.submission__content {
+	display: flex;
+	flex-grow: 1;
+}
+.submission__content__inner {
+	padding: 0.5rem;
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.5rem;
+}
+.submission__date-container {
+	padding: 0.75rem;
+}
+.submission__status {
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.25rem;
+	background-color: var(--green);
+	color: white;
+	display: inline-block;
+	font-weight: bold;
+}
+.submission__status--rejected {
+	background-color: var(--red);
+}
+.submission__status--pending {
+	background-color: var(--text);
+	color: var(--foreground);
+}
+.no-submissions-message{
+	text-align: center;
+	margin: auto;
+	padding: 3rem;
+	color: var(--text);
+}
 @media only screen and (min-width: 768px) {
 	.profile-header__picture-container {
 		max-width: 160px;
@@ -228,6 +299,16 @@
 	.stats__container {
 		grid-template-columns: repeat(2, 1fr);
 	}
+	.submissions-container {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.submission__content {
+		flex-direction: column;
+	}
+	.submission-image-container {
+		max-width: 10vw;
+	}
 }
 @media only screen and (min-width: 1024px) {
 	.chart-container {
@@ -240,5 +321,12 @@
 	}
 	.pie-chart__subtitle-container {
 		flex-grow: 1;
+	}
+	.submissions-container {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+	}
+	.submission-image-container {
+		max-width: 100px;
 	}
 }

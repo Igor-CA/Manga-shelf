@@ -20,11 +20,12 @@ export default function ProfileHeader({ user }) {
 		() => [
 			{ to: `/user/${user}`, label: "Estante", end: true },
 			{ to: `/user/${user}/missing`, label: "Volumes faltosos" },
-			{ to: `/user/${user}/volumes`, label: "Lista de leitura" },
+			{ to: `/user/${user}/volumes`, label: "Leituras" },
 			{ to: `/user/${user}/wishlist`, label: "Lista de desejos" },
 			{ to: `/user/${user}/stats`, label: "Informações" },
 			{ to: `/user/${user}/gallery`, label: "Galeria" },
 			{ to: `/user/${user}/socials`, label: "Social" },
+			{ to: `/user/${user}/submissions`, label: "Submissões"}
 		],
 		[user]
 	);

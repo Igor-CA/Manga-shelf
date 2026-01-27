@@ -184,7 +184,8 @@ router.post(
 	requireAuth,
 	submissionValidation,
 	validateRequest,
-	submissionController.createSubmission
+	submissionController.createSubmission,
 );
 
+router.get("/:username/submission", submissionController.getUserSubmissions);
 module.exports = router;

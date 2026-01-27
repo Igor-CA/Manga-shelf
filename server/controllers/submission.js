@@ -3,6 +3,9 @@ const Series = require("../models/Series");
 const volume = require("../models/volume");
 const _ = require("lodash");
 const asyncHandler = require("express-async-handler");
+const logger = require("../Utils/logger");
+const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
+const User = require("../models/User");
 
 exports.createSubmission = asyncHandler(async (req, res, next) => {
 	const { targetModel, targetId, payload, notes } = req.body;
@@ -118,9 +121,39 @@ exports.getPendingSubmissions = asyncHandler(async (req, res) => {
 			populate: {
 				path: "serie",
 				select: "title",
-				strictPopulate: false, 
+				strictPopulate: false,
 			},
 		})
 		.sort({ createdAt: 1 });
 	res.json(submissions);
+});
+
+exports.getUserSubmissions = asyncHandler(async (req, res) => {
+	const { username } = req.params;
+	if (!username) return res.send({ msg: "Nenhum usuário informado" });
+
+	const user = await User.findOne({ username }).select("_id").lean();
+	const submissions = await Submission.find({ user })
+		.select("user targetId targetModel status createdAt adminComment")
+		.populate("user", "username email")
+		.populate({
+			path: "targetId",
+			select: "title number variant variantNumber",
+			populate: {
+				path: "serie",
+				select: "title",
+				strictPopulate: false,
+			},
+		})
+		.sort({ createdAt: -1 });
+
+	const imageSubmissions = submissions.map((submission) => {
+		let cover = submission?.targetId?.seriesCover || "";
+		if (submission.targetModel === "Volume") {
+			const { serie, number, variant, variantNumber } = submission.targetId;
+			cover = getVolumeCoverURL(serie, number, variant, variantNumber);
+		}
+		return { cover, ...submission._doc };
+	});
+	res.json(imageSubmissions);
 });
