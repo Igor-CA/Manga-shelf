@@ -87,7 +87,7 @@ export default function PieChartComponent({ chartTitle, data, total }) {
 									],
 							}}
 						>
-							{val.name}: {val.count} ({getPercentageString(val.count, total)}%)
+							{val.name || "Não classificados"}: {val.count} ({getPercentageString(val.count, total)}%)
 						</li>
 					);
 				})}

@@ -79,6 +79,26 @@ export default function UserStatsPage() {
 						total={data.volumesCount}
 						data={data.publisherByVolume}
 					></PieChartComponent>
+					<PieChartComponent
+						chartTitle="Demografia das suas coleções"
+						total={data.seriesCount}
+						data={data.demographicsBySeries}
+					></PieChartComponent>
+					<PieChartComponent
+						chartTitle="Demografia dos seus volumes"
+						total={data.volumesCount}
+						data={data.demographicsByVolume}
+					></PieChartComponent>
+					<PieChartComponent
+						chartTitle="Tipo de publicação (por obra)"
+						total={data.seriesCount}
+						data={data.typeBySeries}
+					></PieChartComponent>
+					<PieChartComponent
+						chartTitle="Tipo de publicação (por volume)"
+						total={data.volumesCount}
+						data={data.typeByVolume}
+					></PieChartComponent>
 				</div>
 			</div>
 		)

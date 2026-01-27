@@ -3,11 +3,11 @@ const CustomTooltip = ({ active, payload, label, total }) => {
 	if (active && payload && payload.length) {
 		return (
 			<div className="bar-chart__tooltip">
-				<p>{`Gênero: ${label}`}</p>
+				<p>{`Gênero: ${label || "Não classificado"}`}</p>
 				<p>{`Quantidade: ${payload[0].value} `}</p>
 				<p>
 					{Math.round((payload[0].value / total) * 100)}% das suas obras tem
-					traços de {label}
+					traços de {label || "generos não classificado"}
 				</p>
 			</div>
 		);
@@ -34,7 +34,7 @@ export default function BarChartComponent({ chartTitle, data, total }) {
 			<div style={{ flexGrow: 1 }}>
 				<p className="chart__title">{chartTitle}</p>
 				<div className="pie-chart_container">
-					{(data.length > 0) ? (
+					{data.length > 0 ? (
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart data={data}>
 								<Bar
@@ -71,11 +71,14 @@ export default function BarChartComponent({ chartTitle, data, total }) {
 								/>{" "}
 							</BarChart>
 						</ResponsiveContainer>
-					):
-					<div className="empty-graph-message-container">
-						<p className="empty-graph-message">Sem informações o suficiente para calcular esse grafico. Adicione mais obras e volte mais tarde</p>
-					</div>
-					}
+					) : (
+						<div className="empty-graph-message-container">
+							<p className="empty-graph-message">
+								Sem informações o suficiente para calcular esse grafico.
+								Adicione mais obras e volte mais tarde
+							</p>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

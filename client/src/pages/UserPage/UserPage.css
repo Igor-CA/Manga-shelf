@@ -137,6 +137,7 @@
 .pie-chart_container {
 	height: 300px;
 	max-height: 300px;
+	min-width: 200px;
 }
 .pie-chart__subtitle-cell {
 	width: 20px;
