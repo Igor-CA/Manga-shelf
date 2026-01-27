@@ -4,7 +4,7 @@ import "./ContentNavbar.css";
 export default function ContentNavbar({ links }) {
   return (
     <div className="content-navbar">
-      <nav className="container">
+      <nav className="">
         <ul className="content-navbar__list">
           {links.map((link) => (
             <li key={link.to}>
