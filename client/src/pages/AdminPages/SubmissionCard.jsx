@@ -21,7 +21,7 @@ const flattenObject = (obj, prefix = "") => {
 };
 
 export default function SubmissionCard({ submission, onProcess }) {
-	const [comment, setComment] = useState("");
+	const [comment, setComment] = useState("Muito obrigado!");
 	const { addMessage, setMessageType } = useContext(messageContext);
 
 	const changes = flattenObject(submission.payload);
