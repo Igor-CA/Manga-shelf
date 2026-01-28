@@ -15,15 +15,31 @@
 		<p>O Manga Shelf foi atualizado. Veja as novidades abaixo:</p>
 		<ul>
             <% 
-            const baseUrl = process.env.SITE_DOMAIN; // Inject the base URL first
+            const baseUrl = process.env.SITE_DOMAIN; 
+
+            const parseRichText = (text) => {
+                if (!text) return "";
+                let parsed = text;
+
+                parsed = parsed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                parsed = parsed.replace(/\[\[(.*?)\|(.*?)\]\]/g, (match, label, url) => {
+                    const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+                    return `<a href="${fullUrl}" style="color: #1e3a8a; text-decoration: none; font-weight: bold;">${label}</a>`;
+                });
+
+                parsed = parsed.replace(/@(\w+)/g, `<a href="${baseUrl}/user/$1" style="color: #1e3a8a; text-decoration: none;">@$1</a>`);
+
+                return parsed;
+            };
+
             for (let i = 0; i < notification.details.length; i++) { 
-                let message = notification.details[i].replace(/@(\w+)/g, `<a href="${baseUrl}/user/$1">@$1</a>`); 
+                let message = parseRichText(notification.details[i]); 
             %>
-			<li>
+            <li style="margin-bottom: 10px; line-height: 1.5;">
                 <%- message %>
             </li>
-			<% } %>
-		</ul>
-	</div>
-	<%- await include('./footer.ejs') %>
+            <% } %>
+        </ul>
+    </div><%- await include('./footer.ejs') %>
 </div>
