@@ -4,8 +4,12 @@ import SideNavbar from "../../components/navbars/SideNavbar"; // Reusing your la
 import "./AdminDashboard.css";
 import "../Settings/Settings.css";
 import SubmissionCard from "./SubmissionCard";
+import PatchNotesForm from "./PatchNotesForm";
 
-const navbarOptions = [{ label: "Submissões Pendentes", id: "pending" }];
+const navbarOptions = [
+	{ label: "Submissões Pendentes", id: "pending" },
+	{ label: "Enviar Patch notes", id: "patch-notes" },
+];
 
 export default function AdminDashboard() {
 	const [submissions, setSubmissions] = useState([]);
@@ -41,7 +45,7 @@ export default function AdminDashboard() {
 			<SideNavbar title="Painel Admin" options={navbarOptions} />
 			<div className="settings-container">
 				<div className="settings-group">
-					<h2 className="settings-group__title">
+					<h2 className="settings-group__title" id="pending">
 						Fila de Aprovação ({submissions.length})
 					</h2>
 					<br />
@@ -64,6 +68,7 @@ export default function AdminDashboard() {
 						</div>
 					)}
 				</div>
+				<PatchNotesForm></PatchNotesForm>
 			</div>
 		</div>
 	);

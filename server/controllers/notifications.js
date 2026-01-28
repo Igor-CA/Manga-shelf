@@ -6,6 +6,7 @@ const User = require("../models/User");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const { sendEmail } = require("../Utils/sendEmail");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
+const logger = require("../Utils/logger");
 
 exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 	if (!req.isAuthenticated()) {
@@ -70,13 +71,13 @@ const populateAssociatedObject = [
 			from: "volumes",
 			localField: "associatedObject",
 			foreignField: "_id",
-			pipeline: [{ $project: { number: 1, serie: 1 } }], 
+			pipeline: [{ $project: { number: 1, serie: 1 } }],
 			as: "volumeObj",
 		},
 	},
 	{
 		$lookup: {
-			from: "series", 
+			from: "series",
 			localField: "associatedObject",
 			foreignField: "_id",
 			pipeline: [{ $project: { title: 1, coverImage: 1 } }],
@@ -188,7 +189,7 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 			],
 		};
 	} else if (type === "followers") {
-		matchStage = { type: "followers" }; 
+		matchStage = { type: "followers" };
 	} else if (type === "site") {
 		matchStage = { type: "site" };
 	}
@@ -227,15 +228,22 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 }
 exports.sendSiteNewsNotification = async (updatesList) => {
 	const notification = await createSiteNewsNotification(updatesList);
-	const users = await User.find({});
-
+	const users = await User.find({}).select("_id username");
 	for (const user of users) {
-		await sendNotification(notification, user._id);
+		try {
+			await sendNotification(notification, user._id);
+		} catch (err) {
+			logger.error(`Failed to send to user ${user.username}:`, err.message);
+		}
 	}
-
-	return notification;
 };
-
+exports.adminSendPatchNotes = asyncHandler(async (req, res, next) => {
+	const { updatesList } = req.body;
+	exports.sendSiteNewsNotification(updatesList).catch((err) => {
+		console.error("Fatal error in notification background process:", err);
+	});
+	res.send({ msg: "Processo de envio iniciado em segundo plano." });
+});
 async function createSiteNewsNotification(updatesList) {
 	const newNotification = new Notification({
 		type: "site",
