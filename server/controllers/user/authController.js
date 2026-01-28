@@ -10,9 +10,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
 	const existingUser = await User.findOne({ $or: [{ username }, { email }] });
 
 	if (existingUser) {
-		return res
-			.status(409)
-			.json({ msg: "Email ou nome de usuário já existe" });
+		return res.status(409).json({ msg: "Email ou nome de usuário já existe" });
 	}
 
 	const hashedPassword = await bcrypt.hash(password, 10);
@@ -140,7 +138,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 		allowAdult: user.allowAdult,
 		wishList: user.wishList,
 		notificationCount,
+		isAdmin: user.isAdmin,
 	};
 	return res.send(userInfo);
 });
-

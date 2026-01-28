@@ -5,6 +5,8 @@ import "./AdminDashboard.css";
 import "../Settings/Settings.css";
 import SubmissionCard from "./SubmissionCard";
 import PatchNotesForm from "./PatchNotesForm";
+import { UserContext } from "../../contexts/userProvider";
+import { useNavigate } from "react-router-dom";
 
 const navbarOptions = [
 	{ label: "Submissões Pendentes", id: "pending" },
@@ -12,12 +14,19 @@ const navbarOptions = [
 ];
 
 export default function AdminDashboard() {
+	const navigate = useNavigate();
 	const [submissions, setSubmissions] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const { user } = useContext(UserContext);
+
 
 	useEffect(() => {
+		if (user && !user.isAdmin) {
+			navigate("/");
+			return
+		}
 		fetchSubmissions();
-	}, []);
+	}, [user, navigate]);
 
 	const fetchSubmissions = async () => {
 		try {
