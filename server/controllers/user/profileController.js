@@ -1,21 +1,16 @@
 const User = require("../../models/User");
 const asyncHandler = require("express-async-handler");
 const path = require("path");
+const fs = require("fs");
+const sharp = require("sharp");
 
 const multer = require("multer");
 const mime = require("mime-types");
 
 const bcrypt = require("bcrypt");
 
-function configureMulter(folder) {
-	const storage = multer.diskStorage({
-		destination: (req, file, cb) => cb(null, path.resolve(folder)),
-		filename: (req, file, cb) => {
-			const userId = req.user._id;
-			const fileExtension = mime.extension(file.mimetype) || "webp";
-			cb(null, `${userId}.${fileExtension}`);
-		},
-	});
+function configureMulter() {
+	const storage = multer.memoryStorage();
 
 	const fileFilter = (req, file, cb) => {
 		const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -30,29 +25,45 @@ function configureMulter(folder) {
 
 	return multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter });
 }
-
-const uploaders = {
-	avatar: configureMulter("public/images/avatar"),
-	banner: configureMulter("public/images/banner"),
-};
-
-function changeUserImage(type, field) {
-	if (!uploaders[type]) {
-		throw new Error(`Invalid image type: ${type}`);
-	}
+const uploader = configureMulter();
+function changeUserImage(type, field, folderPath) {
 	return [
-		uploaders[type].single("file"),
+		uploader.single("file"),
 		asyncHandler(async (req, res) => {
+			if (!req.file)
+				return res.status(400).json({ msg: "Nenhum arquivo enviado" });
+
+			const filename = `${req.user._id}.webp`;
+			const fullPath = path.resolve(folderPath, filename);
+
+			if (!fs.existsSync(path.resolve(folderPath))) {
+				fs.mkdirSync(path.resolve(folderPath), { recursive: true });
+			}
+
+			await sharp(req.file.buffer).webp({ quality: 80 }).toFile(fullPath);
+
+			const relativePath = `/images/${type}/${filename}`;
+
 			const user = await User.findById(req.user._id);
-			user[field] = `/images/${type}/${req.file.filename}`;
+			user[field] = relativePath;
 			await user.save();
-			res.status(201).json({ msg: "Foto atualizada com sucesso" });
+
+			res
+				.status(201)
+				.json({ msg: "Foto atualizada com sucesso", url: relativePath });
 		}),
 	];
 }
-exports.changeProfilePicture = changeUserImage("avatar", "profileImageUrl");
-exports.changeProfileBanner = changeUserImage("banner", "profileBannerUrl");
-
+exports.changeProfilePicture = changeUserImage(
+	"avatar",
+	"profileImageUrl",
+	"public/images/avatar",
+);
+exports.changeProfileBanner = changeUserImage(
+	"banner",
+	"profileBannerUrl",
+	"public/images/banner",
+);
 exports.setUserName = asyncHandler(async (req, res, next) => {
 	const user = await User.findOne({ username: req.body.username });
 	if (user) {

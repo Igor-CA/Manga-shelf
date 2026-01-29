@@ -5,13 +5,16 @@ import ReactCrop, {
 	makeAspectCrop,
 } from "react-image-crop";
 import setCanvasPreview from "../../utils/setCanvasPreview";
-import "./ImageModal.css"
+import "./ImageModal.css";
 import "react-image-crop/dist/ReactCrop.css";
 
 const MIN_DIMENSION = 150;
 
-
-export default function ImageCropper({ closeModal, updateAvatar, aspectRatio = 1 }) {
+export default function ImageCropper({
+	closeModal,
+	updateAvatar,
+	aspectRatio = 1,
+}) {
 	const imgRef = useRef(null);
 	const previewCanvasRef = useRef(null);
 	const [imgSrc, setImgSrc] = useState("");
@@ -31,10 +34,7 @@ export default function ImageCropper({ closeModal, updateAvatar, aspectRatio = 1
 			imageElement.addEventListener("load", (e) => {
 				if (error) setError("");
 				const { naturalWidth, naturalHeight } = e.currentTarget;
-				if (
-					naturalWidth < MIN_DIMENSION ||
-					naturalHeight < MIN_DIMENSION
-				) {
+				if (naturalWidth < MIN_DIMENSION || naturalHeight < MIN_DIMENSION) {
 					setError(`Image must be at least ${150} x ${150} pixels.`);
 					return setImgSrc("");
 				}
@@ -55,7 +55,7 @@ export default function ImageCropper({ closeModal, updateAvatar, aspectRatio = 1
 			},
 			aspectRatio,
 			width,
-			height
+			height,
 		);
 		const centeredCrop = centerCrop(crop, width, height);
 		setCrop(centeredCrop);
@@ -77,9 +77,7 @@ export default function ImageCropper({ closeModal, updateAvatar, aspectRatio = 1
 				<div className="image-cropper__image">
 					<ReactCrop
 						crop={crop}
-						onChange={(pixelCrop, percentCrop) =>
-							setCrop(percentCrop)
-						}
+						onChange={(pixelCrop, percentCrop) => setCrop(percentCrop)}
 						keepSelection
 						aspect={aspectRatio}
 						minWidth={MIN_DIMENSION}
@@ -101,13 +99,13 @@ export default function ImageCropper({ closeModal, updateAvatar, aspectRatio = 1
 								convertToPixelCrop(
 									crop,
 									imgRef.current.width,
-									imgRef.current.height
+									imgRef.current.height,
 								),
-								aspectRatio
+								aspectRatio,
 							);
 							const dataUrl = previewCanvasRef.current.toDataURL(
 								"image/webp",
-								0.80
+								1,
 							);
 
 							updateAvatar(dataUrl);
