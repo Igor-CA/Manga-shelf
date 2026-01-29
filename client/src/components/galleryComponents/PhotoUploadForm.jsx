@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { FaUpload, FaImage } from "react-icons/fa";
 import "./PhotoUploadForm.css";
-import CustomCheckbox from "./customInputs/CustomCheckbox";
+import CustomCheckbox from "../customInputs/CustomCheckbox";
 
 export default function PhotoUploadForm({ onPhotoAdded }) {
 	const [selectedFile, setSelectedFile] = useState(null);

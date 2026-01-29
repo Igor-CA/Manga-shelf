@@ -2,10 +2,10 @@ import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
-import PhotoCard from "../../components/PhotoCard";
-import PhotoUploadForm from "../../components/PhotoUploadForm";
-import PhotoLightbox from "../../components/PhotoLightbox";
+import PhotoCard from "../../components/galleryComponents/PhotoCard";
+import PhotoLightbox from "../../components/galleryComponents/PhotoLightbox";
 import "./CollectionGallery.css";
+import PhotoUploadForm from "../../components/galleryComponents/PhotoUploadForm";
 
 export default function CollectionGallery() {
 	const { username } = useParams();

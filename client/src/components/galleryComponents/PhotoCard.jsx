@@ -7,9 +7,9 @@ import {
 	FaEyeSlash,
 	FaSearchPlus,
 } from "react-icons/fa";
-import PromptConfirm from "../contexts/PromptConfirm";
+import PromptConfirm from "../../contexts/PromptConfirm";
 import "./PhotoCard.css";
-import CustomCheckbox from "./customInputs/CustomCheckbox";
+import CustomCheckbox from "../customInputs/CustomCheckbox";
 
 export default function PhotoCard({
 	photo,
