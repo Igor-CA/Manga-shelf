@@ -477,6 +477,54 @@ async function sendNotification(notification, targetUserId, dataList) {
 
 	return notification;
 }
+
+exports.processPendingNotifications = async (
+	eventKeyFilter = null,
+	isBatch = false,
+) => {
+	const query = {
+		$or: [{ emailStatus: "pending" }, { siteStatus: "pending" }],
+	};
+
+	const matchStage = eventKeyFilter ? { eventKey: eventKeyFilter } : {};
+
+	const pending = await UserNotificationStatus.find(query)
+		.populate({
+			path: "notification",
+			match: matchStage,
+		})
+		.populate("user");
+
+	const validPending = pending.filter((s) => s.notification);
+	if (validPending.length === 0) return;
+
+	const userGroups = validPending.reduce((acc, status) => {
+		const userId = status.user._id.toString();
+		if (!acc[userId]) acc[userId] = [];
+		acc[userId].push(status);
+		return acc;
+	}, {});
+
+	for (const userId in userGroups) {
+		const statuses = userGroups[userId];
+		const user = statuses[0].user;
+
+		if (isBatch) {
+			const dataList = statuses.map((s) => s.notification.associatedObject);
+			await sendNotification(statuses[0].notification, user._id, dataList);
+		} else {
+			for (const status of statuses) {
+				await sendNotification(status.notification, user._id);
+			}
+		}
+
+		await UserNotificationStatus.updateMany(
+			{ _id: { $in: statuses.map((s) => s._id) } },
+			{ $set: { emailStatus: "sent", siteStatus: "sent" } },
+		);
+	}
+};
+
 exports.createDeletionNotification = async (
 	itemData,
 	objectType,
@@ -501,16 +549,6 @@ exports.createDeletionNotification = async (
 	return newNotification;
 };
 exports.notifyDeletion = async (session, users, itemData, type, reason) => {
-	const activeUsers = users.filter((u) => {
-		const settings = u.settings?.notifications;
-		if (!settings) return true;
-		if (settings.allow === false) return false;
-		if (settings.groups?.media === false) return false;
-		return true;
-	});
-
-	if (activeUsers.length === 0) return;
-
 	const deletionNotification = await exports.createDeletionNotification(
 		itemData,
 		type,
@@ -518,44 +556,21 @@ exports.notifyDeletion = async (session, users, itemData, type, reason) => {
 		session,
 	);
 
-	const siteUpdates = [];
-	const emailStatusDocs = [];
+	const statusDocs = users.map((user) => {
+		const sets = user.settings?.notifications;
+		const isAllowed = sets?.allow !== false && sets?.groups?.media !== false;
 
-	for (const user of activeUsers) {
-		const settings = user.settings?.notifications || {};
-		const siteOn = settings.site !== false;
-		const emailOn = settings.email !== false;
+		return {
+			user: user._id,
+			notification: deletionNotification._id,
+			siteStatus: isAllowed && sets?.site !== false ? "pending" : "disabled",
+			emailStatus: isAllowed && sets?.email !== false ? "pending" : "disabled",
+		};
+	});
 
-		if (siteOn) {
-			siteUpdates.push(user._id);
-		}
-
-		if (emailOn && user.email) {
-			emailStatusDocs.push({
-				user: user._id,
-				notification: deletionNotification._id,
-				siteStatus: siteOn ? "sent" : "disabled",
-				emailStatus: "pending",
-			});
-		}
+	if (statusDocs.length > 0) {
+		await UserNotificationStatus.insertMany(statusDocs, { session });
 	}
-	const ops = [];
-
-	if (siteUpdates.length > 0) {
-		ops.push(
-			User.updateMany(
-				{ _id: { $in: siteUpdates } },
-				{
-					$push: { notifications: { notification: deletionNotification._id } },
-				},
-			).session(session),
-		);
-	}
-	if (emailStatusDocs.length > 0) {
-		ops.push(UserNotificationStatus.insertMany(emailStatusDocs, { session }));
-	}
-	await Promise.all(ops);
 };
-
 exports.sendEmailNotification = sendEmailNotification;
 exports.sendSiteNotification = sendSiteNotification;

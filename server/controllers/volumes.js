@@ -6,6 +6,8 @@ const Notification = require("../models/Notification");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
+const logger = require("../Utils/logger");
+const notificationsController = require("../controllers/notifications");
 const ITEMS_PER_PAGE = 10;
 
 exports.all = asyncHandler(async (req, res, next) => {
@@ -74,30 +76,23 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 			.select("_id")
 			.session(session);
 
+		await notificationsController.notifyDeletion(
+			session,
+			affectedUsers,
+			{
+				title: volume.serie.title,
+				id: volumeId,
+				linkId: volume.serie._id,
+			},
+			"Volume",
+			reason,
+		);
+
 		const affectedUserIds = affectedUsers.map((u) => u._id);
-
-		const deletionNotification = new Notification({
-			type: "media",
-			text: `Um volume que você possuía de [[${volume.serie.title}|/series/${volume.serie._id}]] foi removido do site.`,
-			details: [`Motivo: ${reason}`],
-			objectType: "Volume",
-		});
-
-		await deletionNotification.save({ session });
-
 		if (affectedUserIds.length > 0) {
 			await User.updateMany(
 				{ _id: { $in: affectedUserIds } },
-				{
-					$pull: { ownedVolumes: { volume: volumeId } },
-					$push: {
-						notifications: {
-							notification: deletionNotification._id,
-							seen: false,
-							date: new Date(),
-						},
-					},
-				},
+				{ $pull: { ownedVolumes: { volume: volumeId } } },
 			).session(session);
 		}
 
@@ -137,19 +132,19 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 		await Volume.deleteOne({ _id: volumeId }).session(session);
 
 		await session.commitTransaction();
-		session.endSession();
-		logger.warn(`Series removed by ${req.user.username}`);
+		logger.warn(`Volume removed by ${req.user.username}`);
 
 		return res.status(200).json({
 			success: true,
 			message: `Volume deleted. ${affectedUserIds.length} users were notified and updated.`,
 		});
 	} catch (error) {
-		await session.abortTransaction();
-		session.endSession();
+		if (session.inTransaction()) await session.abortTransaction();
 		logger.error("Delete Volume Error:", error);
 		return res
 			.status(500)
 			.json({ message: "Internal Server Error", error: error.message });
+	} finally {
+		session.endSession();
 	}
 };

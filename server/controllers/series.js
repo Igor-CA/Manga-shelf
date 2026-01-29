@@ -385,7 +385,16 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		};
 	});
 
-	const { _id: id, __v, anilistId, shouldBeUpdated, synonyms, updatedAt, createdAt, ...rest } = desiredSeries;
+	const {
+		_id: id,
+		__v,
+		anilistId,
+		shouldBeUpdated,
+		synonyms,
+		updatedAt,
+		createdAt,
+		...rest
+	} = desiredSeries;
 	const jsonResponse = {
 		id,
 		...rest,
@@ -580,17 +589,19 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 			.select("_id")
 			.session(session);
 
+		await notificationsController.notifyDeletion(
+			session,
+			affectedUsers,
+			{
+				title: series.title,
+				id: seriesId,
+				linkId: null,
+			},
+			"Series",
+			reason,
+		);
+
 		const affectedUserIds = affectedUsers.map((u) => u._id);
-
-		const deletionNotification = new Notification({
-			type: "media", 
-			text: `A obra **${series.title}** foi removida do site.`,
-			details: [`Motivo: ${reason}`],
-			objectType: "Series",
-		});
-
-		await deletionNotification.save({ session });
-
 		if (affectedUserIds.length > 0) {
 			await User.updateMany(
 				{ _id: { $in: affectedUserIds } },
@@ -599,13 +610,6 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 						userList: { Series: seriesId },
 						wishList: seriesId,
 						ownedVolumes: { volume: { $in: relatedVolumeIds } },
-					},
-					$push: {
-						notifications: {
-							notification: deletionNotification._id,
-							seen: false,
-							date: new Date(),
-						},
 					},
 				},
 			).session(session);
@@ -637,7 +641,7 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 
 		await Series.updateMany(
 			{ "relatedSeries.series": seriesId },
-			{ $pull: { relatedSeries: { series: seriesId } } }
+			{ $pull: { relatedSeries: { series: seriesId } } },
 		).session(session);
 
 		await Volume.deleteMany({ serie: seriesId }).session(session);
@@ -645,7 +649,6 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 		await Series.deleteOne({ _id: seriesId }).session(session);
 
 		await session.commitTransaction();
-		session.endSession();
 
 		logger.warn(`Series removed by ${req.user.username}`);
 
@@ -654,11 +657,12 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 			message: `Series "${series.title}" and ${relatedVolumeIds.length} volumes deleted. ${affectedUserIds.length} users notified.`,
 		});
 	} catch (error) {
-		await session.abortTransaction();
-		session.endSession();
+		if (session.inTransaction()) await session.abortTransaction();
 		logger.error("Delete Series Error:", error);
 		return res
 			.status(500)
 			.json({ message: "Internal Server Error", error: error.message });
+	} finally {
+		session.endSession();
 	}
 };
