@@ -21,7 +21,7 @@ const options = [
 	},
 ];
 
-const fetchNotifications = async (page, type) => {
+const fetchNotifications = async (page, group) => {
 	try {
 		const response = await axios({
 			method: "GET",
@@ -31,7 +31,7 @@ const fetchNotifications = async (page, type) => {
 			},
 			params: {
 				page: page,
-				type: type,
+				group: group,
 			},
 			url: `${
 				import.meta.env.REACT_APP_HOST_ORIGIN
@@ -100,9 +100,9 @@ export default function NotificationsPage() {
 		const fetchFirstBatch = async () => {
 			const lists = await fetchNotifications();
 
-			setSiteNotifications(lists.updates || []);
+			setSiteNotifications(lists.system || []);
 			setMediaNotifications(lists.media || []);
-			setFollowersNotifications(lists.followers || []);
+			setFollowersNotifications(lists.social || []);
 			setSitePage(2);
 			setMediaPage(2);
 			setFollowersPage(2);
@@ -116,17 +116,17 @@ export default function NotificationsPage() {
 		}
 	}, [isFetching, user, navigate]);
 
-	const handleLoadMore = async (type) => {
-		if (type === "media") {
+	const handleLoadMore = async (group) => {
+		if (group === "media") {
 			const list = await fetchNotifications(mediaPage, "media");
 			setMediaNotifications((prev) => [...prev, ...list]);
 			setMediaPage((prev) => prev + 1);
-		} else if (type === "followers") {
-			const list = await fetchNotifications(followersPage, "followers");
+		} else if (group === "social") {
+			const list = await fetchNotifications(followersPage, "social");
 			setFollowersNotifications((prev) => [...prev, ...list]);
 			setFollowersPage((prev) => prev + 1);
-		} else if (type === "site") {
-			const list = await fetchNotifications(sitePage, "site");
+		} else if (group === "system") {
+			const list = await fetchNotifications(sitePage, "system");
 			setSiteNotifications((prev) => [...prev, ...list]);
 			setSitePage((prev) => prev + 1);
 		}
@@ -147,17 +147,17 @@ export default function NotificationsPage() {
 						/>
 						{/* Group 2: Followers */}
 						<NotificationSection
-							id="followers"
+							id="social"
 							title={options[1].label}
 							list={followersNotifications}
-							onLoadMore={() => handleLoadMore("followers")}
+							onLoadMore={() => handleLoadMore("social")}
 						/>
 						{/* Group 3: Site Updates */}
 						<NotificationSection
-							id="updates"
+							id="system"
 							title={options[2].label}
 							list={siteNotifications}
-							onLoadMore={() => handleLoadMore("site")}
+							onLoadMore={() => handleLoadMore("system")}
 						/>
 					</div>
 				</>
@@ -191,7 +191,6 @@ const NotificationSection = ({ id, title, list, onLoadMore }) => (
 
 function Notification({ notification }) {
 	const {
-		type,
 		text,
 		imageUrl,
 		associatedObject,
@@ -255,7 +254,6 @@ function Notification({ notification }) {
 			<div className="notification">
 				<NotificationImage
 					imageUrl={imageUrl}
-					type={type}
 					objectType={objectType}
 					associatedObject={associatedObject}
 				></NotificationImage>
