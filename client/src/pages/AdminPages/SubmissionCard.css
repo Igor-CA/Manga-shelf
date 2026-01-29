@@ -7,6 +7,12 @@
 	gap: 1rem;
 }
 
+.submission-image {
+	max-width: 250px;
+	border-radius: 0.5rem;
+	cursor: pointer;
+}
+
 .table table {
 	width: 100%;
 	border-collapse: collapse;
@@ -35,7 +41,7 @@
 
 .field-old-value {
 	color: var(--red);
-	text-decoration: line-through; 
+	text-decoration: line-through;
 }
 
 .field-new-value {

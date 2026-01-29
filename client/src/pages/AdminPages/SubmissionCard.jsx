@@ -74,6 +74,25 @@ export default function SubmissionCard({ submission, onProcess }) {
 				<p>{submission.notes}</p>
 			</div>
 
+			{submission.evidenceImage && (
+				<div>
+					<strong>Comprovante / Anexo:</strong>
+					<div>
+						<a
+							href={`${import.meta.env.REACT_APP_HOST_ORIGIN}${submission.evidenceImage}`}
+							target="_blank"
+							rel="noreferrer"
+						>
+							<img
+								src={`${import.meta.env.REACT_APP_HOST_ORIGIN}${submission.evidenceImage}`}
+								alt="Comprovante da submissão"
+								className="submission-image"
+							/>
+						</a>
+					</div>
+				</div>
+			)}
+
 			<div className="table">
 				<h4>Alterações Propostas:</h4>
 				<table>
