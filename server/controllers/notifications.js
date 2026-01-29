@@ -26,36 +26,31 @@ exports.getUserNotifications = asyncHandler(async (req, res, next) => {
 	if (!req.isAuthenticated()) {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
 	}
-	const user = await User.findById(req.user._id, "notifications").populate({
-		path: "notifications.notification",
-	});
 
-	if (!user) return res.status(400).json({ msg: "User not found" });
+	const { group, page } = req.query;
 
-	const { type, page } = req.query;
-	if (!type) {
+	if (!group) {
 		const notifications = await getAllNotifications(req.user._id, {
-			followersPage: 1,
-			followersLimit: 10,
-			volumesPage: 1,
-			volumesLimit: 10,
-			updatesPage: 1,
-			updatesLimit: 10,
+			socialPage: 1,
+			socialLimit: 10,
+			mediaPage: 1,
+			mediaLimit: 10,
+			systemPage: 1,
+			systemLimit: 10,
 		});
 		res.send(notifications);
 	} else {
-		const notifications = await getTypeNotifications(
+		const notifications = await getGroupNotifications(
 			req.user._id,
 			{
 				page: page || 1,
 				limit: 10,
 			},
-			type,
+			group,
 		);
 		res.send(notifications);
 	}
 });
-
 const populateAssociatedObject = [
 	{
 		$lookup: {
@@ -112,12 +107,12 @@ const populateAssociatedObject = [
 
 async function getAllNotifications(userId, paginationOptions) {
 	const {
-		followersPage = 1,
-		followersLimit = 10,
+		socialPage = 1,
+		socialLimit = 10,
 		mediaPage = 1,
 		mediaLimit = 10,
-		updatesPage = 1,
-		updatesLimit = 10,
+		systemPage = 1,
+		systemLimit = 10,
 	} = paginationOptions;
 
 	const results = await User.aggregate([
@@ -143,56 +138,34 @@ async function getAllNotifications(userId, paginationOptions) {
 		{ $replaceRoot: { newRoot: "$notificationDetails" } },
 		{
 			$facet: {
-				followers: [
-					{ $match: { type: "followers" } },
+				social: [
+					{ $match: { group: "social" } }, // New group filter
 					{ $sort: { date: -1 } },
-					{ $skip: (followersPage - 1) * followersLimit },
-					{ $limit: followersLimit },
+					{ $skip: (socialPage - 1) * socialLimit },
+					{ $limit: socialLimit },
 					...populateAssociatedObject,
 				],
 				media: [
-					{
-						$match: {
-							$or: [
-								{ type: "volumes" },
-								{ objectType: "Volume" },
-								{ objectType: "Series" },
-							],
-						},
-					},
+					{ $match: { group: "media" } }, // Includes volumes AND deletions
 					{ $sort: { date: -1 } },
 					{ $skip: (mediaPage - 1) * mediaLimit },
 					{ $limit: mediaLimit },
 					...populateAssociatedObject,
 				],
-				updates: [
-					{ $match: { type: "site" } },
+				system: [
+					{ $match: { group: "system" } }, // New group filter
 					{ $sort: { date: -1 } },
-					{ $skip: (updatesPage - 1) * updatesLimit },
-					{ $limit: updatesLimit },
+					{ $skip: (systemPage - 1) * systemLimit },
+					{ $limit: systemLimit },
 				],
 			},
 		},
 	]);
 
-	return results[0];
+	return results[0] || { social: [], media: [], system: [] };
 }
-async function getTypeNotifications(userId, paginationOptions, type) {
+async function getGroupNotifications(userId, paginationOptions, group) {
 	const { page = 1, limit = 10 } = paginationOptions;
-	let matchStage = {};
-	if (type === "media") {
-		matchStage = {
-			$or: [
-				{ type: "volumes" },
-				{ objectType: "Volume" },
-				{ objectType: "Series" },
-			],
-		};
-	} else if (type === "followers") {
-		matchStage = { type: "followers" };
-	} else if (type === "site") {
-		matchStage = { type: "site" };
-	}
 
 	const results = await User.aggregate([
 		{ $match: { _id: userId } },
@@ -216,7 +189,7 @@ async function getTypeNotifications(userId, paginationOptions, type) {
 		},
 		{ $replaceRoot: { newRoot: "$notificationDetails" } },
 
-		{ $match: matchStage },
+		{ $match: { group: group } },
 
 		{ $sort: { date: -1 } },
 		{ $skip: (page - 1) * limit },
@@ -246,7 +219,8 @@ exports.adminSendPatchNotes = asyncHandler(async (req, res, next) => {
 });
 async function createSiteNewsNotification(updatesList) {
 	const newNotification = new Notification({
-		type: "site",
+		group: "system",
+		eventKey: "site_update",
 		text: "O Manga Shelf foi atualizado. Veja as novidades",
 		imageUrl: `/android-chrome-192x192.png`,
 		details: updatesList,
@@ -254,19 +228,21 @@ async function createSiteNewsNotification(updatesList) {
 	await newNotification.save();
 	return newNotification;
 }
-
 async function createNewVolumeNotification(newVolume) {
+	if (!newVolume) return;
+
 	const existingNotification = await Notification.findOne({
-		type: "volumes",
+		eventKey: "new_volume",
 		associatedObject: newVolume._id,
 		objectType: "Volume",
 	});
+
 	if (existingNotification) return existingNotification;
-	if (!newVolume) return;
 
 	const newNotification = new Notification({
-		type: "volumes",
-		text: `Um novo volume de [[${newVolume.serie.title}|/series/${newVolume.series._id}]] foi adicionado ao site.`,
+		group: "media",
+		eventKey: "new_volume",
+		text: `Um novo volume de [[${newVolume.serie.title}|/series/${newVolume.serie._id}]] foi adicionado ao site.`,
 		imageUrl: getVolumeCoverURL(
 			newVolume.serie,
 			newVolume.number,
@@ -276,12 +252,13 @@ async function createNewVolumeNotification(newVolume) {
 		associatedObject: newVolume._id,
 		objectType: "Volume",
 	});
+
 	await newNotification.save();
 	return newNotification;
 }
-
 exports.createPendingVolumeNotification = async (newVolume) => {
 	const notification = await createNewVolumeNotification(newVolume);
+	if (!notification) return;
 
 	const users = await User.find({
 		userList: {
@@ -295,56 +272,40 @@ exports.createPendingVolumeNotification = async (newVolume) => {
 
 	const pendingDocs = [];
 	for (const user of users) {
-		const settings = user.settings.notifications;
-		if (settings.allow && (settings.site || settings.email)) {
+		const sets = user.settings.notifications;
+		const isMediaEnabled = sets.allow && sets.groups.media;
+
+		if (isMediaEnabled && (sets.site || sets.email)) {
 			pendingDocs.push({
 				user: user._id,
 				notification: notification._id,
-				siteStatus: settings.site ? "pending" : "disabled",
-				emailStatus: settings.email ? "pending" : "disabled",
+				siteStatus: sets.site ? "pending" : "disabled",
+				emailStatus: sets.email ? "pending" : "disabled",
 			});
 		}
 	}
+
 	if (pendingDocs.length > 0) {
 		await UserNotificationStatus.insertMany(pendingDocs);
 	}
 };
 
-exports.sendNewVolumeNotification = async (volumesList, targetUserId) => {
-	const notificationsList = [];
-	for (const volume of volumesList) {
-		const notification = await createNewVolumeNotification(volume);
-		notificationsList.push(notification);
-	}
-	const firstNotification = notificationsList[0];
-
-	const { allowNotifications, allowType, allowEmail, allowSite } =
-		await checkNotificationSettings(targetUserId, firstNotification.type);
-
-	if (!allowNotifications || !allowType) return;
-	if (allowEmail) {
-		await sendEmailNotification(firstNotification, targetUserId, volumesList);
-	}
-	if (allowSite) {
-		for (const notification of notificationsList) {
-			await sendSiteNotification(notification, targetUserId);
-		}
-	}
-};
 async function createFollowingNotification(userId) {
 	const [existingNotification, user] = await Promise.all([
 		Notification.findOne({
-			type: "followers",
+			eventKey: "new_follower",
 			associatedObject: userId,
 			objectType: "User",
 		}),
 		User.findById(userId),
 	]);
+
 	if (existingNotification) return existingNotification;
 	if (!user) return;
 
 	const newNotification = new Notification({
-		type: "followers",
+		group: "social",
+		eventKey: "new_follower",
 		text: `[[${user.username}|/user/${user.username}]] Começou a te seguir`,
 		imageUrl: user.profileImageUrl,
 		associatedObject: userId,
@@ -355,27 +316,48 @@ async function createFollowingNotification(userId) {
 }
 exports.sendNewFollowerNotification = async (followerID, followedID) => {
 	const notification = await createFollowingNotification(followerID);
+	const cooldownPeriod = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+	const existingStatus = await UserNotificationStatus.findOne({
+		user: followedID,
+		notification: notification._id,
+		createdAt: { $gte: cooldownPeriod },
+	});
+
+	if (existingStatus) {
+		return;
+	}
+
+	await UserNotificationStatus.create({
+		user: followedID,
+		notification: notification._id,
+		siteStatus: "sent",
+		emailStatus: "sent",
+	});
+
 	return sendNotification(notification, followedID);
 };
-async function checkNotificationSettings(userId, type) {
-	const user = await User.findById(userId);
-	const allowNotifications = user.settings.notifications.allow;
+async function checkNotificationSettings(userId, group) {
+	const user = await User.findById(userId).select("settings");
+	if (!user || !user.settings.notifications.allow) {
+		return { allowEmail: false, allowSite: false };
+	}
 
-	const allowType = user.settings.notifications[type];
-	const allowEmail = user.settings.notifications.email;
-	const allowSite = user.settings.notifications.site;
-	return { allowNotifications, allowType, allowEmail, allowSite };
+	const settings = user.settings.notifications;
+	const isGroupEnabled = settings.groups[group] !== false;
+
+	return {
+		allowEmail: settings.email && isGroupEnabled,
+		allowSite: settings.site && isGroupEnabled,
+	};
 }
-const sendEmailNotification = async (
-	notification,
-	targetUserId,
-	volumesList,
-) => {
+const sendEmailNotification = async (notification, targetUserId, dataList) => {
 	const targetUser = await User.findById(targetUserId);
+	if (!targetUser) return;
 
-	if (notification.type === "followers") {
+	if (notification.eventKey === "new_follower") {
 		const followedUser = await User.findById(notification.associatedObject);
-		sendEmail(
+		await sendEmail(
 			targetUser.email,
 			"Novo seguidor Manga Shelf",
 			"newFollower",
@@ -399,38 +381,49 @@ const sendEmailNotification = async (
 			],
 		);
 	}
-	if (notification.type === "volumes") {
-		const attachments = volumesList.map((volume, id) => {
-			return {
-				filename: getVolumeCoverURL(
+
+	if (notification.group === "media") {
+		if (notification.eventKey === "new_volume" && dataList) {
+			const attachments = dataList.map((volume, id) => {
+				const cover = getVolumeCoverURL(
 					volume.serie,
 					volume.number,
 					volume.isVariant,
 					volume.variantNumber,
-				),
-				path: `${process.env.SITE_DOMAIN}/images/medium/${getVolumeCoverURL(
-					volume.serie,
-					volume.number,
-					volume.isVariant,
-					volume.variantNumber,
-				)}`,
-				contentDisposition: "inline",
-				cid: `img${id + 1}.webp`,
-				contentType: "img/webp",
-			};
-		});
-		await sendEmail(
-			targetUser.email,
-			"Novos volumes Manga Shelf",
-			"newVolumes",
-			{
-				username: targetUser.username,
-				volumes: volumesList,
-			},
-			attachments,
-		);
+				);
+				return {
+					filename: cover,
+					path: `${process.env.SITE_DOMAIN}/images/medium/${cover}`,
+					contentDisposition: "inline",
+					cid: `img${id + 1}.webp`,
+					contentType: "img/webp",
+				};
+			});
+
+			await sendEmail(
+				targetUser.email,
+				"Novos volumes Manga Shelf",
+				"newVolumes",
+				{
+					username: targetUser.username,
+					volumes: dataList,
+				},
+				attachments,
+			);
+		} else if (notification.eventKey.endsWith("_deleted")) {
+			await sendEmail(
+				targetUser.email,
+				"Item removido do Manga Shelf",
+				"mediaDeletion",
+				{
+					username: targetUser.username,
+					notification,
+				},
+			);
+		}
 	}
-	if (notification.type === "site") {
+
+	if (notification.group === "system") {
 		await sendEmail(
 			targetUser.email,
 			"Nova atualização no Manga Shelf",
@@ -453,21 +446,131 @@ const sendSiteNotification = async (notificationId, targetUserId) => {
 	return;
 };
 async function sendNotification(notification, targetUserId, dataList) {
-	const { allowNotifications, allowType, allowEmail, allowSite } =
-		await checkNotificationSettings(targetUserId, notification.type);
-	if (!allowNotifications || !allowType) return;
+	const { allowEmail, allowSite } = await checkNotificationSettings(
+		targetUserId,
+		notification.group,
+	);
+
 	if (allowEmail) {
-		if (notification.type === "volumes") {
+		if (notification.eventKey === "new_volume") {
 			await sendEmailNotification(notification, targetUserId, dataList);
 		} else {
 			await sendEmailNotification(notification, targetUserId);
 		}
 	}
 	if (allowSite) {
-		await sendSiteNotification(notification, targetUserId);
+		if (
+			dataList &&
+			dataList.length > 0 &&
+			notification.eventKey === "new_volume"
+		) {
+			for (const item of dataList) {
+				await sendSiteNotification(
+					item.notificationId || notification._id,
+					targetUserId,
+				);
+			}
+		} else {
+			await sendSiteNotification(notification._id, targetUserId);
+		}
 	}
+
 	return notification;
 }
 
+exports.processPendingNotifications = async (
+	eventKeyFilter = null,
+	isBatch = false,
+) => {
+	const query = {
+		$or: [{ emailStatus: "pending" }, { siteStatus: "pending" }],
+	};
+
+	const matchStage = eventKeyFilter ? { eventKey: eventKeyFilter } : {};
+
+	const pending = await UserNotificationStatus.find(query)
+		.populate({
+			path: "notification",
+			match: matchStage,
+		})
+		.populate("user");
+
+	const validPending = pending.filter((s) => s.notification);
+	if (validPending.length === 0) return;
+
+	const userGroups = validPending.reduce((acc, status) => {
+		const userId = status.user._id.toString();
+		if (!acc[userId]) acc[userId] = [];
+		acc[userId].push(status);
+		return acc;
+	}, {});
+
+	for (const userId in userGroups) {
+		const statuses = userGroups[userId];
+		const user = statuses[0].user;
+
+		if (isBatch) {
+			const dataList = statuses.map((s) => s.notification.associatedObject);
+			await sendNotification(statuses[0].notification, user._id, dataList);
+		} else {
+			for (const status of statuses) {
+				await sendNotification(status.notification, user._id);
+			}
+		}
+
+		await UserNotificationStatus.updateMany(
+			{ _id: { $in: statuses.map((s) => s._id) } },
+			{ $set: { emailStatus: "sent", siteStatus: "sent" } },
+		);
+	}
+};
+
+exports.createDeletionNotification = async (
+	itemData,
+	objectType,
+	reason,
+	session,
+) => {
+	let notificationText = "";
+	if (objectType === "Series") {
+		notificationText = `A obra **${itemData.title}** foi removida do site.`;
+	} else {
+		notificationText = `Um volume que você possuía de [[${itemData.title}|/series/${itemData.linkId}]] foi removido do site.`;
+	}
+	const newNotification = new Notification({
+		group: "media",
+		eventKey: `${objectType.toLowerCase()}_deleted`,
+		text: notificationText,
+		details: [`Motivo: ${reason}`],
+		objectType: objectType,
+	});
+
+	await newNotification.save({ session });
+	return newNotification;
+};
+exports.notifyDeletion = async (session, users, itemData, type, reason) => {
+	const deletionNotification = await exports.createDeletionNotification(
+		itemData,
+		type,
+		reason,
+		session,
+	);
+
+	const statusDocs = users.map((user) => {
+		const sets = user.settings?.notifications;
+		const isAllowed = sets?.allow !== false && sets?.groups?.media !== false;
+
+		return {
+			user: user._id,
+			notification: deletionNotification._id,
+			siteStatus: isAllowed && sets?.site !== false ? "pending" : "disabled",
+			emailStatus: isAllowed && sets?.email !== false ? "pending" : "disabled",
+		};
+	});
+
+	if (statusDocs.length > 0) {
+		await UserNotificationStatus.insertMany(statusDocs, { session });
+	}
+};
 exports.sendEmailNotification = sendEmailNotification;
 exports.sendSiteNotification = sendSiteNotification;

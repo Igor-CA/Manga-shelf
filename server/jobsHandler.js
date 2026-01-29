@@ -2,10 +2,8 @@ const cron = require("node-cron");
 const logger = require("./Utils/logger");
 const { backupDatabase } = require("./jobs/backupRoutine");
 const { syncAndRecalculateData } = require("./jobs/dataSyncRoutine");
-const {
-	dispatchSiteNotifications,
-} = require("./jobs/siteNotificationsDispatcher");
-const { dispatchEmails } = require("./jobs/emailDispatcher");
+const { dispatchWeeklyVolumes } = require("./jobs/weeklyVolumesDispatcher");
+const { dispatchPendingNotifications } = require("./jobs/pendingNotificationsDispatcher");
 const APP_TIMEZONE = "America/Sao_Paulo";
 
 function startScheduledJobs() {
@@ -38,13 +36,13 @@ function startScheduledJobs() {
 	);
 
 	cron.schedule(
-		"0 4 * * 1",
+		"0 9 * * 1",
 		async () => {
-			logger.info("CRON: Triggering Volumes site notification routine...");
+			logger.info("CRON: Triggering Weekly Volumes notification routine...");
 			try {
-				await dispatchSiteNotifications();
+				await dispatchWeeklyVolumes();
 			} catch (error) {
-				logger.error("CRON: Volumes site notification routine failed.", {
+				logger.error("CRON: Weekly Volumes notification routine failed.", {
 					error,
 				});
 			}
@@ -52,14 +50,14 @@ function startScheduledJobs() {
 		{ timezone: APP_TIMEZONE }
 	);
 
-	cron.schedule(
-		"0 9 * * 1",
+		cron.schedule(
+		"*/30 * * * *",
 		async () => {
-			logger.info("CRON: Triggering Volumes email notification routine...");
+			logger.info("CRON: Triggering pending notifications dispatcher...");
 			try {
-				await dispatchEmails();
+				await dispatchPendingNotifications();
 			} catch (error) {
-				logger.error("CRON: Volumes email notification routine failed.", {
+				logger.error("CRON: pending notification routine failed.", {
 					error,
 				});
 			}
