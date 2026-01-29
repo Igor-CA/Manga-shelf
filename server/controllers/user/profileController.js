@@ -22,7 +22,7 @@ function configureMulter(folder) {
 		if (!allowedTypes.includes(file.mimetype)) {
 			return cb(
 				new Error("Invalid file type. Only JPEG, PNG, and WEBP are allowed."),
-				false
+				false,
 			);
 		}
 		cb(null, true);
@@ -69,11 +69,13 @@ exports.setUserNotifications = asyncHandler(async (req, res, next) => {
 	const user = await User.findById(req.user._id);
 	user.settings.notifications = {
 		allow: req.body.enable === "on",
-		volumes: req.body.volumes === "on",
-		followers: req.body.followers === "on",
-		updates: req.body.updates === "on",
 		email: req.body["email-notification"] === "on",
 		site: req.body["site-notification"] === "on",
+		groups: {
+			media: req.body.media === "on",
+			social: req.body.social === "on",
+			system: req.body.system === "on",
+		},
 	};
 
 	await user.save();

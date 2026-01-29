@@ -462,19 +462,19 @@ function NotificationSettings() {
 						defaultValue={userNotifications?.allow}
 					></CustomCheckbox>
 					<CustomCheckbox
-						htmlId={"volumes"}
-						label={"Notificar novos volumes na sua coleção"}
-						defaultValue={userNotifications?.volumes}
+						htmlId={"media"}
+						label={"Notificar sobre suas obras (novos volumes, deleções etc)"}
+						defaultValue={userNotifications?.groups?.media}
 					></CustomCheckbox>
 					<CustomCheckbox
-						htmlId={"followers"}
+						htmlId={"social"}
 						label={"Notificar novos seguidores"}
-						defaultValue={userNotifications?.followers}
+						defaultValue={userNotifications?.groups?.social}
 					></CustomCheckbox>
 					<CustomCheckbox
-						htmlId={"updates"}
+						htmlId={"system"}
 						label={"Notificar atualizações no site"}
-						defaultValue={userNotifications?.updates}
+						defaultValue={userNotifications?.groups?.system}
 					></CustomCheckbox>
 					<CustomCheckbox
 						htmlId={"site-notification"}

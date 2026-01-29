@@ -17,11 +17,11 @@ const OwnedVolumeSchema = new Schema(
 		purchasePrice: { type: Number },
 		notes: { type: String },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const UserSchema = new Schema({
-	isAdmin: {type: Boolean, default: false },
+	isAdmin: { type: Boolean, default: false },
 	username: { type: String },
 	email: { type: String, required: true },
 	password: { type: String },
@@ -61,12 +61,14 @@ const UserSchema = new Schema({
 	allowedAdultAt: { type: Date },
 	settings: {
 		notifications: {
-			allow: { type: Boolean, default: 1 },
-			volumes: { type: Boolean, default: 1 },
-			followers: { type: Boolean, default: 1 },
-			updates: { type: Boolean, default: 1 },
-			site: { type: Boolean, default: 1 },
-			email: { type: Boolean, default: 1 },
+			allow: { type: Boolean, default: true },
+			site: { type: Boolean, default: true },
+			email: { type: Boolean, default: true },
+			groups: {
+				media: { type: Boolean, default: true },
+				social: { type: Boolean, default: true },
+				system: { type: Boolean, default: true },
+			},
 		},
 	},
 	notifications: [
