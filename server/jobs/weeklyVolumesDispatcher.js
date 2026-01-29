@@ -15,6 +15,7 @@ async function dispatchWeeklyVolumes() {
 		.populate("user")
 		.populate({
 			path: "notification",
+			match: { eventKey: "new_volume" },
 			populate: {
 				path: "associatedObject",
 				model: "Volume",
@@ -22,12 +23,14 @@ async function dispatchWeeklyVolumes() {
 			},
 		});
 
-	if (pendingStatuses.length === 0) {
+	const volumePending = pendingStatuses.filter((s) => s.notification !== null);
+
+	if (volumePending.length === 0) {
 		logger.info("No pending volume notifications found.");
 		return;
 	}
 
-	const userGroups = pendingStatuses.reduce((acc, status) => {
+	const userGroups = volumePending.reduce((acc, status) => {
 		const userId = status.user._id.toString();
 		if (!acc[userId]) acc[userId] = [];
 		acc[userId].push(status);
@@ -37,33 +40,21 @@ async function dispatchWeeklyVolumes() {
 	for (const userId in userGroups) {
 		const statuses = userGroups[userId];
 		const user = statuses[0].user;
-		const volumeNotifs = statuses.map((s) => s.notification);
-		const volumesList = volumeNotifs
-			.map((n) => n.associatedObject)
-			.filter((v) => v);
+		const volumesWithNotifs = statuses.map((s) => ({
+			...s.notification.associatedObject.toObject(),
+			notificationId: s.notification._id,
+		}));
 
-		try {
-			const sitePending = statuses.filter((s) => s.siteStatus === "pending");
-			for (const status of sitePending) {
-				await sendSiteNotification(status.notification._id, user._id);
-				await UserNotificationStatus.findByIdAndUpdate(status._id, {
-					siteStatus: "sent",
-				});
-			}
+		await sendNotification(
+			statuses[0].notification,
+			user._id,
+			volumesWithNotifs,
+		);
 
-			const emailPending = statuses.filter((s) => s.emailStatus === "pending");
-			if (emailPending.length > 0) {
-				await sendNotification(volumeNotifs[0], user._id, volumesList);
-
-				const emailIds = emailPending.map((s) => s._id);
-				await UserNotificationStatus.updateMany(
-					{ _id: { $in: emailIds } },
-					{ $set: { emailStatus: "sent" } },
-				);
-			}
-		} catch (error) {
-			logger.error(`Error dispatching for user ${user.username}:`, error);
-		}
+		await UserNotificationStatus.updateMany(
+			{ _id: { $in: statuses.map((s) => s._id) } },
+			{ $set: { siteStatus: "sent", emailStatus: "sent" } },
+		);
 	}
 	logger.info("Weekly Dispatcher Job finished.");
 }

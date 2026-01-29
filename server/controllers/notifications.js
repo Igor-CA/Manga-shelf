@@ -459,12 +459,24 @@ async function sendNotification(notification, targetUserId, dataList) {
 		}
 	}
 	if (allowSite) {
-		await sendSiteNotification(notification._id, targetUserId);
+		if (
+			dataList &&
+			dataList.length > 0 &&
+			notification.eventKey === "new_volume"
+		) {
+			for (const item of dataList) {
+				await sendSiteNotification(
+					item.notificationId || notification._id,
+					targetUserId,
+				);
+			}
+		} else {
+			await sendSiteNotification(notification._id, targetUserId);
+		}
 	}
 
 	return notification;
 }
-
 exports.createDeletionNotification = async (
 	itemData,
 	objectType,
