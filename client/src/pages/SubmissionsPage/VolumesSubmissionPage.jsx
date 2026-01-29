@@ -29,6 +29,7 @@ export default function VolumeSubmissionPage() {
 	const [formData, setFormData] = useState(INITIAL_STATE);
 	const [loading, setLoading] = useState(true);
 	const [notes, setNotes] = useState("");
+	const [file, setFile] = useState(null);
 	const [initialData, setInitialData] = useState(null);
 
 	const formatDateForInput = (isoDate) => {
@@ -76,6 +77,12 @@ export default function VolumeSubmissionPage() {
 		setNotes(value);
 	};
 
+	const handleFileChange = (e) => {
+		if (e.target.files && e.target.files[0]) {
+			setFile(e.target.files[0]);
+		}
+	};
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const rawPayload = getChangedValues(formData, initialData);
@@ -100,16 +107,20 @@ export default function VolumeSubmissionPage() {
 				.filter((a) => a !== "");
 		}
 
+		const submissionData = new FormData();
+		submissionData.append("targetModel", "Series");
+		submissionData.append("targetId", id);
+		submissionData.append("user", user._id);
+		submissionData.append("notes", notes);
+		submissionData.append("payload", JSON.stringify(payload));
+
+		if (file) {
+			submissionData.append("file", file);
+		}
 		try {
 			await axios.post(
 				`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/submission`,
-				{
-					targetModel: "Volume",
-					targetId: id,
-					payload: payload,
-					user: user._id,
-					notes: notes,
-				},
+				submissionData,
 				{ withCredentials: true },
 			);
 			setMessageType("Success");
@@ -139,8 +150,10 @@ export default function VolumeSubmissionPage() {
 				<form className="settings-container" onSubmit={handleSubmit}>
 					<SourceSection
 						notes={notes}
+						file={file}
 						onInvalid={handleInvalid}
 						onChange={handleNotesChange}
+						onFileChange={handleFileChange}
 					/>
 					<GeneralInfoSection data={formData} onChange={handleChange} />
 
@@ -168,7 +181,7 @@ export default function VolumeSubmissionPage() {
 	);
 }
 
-function SourceSection({ notes, onChange, onInvalid }) {
+function SourceSection({ notes, onChange, onInvalid, onFileChange, file }) {
 	return (
 		<div className="settings-group">
 			<label htmlFor="username" className="input_label">
@@ -177,9 +190,9 @@ function SourceSection({ notes, onChange, onInvalid }) {
 					Obs: Ao preencher ou editar algum dos campos abaixo pedimos para que
 					insira de onde tirou essa informação. Pode ser por meio do site da
 					editora, sites como My Anime List ou guia dos quadrinhos, links de
-					lojas ou até mesmo por meio de uma foto no instagram mostrando o mangá
-					com a devida informação. Apenas precisamos de uma fonte para validar e
-					aprovar a informação
+					lojas ou até mesmo por meio de uma foto mostrando o mangá com a devida
+					informação. Apenas precisamos de uma fonte para validar e aprovar a
+					informação
 				</p>
 				<textarea
 					className="input"
@@ -190,6 +203,15 @@ function SourceSection({ notes, onChange, onInvalid }) {
 					value={notes}
 					onInvalid={onInvalid}
 					onChange={onChange}
+				/>
+			</label>
+			<label className="button">
+				{file ? `Arquivo: ${file.name}` : "Anexar arquivo / Imagem"}
+				<input
+					type="file"
+					accept="image/png, image/jpeg, image/webp"
+					style={{ display: "none" }}
+					onChange={onFileChange}
 				/>
 			</label>
 		</div>

@@ -47,6 +47,7 @@ const SubmissionSchema = new Schema(
 			type: Schema.Types.ObjectId,
 			ref: "User",
 		},
+		evidenceImage: { type: String },
 	},
 	{ timestamps: true },
 );
