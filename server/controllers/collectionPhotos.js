@@ -1,22 +1,10 @@
 const CollectionPhoto = require("../models/CollectionPhoto");
 const asyncHandler = require("express-async-handler");
 const path = require("path");
-const multer = require("multer");
-const mime = require("mime-types");
 const fs = require("fs");
-
-// Configure multer for collection photos
-const storage = multer.diskStorage({
-	destination: (req, file, cb) => {
-		cb(null, path.resolve("public/images/collection-photos"));
-	},
-	filename: (req, file, cb) => {
-		const userId = req.user._id;
-		const timestamp = Date.now();
-		const fileExtension = mime.extension(file.mimetype) || "webp";
-		cb(null, `${userId}-${timestamp}.${fileExtension}`);
-	},
-});
+const multer = require("multer");
+const sharp = require("sharp");
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
 	const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -31,7 +19,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
 	storage,
-	limits: { fileSize: 10 * 1024 * 1024 },
+	limits: { fileSize: 10 * 1024 * 1024 }, // 10MB Limit
 	fileFilter,
 });
 
@@ -43,10 +31,24 @@ exports.createPhoto = [
 		}
 
 		const { description, date, order, isVisible, isAdultContent } = req.body;
+		const userId = req.user._id;
+		const timestamp = Date.now();
+
+		const folderPath = path.resolve("public/images/collection-photos");
+		const filename = `${userId}-${timestamp}.webp`; 
+		const fullPath = path.join(folderPath, filename);
+
+		if (!fs.existsSync(folderPath)) {
+			fs.mkdirSync(folderPath, { recursive: true });
+		}
+
+		await sharp(req.file.buffer)
+			.webp({ quality: 80 })
+			.toFile(fullPath);
 
 		const photo = new CollectionPhoto({
-			user: req.user._id,
-			imageUrl: `/images/collection-photos/${req.file.filename}`,
+			user: userId,
+			imageUrl: `/images/collection-photos/${filename}`,
 			description: description || "",
 			date: date || new Date(),
 			order: order || 0,
@@ -130,9 +132,15 @@ exports.deletePhoto = asyncHandler(async (req, res) => {
 		return res.status(403).json({ msg: "Não autorizado" });
 	}
 
+	// Resolving the path to verify existence
 	const filePath = path.resolve(`public${photo.imageUrl}`);
 	if (fs.existsSync(filePath)) {
-		fs.unlinkSync(filePath);
+		try {
+			fs.unlinkSync(filePath);
+		} catch (err) {
+			console.error("Error deleting file:", err);
+			// We continue to delete the DB record even if file deletion fails
+		}
 	}
 
 	await CollectionPhoto.findByIdAndDelete(photoId);
