@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
+const upload = require("../middlewares/uploadMiddleware"); 
 
 const {
 	authController,
@@ -178,10 +179,22 @@ router.delete(
 );
 
 // Submissions
-
+const parseSubmissionBody = (req, res, next) => {
+	if (req.body.payload && typeof req.body.payload === "string") {
+		try {
+			req.body.payload = JSON.parse(req.body.payload);
+		} catch (error) {
+			req.body.payload = null;
+		}
+	}
+	console.log("parsed")
+	next();
+};
 router.post(
 	"/submission",
 	requireAuth,
+	upload.single("file"),
+	parseSubmissionBody,
 	submissionValidation,
 	validateRequest,
 	submissionController.createSubmission,

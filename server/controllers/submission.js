@@ -1,14 +1,35 @@
 const Submission = require("../models/Submission");
 const Series = require("../models/Series");
 const volume = require("../models/volume");
+const User = require("../models/User");
 const _ = require("lodash");
 const asyncHandler = require("express-async-handler");
 const logger = require("../Utils/logger");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
-const User = require("../models/User");
+
+const path = require("path");
+const fs = require("fs");
+const sharp = require("sharp");
+
+const processAndSaveEvidence = async (buffer, userId) => {
+	const folderPath = path.resolve("public/images/evidence");
+	const filename = `${userId}-${Date.now()}.webp`;
+	const fullPath = path.join(folderPath, filename);
+
+	if (!fs.existsSync(folderPath)) {
+		fs.mkdirSync(folderPath, { recursive: true });
+	}
+
+	await sharp(buffer)
+		.resize({ width: 1280, withoutEnlargement: true })
+		.webp({ quality: 80 })
+		.toFile(fullPath);
+
+	return `/images/evidence/${filename}`;
+};
 
 exports.createSubmission = asyncHandler(async (req, res, next) => {
-	const { targetModel, targetId, payload, notes } = req.body;
+	let { targetModel, targetId, payload, notes } = req.body;
 	const userId = req.user._id;
 
 	if (targetId) {
@@ -29,6 +50,17 @@ exports.createSubmission = asyncHandler(async (req, res, next) => {
 		}
 	}
 
+	let evidenceImageUrl = "";
+	if (req.file) {
+		try {
+			evidenceImageUrl = await processAndSaveEvidence(req.file.buffer, userId);
+		} catch (error) {
+			logger.error("Error processing evidence image:", error);
+			return res
+				.status(500)
+				.json({ msg: "Erro ao processar a imagem de comprovante." });
+		}
+	}
 	const newSubmission = new Submission({
 		user: userId,
 		targetModel,
@@ -36,6 +68,7 @@ exports.createSubmission = asyncHandler(async (req, res, next) => {
 		payload,
 		notes,
 		status: "Pendente",
+		evidenceImage: evidenceImageUrl,
 	});
 
 	await newSubmission.save();
@@ -64,13 +97,16 @@ exports.approveSubmission = asyncHandler(async (req, res, next) => {
 			targetDocument = await Series.findById(submission.targetId);
 		}
 	} else if (submission.targetModel === "Volume") {
-		targetDocument = await volume.findById(submission.targetId);
+		if (submission.targetId) {
+			targetDocument = await volume.findById(submission.targetId);
+		}
 	}
 
 	if (!targetDocument)
 		return res.status(404).json({ msg: "Obra alvo não encontrada." });
 
 	delete submission.payload._id;
+	delete submission.payload.__v;
 
 	const customizer = (objValue, srcValue) => {
 		if (_.isArray(srcValue)) {
@@ -133,12 +169,16 @@ exports.getUserSubmissions = asyncHandler(async (req, res) => {
 	if (!username) return res.send({ msg: "Nenhum usuário informado" });
 
 	const user = await User.findOne({ username }).select("_id").lean();
-	const submissions = await Submission.find({ user })
-		.select("user targetId targetModel status createdAt adminComment")
+	if (!user) return res.status(404).json({ msg: "Usuário não encontrado" });
+
+	const submissions = await Submission.find({ user: user._id })
+		.select(
+			"user targetId targetModel status createdAt adminComment evidenceImage",
+		)
 		.populate("user", "username email")
 		.populate({
 			path: "targetId",
-			select: "title number variant variantNumber",
+			select: "title number variant variantNumber seriesCover",
 			populate: {
 				path: "serie",
 				select: "title",
