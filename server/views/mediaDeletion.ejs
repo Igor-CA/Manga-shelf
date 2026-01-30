@@ -36,7 +36,8 @@
             <%- parseRichText(notification.text) %>
         </p>
 
-		<ul>
+        <ul>
+            <%  
             for (let i = 0; i < notification.details.length; i++) { 
                 let message = parseRichText(notification.details[i]); 
             %>
@@ -44,8 +45,8 @@
                 <%- message %>
             </li>
             <% } %>
+        </ul>
 
-		</ul>
         <p>
             Se você acredita que isso foi um erro, entre em contato com o suporte.
         </p>

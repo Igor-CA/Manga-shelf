@@ -9,6 +9,7 @@ const Volume = require("../models/volume");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 const logger = require("../Utils/logger");
+const notificationsController = require("../controllers/notifications");
 
 const ITEMS_PER_PAGE = 24;
 const addUserListData = (pipeline, user) => {
