@@ -5,8 +5,9 @@ const crypto = require("crypto");
 const { sendEmail } = require("../../Utils/sendEmail");
 
 exports.signup = asyncHandler(async (req, res, next) => {
-	const { username, password, email } = req.body;
-
+	const username = req.body.username.trim();
+	const email = req.body.email.toLowerCase().trim();
+	const { password } = req.body;
 	const existingUser = await User.findOne({ $or: [{ username }, { email }] });
 
 	if (existingUser) {
@@ -25,7 +26,8 @@ exports.signup = asyncHandler(async (req, res, next) => {
 });
 
 exports.login = asyncHandler(async (req, res, next) => {
-	const { login, password } = req.body;
+	const login = req.body.login.toLowerCase().trim();
+	const { password } = req.body;
 	const user = await User.findOne({
 		$or: [{ username: login }, { email: login }],
 	});
