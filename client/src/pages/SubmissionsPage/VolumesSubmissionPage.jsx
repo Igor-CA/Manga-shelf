@@ -108,7 +108,7 @@ export default function VolumeSubmissionPage() {
 		}
 
 		const submissionData = new FormData();
-		submissionData.append("targetModel", "Series");
+		submissionData.append("targetModel", "Volume");
 		submissionData.append("targetId", id);
 		submissionData.append("user", user._id);
 		submissionData.append("notes", notes);
