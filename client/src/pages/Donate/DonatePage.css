@@ -1,46 +1,115 @@
-.donate-page{
-    margin: auto;
+.donate-page {
+	margin: auto;
 	margin-bottom: 2em;
-    margin-top: 2em;
+	margin-top: 2em;
 	position: relative;
 	font-size: 1em;
 	padding: 70px 2em;
 	color: var(--text);
 	background-color: var(--foreground);
 	max-width: 700px;
-    text-align: justify;
-    box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.282);
+	text-align: justify;
+	box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.282);
 }
-.donate-page h1{
-    margin-bottom: 2rem;
-    text-align: center;
-    font-size: 2rem;
+.donate-page h1 {
+	margin-bottom: 2rem;
+	text-align: center;
+	font-size: 2rem;
 }
-.donate-page ul{
-    margin-top: 1rem;
-    margin-left: 2rem;
+.donate-page ul {
+	margin-top: 1rem;
+	margin-left: 2rem;
 }
-.donate-page li{
-    margin-top: 1rem;
+.donate-page li {
+	margin-top: 1rem;
 }
-.donate-page h2, .donate-page  h3{
-    margin-top: 1rem;
+.donate-page h2,
+.donate-page h3 {
+	margin-top: 1rem;
 }
-.donate-page p{
-    margin-top: 1rem;
-    text-indent: 2rem;
-    line-height: 1.5rem;
+.donate-page p {
+	margin-top: 1rem;
+	text-indent: 2rem;
+	line-height: 1.5rem;
 }
-.donate-page a{
-    color: var(--accent);
+.donate-page a {
+	color: var(--accent);
 }
-.donate-page__donation-button{
-    text-align: center;
-    margin: 25px;
+.donate-page__donation-button {
+	text-align: center;
+	margin: 25px;
+}
+.donation-section {
+	margin: 3rem 0;
+	text-align: center;
+}
+
+.donation-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2rem;
+	justify-content: center;
+	margin-top: 1.5rem;
+}
+
+.donation-card {
+	background: var(--background);
+	border: 1px solid var(--text);
+	border-radius: 0.75rem;
+	padding: 2rem;
+	flex: 1;
+	min-width: 280px;
+	max-width: 400px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	box-shadow: var(--box-shadow);
+}
+
+.donation-desc {
+	margin-bottom: 1.5rem;
+	font-size: 1rem;
+    text-indent: 0rem;
+}
+.pix-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+}
+
+.pix-qrcode {
+	width: 200px;
+	height: 200px;
+	border-radius: 8px;
+	border: 1px solid var(--text);
+}
+
+.copy-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	background-color: var(--green); 
+	color: white;
+	border: none;
+	padding: 0.75rem 1.25rem;
+	border-radius: 0.5rem;
+	cursor: pointer;
+	font-weight: 600;
+	width: 100%;
+}
+
+
+.thank-you-note {
+	margin-top: 3rem;
+	font-style: italic;
+	text-align: center;
 }
 @media only screen and (min-width: 1040px) {
 	.donate-page {
 		margin-top: 2em;
-		border-radius: 10px;
+		border-radius: 0.75rem;
 	}
 }
