@@ -26,10 +26,11 @@ exports.signup = asyncHandler(async (req, res, next) => {
 });
 
 exports.login = asyncHandler(async (req, res, next) => {
-	const login = req.body.login.toLowerCase().trim();
+	const loginLowerCase = req.body.login.toLowerCase().trim();
+	const loginOriginalCase = req.body.login 
 	const { password } = req.body;
 	const user = await User.findOne({
-		$or: [{ username: login }, { email: login }],
+		$or: [{ username: loginOriginalCase }, { email: loginLowerCase }],
 	});
 
 	if (!user) {
