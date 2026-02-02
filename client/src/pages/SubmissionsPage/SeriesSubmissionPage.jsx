@@ -178,7 +178,10 @@ export default function SeriesSubmissionPage() {
 			await axios.post(
 				`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/submission`,
 				submissionData,
-				{ withCredentials: true },
+					{
+						withCredentials: true,
+						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+					},
 			);
 			setMessageType("Success");
 			addMessage("Sugestão enviada para aprovação!");

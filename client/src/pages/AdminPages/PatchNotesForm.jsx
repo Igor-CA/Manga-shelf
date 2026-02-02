@@ -23,7 +23,10 @@ export default function PatchNotesForm() {
 			const response = await axios.post(
 				`${import.meta.env.REACT_APP_HOST_ORIGIN}/admin/add-patch-note`,
 				{ updatesList: notesList },
-				{ withCredentials: true },
+					{
+						withCredentials: true,
+						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+					},
 			);
 			setMessageType("Success");
 			addMessage(response.data.msg);

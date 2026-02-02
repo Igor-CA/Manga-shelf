@@ -48,7 +48,10 @@ export default function SubmissionCard({ submission, onProcess }) {
 			const response = await axios.post(
 				endpoint,
 				{ adminComment: comment },
-				{ withCredentials: true },
+					{
+						withCredentials: true,
+						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+					},
 			);
 			setMessageType("Success");
 			addMessage(response.data?.msg);
