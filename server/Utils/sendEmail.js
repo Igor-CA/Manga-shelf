@@ -1,12 +1,14 @@
 require("dotenv").config();
-const path = require('path');
+const path = require("path");
 
 const nodemailer = require("nodemailer");
 const ejs = require("ejs");
 const logger = require("./logger");
 
 const transporter = nodemailer.createTransport({
-	service: "gmail",
+	host: process.env.EMAIL_HOST,
+	port: 465,
+	secure: true, // Use SSL
 	auth: {
 		user: process.env.EMAIL,
 		pass: process.env.APP_PASSWORD,
@@ -15,22 +17,20 @@ const transporter = nodemailer.createTransport({
 
 async function sendEmail(to, subject, template, data, attachments) {
 	const emailTo =
-		process.env.NODE_ENV === "production"
-			? to
-			: process.env.EMAIL;
+		process.env.NODE_ENV === "production" ? to : process.env.EMAIL;
 	try {
 		const html = await ejs.renderFile(
 			path.join(__dirname, "..", "views", `${template}.ejs`),
 			data,
-			{ async: true }
+			{ async: true },
 		);
 
 		const mailOptions = {
 			from: `Manga Shelf<${process.env.EMAIL}>`,
-			to:emailTo,
+			to: emailTo,
 			subject,
 			html,
-			attachments
+			attachments,
 		};
 
 		await transporter.sendMail(mailOptions);
