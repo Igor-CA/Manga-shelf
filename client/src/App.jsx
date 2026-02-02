@@ -99,7 +99,7 @@ function App() {
 							path="/submissions/volume/:id"
 							element={<VolumeSubmissionPage />}
 						></Route>
-						<Route path="/admin" element={<AdminDashboard />}></Route>
+						<Route path="/dashboard" element={<AdminDashboard />}></Route>
 
 						<Route path="*" element={<NotFound />}></Route>
 					</Routes>
