@@ -28,7 +28,7 @@
                     return `<a href="${fullUrl}" style="color: #1e3a8a; text-decoration: none; font-weight: bold;">${label}</a>`;
                 });
 
-                parsed = parsed.replace(/(?<![\/\w])@(\w+)/g, `<a href="${baseurl}/user/$1" style="color: #1e3a8a; text-decoration: none;">@$1</a>`);
+                parsed = parsed.replace(/(?<![\/\w])@(\w+)/g, `<a href="${baseUrl}/user/$1" style="color: #1e3a8a; text-decoration: none;">@$1</a>`);
 
                 return parsed;
             };
