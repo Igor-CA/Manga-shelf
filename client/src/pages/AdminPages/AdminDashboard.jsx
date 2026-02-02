@@ -21,7 +21,7 @@ export default function AdminDashboard() {
 
 
 	useEffect(() => {
-		if (user && !user.isAdmin) {
+		if (!user || !user.isAdmin) {
 			navigate("/");
 			return
 		}
