@@ -574,3 +574,4 @@ exports.notifyDeletion = async (session, users, itemData, type, reason) => {
 };
 exports.sendEmailNotification = sendEmailNotification;
 exports.sendSiteNotification = sendSiteNotification;
+exports.sendNotification = sendNotification

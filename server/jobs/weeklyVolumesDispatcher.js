@@ -1,10 +1,7 @@
 //Job responsible to send weekly notifications with new volumes batched as a single email to each user
+const { sendNotification } = require("../controllers/notifications");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
 const logger = require("../Utils/logger");
-const {
-	sendNotification,
-	sendSiteNotification,
-} = require("../controllers/notifications");
 
 async function dispatchWeeklyVolumes() {
 	logger.info("Running Weekly New Volume Dispatcher...");
