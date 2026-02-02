@@ -13,11 +13,11 @@ const options = [
 	},
 	{
 		label: "Seguidores",
-		id: "followers",
+		id: "social",
 	},
 	{
 		label: "Novas funcionalidades",
-		id: "updates",
+		id: "system",
 	},
 ];
 
