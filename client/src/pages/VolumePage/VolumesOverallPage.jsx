@@ -28,14 +28,10 @@ export default function VolumesOverallPage({ volume }) {
 			{ label: "ISBN", value: ISBN },
 			{ label: "Capítulos", value: chapters },
 			{ label: "Possui Capas variantes", value: hasVariant },
-			/*
-            //Will uncomment after collecting a decent amount of data for it
-			{ label: "Possui brindes", value: freebies.lenght > 0 ? "Sim" : "Não" },
 			{
 				label: "Brindes",
-				value: freebies.lenght > 0 ? printArray(freebies) : null,
+				value: freebies?.length > 0 ? printArray(freebies) : null,
 			},
-            */
 		];
 	}, [volume]);
 	return (
