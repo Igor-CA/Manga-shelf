@@ -123,7 +123,7 @@ async function updateSeriesRelations() {
 	let bulkOps = [];
 	const BATCH_SIZE = 500;
 
-	const cursor = Series.find({}).cursor();
+	const cursor = Series.find({ shouldBeUpdated: true }).cursor();
 
 	try {
 		for (
@@ -188,11 +188,11 @@ async function updateSeriesRelations() {
 			}
 
 			if (wasModified) {
-				logger.warn(`Updating relations for ${series.title}`); 
+				logger.warn(`Updating relations for ${series.title}`);
 
 				const updatedRelatedSeries = [
 					...preservedRelations,
-					...calculatedEditionRelations, 
+					...calculatedEditionRelations,
 					...calculatedAuthorRelations,
 				];
 
