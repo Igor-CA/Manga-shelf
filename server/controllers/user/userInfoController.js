@@ -53,7 +53,10 @@ const buildVolumeSortStage = (ordering) => {
 		popularity: { attribute: "seriesInfo.popularity", order: -1 },
 		title: { attribute: "seriesInfo.title", order: 1 },
 		publisher: { attribute: "seriesInfo.publisher", order: 1 },
-		dateJp: { attribute: `seriesInfo.originalRun.dates.publishedAt`, order: -1 },
+		dateJp: {
+			attribute: `seriesInfo.originalRun.dates.publishedAt`,
+			order: -1,
+		},
 		dateBr: { attribute: `seriesInfo.dates.publishedAt`, order: -1 },
 		number: { attribute: "volumeInfo.number", order: 1 },
 		timestamp: { attribute: "ownedVolumes.acquiredAt", order: -1 },
@@ -121,7 +124,7 @@ const buildVolumeAggregationPipeline = (
 	targetUser,
 	filter,
 	sortStage,
-	skip
+	skip,
 ) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
@@ -237,13 +240,13 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	}
 	const sortStage = buildSortStage(
 		req.query.ordering || "title",
-		"userList.Series"
+		"userList.Series",
 	);
 	const pipeline = buildAggregationPipeline(
 		targetUser,
 		filter,
 		sortStage,
-		skip
+		skip,
 	);
 	const userCollection = await User.aggregate(pipeline);
 	const filteredList = userCollection.map((series) => {
@@ -271,7 +274,7 @@ exports.getUserWishlist = asyncHandler(async (req, res, next) => {
 	const filter = buildFilter(req.query, "wishListSeries");
 	const sortStage = buildSortStage(
 		req.query.ordering || "title",
-		"wishListSeries"
+		"wishListSeries",
 	);
 	const pipeline = buildWishlistPipeline(targetUser, filter, sortStage, skip);
 	const userCollection = await User.aggregate(pipeline);
@@ -433,7 +436,7 @@ exports.getUserInfo = asyncHandler(async (req, res, next) => {
 
 	const user = await User.findOne(
 		{ username: targetUser },
-		{ profileImageUrl: 1, username: 1, profileBannerUrl: 1 }
+		{ profileImageUrl: 1, username: 1, profileBannerUrl: 1 },
 	).lean();
 	if (!user) return res.status(404).json({ msg: "Usuário não encontrado" });
 
@@ -698,7 +701,9 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 	const users = await User.aggregate([
 		{ $match: { username: regex } },
 		{
-			$addFields: {
+			$project: {
+				username: 1,
+				profileImageUrl: 1,
 				followersCount: { $size: { $ifNull: ["$followers", []] } },
 			},
 		},
@@ -706,7 +711,6 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 		{ $skip: skip },
 		{ $limit: users_per_page },
 	]).collation({ locale: "en", strength: 2 });
-
 	return res.send(users);
 });
 
@@ -825,7 +829,7 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 		targetUser,
 		filter,
 		sortStage,
-		skip
+		skip,
 	);
 	const userCollection = await User.aggregate(pipeline);
 	const filteredList = userCollection.map((volume) => {
@@ -836,7 +840,7 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 			seriesObject,
 			volume.volumeNumber,
 			volume.isVariant,
-			volume.variantNumber
+			volume.variantNumber,
 		);
 		if (volume.isAdult && !req.user?.allowAdult) {
 			image = null;
