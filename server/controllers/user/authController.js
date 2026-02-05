@@ -27,7 +27,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
 
 exports.login = asyncHandler(async (req, res, next) => {
 	const loginLowerCase = req.body.login.toLowerCase().trim();
-	const loginOriginalCase = req.body.login 
+	const loginOriginalCase = req.body.login;
 	const { password } = req.body;
 	const user = await User.findOne({
 		$or: [{ username: loginOriginalCase }, { email: loginLowerCase }],
@@ -115,6 +115,9 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 });
 exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 	const user = await User.findById(req.user._id)
+		.select(
+			"-ownedVolumes.notes -ownedVolumes.acquiredAt -ownedVolumes.readAt -ownedVolumes.readCount -ownedVolumes.purchasePrice -ownedVolumes.isRead -ownedVolumes.amount",
+		)
 		.populate({
 			path: "userList.Series",
 			select: "title",

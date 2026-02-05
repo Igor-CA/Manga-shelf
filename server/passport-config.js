@@ -29,8 +29,8 @@ module.exports = function (passport) {
 				} catch (err) {
 					return done(err);
 				}
-			})
-		)
+			}),
+		),
 	);
 
 	passport.use(
@@ -48,8 +48,8 @@ module.exports = function (passport) {
 						});
 					}
 				});
-			})
-		)
+			}),
+		),
 	);
 
 	passport.serializeUser(function (user, done) {
@@ -58,15 +58,11 @@ module.exports = function (passport) {
 
 	passport.deserializeUser(
 		asyncHandler(async (id, done) => {
-			const user = await User.findById(id);
-			const userInfo = {
-				_id: user._id,
-				username: user.username,
-				following: user.following,
-				allowAdult: user.allowAdult,
-				isAdmin: user.isAdmin,
-			};
-			done(null, userInfo);
-		})
+			const user = await User.findById(id)
+				.select("username isAdmin allowAdult following")
+				.lean();
+			if (!user) return done(null, false);
+			done(null, user);
+		}),
 	);
 };
