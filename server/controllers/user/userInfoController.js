@@ -704,6 +704,7 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 			$project: {
 				username: 1,
 				profileImageUrl: 1,
+				profileBannerUrl: 1,
 				followersCount: { $size: { $ifNull: ["$followers", []] } },
 			},
 		},
