@@ -9,7 +9,10 @@ async function dispatchWeeklyVolumes() {
 	const pendingStatuses = await UserNotificationStatus.find({
 		$or: [{ siteStatus: "pending" }, { emailStatus: "pending" }],
 	})
-		.populate("user")
+		.populate({
+			path: "user",
+			select: "username _id email settings"
+		})
 		.populate({
 			path: "notification",
 			match: { eventKey: "new_volume" },
@@ -26,8 +29,14 @@ async function dispatchWeeklyVolumes() {
 		logger.info("No pending volume notifications found.");
 		return;
 	}
-
+	
 	const userGroups = volumePending.reduce((acc, status) => {
+		
+		if (!status.user) {
+            logger.warn(`Skipping status ${status._id}: User not found (orphaned record).`);
+            return acc;
+        }
+
 		const userId = status.user._id.toString();
 		if (!acc[userId]) acc[userId] = [];
 		acc[userId].push(status);
