@@ -3,7 +3,9 @@ const logger = require("./Utils/logger");
 const { backupDatabase } = require("./jobs/backupRoutine");
 const { syncAndRecalculateData } = require("./jobs/dataSyncRoutine");
 const { dispatchWeeklyVolumes } = require("./jobs/weeklyVolumesDispatcher");
-const { dispatchPendingNotifications } = require("./jobs/pendingNotificationsDispatcher");
+const {
+	dispatchPendingNotifications,
+} = require("./jobs/pendingNotificationsDispatcher");
 const APP_TIMEZONE = "America/Sao_Paulo";
 
 function startScheduledJobs() {
@@ -16,10 +18,10 @@ function startScheduledJobs() {
 			try {
 				await backupDatabase();
 			} catch (error) {
-				logger.error("CRON: Database backup task failed.", { error });
+				logger.error("CRON: Database backup task failed.", error);
 			}
 		},
-		{ timezone: APP_TIMEZONE }
+		{ timezone: APP_TIMEZONE },
 	);
 
 	cron.schedule(
@@ -29,10 +31,10 @@ function startScheduledJobs() {
 			try {
 				await syncAndRecalculateData();
 			} catch (error) {
-				logger.error("CRON: Data maintenance routine failed.", { error });
+				logger.error("CRON: Data maintenance routine failed.", error);
 			}
 		},
-		{ timezone: APP_TIMEZONE }
+		{ timezone: APP_TIMEZONE },
 	);
 
 	cron.schedule(
@@ -42,27 +44,26 @@ function startScheduledJobs() {
 			try {
 				await dispatchWeeklyVolumes();
 			} catch (error) {
-				logger.error("CRON: Weekly Volumes notification routine failed.", {
+				logger.error(
+					"CRON: Weekly Volumes notification routine failed.",
 					error,
-				});
+				);
 			}
 		},
-		{ timezone: APP_TIMEZONE }
+		{ timezone: APP_TIMEZONE },
 	);
 
-		cron.schedule(
+	cron.schedule(
 		"*/30 * * * *",
 		async () => {
 			logger.info("CRON: Triggering pending notifications dispatcher...");
 			try {
 				await dispatchPendingNotifications();
 			} catch (error) {
-				logger.error("CRON: pending notification routine failed.", {
-					error,
-				});
+				logger.error("CRON: pending notification routine failed.", error);
 			}
 		},
-		{ timezone: APP_TIMEZONE }
+		{ timezone: APP_TIMEZONE },
 	);
 	logger.info("All background jobs have been scheduled.");
 }
