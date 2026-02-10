@@ -10,13 +10,15 @@ export default function SkeletonHeader() {
 				<div className="header-container">
 					<div className="header__art-container">
 						<div className={`header__cover-image-container loader-animation`} />
-						<div className="button-select__container">
-							<div className="button-select button-select--disabled">
-								<strong className="button-select__option">
-									Carregando...	
-								</strong>
-								<div className="button-select__dropdown">
-									<RiArrowDropDownLine />
+						<div className="button-select__shadow-container">
+							<div className="button-select__container">
+								<div className="button-select button-select--disabled">
+									<strong className="button-select__option">
+										Carregando...
+									</strong>
+									<div className="button-select__dropdown">
+										<RiArrowDropDownLine />
+									</div>
 								</div>
 							</div>
 						</div>

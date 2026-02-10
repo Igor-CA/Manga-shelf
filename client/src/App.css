@@ -390,6 +390,9 @@ a {
 	}
 }
 @media only screen and (min-width: 1024px) {
+	.App {
+		padding-top: 4rem;
+	}
 	.collection-container {
 		grid-template-columns: repeat(6, 1fr);
 	}

@@ -120,9 +120,11 @@
 		cursor: auto;
 	}
 	.navbar {
+		position: fixed;
+		top: 0;
 		display: flex;
 		width: 100%;
-		height: auto;
+		height: 4rem;
 		padding: 15px;
 		border-radius: 0;
 		box-shadow: none;
