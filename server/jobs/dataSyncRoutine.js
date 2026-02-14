@@ -486,7 +486,7 @@ async function updateSeriesMetadata() {
 	let bulkOps = [];
 	const BATCH_SIZE = 500;
 
-	const cursor = Series.find({ shouldBeUpdated: false }).cursor();
+	const cursor = Series.find({}).cursor();
 
 	try {
 		for (
