@@ -6,7 +6,7 @@ export default function MissingVolumesPage() {
 	const { username } = useParams();
 	const navigate = useNavigate();
 
-	const fetchMissingVolumes = async (page) => {
+	const fetchMissingVolumes = async (page, params) => {
 		try {
 			const response = await axios({
 				method: "GET",
@@ -16,6 +16,7 @@ export default function MissingVolumesPage() {
 				},
 				params: {
 					p: page,
+					...params
 				},
 				url: `${
 					import.meta.env.REACT_APP_HOST_ORIGIN

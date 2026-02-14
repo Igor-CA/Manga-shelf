@@ -68,8 +68,8 @@ export default function VolumeHeader({ volumeData }) {
 			checked: true,
 			onChange: () => {
 				const ownedVolumeData = getOwnedVolumeInfo(user, id);
-				ownedVolumeData._id = id;
 				if (ownedVolumeData) {
+					ownedVolumeData._id = id;
 					openEditModal(ownedVolumeData);
 				} else {
 					addMessage("Precisa adicionar esse volume primeiro");

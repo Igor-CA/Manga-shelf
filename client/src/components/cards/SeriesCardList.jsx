@@ -18,6 +18,8 @@ export default function SeriesCardList({
 	const [showErrorComponent, setShowErrorComponent] = useState(false);
 
 	const observer = useRef();
+	const offsetRef = useRef(0);
+
 	const lastSeriesElementRef = useCallback((node) => {
 		if (observer.current) observer.current.disconnect();
 		observer.current = new IntersectionObserver((entries) => {
@@ -33,15 +35,19 @@ export default function SeriesCardList({
 			setLoading(true);
 			try {
 				if (typeof fetchFunction !== "function") return;
-				const resultList = await fetchFunction(
-					targetPage,
-					...aditionalArguments
-				);
+				const modifiedArgs = [...aditionalArguments];
+
+				if (modifiedArgs.length === 0) {
+					modifiedArgs.push({ offset: offsetRef.current });
+				} else if (typeof modifiedArgs[0] === "object") {
+					modifiedArgs[0] = { ...modifiedArgs[0], offset: offsetRef.current };
+				}
+				const resultList = await fetchFunction(targetPage, ...modifiedArgs);
 				if (resultList.length > 0) {
 					setSeriesList((previousList) =>
 						targetPage === 1
 							? [...resultList]
-							: [...previousList, ...resultList]
+							: [...previousList, ...resultList],
 					);
 					if (resultList.length < skeletonsCount) {
 						setReachedEnd(true);
@@ -67,6 +73,7 @@ export default function SeriesCardList({
 			setPage(1);
 			setSeriesList([]);
 			setReachedEnd(false);
+			offsetRef.current = 0;
 			setArgsCopy(functionArguments || []);
 		};
 		resetPage();
@@ -74,6 +81,11 @@ export default function SeriesCardList({
 	useEffect(() => {
 		updatePage(page, argsCopy);
 	}, [page, argsCopy]);
+
+	const handleStatusChange = (offset = 1) => {
+		console.log(offset);
+		offsetRef.current += offset;
+	};
 
 	return (
 		<div className="collection-container">
@@ -92,6 +104,7 @@ export default function SeriesCardList({
 								itemDetails={series}
 								itemType={itemType || "Series"}
 								showActions={showActions}
+								onStatusChange={handleStatusChange}
 							></SeriesCard>
 						</div>
 					);

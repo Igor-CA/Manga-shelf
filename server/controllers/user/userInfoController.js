@@ -301,7 +301,9 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 		return res.status(400).send({ msg: "Usuário não encontrado" });
 
 	const page = parseInt(req.query.p) || 1;
-	const skip = ITEMS_PER_PAGE * (page - 1);
+	const shiftOffset = parseInt(req.query.offset) || 0;
+	const calculatedSkip = ITEMS_PER_PAGE * (page - 1) - shiftOffset;
+	const skip = Math.max(0, calculatedSkip);
 
 	const aggregationPipeline = [
 		{ $match: { username: targetUser } },
@@ -818,7 +820,9 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 		return res.status(400).send({ msg: "Usuário não encontrado" });
 
 	const page = parseInt(req.query.p) || 1;
-	const skip = ITEMS_PER_PAGE * (page - 1);
+	const shiftOffset = parseInt(req.query.offset) || 0;
+	const calculatedSkip = ITEMS_PER_PAGE * (page - 1) - shiftOffset;
+	const skip = Math.max(0, calculatedSkip);
 	const filter = buildFilter(req.query, "seriesInfo");
 
 	if (req.query.group) {

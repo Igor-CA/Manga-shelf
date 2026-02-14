@@ -9,7 +9,13 @@ import axios from "axios";
 import { messageContext } from "../../contexts/messageStateProvider";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { useEditVolume } from "../../contexts/EditVolumeContext";
-export function SeriesCard({ itemDetails, itemType, showActions = false }) {
+import { getOwnedVolumeInfo } from "../../utils/seriesDataFunctions";
+export function SeriesCard({
+	itemDetails,
+	itemType,
+	showActions = false,
+	onStatusChange,
+}) {
 	const [loaded, setLoaded] = useState(false);
 	const [inUserList, setInUserList] = useState(itemDetails.inUserList);
 	const [isRead, setIsRead] = useState(itemDetails.isRead);
@@ -49,7 +55,14 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 	};
 	const handleEditButton = (e) => {
 		e.preventDefault();
-		openEditModal(itemDetails);
+		const ownedVolumeData = getOwnedVolumeInfo(user, _id);
+
+		if (ownedVolumeData) {
+			ownedVolumeData._id = _id;
+			openEditModal(ownedVolumeData);
+		} else {
+			openEditModal(itemDetails);
+		}
 	};
 	const handleToggleReadButton = (e) => {
 		e.preventDefault();
@@ -98,7 +111,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-to-wishlist`
 				: `${
 						import.meta.env.REACT_APP_HOST_ORIGIN
-				  }/api/user/remove-from-wishlist`;
+					}/api/user/remove-from-wishlist`;
 
 			await axios({
 				method: "POST",
@@ -116,7 +129,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 					isAdding
 						? "adicionada à lista de desejos"
 						: "removida da lista de desejos"
-				} com sucesso`
+				} com sucesso`,
 			);
 		} catch (err) {
 			setInWishlist(!isAdding);
@@ -152,6 +165,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 			setOutdated(true);
 			setMessageType("Success");
 			addMessage(`Volume ${isAdding ? "adicionado" : "removido"} com sucesso`);
+			if (onStatusChange) onStatusChange(isAdding?1:-1);
 		} catch (err) {
 			setInUserList(!isAdding);
 			const customErrorMessage = err.response.data.msg;
@@ -175,6 +189,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 			setOutdated(true);
 			setMessageType("Success");
 			addMessage(result.data.msg);
+			if (onStatusChange) onStatusChange();
 		} catch (err) {
 			setIsRead((prev) => !prev);
 			const customErrorMessage = err.response.data.msg;
@@ -260,9 +275,7 @@ export function SeriesCard({ itemDetails, itemType, showActions = false }) {
 									<FaPencil className="series-card__button" />
 								</div>
 								<div
-									title={`Marcar volume como ${
-										isRead ? "não " : ""
-									}lido`}
+									title={`Marcar volume como ${isRead ? "não " : ""}lido`}
 									onClick={handleToggleReadButton}
 									className="series-card__button-container"
 								>

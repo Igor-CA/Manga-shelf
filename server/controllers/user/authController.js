@@ -115,9 +115,6 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 });
 exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 	const user = await User.findById(req.user._id)
-		.select(
-			"-ownedVolumes.notes -ownedVolumes.acquiredAt -ownedVolumes.readAt -ownedVolumes.readCount -ownedVolumes.purchasePrice -ownedVolumes.isRead -ownedVolumes.amount",
-		)
 		.populate({
 			path: "userList.Series",
 			select: "title",
