@@ -69,6 +69,6 @@
 @media only screen and (min-width: 1040px) {
 	.home {
 		border-radius: 10px;
-		margin: 2rem;
+		margin: 2rem auto;
 	}
 }
