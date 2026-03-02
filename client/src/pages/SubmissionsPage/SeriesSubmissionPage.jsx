@@ -178,10 +178,10 @@ export default function SeriesSubmissionPage() {
 			await axios.post(
 				`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/submission`,
 				submissionData,
-					{
-						withCredentials: true,
-						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-					},
+				{
+					withCredentials: true,
+					headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+				},
 			);
 			setMessageType("Success");
 			addMessage("Sugestão enviada para aprovação!");
@@ -363,6 +363,7 @@ function GeneralInfoSection({ data, onChange, typesList, publishersList }) {
 						value={data.demographic}
 						onChange={onChange}
 					>
+						<option value="">Selecionar</option>
 						<option value={"Shounen"}>Shounen</option>
 						<option value={"Shoujo"}>Shoujo</option>
 						<option value={"Seinen"}>Seinen</option>
@@ -379,6 +380,7 @@ function GeneralInfoSection({ data, onChange, typesList, publishersList }) {
 						value={data.type}
 						onChange={onChange}
 					>
+						<option value="">Selecionar</option>
 						{typesList?.map((type, id) => (
 							<option value={type} key={id}>
 								{type}
@@ -504,6 +506,7 @@ function OriginalRunSection({ data, onNestedChange, countryList }) {
 					value={data.country}
 					onChange={(e) => onNestedChange("country", e.target.value)}
 				>
+					<option value="">Selecionar</option>
 					{countryList?.map((country, id) => (
 						<option value={country} key={id}>
 							{country}
