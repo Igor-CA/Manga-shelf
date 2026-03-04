@@ -31,7 +31,6 @@ export default function UserSocials() {
 				}/api/data/get-user-socials/${page}/${username}`,
 			});
 			const resultList = response.data;
-			console.log(resultList);
 			return resultList;
 		} catch (error) {
 			console.error("Error fetching series list:", error);

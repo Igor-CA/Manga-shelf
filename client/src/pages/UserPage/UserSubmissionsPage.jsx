@@ -62,7 +62,6 @@ function Submission({ submission }) {
 		status,
 		adminComment,
 	} = submission;
-	console.log(submission);
 	function timeAgo(date) {
 		const now = new Date();
 		const givenDate = new Date(date);

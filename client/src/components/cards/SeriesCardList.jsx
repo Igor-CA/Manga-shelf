@@ -83,7 +83,6 @@ export default function SeriesCardList({
 	}, [page, argsCopy]);
 
 	const handleStatusChange = (offset = 1) => {
-		console.log(offset);
 		offsetRef.current += offset;
 	};
 
