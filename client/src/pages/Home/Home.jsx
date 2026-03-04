@@ -31,7 +31,7 @@ export default function Home() {
 								<FontAwesomeIcon className="home__icon" icon={faBook} />
 							</div>
 							<div>
-								<h2 className="feature__title">Geresncie suas coleções:</h2>
+								<h2 className="feature__title">Gerencie suas coleções:</h2>
 								<p className="feature__description">
 									Adicione mangás à sua prateleira e mantenha-se atualizado
 									sobre o estado de cada série.
@@ -70,7 +70,7 @@ export default function Home() {
 								/>
 							</div>
 							<div>
-								<h2 className="feature__title">Explore novos titulos:</h2>
+								<h2 className="feature__title">Explore novos títulos:</h2>
 								<p className="feature__description">
 									Encontre diferentes obras e obtenha detalhes como autores,
 									editora, formato, sinopse e mais de cada coleção/volume.
