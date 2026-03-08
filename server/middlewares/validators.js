@@ -338,6 +338,27 @@ const reportReasonValidation = body("reason")
 	.withMessage("O motivo da denúncia é obrigatório.")
 	.isIn(["hate", "adult", "spoiler"])
 	.withMessage("O motivo da denúncia deve ser 'hate', 'adult' ou 'spoiler'.");
+// Purchase registration
+const purchaseSeriesIdValidation = body("seriesId")
+	.notEmpty()
+	.withMessage("O ID da série é obrigatório.")
+	.isMongoId()
+	.withMessage("ID da série inválido.");
+
+const purchaseAmountValidation = body("amount")
+	.notEmpty()
+	.withMessage("O valor é obrigatório.")
+	.isFloat({ min: 0 })
+	.withMessage("O valor deve ser um número positivo.")
+	.toFloat();
+
+const purchaseVolumeIdsValidation = body("volumeIds")
+	.isArray({ min: 1 })
+	.withMessage("Selecione ao menos um volume.");
+
+const purchaseVolumeIdsItemsValidation = body("volumeIds.*")
+	.isMongoId()
+	.withMessage("ID de volume inválido.");
 
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
@@ -391,6 +412,13 @@ const ratingValidation = [
 const ratingDeleteValidation = [
 	ratingSeriesIdValidation,
 	ratingVolumeIdValidation,
+];
+
+const purchaseValidation = [
+	purchaseSeriesIdValidation,
+	purchaseAmountValidation,
+	purchaseVolumeIdsValidation,
+	purchaseVolumeIdsItemsValidation,
 ];
 
 const editOwnedValidation = [
@@ -453,5 +481,6 @@ module.exports = {
 	reportValidation,
 	ratingValidation,
 	ratingDeleteValidation,
+	purchaseValidation,
 	validateRequest,
 };

@@ -48,6 +48,7 @@ const submissionController = require("../controllers/submission");
 const postController = require("../controllers/post");
 const postReportController = require("../controllers/postReport");
 const ratingController = require("../controllers/rating");
+const purchasesController = require("../controllers/purchases");
 const { requireAuth } = require("../middlewares/authentications");
 const { createAuthLimiter } = require("../middlewares/rateLimiters");
 const {
@@ -71,6 +72,7 @@ const {
 	bodyIdValidation,
 	readStatusValidation,
 	markNotificationSeenValidation,
+	purchaseValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -298,6 +300,30 @@ router.post(
 	reportValidation,
 	validateRequest,
 	postReportController.createReport,
+);
+
+// Purchases CRUD
+router.get(
+	"/purchases/:seriesId",
+	requireAuth,
+	purchasesController.getSeriesPurchases,
+);
+router.post(
+	"/purchases",
+	requireAuth,
+	purchaseValidation,
+	validateRequest,
+	purchasesController.createPurchase,
+);
+router.put(
+	"/purchases/:id",
+	requireAuth,
+	purchasesController.updatePurchase,
+);
+router.delete(
+	"/purchases/:id",
+	requireAuth,
+	purchasesController.deletePurchase,
 );
 
 // Collection photos routes

@@ -812,6 +812,50 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		},
 	];
 
+	const spendingPipeline = [
+		{ $match: { username: targetUser } },
+		{ $unwind: { path: "$ownedVolumes", preserveNullAndEmptyArrays: true } },
+		{
+			$match: {
+				"ownedVolumes.purchasePrice": { $exists: true, $gt: 0 },
+			},
+		},
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "ownedVolumes.volume",
+				foreignField: "_id",
+				as: "volumeDetails",
+			},
+		},
+		{ $unwind: "$volumeDetails" },
+		{
+			$lookup: {
+				from: "series",
+				localField: "volumeDetails.serie",
+				foreignField: "_id",
+				as: "seriesDetails",
+			},
+		},
+		{ $unwind: "$seriesDetails" },
+		{
+			$group: {
+				_id: "$seriesDetails._id",
+				name: { $first: "$seriesDetails.title" },
+				total: {
+					$sum: {
+						$multiply: [
+							"$ownedVolumes.purchasePrice",
+							{ $ifNull: ["$ownedVolumes.amount", 1] },
+						],
+					},
+				},
+				volumeCount: { $sum: "$ownedVolumes.amount" },
+			},
+		},
+		{ $sort: { total: -1 } },
+	];
+
 	const [
 		genresByVolume,
 		genresBySeries,
@@ -823,6 +867,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		typeBySeries,
 		generalCounts,
 		missingCountResult,
+		spendingBySeries,
 	] = await Promise.all([
 		User.aggregate(getVolumesStats("genres")).exec(),
 		User.aggregate(getSeriesStats("genres")).exec(),
@@ -834,7 +879,14 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		User.aggregate(getSeriesStats("type")).exec(),
 		User.aggregate(generalCountsPipeline).exec(),
 		User.aggregate(missingCountPipeline).exec(),
+		User.aggregate(spendingPipeline).exec(),
 	]);
+
+	const totalSpent = spendingBySeries.reduce((sum, s) => sum + s.total, 0);
+	const totalTrackedVolumes = spendingBySeries.reduce(
+		(sum, s) => sum + s.volumeCount,
+		0,
+	);
 
 	const stats = {
 		genresBySeries,
@@ -850,6 +902,15 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		wishListSeriesCount: generalCounts[0]?.wishListSeriesCount || 0,
 		wishListVolumesCount: generalCounts[0]?.wishListVolumesCount || 0,
 		missingVolumesCount: missingCountResult[0]?.totalMissing || 0,
+		totalSpent: Math.round(totalSpent * 100) / 100,
+		averagePricePerVolume:
+			totalTrackedVolumes > 0
+				? Math.round((totalSpent / totalTrackedVolumes) * 100) / 100
+				: 0,
+		spendingBySeries: spendingBySeries.map((s) => ({
+			name: s.name,
+			count: Math.round(s.total * 100) / 100,
+		})),
 	};
 
 	res.send(stats);

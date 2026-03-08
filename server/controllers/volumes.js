@@ -2,6 +2,7 @@ const Volume = require("../models/volume");
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const Series = require("../models/Series");
+const Purchase = require("../models/Purchase");
 const Notification = require("../models/Notification");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
 const Rating = require("../models/Rating");
@@ -53,6 +54,29 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 		if (userRating) myVolumeScore = userRating.score;
 	}
 
+	// Calculate average price paid across all users
+	const volumeObjectId = new mongoose.Types.ObjectId(req.params.id);
+	const avgResult = await Purchase.aggregate([
+		{ $match: { volumes: volumeObjectId } },
+		{
+			$project: {
+				pricePerVolume: { $divide: ["$amount", { $size: "$volumes" }] },
+			},
+		},
+		{
+			$group: {
+				_id: null,
+				avgPrice: { $avg: "$pricePerVolume" },
+				count: { $sum: 1 },
+			},
+		},
+	]);
+
+	const avgPricePaid = avgResult.length > 0
+		? Math.round(avgResult[0].avgPrice * 100) / 100
+		: null;
+	const avgPriceCount = avgResult.length > 0 ? avgResult[0].count : 0;
+
 	res.send({
 		...desiredVolume._doc,
 		image: getVolumeCoverURL(
@@ -62,6 +86,8 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 			desiredVolume.variantNumber,
 		),
 		myVolumeScore,
+		avgPricePaid,
+		avgPriceCount,
 	});
 });
 

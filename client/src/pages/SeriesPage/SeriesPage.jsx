@@ -8,6 +8,7 @@ import { useSeriesLogic } from "./useSeriesLogic";
 import SeriesVolumesPage from "./SeriesVolumesPage";
 import SeriesRelatedPage from "./SeriesRelatedPage";
 import PostsSection from "../../components/posts/PostsSection";
+import SeriesPurchasesPage from "./SeriesPurchasesPage";
 import { useRating } from "../../utils/useRating";
 import usePageMeta, { truncate } from "../../utils/usePageMeta";
 export default function SeriesPage() {
@@ -75,6 +76,10 @@ export default function SeriesPage() {
 						<Route
 							path="comments"
 							element={<PostsSection seriesId={id} rating={rating} />}
+						></Route>
+						<Route
+							path="purchases"
+							element={<SeriesPurchasesPage series={series} />}
 						></Route>
 						<Route
 							path="related"
