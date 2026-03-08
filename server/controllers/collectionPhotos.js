@@ -43,6 +43,7 @@ exports.createPhoto = [
 		}
 
 		await sharp(req.file.buffer)
+			.rotate()
 			.webp({ quality: 80 })
 			.toFile(fullPath);
 
