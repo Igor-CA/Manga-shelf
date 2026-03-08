@@ -8,7 +8,8 @@ import { FaPencilAlt } from "react-icons/fa";
 export default function SeriesOverallPage({ series, volumesState, actions }) {
 	const [showingMore, setShowingMore] = useState(false);
 	const seriesSummarry = useRef(null);
-	const { related, summary } = series;
+	const { related, summary, ratingAverage, ratingCount } = series;
+
 	const detailsSchema = useMemo(() => {
 		if (!series) return [];
 
@@ -40,6 +41,14 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 			variants.length > 0 ? ` + ${variants.length} capas variantes` : "";
 
 		return [
+			{
+				label: "Avaliação",
+				value:
+					ratingCount > 0
+						? `${ratingAverage.toFixed(1)} / 10`
+						: null,
+				suffix: ratingCount > 0 ? ` (${ratingCount} avaliações)` : null,
+			},
 			{ label: "Autores", value: printArray(authors) },
 			{ label: "Editora", value: publisher },
 			{ label: "Gêneros", value: printArray(genres) },

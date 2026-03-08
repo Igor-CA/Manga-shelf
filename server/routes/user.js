@@ -13,6 +13,7 @@ const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
 const collectionPhotosController = require("../controllers/collectionPhotos");
 const submissionController = require("../controllers/submission");
+const reviewsController = require("../controllers/reviews");
 const { requireAuth } = require("../middlewares/authentications");
 const {
 	signupValidation,
@@ -27,6 +28,7 @@ const {
 	editOwnedValidation,
 	photoValidation,
 	submissionValidation,
+	reviewValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -151,6 +153,17 @@ router.put(
 	requireAuth,
 	notificationsController.setNotificationAsSeen,
 );
+
+// Reviews
+router.post(
+	"/review",
+	requireAuth,
+	reviewValidation,
+	validateRequest,
+	reviewsController.upsertReview,
+);
+router.get("/review/:seriesId", requireAuth, reviewsController.getUserReview);
+router.delete("/review/:id", requireAuth, reviewsController.deleteReview);
 
 // Collection photos routes
 router.post(

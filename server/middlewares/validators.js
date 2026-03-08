@@ -242,6 +242,27 @@ const payloadNumbersValidation = body([
 	.withMessage("Dimensões e totais devem ser números positivos.")
 	.toFloat();
 
+// Reviews
+const reviewSeriesIdValidation = body("seriesId")
+	.trim()
+	.notEmpty()
+	.withMessage("A obra é obrigatória.")
+	.isMongoId()
+	.withMessage("ID de obra inválido.");
+
+const reviewScoreValidation = body("score")
+	.notEmpty()
+	.withMessage("A nota é obrigatória.")
+	.isInt({ min: 1, max: 10 })
+	.withMessage("A nota deve ser entre 1 e 10.")
+	.toInt();
+
+const reviewTextValidation = body("text")
+	.optional({ checkFalsy: true })
+	.trim()
+	.isLength({ max: 5000 })
+	.withMessage("O texto da review não pode exceder 5000 caracteres.");
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -265,6 +286,12 @@ const reportsValidation = [
 	reportTypeValidation,
 	reportPageValidation,
 	reportUserValidation,
+];
+
+const reviewValidation = [
+	reviewSeriesIdValidation,
+	reviewScoreValidation,
+	reviewTextValidation,
 ];
 
 const editOwnedValidation = [
@@ -319,5 +346,6 @@ module.exports = {
 	editOwnedValidation,
 	photoValidation,
 	submissionValidation,
+	reviewValidation,
 	validateRequest,
 };
