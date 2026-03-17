@@ -65,6 +65,8 @@ const SeriesSchema = new Schema(
 		ageRating: { type: String },
 		anilistId: { type: Number },
 		popularity: { type: Number, default: 0 },
+		ratingAverage: { type: Number, default: 0 },
+		ratingCount: { type: Number, default: 0 },
 
 		// System flags
 		shouldBeUpdated: { type: Boolean, default: true },
