@@ -20,7 +20,24 @@ const FRANCHISE_LINKS = [
 	"Adaptação",
 	"Material Original",
 	"Outro",
+	"Databook"
 ];
+
+function calculateLocalStatus(series) {
+	if (series.status === "Cancelado") return "Cancelado";
+	if (!series.originalRun?.status) return series.status;
+
+	const { status: originalStatus, totalVolumes } = series.originalRun;
+
+	if (originalStatus === "Em andamento") return "Em andamento";
+	if (!totalVolumes) return originalStatus;
+
+	const equivalentVolumes = (series.volumes?.length || 0) * (series.specs?.volumesInFormat || 1);
+	if (equivalentVolumes >= totalVolumes) return originalStatus;
+
+	logger.warn(`[${series.title}] Incomplete collection: Local = ${equivalentVolumes}, Anilist = ${totalVolumes}`);
+	return "Em publicação";
+}
 
 function cleanAuthorName(name) {
 	if (!name) return "";
@@ -514,31 +531,10 @@ async function updateSeriesMetadata() {
 				}
 			}
 
-			if (series.originalRun && series.originalRun.status === "Finalizado") {
-				const volumesInFormat = series.specs?.volumesInFormat || 1;
-				const currentVolumeCount = series.volumes.length;
-
-				const equivalentVolumes = currentVolumeCount * volumesInFormat;
-
-				if (
-					series.originalRun.totalVolumes &&
-					equivalentVolumes < series.originalRun.totalVolumes
-				) {
-					if (series.status !== "Em publicação") {
-						series.status = "Em publicação";
-						wasModified = true;
-					}
-				} else {
-					if (series.status !== "Finalizado") {
-						series.status = "Finalizado";
-						wasModified = true;
-					}
-				}
-			} else if (series.originalRun && series.originalRun.status) {
-				if (series.status !== series.originalRun.status) {
-					series.status = series.originalRun.status;
-					wasModified = true;
-				}
+			const newStatus = calculateLocalStatus(series);
+			if (series.status !== newStatus) {
+				series.status = newStatus;
+				wasModified = true;
 			}
 
 			if (series.status === "Finalizado" && volumesData.length > 0) {
