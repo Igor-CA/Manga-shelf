@@ -200,7 +200,6 @@ const parseSubmissionBody = (req, res, next) => {
 			req.body.payload = null;
 		}
 	}
-	console.log("parsed")
 	next();
 };
 router.post(
