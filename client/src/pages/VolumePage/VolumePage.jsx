@@ -31,10 +31,9 @@ export default function VolumePage() {
 				const response = await axios.get(
 					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/volume/${id}`,
 					{
-						headers: {
-							Authorization: import.meta.env.REACT_APP_API_KEY,
-						},
-					}
+						withCredentials: true,
+						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+					},
 				);
 				const responseData = response.data;
 				setVolumeData(responseData);

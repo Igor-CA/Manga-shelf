@@ -17,7 +17,13 @@
 	gap: 10px;
 	position: relative;
 }
+.button-select__action-row {
+	display: flex;
+	gap: 10px;
+	align-items: stretch;
+}
 .button-select {
+	flex-grow: 1;
 	text-align: center;
 	font-size: 1rem;
 	display: flex;

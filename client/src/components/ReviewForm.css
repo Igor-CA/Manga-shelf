@@ -87,3 +87,6 @@
 	display: flex;
 	gap: 0.5rem;
 }
+
+/* Score field hidden while Rating widget in ContentHeader owns scoring */
+.review-form__score-selector { display: none; }

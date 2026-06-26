@@ -6,6 +6,8 @@ import { getOwnedVolumeInfo } from "../../utils/seriesDataFunctions";
 import { useEditVolume } from "../../contexts/EditVolumeContext";
 import { messageContext } from "../../contexts/messageStateProvider";
 import ContentHeader from "../../components/contentHeader/contentHeader";
+import RatingWidget from "../../components/contentHeader/RatingWidget";
+import RateButton from "../../components/contentHeader/RateButton";
 
 export default function VolumeHeader({ volumeData }) {
 	const { id } = useParams();
@@ -110,6 +112,24 @@ export default function VolumeHeader({ volumeData }) {
 			summary={volumeData?.summary}
 			actions={{ mainAction, dropdownOptions, isDisabled: !user }}
 			//navLinks={navLinks}
+			ratingWidget={
+				volumeData?.serie?._id ? (
+					<RatingWidget
+						ratingAverage={volumeData?.ratingAverage ?? 0}
+						ratingCount={volumeData?.ratingCount ?? 0}
+					/>
+				) : null
+			}
+			ratingButton={
+				volumeData?.serie?._id ? (
+					<RateButton
+						seriesId={volumeData.serie._id.toString()}
+						volumeId={id}
+						myScore={volumeData?.myVolumeScore ?? null}
+						isDerived={false}
+					/>
+				) : null
+			}
 		/>
 	);
 }

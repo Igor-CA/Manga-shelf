@@ -6,6 +6,8 @@ import {
 	getSeriesStatus,
 } from "../../utils/seriesDataFunctions";
 import ContentHeader from "../../components/contentHeader/contentHeader";
+import RatingWidget from "../../components/contentHeader/RatingWidget";
+import RateButton from "../../components/contentHeader/RateButton";
 
 export default function SeriesPageHeader({ seriesInfo, actions }) {
 	const { user } = useContext(UserContext);
@@ -16,8 +18,19 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 		toggleDrop,
 	} = actions;
 
-	const { seriesCover, title, summary, genres, authors, id, isAdult } =
-		seriesInfo || {};
+	const {
+		seriesCover,
+		title,
+		summary,
+		genres,
+		authors,
+		id,
+		isAdult,
+		ratingAverage,
+		ratingCount,
+		mySeriesScore,
+		myVolumeScores,
+	} = seriesInfo || {};
 
 	const isSeriesInUserList =
 		user?.userList?.some(
@@ -58,6 +71,18 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 		},
 	];
 
+	const volumeScoreValues = myVolumeScores ? Object.values(myVolumeScores) : [];
+	const derivedSeriesScore =
+		volumeScoreValues.length > 0
+			? Math.round(
+					(volumeScoreValues.reduce((a, b) => a + b, 0) /
+						volumeScoreValues.length) *
+						10,
+				) / 10
+			: null;
+	const effectiveMyScore = mySeriesScore ?? derivedSeriesScore;
+	const isScoreDerived = mySeriesScore == null && derivedSeriesScore != null;
+
 	const navLinks = useMemo(
 		() => [
 			{ to: `/series/${id}`, label: "Geral", end: true },
@@ -82,6 +107,24 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 			summary={summary}
 			actions={{ mainAction, dropdownOptions, isDisabled: !user }}
 			navLinks={navLinks}
+			ratingWidget={
+				id ? (
+					<RatingWidget
+						ratingAverage={ratingAverage ?? 0}
+						ratingCount={ratingCount ?? 0}
+					/>
+				) : null
+			}
+			ratingButton={
+				id ? (
+					<RateButton
+						seriesId={id}
+						volumeId={null}
+						myScore={effectiveMyScore}
+						isDerived={isScoreDerived}
+					/>
+				) : null
+			}
 		/>
 	);
 }

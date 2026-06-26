@@ -6,6 +6,7 @@ export default function ActionDropdown({
 	mainAction,
 	options = [],
 	isDisabled = false,
+	sideSlot = null,
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef(null);
@@ -23,24 +24,28 @@ export default function ActionDropdown({
 	return (
 		<div className="button-select__shadow-container">
 			<div className="button-select__container" ref={dropdownRef}>
-				<div
-					className={`button-select ${
-						mainAction.isRed ? "button-select--red" : ""
-					}`}
-				>
-					<strong
-						className="button-select__option"
-						onClick={() => !isDisabled && mainAction.onClick()}
-					>
-						{mainAction.label}
-					</strong>
-
+				<div className="button-select__action-row">
 					<div
-						className="button-select__dropdown"
-						onClick={() => setIsOpen(!isOpen)}
+						className={`button-select ${
+							mainAction.isRed ? "button-select--red" : ""
+						}`}
 					>
-						<RiArrowDropDownLine />
+						<strong
+							className="button-select__option"
+							onClick={() => !isDisabled && mainAction.onClick()}
+						>
+							{mainAction.label}
+						</strong>
+
+						<div
+							className="button-select__dropdown"
+							onClick={() => setIsOpen(!isOpen)}
+						>
+							<RiArrowDropDownLine />
+						</div>
 					</div>
+
+					{sideSlot}
 				</div>
 
 				<div

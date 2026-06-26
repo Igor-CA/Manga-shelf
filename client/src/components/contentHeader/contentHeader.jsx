@@ -17,6 +17,8 @@ export default function ContentHeader({
 	summary,
 	actions,
 	navLinks,
+	ratingWidget,
+	ratingButton,
 }) {
 	const [showingMore, setShowingMore] = useState(false);
 	const [loaded, setLoaded] = useState(false);
@@ -87,6 +89,7 @@ export default function ContentHeader({
 							mainAction={actions.mainAction}
 							options={actions.dropdownOptions}
 							isDisabled={actions.isDisabled}
+							sideSlot={ratingButton}
 						/>
 					</div>
 					<div className="header__main-info-container">
@@ -112,6 +115,9 @@ export default function ContentHeader({
 								})}
 							</ul>
 						</div>
+						{ratingWidget && (
+							<div className="header__rating">{ratingWidget}</div>
+						)}
 					</div>
 				</div>
 
