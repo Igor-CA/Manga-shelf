@@ -87,7 +87,13 @@
 }
 .actions-container {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 0.5rem;
+}
+/* Read-toggle fills its line so it reads as a button when it wraps below
+   the add/remove label on narrow cells (and grows beside it when it fits). */
+.actions-container .button {
+	flex-grow: 1;
 }
 .action-label {
 	display: flex;
