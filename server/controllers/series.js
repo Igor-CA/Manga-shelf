@@ -145,6 +145,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		volumes: { attribute: "volumesLength", order: -1 },
 		dateJp: { attribute: "originalRun.dates.publishedAt", order: -1 },
 		dateBr: { attribute: "dates.publishedAt", order: -1 },
+		rating: { attribute: "ratingAverage", order: -1 },
 	};
 	const ordering = req.query.ordering || "popularity";
 	const sortStage = {};

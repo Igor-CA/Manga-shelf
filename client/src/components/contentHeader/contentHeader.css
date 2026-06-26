@@ -265,7 +265,7 @@
 		border-radius: 0.25rem;
 	}
 	.header__art-container {
-		flex: 0 0 250px;
+		flex: 0 0 300px;
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;

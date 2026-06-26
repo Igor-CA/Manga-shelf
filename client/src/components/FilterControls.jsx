@@ -116,6 +116,7 @@ const FilterControls = ({
 							>
 								<option value={"title"}>Alfabética</option>
 								<option value={"popularity"}>Popularidade</option>
+								<option value={"rating"}>Nota</option>
 								<option value={"volumes"}>Tamanho</option>
 								<option value={"publisher"}>Editora</option>
 								<option value={"dateJp"}>Lançamentos Recentes (JP)</option>

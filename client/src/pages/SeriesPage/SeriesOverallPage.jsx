@@ -42,12 +42,12 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 
 		return [
 			{
-				label: "Avaliação",
+				label: "Nota",
 				value:
 					ratingCount > 0
 						? `${ratingAverage.toFixed(1)} / 10`
 						: null,
-				suffix: ratingCount > 0 ? ` (${ratingCount} avaliações)` : null,
+				suffix: ratingCount > 0 ? ` (${ratingCount} notas)` : null,
 			},
 			{ label: "Autores", value: printArray(authors) },
 			{ label: "Editora", value: publisher },

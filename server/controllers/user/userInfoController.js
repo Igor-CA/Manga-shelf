@@ -37,6 +37,7 @@ const buildSortStage = (ordering, field) => {
 		dateJp: { attribute: `${field}.originalRun.dates.publishedAt`, order: -1 },
 		dateBr: { attribute: `${field}.dates.publishedAt`, order: -1 },
 		volumes: { attribute: "volumesLength", order: -1 },
+		rating: { attribute: `${field}.ratingAverage`, order: -1 },
 		timestamp: { attribute: "userList.timestamp", order: 1 },
 		status: { attribute: "userList.completionPercentage", order: 1 },
 	};
@@ -59,6 +60,7 @@ const buildVolumeSortStage = (ordering) => {
 		},
 		dateBr: { attribute: `seriesInfo.dates.publishedAt`, order: -1 },
 		number: { attribute: "volumeInfo.number", order: 1 },
+		rating: { attribute: "volumeInfo.ratingAverage", order: -1 },
 		timestamp: { attribute: "ownedVolumes.acquiredAt", order: -1 },
 		status: { attribute: "ownedVolumes.isRead", order: 1 },
 	};

@@ -87,7 +87,7 @@ export default function SeriesReviewsPage({ series }) {
 						<div className="rating-summary__details">
 							<span className="rating-summary__label">Nota média</span>
 							<span className="rating-summary__count">
-								{series.ratingCount || 0} avaliação(ões)
+								{series.ratingCount || 0} nota(s)
 							</span>
 						</div>
 					</div>
