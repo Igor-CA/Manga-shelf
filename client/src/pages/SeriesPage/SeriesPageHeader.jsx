@@ -8,6 +8,7 @@ import {
 import ContentHeader from "../../components/contentHeader/contentHeader";
 import RatingWidget from "../../components/contentHeader/RatingWidget";
 import RateButton from "../../components/contentHeader/RateButton";
+import { useRating } from "../../utils/useRating";
 
 export default function SeriesPageHeader({ seriesInfo, actions }) {
 	const { user } = useContext(UserContext);
@@ -80,8 +81,15 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 						10,
 				) / 10
 			: null;
-	const effectiveMyScore = mySeriesScore ?? derivedSeriesScore;
-	const isScoreDerived = mySeriesScore == null && derivedSeriesScore != null;
+
+	const rating = useRating({
+		seriesId: id,
+		volumeId: null,
+		manualScore: mySeriesScore ?? null,
+		derivedScore: derivedSeriesScore,
+		average: ratingAverage ?? 0,
+		count: ratingCount ?? 0,
+	});
 
 	const navLinks = useMemo(
 		() => [
@@ -110,18 +118,19 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 			ratingWidget={
 				id ? (
 					<RatingWidget
-						ratingAverage={ratingAverage ?? 0}
-						ratingCount={ratingCount ?? 0}
+						ratingAverage={rating.average}
+						ratingCount={rating.count}
 					/>
 				) : null
 			}
 			ratingButton={
 				id ? (
 					<RateButton
-						seriesId={id}
-						volumeId={null}
-						myScore={effectiveMyScore}
-						isDerived={isScoreDerived}
+						myScore={rating.myScore}
+						isDerived={rating.isDerived}
+						loading={rating.loading}
+						onSubmit={rating.submit}
+						onRemove={rating.remove}
 					/>
 				) : null
 			}

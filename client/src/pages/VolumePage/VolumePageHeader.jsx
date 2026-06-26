@@ -8,6 +8,7 @@ import { messageContext } from "../../contexts/messageStateProvider";
 import ContentHeader from "../../components/contentHeader/contentHeader";
 import RatingWidget from "../../components/contentHeader/RatingWidget";
 import RateButton from "../../components/contentHeader/RateButton";
+import { useRating } from "../../utils/useRating";
 
 export default function VolumeHeader({ volumeData }) {
 	const { id } = useParams();
@@ -15,6 +16,15 @@ export default function VolumeHeader({ volumeData }) {
 	const { openEditModal } = useEditVolume();
 	const { addMessage } = useContext(messageContext);
 	const { user, setOutdated } = useContext(UserContext);
+
+	const rating = useRating({
+		seriesId: volumeData?.serie?._id?.toString(),
+		volumeId: id,
+		manualScore: volumeData?.myVolumeScore ?? null,
+		derivedScore: null,
+		average: volumeData?.ratingAverage ?? 0,
+		count: volumeData?.ratingCount ?? 0,
+	});
 
 	const checkOwnedVolume = () => {
 		return user?.ownedVolumes
@@ -115,18 +125,19 @@ export default function VolumeHeader({ volumeData }) {
 			ratingWidget={
 				volumeData?.serie?._id ? (
 					<RatingWidget
-						ratingAverage={volumeData?.ratingAverage ?? 0}
-						ratingCount={volumeData?.ratingCount ?? 0}
+						ratingAverage={rating.average}
+						ratingCount={rating.count}
 					/>
 				) : null
 			}
 			ratingButton={
 				volumeData?.serie?._id ? (
 					<RateButton
-						seriesId={volumeData.serie._id.toString()}
-						volumeId={id}
-						myScore={volumeData?.myVolumeScore ?? null}
-						isDerived={false}
+						myScore={rating.myScore}
+						isDerived={rating.isDerived}
+						loading={rating.loading}
+						onSubmit={rating.submit}
+						onRemove={rating.remove}
 					/>
 				) : null
 			}
