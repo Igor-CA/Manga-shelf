@@ -19,5 +19,3 @@ const VolumeSchema = new Schema(
 );
 
 module.exports = mongoose.model("Volume", VolumeSchema);
-
-const generateVolumeURL = () => {};
