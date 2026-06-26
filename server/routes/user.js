@@ -14,6 +14,7 @@ const notificationsController = require("../controllers/notifications");
 const collectionPhotosController = require("../controllers/collectionPhotos");
 const submissionController = require("../controllers/submission");
 const reviewsController = require("../controllers/reviews");
+const ratingController = require("../controllers/rating");
 const { requireAuth } = require("../middlewares/authentications");
 const {
 	signupValidation,
@@ -29,6 +30,8 @@ const {
 	photoValidation,
 	submissionValidation,
 	reviewValidation,
+	ratingValidation,
+	ratingDeleteValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -152,6 +155,22 @@ router.put(
 	"/mark-notification-seen",
 	requireAuth,
 	notificationsController.setNotificationAsSeen,
+);
+
+// Ratings
+router.post(
+	"/rating",
+	requireAuth,
+	ratingValidation,
+	validateRequest,
+	ratingController.upsertRating,
+);
+router.delete(
+	"/rating",
+	requireAuth,
+	ratingDeleteValidation,
+	validateRequest,
+	ratingController.removeRating,
 );
 
 // Reviews

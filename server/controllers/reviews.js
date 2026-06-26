@@ -5,24 +5,6 @@ const asyncHandler = require("express-async-handler");
 
 const REVIEWS_PER_PAGE = 20;
 
-const recalculateSeriesRating = async (seriesId) => {
-	const result = await Review.aggregate([
-		{ $match: { series: new mongoose.Types.ObjectId(seriesId) } },
-		{
-			$group: {
-				_id: null,
-				avg: { $avg: "$score" },
-				count: { $sum: 1 },
-			},
-		},
-	]);
-	const { avg = 0, count = 0 } = result[0] || {};
-	await Series.findByIdAndUpdate(seriesId, {
-		ratingAverage: Math.round(avg * 10) / 10,
-		ratingCount: count,
-	});
-};
-
 exports.getSeriesReviews = asyncHandler(async (req, res) => {
 	const seriesId = req.params.id;
 	if (!mongoose.Types.ObjectId.isValid(seriesId)) {
@@ -97,8 +79,6 @@ exports.upsertReview = asyncHandler(async (req, res) => {
 		{ upsert: true, new: true },
 	);
 
-	await recalculateSeriesRating(seriesId);
-
 	res.json({ msg: "Review salva com sucesso" });
 });
 
@@ -117,9 +97,7 @@ exports.deleteReview = asyncHandler(async (req, res) => {
 		return res.status(403).json({ msg: "Não autorizado" });
 	}
 
-	const seriesId = review.series;
 	await Review.findByIdAndDelete(reviewId);
-	await recalculateSeriesRating(seriesId);
 
 	res.json({ msg: "Review removida com sucesso" });
 });

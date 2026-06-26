@@ -242,6 +242,26 @@ const payloadNumbersValidation = body([
 	.withMessage("Dimensões e totais devem ser números positivos.")
 	.toFloat();
 
+// Ratings
+const ratingSeriesIdValidation = body("seriesId")
+	.trim()
+	.notEmpty()
+	.withMessage("A obra é obrigatória.")
+	.isMongoId()
+	.withMessage("ID de obra inválido.");
+
+const ratingVolumeIdValidation = body("volumeId")
+	.optional({ nullable: true, checkFalsy: true })
+	.isMongoId()
+	.withMessage("ID de volume inválido.");
+
+const ratingScoreValidation = body("score")
+	.notEmpty()
+	.withMessage("A nota é obrigatória.")
+	.isInt({ min: 1, max: 10 })
+	.withMessage("A nota deve ser entre 1 e 10.")
+	.toInt();
+
 // Reviews
 const reviewSeriesIdValidation = body("seriesId")
 	.trim()
@@ -292,6 +312,17 @@ const reviewValidation = [
 	reviewSeriesIdValidation,
 	reviewScoreValidation,
 	reviewTextValidation,
+];
+
+const ratingValidation = [
+	ratingSeriesIdValidation,
+	ratingVolumeIdValidation,
+	ratingScoreValidation,
+];
+
+const ratingDeleteValidation = [
+	ratingSeriesIdValidation,
+	ratingVolumeIdValidation,
 ];
 
 const editOwnedValidation = [
@@ -347,5 +378,7 @@ module.exports = {
 	photoValidation,
 	submissionValidation,
 	reviewValidation,
+	ratingValidation,
+	ratingDeleteValidation,
 	validateRequest,
 };
