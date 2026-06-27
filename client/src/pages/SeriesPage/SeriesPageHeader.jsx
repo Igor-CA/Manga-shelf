@@ -96,7 +96,7 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 			{ to: `/series/${id}`, label: "Geral", end: true },
 			{ to: `/series/${id}/volumes`, label: "Volumes" },
 			{ to: `/series/${id}/related`, label: "Obras Relacionadas" },
-			{ to: `/series/${id}/reviews`, label: "Reviews" },
+			{ to: `/series/${id}/comments`, label: "Comentários" },
 		],
 		[id],
 	);

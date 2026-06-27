@@ -7,6 +7,7 @@ import "../SeriesPage/SeriesPage.css";
 import { LoadingPageComponent } from "../../App";
 import VolumesOverallPage from "./VolumesOverallPage";
 import VolumeHeader from "./VolumePageHeader";
+import PostsSection from "../../components/posts/PostsSection";
 export default function VolumePage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
@@ -55,6 +56,15 @@ export default function VolumePage() {
 			{volumeData && (
 				<Suspense fallback={<LoadingPageComponent />}>
 					<Routes>
+						<Route
+							path="comments"
+							element={
+								<PostsSection
+									seriesId={volumeData.serie._id}
+									volumeId={id}
+								/>
+							}
+						></Route>
 						<Route
 							path=""
 							element={<VolumesOverallPage volume={volumeData} />}

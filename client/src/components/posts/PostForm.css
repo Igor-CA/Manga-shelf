@@ -1,0 +1,30 @@
+.post-form {
+	background-color: var(--foreground);
+	border-radius: 0.5rem;
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	box-shadow: var(--box-shadow);
+}
+
+.post-form__textarea {
+	background-color: var(--background);
+	border: 1px solid var(--text);
+	border-radius: 0.25rem;
+	padding: 0.75rem;
+	color: var(--text);
+	font-family: inherit;
+	font-size: 0.9rem;
+	resize: vertical;
+}
+
+.post-form__textarea:focus {
+	outline: none;
+	border-color: var(--blue);
+}
+
+.post-form__actions {
+	display: flex;
+	justify-content: flex-end;
+}

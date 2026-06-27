@@ -89,18 +89,13 @@ export default function VolumeHeader({ volumeData }) {
 			},
 		},
 	];
-	/*
 	const navLinks = useMemo(
 		() => [
-			
 			{ to: `/volume/${id}`, label: "Geral", end: true },
-			{ to: `/volume/${id}/reviews`, label: "Reviews" },
-			{ to: `/volume/${id}/prices`, label: "Histórico de preços" },
-			
+			{ to: `/volume/${id}/comments`, label: "Comentários" },
 		],
 		[id],
 	);
-	*/
 	const mainAction = {
 		label: checkOwnedVolume() ? "Remover volume" : "Adicionar Volume",
 		isRed: user && checkOwnedVolume(),
@@ -121,7 +116,7 @@ export default function VolumeHeader({ volumeData }) {
 			isAdult={volumeData?.serie?.isAdult}
 			summary={volumeData?.summary}
 			actions={{ mainAction, dropdownOptions, isDisabled: !user }}
-			//navLinks={navLinks}
+			navLinks={navLinks}
 			ratingWidget={
 				volumeData?.serie?._id ? (
 					<RatingWidget
