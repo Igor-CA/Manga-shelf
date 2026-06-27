@@ -3,7 +3,7 @@ const router = express.Router();
 
 const seriesController = require("../controllers/series");
 const volumesController = require("../controllers/volumes");
-const reviewsController = require("../controllers/reviews");
+const postController = require("../controllers/post");
 const Notifications = require("../controllers/notifications");
 const { requireAuth } = require("../middlewares/authentications");
 const { authController, userInfoController } = require("../controllers/user/index");
@@ -24,7 +24,9 @@ router.get("/get-user-socials/:type/:username", userInfoController.getSocials); 
 router.get("/browse", seriesController.browse);
 router.get("/series/filters", seriesController.getInfoFilters);
 router.get("/series/:id", seriesController.getSeriesDetails);
-router.get("/series/:id/reviews", reviewsController.getSeriesReviews);
+
+//Comments api
+router.get("/posts", postController.getPosts);
 
 //Volumes api
 router.get("/volume/:id", volumesController.getVolumeDetails);

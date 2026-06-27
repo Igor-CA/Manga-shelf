@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const ReviewSchema = new Schema(
+const PostSchema = new Schema(
 	{
-		user: {
+		author: {
 			type: Schema.Types.ObjectId,
 			ref: "User",
 			required: true,
@@ -13,21 +13,21 @@ const ReviewSchema = new Schema(
 			ref: "Series",
 			required: true,
 		},
-		score: {
-			type: Number,
-			required: true,
-			min: 1,
-			max: 10,
+		volume: {
+			type: Schema.Types.ObjectId,
+			ref: "Volume",
+			default: null,
 		},
 		text: {
 			type: String,
+			required: true,
+			minlength: 1,
 			maxlength: 5000,
 		},
 	},
 	{ timestamps: true },
 );
 
-ReviewSchema.index({ user: 1, series: 1 }, { unique: true });
-ReviewSchema.index({ series: 1, createdAt: -1 });
+PostSchema.index({ series: 1, volume: 1, createdAt: -1 });
 
-module.exports = mongoose.model("Review", ReviewSchema);
+module.exports = mongoose.model("Post", PostSchema);

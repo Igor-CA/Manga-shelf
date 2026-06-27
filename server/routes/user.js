@@ -13,7 +13,7 @@ const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
 const collectionPhotosController = require("../controllers/collectionPhotos");
 const submissionController = require("../controllers/submission");
-const reviewsController = require("../controllers/reviews");
+const postController = require("../controllers/post");
 const ratingController = require("../controllers/rating");
 const { requireAuth } = require("../middlewares/authentications");
 const {
@@ -29,7 +29,7 @@ const {
 	editOwnedValidation,
 	photoValidation,
 	submissionValidation,
-	reviewValidation,
+	postValidation,
 	ratingValidation,
 	ratingDeleteValidation,
 } = require("../middlewares/validators");
@@ -173,16 +173,15 @@ router.delete(
 	ratingController.removeRating,
 );
 
-// Reviews
+// Posts (comments)
 router.post(
-	"/review",
+	"/post",
 	requireAuth,
-	reviewValidation,
+	postValidation,
 	validateRequest,
-	reviewsController.upsertReview,
+	postController.createPost,
 );
-router.get("/review/:seriesId", requireAuth, reviewsController.getUserReview);
-router.delete("/review/:id", requireAuth, reviewsController.deleteReview);
+router.delete("/post/:id", requireAuth, postController.deletePost);
 
 // Collection photos routes
 router.post(

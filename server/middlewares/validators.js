@@ -262,26 +262,25 @@ const ratingScoreValidation = body("score")
 	.withMessage("A nota deve ser entre 1 e 10.")
 	.toInt();
 
-// Reviews
-const reviewSeriesIdValidation = body("seriesId")
+// Posts (comments)
+const postSeriesIdValidation = body("seriesId")
 	.trim()
 	.notEmpty()
 	.withMessage("A obra é obrigatória.")
 	.isMongoId()
 	.withMessage("ID de obra inválido.");
 
-const reviewScoreValidation = body("score")
-	.notEmpty()
-	.withMessage("A nota é obrigatória.")
-	.isInt({ min: 1, max: 10 })
-	.withMessage("A nota deve ser entre 1 e 10.")
-	.toInt();
+const postVolumeIdValidation = body("volumeId")
+	.optional({ nullable: true, checkFalsy: true })
+	.isMongoId()
+	.withMessage("ID de volume inválido.");
 
-const reviewTextValidation = body("text")
-	.optional({ checkFalsy: true })
+const postTextValidation = body("text")
 	.trim()
+	.notEmpty()
+	.withMessage("O comentário não pode estar vazio.")
 	.isLength({ max: 5000 })
-	.withMessage("O texto da review não pode exceder 5000 caracteres.");
+	.withMessage("O comentário não pode exceder 5000 caracteres.");
 
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
@@ -308,10 +307,10 @@ const reportsValidation = [
 	reportUserValidation,
 ];
 
-const reviewValidation = [
-	reviewSeriesIdValidation,
-	reviewScoreValidation,
-	reviewTextValidation,
+const postValidation = [
+	postSeriesIdValidation,
+	postVolumeIdValidation,
+	postTextValidation,
 ];
 
 const ratingValidation = [
@@ -377,7 +376,7 @@ module.exports = {
 	editOwnedValidation,
 	photoValidation,
 	submissionValidation,
-	reviewValidation,
+	postValidation,
 	ratingValidation,
 	ratingDeleteValidation,
 	validateRequest,
