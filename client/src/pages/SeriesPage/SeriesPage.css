@@ -258,7 +258,7 @@
 .rating-summary__score {
 	font-size: 2.5rem;
 	font-weight: bold;
-	color: var(--blue);
+	color: var(--text);
 	min-width: 60px;
 	text-align: center;
 }
