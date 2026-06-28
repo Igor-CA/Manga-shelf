@@ -21,7 +21,7 @@ const NotificationsSchema = new Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			refPath: "objectType",
 		},
-		objectType: { type: String, enum: ["User", "Volume", "Series"] },
+		objectType: { type: String, enum: ["User", "Volume", "Series", "Post"] },
 	},
 	{ timestamps: true },
 );

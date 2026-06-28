@@ -24,10 +24,20 @@ const PostSchema = new Schema(
 			minlength: 1,
 			maxlength: 5000,
 		},
+		parent: {
+			type: Schema.Types.ObjectId,
+			ref: "Post",
+			default: null,
+		},
+		replyCount: {
+			type: Number,
+			default: 0,
+		},
 	},
 	{ timestamps: true },
 );
 
 PostSchema.index({ series: 1, volume: 1, createdAt: -1 });
+PostSchema.index({ parent: 1, createdAt: 1 });
 
 module.exports = mongoose.model("Post", PostSchema);

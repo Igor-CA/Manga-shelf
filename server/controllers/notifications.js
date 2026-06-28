@@ -314,6 +314,31 @@ async function createFollowingNotification(userId) {
 	await newNotification.save();
 	return newNotification;
 }
+exports.sendNewReplyNotification = async (reply, recipientId, seriesTitle, seriesId, volumeId) => {
+	try {
+		const replier = await User.findById(reply.author).select("username profileImageUrl");
+		if (!replier) return;
+
+		const commentsPath = volumeId
+			? `/volume/${volumeId}/comments`
+			: `/series/${seriesId}/comments`;
+		const text = `[[${replier.username}|/user/${replier.username}]] respondeu seu comentário em [[${seriesTitle}|${commentsPath}]]`;
+
+		const notification = await Notification.create({
+			group: "social",
+			eventKey: "new_reply",
+			text,
+			imageUrl: replier.profileImageUrl || null,
+			associatedObject: reply._id,
+			objectType: "Post",
+		});
+
+		await sendNotification(notification, recipientId);
+	} catch (err) {
+		logger.error("Failed to send new_reply notification:", err.message);
+	}
+};
+
 exports.sendNewFollowerNotification = async (followerID, followedID) => {
 	const notification = await createFollowingNotification(followerID);
 	const cooldownPeriod = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);

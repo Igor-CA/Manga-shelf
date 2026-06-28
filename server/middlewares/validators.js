@@ -282,6 +282,11 @@ const postTextValidation = body("text")
 	.isLength({ max: 5000 })
 	.withMessage("O comentário não pode exceder 5000 caracteres.");
 
+const postParentIdValidation = body("parentId")
+	.optional({ nullable: true, checkFalsy: true })
+	.isMongoId()
+	.withMessage("ID de comentário pai inválido.");
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -311,6 +316,7 @@ const postValidation = [
 	postSeriesIdValidation,
 	postVolumeIdValidation,
 	postTextValidation,
+	postParentIdValidation,
 ];
 
 const ratingValidation = [
