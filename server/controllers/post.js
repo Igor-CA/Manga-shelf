@@ -1,4 +1,5 @@
 const Post = require("../models/Post");
+const Like = require("../models/Like");
 const Series = require("../models/Series");
 const Volume = require("../models/volume");
 const Notification = require("../models/Notification");
@@ -6,7 +7,7 @@ const UserNotificationStatus = require("../models/UserNotificationStatus");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
-const { sendNewReplyNotification } = require("./notifications");
+const { sendNewReplyNotification, sendNewLikeNotification } = require("./notifications");
 
 const POSTS_PER_PAGE = 20;
 const REPLIES_PER_PAGE = 5;
@@ -33,7 +34,43 @@ const basePostProjection = {
 	createdAt: 1,
 	updatedAt: 1,
 	author: "$authorInfo",
+	likeCount: { $ifNull: ["$likeCount", 0] },
+	likedByViewer: 1,
 };
+
+function makeViewerLikeStages(viewerId) {
+	if (viewerId) {
+		return [
+			{
+				$lookup: {
+					from: "likes",
+					let: { postId: "$_id" },
+					pipeline: [
+						{
+							$match: {
+								$expr: {
+									$and: [
+										{ $eq: ["$user", new mongoose.Types.ObjectId(viewerId)] },
+										{ $eq: ["$post", "$$postId"] },
+									],
+								},
+							},
+						},
+						{ $limit: 1 },
+					],
+					as: "viewerLike",
+				},
+			},
+			{
+				$addFields: {
+					likedByViewer: { $gt: [{ $size: "$viewerLike" }, 0] },
+				},
+			},
+			{ $unset: "viewerLike" },
+		];
+	}
+	return [{ $addFields: { likedByViewer: false } }];
+}
 
 async function resolveReplyTarget(parentId, seriesId, volumeId) {
 	const targetPost = await Post.findById(parentId).select(
@@ -135,13 +172,20 @@ exports.createPost = asyncHandler(async (req, res) => {
 });
 
 exports.getPosts = asyncHandler(async (req, res) => {
-	const { seriesId, volumeId } = req.query;
+	const { seriesId, volumeId, sort } = req.query;
 	if (!mongoose.Types.ObjectId.isValid(seriesId)) {
 		return res.status(400).json({ msg: "ID de obra inválido" });
 	}
 
 	const page = parseInt(req.query.p) || 1;
 	const skip = POSTS_PER_PAGE * (page - 1);
+
+	const sortStage = sort === "recent"
+		? { createdAt: -1 }
+		: { likeCount: -1, createdAt: -1 };
+
+	const viewerId = req.user ? req.user._id : null;
+	const viewerLikeStages = makeViewerLikeStages(viewerId);
 
 	const posts = await Post.aggregate([
 		{
@@ -151,10 +195,11 @@ exports.getPosts = asyncHandler(async (req, res) => {
 				parent: null,
 			},
 		},
-		{ $sort: { createdAt: -1 } },
+		{ $sort: sortStage },
 		{ $skip: skip },
 		{ $limit: POSTS_PER_PAGE },
 		...attachAuthorStages,
+		...viewerLikeStages,
 		{
 			$lookup: {
 				from: "posts",
@@ -164,6 +209,7 @@ exports.getPosts = asyncHandler(async (req, res) => {
 					{ $sort: { createdAt: 1 } },
 					{ $limit: 1 },
 					...attachAuthorStages,
+					...makeViewerLikeStages(viewerId),
 					{ $project: basePostProjection },
 				],
 				as: "replyPreviewArr",
@@ -190,16 +236,81 @@ exports.getReplies = asyncHandler(async (req, res) => {
 	const page = parseInt(req.query.p) || 1;
 	const skip = REPLIES_PER_PAGE * (page - 1);
 
+	const viewerLikeStages = makeViewerLikeStages(req.user ? req.user._id : null);
+
 	const replies = await Post.aggregate([
 		{ $match: { parent: new mongoose.Types.ObjectId(postId) } },
 		{ $sort: { createdAt: 1 } },
 		{ $skip: skip },
 		{ $limit: REPLIES_PER_PAGE },
 		...attachAuthorStages,
+		...viewerLikeStages,
 		{ $project: basePostProjection },
 	]);
 
 	res.json(replies);
+});
+
+exports.likePost = asyncHandler(async (req, res) => {
+	const postId = req.params.id;
+	if (!mongoose.Types.ObjectId.isValid(postId)) {
+		return res.status(400).json({ msg: "ID de comentário inválido" });
+	}
+
+	const post = await Post.findById(postId);
+	if (!post) {
+		return res.status(404).json({ msg: "Comentário não encontrado" });
+	}
+
+	const result = await Like.updateOne(
+		{ user: req.user._id, post: postId },
+		{},
+		{ upsert: true },
+	);
+
+	let likeCount = post.likeCount || 0;
+	if (result.upsertedCount === 1) {
+		const updated = await Post.findByIdAndUpdate(
+			postId,
+			{ $inc: { likeCount: 1 } },
+			{ new: true },
+		).select("likeCount");
+		likeCount = updated.likeCount;
+
+		const isSelfLike = post.author.toString() === req.user._id.toString();
+		if (!isSelfLike) {
+			sendNewLikeNotification(post, post.author, req.user).catch(() => {});
+		}
+	}
+
+	res.json({ likeCount, likedByViewer: true });
+});
+
+exports.unlikePost = asyncHandler(async (req, res) => {
+	const postId = req.params.id;
+	if (!mongoose.Types.ObjectId.isValid(postId)) {
+		return res.status(400).json({ msg: "ID de comentário inválido" });
+	}
+
+	const post = await Post.findById(postId);
+	if (!post) {
+		return res.status(404).json({ msg: "Comentário não encontrado" });
+	}
+
+	const result = await Like.deleteOne({ user: req.user._id, post: postId });
+
+	let likeCount = post.likeCount || 0;
+	if (result.deletedCount === 1) {
+		const updated = await Post.findOneAndUpdate(
+			{ _id: postId, likeCount: { $gt: 0 } },
+			{ $inc: { likeCount: -1 } },
+			{ new: true },
+		).select("likeCount");
+		if (updated) likeCount = updated.likeCount;
+		else likeCount = 0;
+	}
+
+	res.json({ likeCount, likedByViewer: false });
 });
 
 exports.deletePost = asyncHandler(async (req, res) => {
@@ -230,6 +341,10 @@ exports.deletePost = asyncHandler(async (req, res) => {
 
 			await cleanupPostNotifications([post._id, ...replyIds], session);
 
+			await Like.deleteMany({
+				post: { $in: [post._id, ...replyIds] },
+			}).session(session);
+
 			if (replyIds.length > 0) {
 				await Post.deleteMany({ _id: { $in: replyIds } }).session(session);
 			}
@@ -237,6 +352,8 @@ exports.deletePost = asyncHandler(async (req, res) => {
 		} else {
 			// Reply: clean up its notification, delete, decrement parent count
 			await cleanupPostNotifications([post._id], session);
+
+			await Like.deleteMany({ post: post._id }).session(session);
 
 			await Post.findByIdAndDelete(post._id).session(session);
 			await Post.findOneAndUpdate(

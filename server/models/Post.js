@@ -33,6 +33,10 @@ const PostSchema = new Schema(
 			type: Number,
 			default: 0,
 		},
+		likeCount: {
+			type: Number,
+			default: 0,
+		},
 	},
 	{ timestamps: true },
 );

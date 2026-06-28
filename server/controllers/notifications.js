@@ -1,6 +1,7 @@
 const Notification = require("../models/Notification");
 const asyncHandler = require("express-async-handler");
 const Volume = require("../models/volume");
+const Series = require("../models/Series");
 const User = require("../models/User");
 
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
@@ -314,6 +315,40 @@ async function createFollowingNotification(userId) {
 	await newNotification.save();
 	return newNotification;
 }
+exports.sendNewLikeNotification = async (post, recipientId, liker) => {
+	try {
+		const likerLink = `[[${liker.username}|/user/${liker.username}]]`;
+
+		const existing = await Notification.find({
+			eventKey: "new_like",
+			associatedObject: post._id,
+			objectType: "Post",
+		}).select("text");
+		if (existing.some((n) => n.text.startsWith(likerLink))) return;
+
+		const series = await Series.findById(post.series).select("title");
+		const seriesTitle = series ? series.title : "";
+		const commentsPath = post.volume
+			? `/volume/${post.volume}/comments`
+			: `/series/${post.series}/comments`;
+
+		const text = `${likerLink} curtiu seu comentário em [[${seriesTitle}|${commentsPath}]]`;
+
+		const notification = await Notification.create({
+			group: "social",
+			eventKey: "new_like",
+			text,
+			imageUrl: liker.profileImageUrl || null,
+			associatedObject: post._id,
+			objectType: "Post",
+		});
+
+		await sendSiteOnlyNotification(notification, recipientId);
+	} catch (err) {
+		logger.error("Failed to send new_like notification:", err.message);
+	}
+};
+
 exports.sendNewReplyNotification = async (reply, recipientId, seriesTitle, seriesId, volumeId) => {
 	try {
 		const replier = await User.findById(reply.author).select("username profileImageUrl");
@@ -462,6 +497,16 @@ const sendEmailNotification = async (notification, targetUserId, dataList) => {
 
 	return;
 };
+async function sendSiteOnlyNotification(notification, targetUserId) {
+	const { allowSite } = await checkNotificationSettings(
+		targetUserId,
+		notification.group,
+	);
+	if (allowSite) {
+		await sendSiteNotification(notification._id, targetUserId);
+	}
+}
+
 const sendSiteNotification = async (notificationId, targetUserId) => {
 	await User.findByIdAndUpdate(
 		targetUserId,

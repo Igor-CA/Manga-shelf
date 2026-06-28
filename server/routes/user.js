@@ -182,6 +182,8 @@ router.post(
 	postController.createPost,
 );
 router.delete("/post/:id", requireAuth, postController.deletePost);
+router.post("/post/:id/like", requireAuth, postController.likePost);
+router.delete("/post/:id/like", requireAuth, postController.unlikePost);
 
 // Collection photos routes
 router.post(
