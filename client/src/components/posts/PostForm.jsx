@@ -1,8 +1,8 @@
 import { useState } from "react";
 import "./PostForm.css";
 
-export default function PostForm({ onSubmit, submitting }) {
-	const [text, setText] = useState("");
+export default function PostForm({ onSubmit, submitting, initialValue = "" }) {
+	const [text, setText] = useState(initialValue);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();

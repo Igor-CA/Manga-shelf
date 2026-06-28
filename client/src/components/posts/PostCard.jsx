@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import RichText from "../RichText";
+import PostReplies from "./PostReplies";
+import { UserContext } from "../../contexts/userProvider";
 import "./PostCard.css";
 import { FaTrash } from "react-icons/fa";
 
 const READ_MORE_THRESHOLD = 500;
 
-export default function PostCard({ post, canDelete, onDelete }) {
+export default function PostCard({
+	post,
+	canDelete,
+	onDelete,
+	seriesId,
+	volumeId,
+	isReply = false,
+}) {
+	const { user } = useContext(UserContext);
 	const { author, text, createdAt } = post;
 	const [expanded, setExpanded] = useState(false);
+	const [showReplyForm, setShowReplyForm] = useState(false);
 
 	const isLong = text.length > READ_MORE_THRESHOLD;
 	const shownText =
@@ -21,7 +32,7 @@ export default function PostCard({ post, canDelete, onDelete }) {
 	});
 
 	return (
-		<div className="post-card">
+		<div className={`post-card${isReply ? " post-card--reply" : ""}`}>
 			<div className="post-card__header">
 				<Link to={`/user/${author.username}`} className="post-card__user">
 					{author.profileImageUrl ? (
@@ -42,10 +53,11 @@ export default function PostCard({ post, canDelete, onDelete }) {
 						className="button button--red"
 						onClick={() => onDelete(post._id)}
 					>
-						<FaTrash></FaTrash>	
+						<FaTrash />
 					</button>
 				)}
 			</div>
+
 			<p className="post-card__text">
 				<RichText text={shownText} />
 			</p>
@@ -57,7 +69,27 @@ export default function PostCard({ post, canDelete, onDelete }) {
 					{expanded ? "Ler menos" : "Ler mais"}
 				</button>
 			)}
-			<span className="post-card__date">{date}</span>
+			<div className="post-card__footer">
+				<span className="post-card__date">{date}</span>
+				{!isReply && user && (
+					<button
+						className="post-card__reply-btn"
+						onClick={() => setShowReplyForm((prev) => !prev)}
+					>
+						Responder
+					</button>
+				)}
+			</div>
+
+			{!isReply && (
+				<PostReplies
+					post={post}
+					seriesId={seriesId}
+					volumeId={volumeId}
+					showForm={showReplyForm}
+					onSubmitted={() => setShowReplyForm(false)}
+				/>
+			)}
 		</div>
 	);
 }

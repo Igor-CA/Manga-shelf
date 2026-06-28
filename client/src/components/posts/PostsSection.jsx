@@ -155,6 +155,8 @@ export default function PostsSection({ seriesId, volumeId }) {
 										post={post}
 										canDelete={user && user.username === post.author.username}
 										onDelete={handleDelete}
+										seriesId={seriesId}
+										volumeId={volumeId}
 									/>
 								))}
 							</div>
