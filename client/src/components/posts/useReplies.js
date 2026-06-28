@@ -22,6 +22,7 @@ export default function useReplies(post, seriesId, volumeId) {
 	const fetchReplies = async (pageNum) => {
 		const res = await axios({
 			method: "GET",
+			withCredentials: true,
 			headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 			url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/posts/${post._id}/replies`,
 			params: { p: pageNum },

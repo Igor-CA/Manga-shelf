@@ -40,6 +40,7 @@ export default function PostReplies({
 		confirm("Tem certeza que deseja excluir sua resposta?", () => action(replyId));
 
 	const ownsReply = (reply) => user && user.username === reply.author.username;
+	const previewShown = post.replyPreview && !previewHidden;
 
 	return (
 		<div className="post-card__replies">
@@ -79,7 +80,7 @@ export default function PostReplies({
 				</>
 			) : (
 				<>
-					{post.replyPreview && !previewHidden && (
+					{previewShown && (
 						<PostCard
 							post={post.replyPreview}
 							canDelete={ownsReply(post.replyPreview)}
@@ -87,7 +88,7 @@ export default function PostReplies({
 							isReply={true}
 						/>
 					)}
-					{replyCount > 0 && (
+					{(previewShown ? replyCount > 1 : replyCount > 0) && (
 						<button
 							className="post-card__toggle-replies"
 							onClick={expand}

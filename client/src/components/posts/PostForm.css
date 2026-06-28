@@ -21,7 +21,7 @@
 
 .post-form__textarea:focus {
 	outline: none;
-	border-color: var(--blue);
+	border-color: var(--text);
 }
 
 .post-form__actions {

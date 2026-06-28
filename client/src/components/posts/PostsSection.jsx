@@ -5,6 +5,7 @@ import { messageContext } from "../../contexts/messageStateProvider";
 import { usePrompt } from "../../contexts/PromptContext";
 import PostCard from "./PostCard";
 import PostForm from "./PostForm";
+import SkeletonPostCard from "./SkeletonPostCard";
 import "./PostsSection.css";
 
 const POSTS_PER_PAGE = 20;
@@ -17,14 +18,22 @@ export default function PostsSection({ seriesId, volumeId }) {
 	const [page, setPage] = useState(1);
 	const [hasMore, setHasMore] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [loadingMore, setLoadingMore] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
+	const [sort, setSort] = useState("top");
 
-	const fetchPage = async (pageToFetch) => {
-		const params = { seriesId, p: pageToFetch };
+	const renderSkeletons = (count) =>
+		Array.from({ length: count }).map((_, i) => (
+			<SkeletonPostCard key={`skeleton-${i}`} />
+		));
+
+	const fetchPage = async (pageToFetch, sortValue) => {
+		const params = { seriesId, p: pageToFetch, sort: sortValue };
 		if (volumeId) params.volumeId = volumeId;
 
 		const res = await axios({
 			method: "GET",
+			withCredentials: true,
 			headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 			url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/posts`,
 			params,
@@ -35,7 +44,7 @@ export default function PostsSection({ seriesId, volumeId }) {
 	useEffect(() => {
 		let active = true;
 		setLoading(true);
-		fetchPage(1)
+		fetchPage(1, sort)
 			.then((data) => {
 				if (!active) return;
 				setPosts(data);
@@ -47,17 +56,20 @@ export default function PostsSection({ seriesId, volumeId }) {
 		return () => {
 			active = false;
 		};
-	}, [seriesId, volumeId]);
+	}, [seriesId, volumeId, sort]);
 
 	const loadMore = async () => {
+		setLoadingMore(true);
 		try {
 			const next = page + 1;
-			const data = await fetchPage(next);
+			const data = await fetchPage(next, sort);
 			setPosts((prev) => [...prev, ...data]);
 			setPage(next);
 			setHasMore(data.length === POSTS_PER_PAGE);
 		} catch (error) {
 			console.error(error);
+		} finally {
+			setLoadingMore(false);
 		}
 	};
 
@@ -66,6 +78,8 @@ export default function PostsSection({ seriesId, volumeId }) {
 		const optimistic = {
 			_id: tempId,
 			text,
+			likeCount: 0,
+			likedByViewer: false,
 			createdAt: new Date().toISOString(),
 			author: {
 				username: user.username,
@@ -141,8 +155,25 @@ export default function PostsSection({ seriesId, volumeId }) {
 							<PostForm onSubmit={handleSubmit} submitting={submitting} />
 						)}
 
+						<div className="posts-section__sort">
+							<button
+								className={`posts-section__sort-btn${sort === "top" ? " posts-section__sort-btn--active" : ""}`}
+								onClick={() => setSort("top")}
+							>
+								Mais curtidos
+							</button>
+							<button
+								className={`posts-section__sort-btn${sort === "recent" ? " posts-section__sort-btn--active" : ""}`}
+								onClick={() => setSort("recent")}
+							>
+								Mais recentes
+							</button>
+						</div>
+
 						{loading ? (
-							<p>Carregando comentários...</p>
+							<div className="posts-list">
+								{renderSkeletons(POSTS_PER_PAGE)}
+							</div>
 						) : posts.length === 0 ? (
 							<p className="posts-section__empty">
 								Nenhum comentário ainda. Seja o primeiro a comentar!
@@ -153,16 +184,17 @@ export default function PostsSection({ seriesId, volumeId }) {
 									<PostCard
 										key={post._id}
 										post={post}
-										canDelete={user && user.username === post.author.username}
+										canDelete={user && user.username === post.author?.username}
 										onDelete={handleDelete}
 										seriesId={seriesId}
 										volumeId={volumeId}
 									/>
 								))}
+								{loadingMore && renderSkeletons(POSTS_PER_PAGE)}
 							</div>
 						)}
 
-						{hasMore && (
+						{hasMore && !loadingMore && (
 							<button className="button posts-section__more" onClick={loadMore}>
 								Ver mais
 							</button>

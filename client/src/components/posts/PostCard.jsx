@@ -1,10 +1,12 @@
 import { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import RichText from "../RichText";
 import PostReplies from "./PostReplies";
 import { UserContext } from "../../contexts/userProvider";
+import { messageContext } from "../../contexts/messageStateProvider";
 import "./PostCard.css";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaHeart, FaRegHeart } from "react-icons/fa";
 
 const READ_MORE_THRESHOLD = 500;
 
@@ -15,11 +17,17 @@ export default function PostCard({
 	seriesId,
 	volumeId,
 	isReply = false,
+	onLikeChange,
 }) {
 	const { user } = useContext(UserContext);
+	const { addMessage } = useContext(messageContext);
+	const navigate = useNavigate();
 	const { author, text, createdAt } = post;
 	const [expanded, setExpanded] = useState(false);
 	const [showReplyForm, setShowReplyForm] = useState(false);
+	const [likeCount, setLikeCount] = useState(post.likeCount ?? 0);
+	const [likedByViewer, setLikedByViewer] = useState(post.likedByViewer ?? false);
+	const [liking, setLiking] = useState(false);
 
 	const isLong = text.length > READ_MORE_THRESHOLD;
 	const shownText =
@@ -30,6 +38,38 @@ export default function PostCard({
 		month: "long",
 		year: "numeric",
 	});
+
+	const handleLike = async () => {
+		if (!user) {
+			navigate("/login");
+			return;
+		}
+		if (liking) return;
+
+		const wasLiked = likedByViewer;
+		const optimisticCount = wasLiked ? likeCount - 1 : likeCount + 1;
+		setLikedByViewer(!wasLiked);
+		setLikeCount(optimisticCount);
+		setLiking(true);
+
+		try {
+			const res = await axios({
+				method: wasLiked ? "DELETE" : "POST",
+				withCredentials: true,
+				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post/${post._id}/like`,
+			});
+			setLikeCount(res.data.likeCount);
+			setLikedByViewer(res.data.likedByViewer);
+			if (onLikeChange) onLikeChange(post._id, res.data);
+		} catch (error) {
+			setLikedByViewer(wasLiked);
+			setLikeCount(likeCount);
+			addMessage(error.response?.data?.msg || "Erro ao curtir comentário");
+		} finally {
+			setLiking(false);
+		}
+	};
 
 	return (
 		<div className={`post-card${isReply ? " post-card--reply" : ""}`}>
@@ -71,14 +111,25 @@ export default function PostCard({
 			)}
 			<div className="post-card__footer">
 				<span className="post-card__date">{date}</span>
-				{!isReply && user && (
+				<div className="post-card__footer-actions">
+					{!isReply && user && (
+						<button
+							className="post-card__reply-btn"
+							onClick={() => setShowReplyForm((prev) => !prev)}
+						>
+							Responder
+						</button>
+					)}
 					<button
-						className="post-card__reply-btn"
-						onClick={() => setShowReplyForm((prev) => !prev)}
+						className={`post-card__like-btn${likedByViewer ? " post-card__like-btn--liked" : ""}`}
+						onClick={handleLike}
+						disabled={liking}
+						aria-label={likedByViewer ? "Descurtir" : "Curtir"}
 					>
-						Responder
+						{likedByViewer ? <FaHeart /> : <FaRegHeart />}
+						{likeCount > 0 && <span>{likeCount}</span>}
 					</button>
-				)}
+				</div>
 			</div>
 
 			{!isReply && (

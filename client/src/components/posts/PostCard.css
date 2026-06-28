@@ -73,7 +73,7 @@
 	align-self: flex-start;
 	background: transparent;
 	border: none;
-	color: var(--blue);
+	color: var(--text);
 	font-size: 0.85rem;
 	font-weight: 600;
 	cursor: pointer;
@@ -97,10 +97,43 @@
 	gap: 0.5rem;
 }
 
+.post-card__footer-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.post-card__like-btn {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	background: transparent;
+	border: none;
+	color: var(--text);
+	opacity: 0.5;
+	font-size: 0.85rem;
+	cursor: pointer;
+	padding: 0.25rem 0.5rem;
+	transition: opacity 0.15s;
+}
+
+.post-card__like-btn:hover {
+	opacity: 1;
+}
+
+.post-card__like-btn--liked {
+	color: var(--red);
+	opacity: 1;
+}
+
+.post-card__like-btn:disabled {
+	cursor: not-allowed;
+}
+
 .post-card__reply-btn {
 	background: transparent;
 	border: none;
-	color: var(--blue);
+	color: var(--text);
 	font-size: 0.85rem;
 	font-weight: 600;
 	cursor: pointer;
@@ -125,7 +158,7 @@
 }
 
 .post-card--reply {
-	border-left: 3px solid var(--border, #ddd);
+	border-left: 3px solid var(--text);
 	margin-left: 0.75rem;
 	padding: 0.75rem;
 	background-color: var(--background);
@@ -135,7 +168,7 @@
 .post-card__toggle-replies {
 	background: transparent;
 	border: none;
-	color: var(--blue);
+	color: var(--text);
 	font-size: 0.8rem;
 	font-weight: 600;
 	cursor: pointer;
@@ -153,8 +186,43 @@
 }
 
 .post-card__more-replies {
+	margin: 0.5rem 0.75rem;
 	align-self: flex-start;
 	font-size: 0.85rem;
+}
+
+.post-card__skeleton-avatar {
+	width: 32px;
+	height: 32px;
+}
+
+.post-card__skeleton-avatar.loader-animation {
+	border-radius: 50%;
+}
+
+.post-card__skeleton-username {
+	width: 7rem;
+	height: 1rem;
+}
+
+.post-card__skeleton-text {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.post-card__skeleton-line {
+	width: 100%;
+	height: 0.9rem;
+}
+
+.post-card__skeleton-line--short {
+	width: 55%;
+}
+
+.post-card__skeleton-date {
+	width: 5rem;
+	height: 0.8rem;
 }
 
 @media (min-width: 768px) {
