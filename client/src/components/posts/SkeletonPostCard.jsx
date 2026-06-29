@@ -1,8 +1,11 @@
 import "./PostCard.css";
 
-export default function SkeletonPostCard() {
+export default function SkeletonPostCard({ isReply = false }) {
 	return (
-		<div className="post-card" aria-hidden="true">
+		<div
+			className={`post-card${isReply ? " post-card--reply" : ""}`}
+			aria-hidden="true"
+		>
 			<div className="post-card__header">
 				<div className="post-card__user">
 					<div className="loader-animation post-card__skeleton-avatar" />

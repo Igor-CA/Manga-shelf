@@ -1,9 +1,10 @@
 import { useContext } from "react";
 import PostCard from "./PostCard";
 import PostForm from "./PostForm";
+import SkeletonPostCard from "./SkeletonPostCard";
 import { UserContext } from "../../contexts/userProvider";
 import { usePrompt } from "../../contexts/PromptContext";
-import useReplies from "./useReplies";
+import useReplies, { REPLIES_PER_PAGE } from "./useReplies";
 
 export default function PostReplies({
 	post,
@@ -37,10 +38,17 @@ export default function PostReplies({
 	};
 
 	const confirmDelete = (replyId, action) =>
-		confirm("Tem certeza que deseja excluir sua resposta?", () => action(replyId));
+		confirm("Tem certeza que deseja excluir sua resposta?", () =>
+			action(replyId),
+		);
 
 	const ownsReply = (reply) => user && user.username === reply.author.username;
 	const previewShown = post.replyPreview && !previewHidden;
+
+	const renderReplySkeletons = () =>
+		Array.from({ length: REPLIES_PER_PAGE }).map((_, i) => (
+			<SkeletonPostCard key={`reply-skeleton-${i}`} isReply />
+		));
 
 	return (
 		<div className="post-card__replies">
@@ -64,12 +72,12 @@ export default function PostReplies({
 								isReply={true}
 							/>
 						))}
+						{loading && renderReplySkeletons()}
 					</div>
-					{hasMore && (
+					{hasMore && !loading && (
 						<button
 							className="button post-card__more-replies"
 							onClick={loadMore}
-							disabled={loading}
 						>
 							Ver mais respostas
 						</button>
@@ -78,6 +86,8 @@ export default function PostReplies({
 						Ocultar respostas
 					</button>
 				</>
+			) : loading ? (
+				<div className="post-card__replies-list">{renderReplySkeletons()}</div>
 			) : (
 				<>
 					{previewShown && (
@@ -89,16 +99,8 @@ export default function PostReplies({
 						/>
 					)}
 					{(previewShown ? replyCount > 1 : replyCount > 0) && (
-						<button
-							className="post-card__toggle-replies"
-							onClick={expand}
-							disabled={loading}
-						>
-							{loading
-								? "Carregando..."
-								: replyCount === 1
-									? "Ver 1 resposta"
-									: `Ver as ${replyCount} respostas`}
+						<button className="post-card__toggle-replies" onClick={expand}>
+							{`Ver as ${replyCount} respostas`}
 						</button>
 					)}
 				</>
