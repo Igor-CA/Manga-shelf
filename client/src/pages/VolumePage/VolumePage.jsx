@@ -8,11 +8,21 @@ import { LoadingPageComponent } from "../../App";
 import VolumesOverallPage from "./VolumesOverallPage";
 import VolumeHeader from "./VolumePageHeader";
 import PostsSection from "../../components/posts/PostsSection";
+import { useRating } from "../../utils/useRating";
 export default function VolumePage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const [volumeData, setVolumeData] = useState();
 	const { user, isFetching } = useContext(UserContext);
+
+	const rating = useRating({
+		seriesId: volumeData?.serie?._id?.toString(),
+		volumeId: id,
+		manualScore: volumeData?.myVolumeScore ?? null,
+		derivedScore: null,
+		average: volumeData?.ratingAverage ?? 0,
+		count: volumeData?.ratingCount ?? 0,
+	});
 	useEffect(() => {
 		if (
 			!isFetching &&
@@ -52,7 +62,7 @@ export default function VolumePage() {
 
 	return (
 		<div className="page-content">
-			<VolumeHeader volumeData={volumeData}></VolumeHeader>
+			<VolumeHeader volumeData={volumeData} rating={rating}></VolumeHeader>
 			{volumeData && (
 				<Suspense fallback={<LoadingPageComponent />}>
 					<Routes>
@@ -62,6 +72,7 @@ export default function VolumePage() {
 								<PostsSection
 									seriesId={volumeData.serie._id}
 									volumeId={id}
+									rating={rating}
 								/>
 							}
 						></Route>

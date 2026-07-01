@@ -8,9 +8,8 @@ import {
 import ContentHeader from "../../components/contentHeader/contentHeader";
 import RatingWidget from "../../components/contentHeader/RatingWidget";
 import RateButton from "../../components/contentHeader/RateButton";
-import { useRating } from "../../utils/useRating";
 
-export default function SeriesPageHeader({ seriesInfo, actions }) {
+export default function SeriesPageHeader({ seriesInfo, actions, rating }) {
 	const { user } = useContext(UserContext);
 	const {
 		handleSelectAllVolumes,
@@ -27,10 +26,6 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 		authors,
 		id,
 		isAdult,
-		ratingAverage,
-		ratingCount,
-		mySeriesScore,
-		myVolumeScores,
 	} = seriesInfo || {};
 
 	const isSeriesInUserList =
@@ -71,25 +66,6 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 			onChange: toggleDrop,
 		},
 	];
-
-	const volumeScoreValues = myVolumeScores ? Object.values(myVolumeScores) : [];
-	const derivedSeriesScore =
-		volumeScoreValues.length > 0
-			? Math.round(
-					(volumeScoreValues.reduce((a, b) => a + b, 0) /
-						volumeScoreValues.length) *
-						10,
-				) / 10
-			: null;
-
-	const rating = useRating({
-		seriesId: id,
-		volumeId: null,
-		manualScore: mySeriesScore ?? null,
-		derivedScore: derivedSeriesScore,
-		average: ratingAverage ?? 0,
-		count: ratingCount ?? 0,
-	});
 
 	const navLinks = useMemo(
 		() => [

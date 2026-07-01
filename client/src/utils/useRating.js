@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { messageContext } from "../contexts/messageStateProvider";
+import { usePrompt } from "../contexts/PromptContext";
 
 const round1 = (n) => Math.round(n * 10) / 10;
 
@@ -13,6 +14,7 @@ export function useRating({
 	count = 0,
 }) {
 	const { addMessage, setMessageType } = useContext(messageContext);
+	const { confirm } = usePrompt();
 	const [score, setScore] = useState(manualScore);
 	const [avg, setAvg] = useState(average);
 	const [cnt, setCnt] = useState(count);
@@ -67,6 +69,19 @@ export function useRating({
 		}
 	};
 
+	const applyOptimistic = (nextScore) => {
+		const prev = { score, avg, cnt };
+		const next = recompute(score ?? derivedScore, nextScore);
+		setScore(nextScore);
+		setAvg(next.avg);
+		setCnt(next.cnt);
+		return () => {
+			setScore(prev.score);
+			setAvg(prev.avg);
+			setCnt(prev.cnt);
+		};
+	};
+
 	const submit = (newScore) =>
 		write(
 			"POST",
@@ -80,24 +95,28 @@ export function useRating({
 
 	const remove = () => {
 		if (score == null) return;
-		return write(
-			"DELETE",
-			{},
-			null,
-			score,
-			derivedScore,
-			"Nota removida com sucesso",
-			"Erro ao remover nota",
-		);
+		confirm("Tem certeza que deseja remover sua nota?", () => {
+			write(
+				"DELETE",
+				{},
+				null,
+				score,
+				derivedScore,
+				"Nota removida com sucesso",
+				"Erro ao remover nota",
+			);
+		});
 	};
 
 	return {
 		myScore: effectiveScore,
+		manualScore: score,
 		isDerived,
 		average: avg,
 		count: cnt,
 		loading,
 		submit,
 		remove,
+		applyOptimistic,
 	};
 }
