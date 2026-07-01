@@ -31,8 +31,8 @@ export default function PostReplies({
 		deletePreview,
 	} = useReplies(post, seriesId, volumeId);
 
-	const handleSubmit = async (text) => {
-		const ok = await submitReply(text);
+	const handleSubmit = async (text, reviewData, media) => {
+		const ok = await submitReply(text, media);
 		if (ok) onSubmitted();
 		return ok;
 	};

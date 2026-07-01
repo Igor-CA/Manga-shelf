@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
+import createPostRequest from "./createPostRequest";
 
 export const REPLIES_PER_PAGE = 5;
 
@@ -61,8 +62,9 @@ export default function useReplies(post, seriesId, volumeId) {
 		}
 	};
 
-	const submitReply = async (text) => {
+	const submitReply = async (text, media) => {
 		const tempId = `temp-${Date.now()}`;
+		const optimisticImage = media?.image ? URL.createObjectURL(media.image) : null;
 		const optimistic = {
 			_id: tempId,
 			text,
@@ -71,23 +73,34 @@ export default function useReplies(post, seriesId, volumeId) {
 				username: user.username,
 				profileImageUrl: user.profileImageUrl,
 			},
+			image: optimisticImage,
+			isSpoiler: !!media?.isSpoiler,
+			isAdultContent: !!media?.isAdultContent,
 		};
 		setReplies((prev) => (prev ? [...prev, optimistic] : [optimistic]));
 		setReplyCount((prev) => prev + 1);
 		setSubmitting(true);
 
 		try {
-			const res = await axios({
-				method: "POST",
-				withCredentials: true,
-				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-				data: { seriesId, volumeId, text, parentId: post._id },
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post`,
+			const res = await createPostRequest({
+				seriesId,
+				volumeId,
+				text,
+				parentId: post._id,
+				isSpoiler: media?.isSpoiler,
+				isAdultContent: media?.isAdultContent,
+				image: media?.image,
 			});
+			if (optimisticImage) URL.revokeObjectURL(optimisticImage);
 			setReplies((prev) =>
 				prev.map((r) =>
 					r._id === tempId
-						? { ...r, _id: res.data.post._id, createdAt: res.data.post.createdAt }
+						? {
+								...r,
+								_id: res.data.post._id,
+								createdAt: res.data.post.createdAt,
+								image: res.data.post.image,
+							}
 						: r,
 				),
 			);
@@ -95,6 +108,7 @@ export default function useReplies(post, seriesId, volumeId) {
 			addMessage("Resposta publicada");
 			return true;
 		} catch (error) {
+			if (optimisticImage) URL.revokeObjectURL(optimisticImage);
 			setReplies((prev) => prev.filter((r) => r._id !== tempId));
 			setReplyCount((prev) => Math.max(0, prev - 1));
 			addMessage(error.response?.data?.msg || "Erro ao publicar resposta");

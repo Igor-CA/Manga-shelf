@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useId } from "react";
 import RateButton from "../contentHeader/RateButton";
 import CustomToggle from "../customInputs/CustomToggle";
+import { FaImage, FaTimes } from "react-icons/fa";
 import "./PostForm.css";
 import "../contentHeader/contentHeader.css";
 
@@ -14,11 +15,37 @@ export default function PostForm({
 	const [text, setText] = useState(initialValue);
 	const [isReview, setIsReview] = useState(false);
 	const [reviewScore, setReviewScore] = useState(currentScore);
+	const [image, setImage] = useState(null);
+	const [isSpoiler, setIsSpoiler] = useState(false);
+	const [isAdultContent, setIsAdultContent] = useState(false);
+	const [previewUrl, setPreviewUrl] = useState(null);
+	const formId = useId();
+
+	useEffect(() => {
+		if (!image) {
+			setPreviewUrl(null);
+			return;
+		}
+		const url = URL.createObjectURL(image);
+		setPreviewUrl(url);
+		return () => URL.revokeObjectURL(url);
+	}, [image]);
 
 	const handleToggleReview = (e) => {
 		const checked = e.target.checked;
 		setIsReview(checked);
 		if (checked && reviewScore == null) setReviewScore(currentScore);
+	};
+
+	const handleImageChange = (e) => {
+		const file = e.target.files?.[0];
+		if (file) setImage(file);
+		e.target.value = "";
+	};
+
+	const removeImage = () => {
+		setImage(null);
+		setIsAdultContent(false);
 	};
 
 	const submitDisabled =
@@ -31,9 +58,16 @@ export default function PostForm({
 		if (isReview && reviewScore == null) return;
 
 		const reviewData = isReview ? { isReview: true, score: reviewScore } : null;
-		const ok = await onSubmit(trimmed, reviewData);
+		const ok = await onSubmit(trimmed, reviewData, {
+			image,
+			isSpoiler,
+			isAdultContent: image ? isAdultContent : false,
+		});
 		if (ok) {
 			setText("");
+			setImage(null);
+			setIsSpoiler(false);
+			setIsAdultContent(false);
 			if (isReview) {
 				setIsReview(false);
 				setReviewScore(currentScore);
@@ -53,6 +87,45 @@ export default function PostForm({
 				maxLength={5000}
 				className="post-form__textarea"
 			/>
+			{previewUrl && (
+				<div className="post-form__image-preview">
+					<img src={previewUrl} alt="Prévia da imagem" />
+					<button
+						type="button"
+						className="post-form__image-remove"
+						onClick={removeImage}
+						aria-label="Remover imagem"
+					>
+						<FaTimes />
+					</button>
+				</div>
+			)}
+			<div className="post-form__media">
+				<label className="post-form__image-btn">
+					<FaImage aria-hidden="true" />
+					<span>Imagem</span>
+					<input
+						type="file"
+						accept="image/jpeg,image/png,image/webp"
+						onChange={handleImageChange}
+						className="post-form__image-input"
+					/>
+				</label>
+				{image && (
+					<CustomToggle
+						htmlId={`${formId}-adult`}
+						label="Conteúdo adulto"
+						checked={isAdultContent}
+						handleChange={(e) => setIsAdultContent(e.target.checked)}
+					/>
+				)}
+				<CustomToggle
+					htmlId={`${formId}-spoiler`}
+					label="Spoiler"
+					checked={isSpoiler}
+					handleChange={(e) => setIsSpoiler(e.target.checked)}
+				/>
+			</div>
 			<div className="post-form__review-container">
 				{isTopLevel && isReview && (
 					<div className="post-form__review-score">
@@ -73,7 +146,7 @@ export default function PostForm({
 				)}
 				{isTopLevel && (
 					<CustomToggle
-						htmlId="post-review-toggle"
+						htmlId={`${formId}-review`}
 						label="Review"
 						checked={isReview}
 						handleChange={handleToggleReview}

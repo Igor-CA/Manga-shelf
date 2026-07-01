@@ -293,6 +293,18 @@ const postIsReviewValidation = body("isReview")
 	.withMessage("isReview deve ser verdadeiro ou falso.")
 	.toBoolean();
 
+const postIsSpoilerValidation = body("isSpoiler")
+	.optional()
+	.isBoolean()
+	.withMessage("isSpoiler deve ser verdadeiro ou falso.")
+	.toBoolean();
+
+const postIsAdultContentValidation = body("isAdultContent")
+	.optional()
+	.isBoolean()
+	.withMessage("isAdultContent deve ser verdadeiro ou falso.")
+	.toBoolean();
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -324,6 +336,8 @@ const postValidation = [
 	postTextValidation,
 	postParentIdValidation,
 	postIsReviewValidation,
+	postIsSpoilerValidation,
+	postIsAdultContentValidation,
 ];
 
 const ratingValidation = [

@@ -177,6 +177,7 @@ router.delete(
 router.post(
 	"/post",
 	requireAuth,
+	upload.single("image"),
 	postValidation,
 	validateRequest,
 	postController.createPost,

@@ -41,6 +41,18 @@ const PostSchema = new Schema(
 			type: Boolean,
 			default: false,
 		},
+		image: {
+			type: String,
+			default: null,
+		},
+		isSpoiler: {
+			type: Boolean,
+			default: false,
+		},
+		isAdultContent: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{ timestamps: true },
 );

@@ -22,8 +22,10 @@ export default function PostCard({
 	const { user } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
 	const navigate = useNavigate();
-	const { author, text, createdAt, isReview, reviewScore } = post;
+	const { author, text, createdAt, isReview, reviewScore, image, isSpoiler, isAdultContent } =
+		post;
 	const [expanded, setExpanded] = useState(false);
+	const [revealed, setRevealed] = useState(false);
 	const [showReplyForm, setShowReplyForm] = useState(false);
 	const [likeCount, setLikeCount] = useState(post.likeCount ?? 0);
 	const [likedByViewer, setLikedByViewer] = useState(post.likedByViewer ?? false);
@@ -38,6 +40,12 @@ export default function PostCard({
 		month: "long",
 		year: "numeric",
 	});
+
+	const imageSrc = image
+		? image.startsWith("blob:")
+			? image
+			: `${import.meta.env.REACT_APP_HOST_ORIGIN}${image}`
+		: null;
 
 	const handleLike = async () => {
 		if (!user) {
@@ -104,16 +112,40 @@ export default function PostCard({
 				)}
 			</div>
 
-			<p className="post-card__text">
-				<RichText text={shownText} />
-			</p>
-			{isLong && (
+			{isSpoiler && !revealed ? (
 				<button
-					className="post-card__read-more"
-					onClick={() => setExpanded((prev) => !prev)}
+					type="button"
+					className="post-card__spoiler-cover"
+					onClick={() => setRevealed(true)}
 				>
-					{expanded ? "Ler menos" : "Ler mais"}
+					Contém spoiler. Clique para ver
 				</button>
+			) : (
+				<>
+					<p className="post-card__text">
+						<RichText text={shownText} />
+					</p>
+					{isLong && (
+						<button
+							className="post-card__read-more"
+							onClick={() => setExpanded((prev) => !prev)}
+						>
+							{expanded ? "Ler menos" : "Ler mais"}
+						</button>
+					)}
+					{imageSrc ? (
+						<img
+							src={imageSrc}
+							alt=""
+							className="post-card__image"
+							loading="lazy"
+						/>
+					) : isAdultContent ? (
+						<div className="post-card__adult-block">
+							Imagem classificada como +18
+						</div>
+					) : null}
+				</>
 			)}
 			<div className="post-card__footer">
 				<span className="post-card__date">{date}</span>

@@ -7,6 +7,7 @@ import PostCard from "./PostCard";
 import PostForm from "./PostForm";
 import SkeletonPostCard from "./SkeletonPostCard";
 import usePostList, { POSTS_PER_PAGE } from "./usePostList";
+import createPostRequest from "./createPostRequest";
 import "./PostsSection.css";
 
 function renderSkeletons(count) {
@@ -96,26 +97,12 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 			},
 		});
 
-	const reviewPostRequest = (text) =>
-		axios({
-			method: "POST",
-			withCredentials: true,
-			headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-			url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post`,
-			data: {
-				seriesId,
-				...(volumeId ? { volumeId } : {}),
-				text,
-				isReview: true,
-			},
-		});
-
 	const optimisticAuthor = () => ({
 		username: user.username,
 		profileImageUrl: user.profileImageUrl,
 	});
 
-	const submitReview = async (text, score) => {
+	const submitReview = async (text, score, media) => {
 		const prevScore = rating?.manualScore ?? null;
 		const rollbackRating = rating ? rating.applyOptimistic(score) : () => {};
 
@@ -128,6 +115,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 		}
 
 		const tempId = `temp-${Date.now()}`;
+		const optimisticImage = media?.image ? URL.createObjectURL(media.image) : null;
 		reviewList.setPosts((prev) => [
 			{
 				_id: tempId,
@@ -139,12 +127,24 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 				replyCount: 0,
 				createdAt: new Date().toISOString(),
 				author: optimisticAuthor(),
+				image: optimisticImage,
+				isSpoiler: !!media?.isSpoiler,
+				isAdultContent: !!media?.isAdultContent,
 			},
 			...prev,
 		]);
 
 		try {
-			const res = await reviewPostRequest(text);
+			const res = await createPostRequest({
+				seriesId,
+				volumeId,
+				text,
+				isReview: true,
+				isSpoiler: media?.isSpoiler,
+				isAdultContent: media?.isAdultContent,
+				image: media?.image,
+			});
+			if (optimisticImage) URL.revokeObjectURL(optimisticImage);
 			reviewList.setPosts((prev) =>
 				prev.map((p) =>
 					p._id === tempId
@@ -152,6 +152,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 								...p,
 								_id: res.data.post._id,
 								createdAt: res.data.post.createdAt,
+								image: res.data.post.image,
 							}
 						: p,
 				),
@@ -160,6 +161,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 			addMessage("Review publicada");
 			return true;
 		} catch (err) {
+			if (optimisticImage) URL.revokeObjectURL(optimisticImage);
 			reviewList.setPosts((prev) => prev.filter((p) => p._id !== tempId));
 			try {
 				if (prevScore != null) await ratingRequest("POST", prevScore);
@@ -171,8 +173,9 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 		}
 	};
 
-	const submitComment = async (text) => {
+	const submitComment = async (text, media) => {
 		const tempId = `temp-${Date.now()}`;
+		const optimisticImage = media?.image ? URL.createObjectURL(media.image) : null;
 		commentList.setPosts((prev) => [
 			{
 				_id: tempId,
@@ -182,18 +185,23 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 				replyCount: 0,
 				createdAt: new Date().toISOString(),
 				author: optimisticAuthor(),
+				image: optimisticImage,
+				isSpoiler: !!media?.isSpoiler,
+				isAdultContent: !!media?.isAdultContent,
 			},
 			...prev,
 		]);
 
 		try {
-			const res = await axios({
-				method: "POST",
-				withCredentials: true,
-				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post`,
-				data: { seriesId, ...(volumeId ? { volumeId } : {}), text },
+			const res = await createPostRequest({
+				seriesId,
+				volumeId,
+				text,
+				isSpoiler: media?.isSpoiler,
+				isAdultContent: media?.isAdultContent,
+				image: media?.image,
 			});
+			if (optimisticImage) URL.revokeObjectURL(optimisticImage);
 			commentList.setPosts((prev) =>
 				prev.map((p) =>
 					p._id === tempId
@@ -201,6 +209,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 								...p,
 								_id: res.data.post._id,
 								createdAt: res.data.post.createdAt,
+								image: res.data.post.image,
 							}
 						: p,
 				),
@@ -209,19 +218,20 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 			addMessage("Comentário publicado");
 			return true;
 		} catch (err) {
+			if (optimisticImage) URL.revokeObjectURL(optimisticImage);
 			commentList.setPosts((prev) => prev.filter((p) => p._id !== tempId));
 			addMessage(err.response?.data?.msg || "Erro ao publicar comentário");
 			return false;
 		}
 	};
 
-	const handleSubmit = async (text, reviewData) => {
+	const handleSubmit = async (text, reviewData, media) => {
 		setSubmitting(true);
 		try {
 			if (reviewData?.isReview) {
-				return await submitReview(text, reviewData.score);
+				return await submitReview(text, reviewData.score, media);
 			}
-			return await submitComment(text);
+			return await submitComment(text, media);
 		} finally {
 			setSubmitting(false);
 		}

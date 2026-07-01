@@ -8,6 +8,9 @@ const UserNotificationStatus = require("../models/UserNotificationStatus");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
+const path = require("path");
+const fs = require("fs");
+const sharp = require("sharp");
 const { sendNewReplyNotification, sendNewLikeNotification } = require("./notifications");
 
 const POSTS_PER_PAGE = 20;
@@ -37,6 +40,9 @@ const basePostProjection = {
 	author: "$authorInfo",
 	likeCount: { $ifNull: ["$likeCount", 0] },
 	likedByViewer: 1,
+	image: { $ifNull: ["$image", null] },
+	isSpoiler: { $ifNull: ["$isSpoiler", false] },
+	isAdultContent: { $ifNull: ["$isAdultContent", false] },
 };
 
 function makeViewerLikeStages(viewerId) {
@@ -71,6 +77,11 @@ function makeViewerLikeStages(viewerId) {
 		];
 	}
 	return [{ $addFields: { likedByViewer: false } }];
+}
+
+function gateImage(post, viewerAllowsAdult) {
+	if (post.image && post.isAdultContent && !viewerAllowsAdult) post.image = null;
+	return post;
 }
 
 async function resolveReplyTarget(parentId, seriesId, volumeId) {
@@ -116,11 +127,31 @@ async function cleanupPostNotifications(targetIds, session) {
 
 
 exports.createPost = asyncHandler(async (req, res) => {
-	const { seriesId, volumeId, text, parentId, isReview: isReviewFlag } = req.body;
+	const {
+		seriesId,
+		volumeId,
+		text,
+		parentId,
+		isReview: isReviewFlag,
+		isSpoiler: isSpoilerFlag,
+		isAdultContent: isAdultContentFlag,
+	} = req.body;
 
 	const series = await Series.findById(seriesId).select("_id title");
 	if (!series) {
 		return res.status(404).json({ msg: "Obra não encontrada" });
+	}
+
+	let processedImage = null;
+	if (req.file) {
+		try {
+			processedImage = await sharp(req.file.buffer)
+				.rotate()
+				.webp({ quality: 80 })
+				.toBuffer();
+		} catch (err) {
+			return res.status(400).json({ msg: "Imagem inválida" });
+		}
 	}
 
 	if (volumeId) {
@@ -146,6 +177,8 @@ exports.createPost = asyncHandler(async (req, res) => {
 	}
 
 	const isReview = isReviewFlag === true && !parentId;
+	const isSpoiler = isSpoilerFlag === true;
+	const isAdultContent = isAdultContentFlag === true;
 
 	if (isReview) {
 		const rating = await Rating.findOne({
@@ -167,12 +200,24 @@ exports.createPost = asyncHandler(async (req, res) => {
 			text,
 			parent: topLevelParentId,
 			isReview,
+			isSpoiler,
+			isAdultContent,
 		});
 	} catch (err) {
 		if (err.code === 11000 && isReview) {
 			return res.status(409).json({ msg: "Você já avaliou esta obra" });
 		}
 		throw err;
+	}
+
+	if (processedImage) {
+		const folderPath = path.resolve("public/images/posts");
+		if (!fs.existsSync(folderPath)) {
+			fs.mkdirSync(folderPath, { recursive: true });
+		}
+		fs.writeFileSync(path.join(folderPath, `${post._id}.webp`), processedImage);
+		post.image = `/images/posts/${post._id}.webp`;
+		await post.save();
 	}
 
 	if (topLevelParentId) {
@@ -200,6 +245,8 @@ exports.getPosts = asyncHandler(async (req, res) => {
 	if (!mongoose.Types.ObjectId.isValid(seriesId)) {
 		return res.status(400).json({ msg: "ID de obra inválido" });
 	}
+
+	const viewerAllowsAdult = !!req.user?.allowAdult;
 
 	const page = parseInt(req.query.p) || 1;
 	const skip = POSTS_PER_PAGE * (page - 1);
@@ -284,6 +331,11 @@ exports.getPosts = asyncHandler(async (req, res) => {
 		},
 	]);
 
+	posts.forEach((post) => {
+		gateImage(post, viewerAllowsAdult);
+		if (post.replyPreview) gateImage(post.replyPreview, viewerAllowsAdult);
+	});
+
 	res.json(posts);
 });
 
@@ -296,6 +348,8 @@ exports.getReplies = asyncHandler(async (req, res) => {
 	const page = parseInt(req.query.p) || 1;
 	const skip = REPLIES_PER_PAGE * (page - 1);
 
+	const viewerAllowsAdult = !!req.user?.allowAdult;
+
 	const viewerLikeStages = makeViewerLikeStages(req.user ? req.user._id : null);
 
 	const replies = await Post.aggregate([
@@ -307,6 +361,8 @@ exports.getReplies = asyncHandler(async (req, res) => {
 		...viewerLikeStages,
 		{ $project: basePostProjection },
 	]);
+
+	replies.forEach((reply) => gateImage(reply, viewerAllowsAdult));
 
 	res.json(replies);
 });
@@ -391,13 +447,20 @@ exports.deletePost = asyncHandler(async (req, res) => {
 	const session = await mongoose.startSession();
 	session.startTransaction();
 
+	const imagePaths = [];
+	if (post.image) imagePaths.push(post.image);
+
 	try {
 		if (!post.parent) {
 			// Top-level: cascade-delete replies + their new_reply notifications
-			const replies = await Post.find({ parent: post._id }, "_id").session(
-				session,
-			);
+			const replies = await Post.find(
+				{ parent: post._id },
+				"_id image",
+			).session(session);
 			const replyIds = replies.map((r) => r._id);
+			replies.forEach((r) => {
+				if (r.image) imagePaths.push(r.image);
+			});
 
 			await cleanupPostNotifications([post._id, ...replyIds], session);
 
@@ -423,6 +486,18 @@ exports.deletePost = asyncHandler(async (req, res) => {
 		}
 
 		await session.commitTransaction();
+
+		imagePaths.forEach((image) => {
+			const filePath = path.resolve(`public${image}`);
+			if (fs.existsSync(filePath)) {
+				try {
+					fs.unlinkSync(filePath);
+				} catch (err) {
+					console.error("Error deleting post image:", err);
+				}
+			}
+		});
+
 		res.json({ msg: "Comentário removido com sucesso" });
 	} catch (err) {
 		if (session.inTransaction()) await session.abortTransaction();
