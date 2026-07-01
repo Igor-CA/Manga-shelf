@@ -287,6 +287,12 @@ const postParentIdValidation = body("parentId")
 	.isMongoId()
 	.withMessage("ID de comentário pai inválido.");
 
+const postIsReviewValidation = body("isReview")
+	.optional()
+	.isBoolean()
+	.withMessage("isReview deve ser verdadeiro ou falso.")
+	.toBoolean();
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -317,6 +323,7 @@ const postValidation = [
 	postVolumeIdValidation,
 	postTextValidation,
 	postParentIdValidation,
+	postIsReviewValidation,
 ];
 
 const ratingValidation = [

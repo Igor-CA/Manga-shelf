@@ -6,7 +6,7 @@ import PostReplies from "./PostReplies";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import "./PostCard.css";
-import { FaTrash, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaTrash, FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
 
 const READ_MORE_THRESHOLD = 500;
 
@@ -22,7 +22,7 @@ export default function PostCard({
 	const { user } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
 	const navigate = useNavigate();
-	const { author, text, createdAt } = post;
+	const { author, text, createdAt, isReview, reviewScore } = post;
 	const [expanded, setExpanded] = useState(false);
 	const [showReplyForm, setShowReplyForm] = useState(false);
 	const [likeCount, setLikeCount] = useState(post.likeCount ?? 0);
@@ -88,6 +88,12 @@ export default function PostCard({
 					)}
 					<span className="post-card__username">{author.username}</span>
 				</Link>
+				{isReview && reviewScore != null && (
+					<span className="post-card__review-badge">
+						<FaStar aria-hidden="true" />
+						{reviewScore}
+					</span>
+				)}
 				{canDelete && (
 					<button
 						className="button button--red"

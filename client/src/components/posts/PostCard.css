@@ -48,6 +48,16 @@
 	font-weight: 600;
 }
 
+.post-card__review-badge {
+	display: flex;
+	align-items: center;
+	gap: 0.2rem;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--accent);
+	margin-left: auto;
+}
+
 .post-card__delete {
 	background: transparent;
 	border: none;

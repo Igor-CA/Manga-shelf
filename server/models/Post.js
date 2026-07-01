@@ -37,11 +37,19 @@ const PostSchema = new Schema(
 			type: Number,
 			default: 0,
 		},
+		isReview: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{ timestamps: true },
 );
 
 PostSchema.index({ series: 1, volume: 1, createdAt: -1 });
 PostSchema.index({ parent: 1, createdAt: 1 });
+PostSchema.index(
+	{ author: 1, series: 1, volume: 1 },
+	{ unique: true, partialFilterExpression: { isReview: true } },
+);
 
 module.exports = mongoose.model("Post", PostSchema);

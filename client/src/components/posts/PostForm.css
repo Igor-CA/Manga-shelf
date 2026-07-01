@@ -23,6 +23,33 @@
 	outline: none;
 	border-color: var(--text);
 }
+.post-form__review-container {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.post-form__review-container .custom-toggle {
+	margin-left: auto;
+	padding: 1.25rem 0rem;
+}
+.post-form__review-score {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.post-form__review-score-label {
+	font-size: 0.9rem;
+	opacity: 0.8;
+}
+
+.post-form__review-score-hint {
+	font-size: 0.8rem;
+	opacity: 0.6;
+	font-style: italic;
+}
 
 .post-form__actions {
 	display: flex;

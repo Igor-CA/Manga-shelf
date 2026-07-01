@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
@@ -6,98 +6,195 @@ import { usePrompt } from "../../contexts/PromptContext";
 import PostCard from "./PostCard";
 import PostForm from "./PostForm";
 import SkeletonPostCard from "./SkeletonPostCard";
+import usePostList, { POSTS_PER_PAGE } from "./usePostList";
 import "./PostsSection.css";
 
-const POSTS_PER_PAGE = 20;
+function renderSkeletons(count) {
+	return Array.from({ length: count }).map((_, i) => (
+		<SkeletonPostCard key={`skeleton-${i}`} />
+	));
+}
 
-export default function PostsSection({ seriesId, volumeId }) {
+function PostList({
+	list,
+	seriesId,
+	volumeId,
+	user,
+	onDelete,
+	emptyMessage,
+	label,
+}) {
+	const { posts, hasMore, loading, sort, setSort, loadMore } = list;
+
+	return (
+		<div className="posts-section">
+			<h2 className="collection-lable">{label}</h2>
+
+			<div className="posts-section__sort">
+				<button
+					className={`posts-section__sort-btn${sort === "top" ? " posts-section__sort-btn--active" : ""}`}
+					onClick={() => setSort("top")}
+				>
+					Mais curtidos
+				</button>
+				<button
+					className={`posts-section__sort-btn${sort === "recent" ? " posts-section__sort-btn--active" : ""}`}
+					onClick={() => setSort("recent")}
+				>
+					Mais recentes
+				</button>
+			</div>
+
+			{loading && posts.length === 0 ? (
+				<div className="posts-list">{renderSkeletons(POSTS_PER_PAGE)}</div>
+			) : posts.length === 0 ? (
+				<p className="posts-section__empty">{emptyMessage}</p>
+			) : (
+				<div className="posts-list">
+					{posts.map((post) => (
+						<PostCard
+							key={post._id}
+							post={post}
+							canDelete={user && user.username === post.author?.username}
+							onDelete={onDelete}
+							seriesId={seriesId}
+							volumeId={volumeId}
+						/>
+					))}
+					{loading && renderSkeletons(POSTS_PER_PAGE)}
+				</div>
+			)}
+
+			{hasMore && !loading && (
+				<button className="button posts-section__more" onClick={loadMore}>
+					Ver mais
+				</button>
+			)}
+		</div>
+	);
+}
+
+export default function PostsSection({ seriesId, volumeId, rating }) {
 	const { user } = useContext(UserContext);
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const { confirm } = usePrompt();
-	const [posts, setPosts] = useState([]);
-	const [page, setPage] = useState(1);
-	const [hasMore, setHasMore] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [loadingMore, setLoadingMore] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
-	const [sort, setSort] = useState("top");
 
-	const renderSkeletons = (count) =>
-		Array.from({ length: count }).map((_, i) => (
-			<SkeletonPostCard key={`skeleton-${i}`} />
-		));
+	const reviewList = usePostList(seriesId, volumeId, "review", "top");
+	const commentList = usePostList(seriesId, volumeId, "comment", "top");
 
-	const fetchPage = async (pageToFetch, sortValue) => {
-		const params = { seriesId, p: pageToFetch, sort: sortValue };
-		if (volumeId) params.volumeId = volumeId;
-
-		const res = await axios({
-			method: "GET",
+	const ratingRequest = (method, score) =>
+		axios({
+			method,
 			withCredentials: true,
 			headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-			url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/posts`,
-			params,
+			url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/rating`,
+			data: {
+				seriesId,
+				...(volumeId ? { volumeId } : {}),
+				...(score != null ? { score } : {}),
+			},
 		});
-		return res.data;
-	};
 
-	useEffect(() => {
-		let active = true;
-		setLoading(true);
-		fetchPage(1, sort)
-			.then((data) => {
-				if (!active) return;
-				setPosts(data);
-				setPage(1);
-				setHasMore(data.length === POSTS_PER_PAGE);
-			})
-			.catch((error) => console.error(error))
-			.finally(() => active && setLoading(false));
-		return () => {
-			active = false;
-		};
-	}, [seriesId, volumeId, sort]);
+	const reviewPostRequest = (text) =>
+		axios({
+			method: "POST",
+			withCredentials: true,
+			headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+			url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post`,
+			data: {
+				seriesId,
+				...(volumeId ? { volumeId } : {}),
+				text,
+				isReview: true,
+			},
+		});
 
-	const loadMore = async () => {
-		setLoadingMore(true);
+	const optimisticAuthor = () => ({
+		username: user.username,
+		profileImageUrl: user.profileImageUrl,
+	});
+
+	const submitReview = async (text, score) => {
+		const prevScore = rating?.manualScore ?? null;
+		const rollbackRating = rating ? rating.applyOptimistic(score) : () => {};
+
 		try {
-			const next = page + 1;
-			const data = await fetchPage(next, sort);
-			setPosts((prev) => [...prev, ...data]);
-			setPage(next);
-			setHasMore(data.length === POSTS_PER_PAGE);
-		} catch (error) {
-			console.error(error);
-		} finally {
-			setLoadingMore(false);
+			await ratingRequest("POST", score);
+		} catch (err) {
+			rollbackRating();
+			addMessage(err.response?.data?.msg || "Erro ao salvar nota");
+			return false;
+		}
+
+		const tempId = `temp-${Date.now()}`;
+		reviewList.setPosts((prev) => [
+			{
+				_id: tempId,
+				text,
+				isReview: true,
+				reviewScore: score,
+				likeCount: 0,
+				likedByViewer: false,
+				replyCount: 0,
+				createdAt: new Date().toISOString(),
+				author: optimisticAuthor(),
+			},
+			...prev,
+		]);
+
+		try {
+			const res = await reviewPostRequest(text);
+			reviewList.setPosts((prev) =>
+				prev.map((p) =>
+					p._id === tempId
+						? {
+								...p,
+								_id: res.data.post._id,
+								createdAt: res.data.post.createdAt,
+							}
+						: p,
+				),
+			);
+			setMessageType("Success");
+			addMessage("Review publicada");
+			return true;
+		} catch (err) {
+			reviewList.setPosts((prev) => prev.filter((p) => p._id !== tempId));
+			try {
+				if (prevScore != null) await ratingRequest("POST", prevScore);
+				else await ratingRequest("DELETE", null);
+			} catch {}
+			rollbackRating();
+			addMessage(err.response?.data?.msg || "Erro ao publicar review");
+			return false;
 		}
 	};
 
-	const handleSubmit = async (text) => {
+	const submitComment = async (text) => {
 		const tempId = `temp-${Date.now()}`;
-		const optimistic = {
-			_id: tempId,
-			text,
-			likeCount: 0,
-			likedByViewer: false,
-			createdAt: new Date().toISOString(),
-			author: {
-				username: user.username,
-				profileImageUrl: user.profileImageUrl,
+		commentList.setPosts((prev) => [
+			{
+				_id: tempId,
+				text,
+				likeCount: 0,
+				likedByViewer: false,
+				replyCount: 0,
+				createdAt: new Date().toISOString(),
+				author: optimisticAuthor(),
 			},
-		};
-		setPosts((prev) => [optimistic, ...prev]);
-		setSubmitting(true);
+			...prev,
+		]);
 
 		try {
 			const res = await axios({
 				method: "POST",
 				withCredentials: true,
 				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-				data: { seriesId, volumeId, text },
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post`,
+				data: { seriesId, ...(volumeId ? { volumeId } : {}), text },
 			});
-			setPosts((prev) =>
+			commentList.setPosts((prev) =>
 				prev.map((p) =>
 					p._id === tempId
 						? {
@@ -111,95 +208,91 @@ export default function PostsSection({ seriesId, volumeId }) {
 			setMessageType("Success");
 			addMessage("Comentário publicado");
 			return true;
-		} catch (error) {
-			setPosts((prev) => prev.filter((p) => p._id !== tempId));
-			addMessage(error.response?.data?.msg || "Erro ao publicar comentário");
+		} catch (err) {
+			commentList.setPosts((prev) => prev.filter((p) => p._id !== tempId));
+			addMessage(err.response?.data?.msg || "Erro ao publicar comentário");
 			return false;
+		}
+	};
+
+	const handleSubmit = async (text, reviewData) => {
+		setSubmitting(true);
+		try {
+			if (reviewData?.isReview) {
+				return await submitReview(text, reviewData.score);
+			}
+			return await submitComment(text);
 		} finally {
 			setSubmitting(false);
 		}
 	};
 
-	const deletePost = async (postId) => {
-		const previous = posts;
-		setPosts((prev) => prev.filter((p) => p._id !== postId));
-		try {
-			await axios({
-				method: "DELETE",
-				withCredentials: true,
-				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post/${postId}`,
+	const makeDeleteHandler =
+		(list, { confirmText, successText, errorNoun }) =>
+		(postId) => {
+			confirm(confirmText, async () => {
+				const previous = list.posts;
+				list.setPosts((prev) => prev.filter((p) => p._id !== postId));
+				try {
+					await axios({
+						method: "DELETE",
+						withCredentials: true,
+						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+						url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post/${postId}`,
+					});
+					setMessageType("Success");
+					addMessage(successText);
+				} catch (err) {
+					list.setPosts(previous);
+					addMessage(err.response?.data?.msg || `Erro ao remover ${errorNoun}`);
+				}
 			});
-			setMessageType("Success");
-			addMessage("Comentário removido");
-		} catch (error) {
-			setPosts(previous);
-			addMessage(error.response?.data?.msg || "Erro ao remover comentário");
-		}
-	};
-
-	const handleDelete = (postId) => {
-		confirm("Tem certeza que deseja excluir seu comentário?", () =>
-			deletePost(postId),
-		);
-	};
+		};
 
 	return (
 		<div className="container">
 			<div className="content-overall__container">
 				<div className="overall-content__container">
 					<hr style={{ margin: "0px 10px" }} />
-					<h2 className="collection-lable">Comentários</h2>
-					<div className="posts-section">
-						{user && (
-							<PostForm onSubmit={handleSubmit} submitting={submitting} />
-						)}
 
-						<div className="posts-section__sort">
-							<button
-								className={`posts-section__sort-btn${sort === "top" ? " posts-section__sort-btn--active" : ""}`}
-								onClick={() => setSort("top")}
-							>
-								Mais curtidos
-							</button>
-							<button
-								className={`posts-section__sort-btn${sort === "recent" ? " posts-section__sort-btn--active" : ""}`}
-								onClick={() => setSort("recent")}
-							>
-								Mais recentes
-							</button>
+					{user && (
+						<div style={{ padding: "0 10px" }}>
+							<PostForm
+								isTopLevel
+								onSubmit={handleSubmit}
+								submitting={submitting}
+								currentScore={rating?.manualScore ?? null}
+							/>
 						</div>
+					)}
 
-						{loading ? (
-							<div className="posts-list">
-								{renderSkeletons(POSTS_PER_PAGE)}
-							</div>
-						) : posts.length === 0 ? (
-							<p className="posts-section__empty">
-								Nenhum comentário ainda. Seja o primeiro a comentar!
-							</p>
-						) : (
-							<div className="posts-list">
-								{posts.map((post) => (
-									<PostCard
-										key={post._id}
-										post={post}
-										canDelete={user && user.username === post.author?.username}
-										onDelete={handleDelete}
-										seriesId={seriesId}
-										volumeId={volumeId}
-									/>
-								))}
-								{loadingMore && renderSkeletons(POSTS_PER_PAGE)}
-							</div>
-						)}
+					<PostList
+						list={reviewList}
+						seriesId={seriesId}
+						volumeId={volumeId}
+						user={user}
+						onDelete={makeDeleteHandler(reviewList, {
+							confirmText: "Tem certeza que deseja excluir sua review?",
+							successText: "Review removida",
+							errorNoun: "review",
+						})}
+						label="Reviews"
+						emptyMessage="Nenhuma review ainda."
+					/>
 
-						{hasMore && !loadingMore && (
-							<button className="button posts-section__more" onClick={loadMore}>
-								Ver mais
-							</button>
-						)}
-					</div>
+					<PostList
+						list={commentList}
+						seriesId={seriesId}
+						volumeId={volumeId}
+						user={user}
+						onDelete={makeDeleteHandler(commentList, {
+							confirmText: "Tem certeza que deseja excluir seu comentário?",
+							successText: "Comentário removido",
+							errorNoun: "comentário",
+						})}
+						label="Comentários"
+						emptyMessage="Nenhum comentário ainda. Seja o primeiro a comentar!"
+					/>
 				</div>
 			</div>
 		</div>

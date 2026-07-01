@@ -1,5 +1,6 @@
 const Post = require("../models/Post");
 const Like = require("../models/Like");
+const Rating = require("../models/Rating");
 const Series = require("../models/Series");
 const Volume = require("../models/volume");
 const Notification = require("../models/Notification");
@@ -115,7 +116,7 @@ async function cleanupPostNotifications(targetIds, session) {
 
 
 exports.createPost = asyncHandler(async (req, res) => {
-	const { seriesId, volumeId, text, parentId } = req.body;
+	const { seriesId, volumeId, text, parentId, isReview: isReviewFlag } = req.body;
 
 	const series = await Series.findById(seriesId).select("_id title");
 	if (!series) {
@@ -144,13 +145,35 @@ exports.createPost = asyncHandler(async (req, res) => {
 		({ topLevelParentId, notifyRecipientId } = resolved);
 	}
 
-	const post = await Post.create({
-		author: req.user._id,
-		series: seriesId,
-		volume: volumeId || null,
-		text,
-		parent: topLevelParentId,
-	});
+	const isReview = isReviewFlag === true && !parentId;
+
+	if (isReview) {
+		const rating = await Rating.findOne({
+			user: req.user._id,
+			series: seriesId,
+			volume: volumeId || null,
+		});
+		if (!rating) {
+			return res.status(400).json({ msg: "Avalie a obra antes de publicar uma review" });
+		}
+	}
+
+	let post;
+	try {
+		post = await Post.create({
+			author: req.user._id,
+			series: seriesId,
+			volume: volumeId || null,
+			text,
+			parent: topLevelParentId,
+			isReview,
+		});
+	} catch (err) {
+		if (err.code === 11000 && isReview) {
+			return res.status(409).json({ msg: "Você já avaliou esta obra" });
+		}
+		throw err;
+	}
 
 	if (topLevelParentId) {
 		await Post.findByIdAndUpdate(topLevelParentId, { $inc: { replyCount: 1 } });
@@ -168,11 +191,12 @@ exports.createPost = asyncHandler(async (req, res) => {
 		}
 	}
 
-	res.status(201).json({ msg: "Comentário publicado com sucesso", post });
+	const msg = isReview ? "Review publicada com sucesso" : "Comentário publicado com sucesso";
+	res.status(201).json({ msg, post });
 });
 
 exports.getPosts = asyncHandler(async (req, res) => {
-	const { seriesId, volumeId, sort } = req.query;
+	const { seriesId, volumeId, sort, type } = req.query;
 	if (!mongoose.Types.ObjectId.isValid(seriesId)) {
 		return res.status(400).json({ msg: "ID de obra inválido" });
 	}
@@ -184,22 +208,57 @@ exports.getPosts = asyncHandler(async (req, res) => {
 		? { createdAt: -1 }
 		: { likeCount: -1, createdAt: -1 };
 
+	const isReviewType = type === "review";
 	const viewerId = req.user ? req.user._id : null;
 	const viewerLikeStages = makeViewerLikeStages(viewerId);
 
-	const posts = await Post.aggregate([
+	const matchStage = {
+		series: new mongoose.Types.ObjectId(seriesId),
+		volume: volumeId ? new mongoose.Types.ObjectId(volumeId) : null,
+		parent: null,
+		...(isReviewType ? { isReview: true } : { isReview: { $ne: true } }),
+	};
+
+	const ratingLookupStages = isReviewType ? [
 		{
-			$match: {
-				series: new mongoose.Types.ObjectId(seriesId),
-				volume: volumeId ? new mongoose.Types.ObjectId(volumeId) : null,
-				parent: null,
+			$lookup: {
+				from: "ratings",
+				let: { author: "$author", series: "$series", volume: "$volume" },
+				pipeline: [
+					{
+						$match: {
+							$expr: {
+								$and: [
+									{ $eq: ["$user", "$$author"] },
+									{ $eq: ["$series", "$$series"] },
+									{ $eq: ["$volume", "$$volume"] },
+								],
+							},
+						},
+					},
+					{ $limit: 1 },
+				],
+				as: "ratingArr",
 			},
 		},
+		{
+			$addFields: {
+				reviewScore: { $arrayElemAt: ["$ratingArr.score", 0] },
+			},
+		},
+		{ $unset: "ratingArr" },
+	] : [];
+
+	const reviewProjection = isReviewType ? { isReview: 1, reviewScore: 1 } : {};
+
+	const posts = await Post.aggregate([
+		{ $match: matchStage },
 		{ $sort: sortStage },
 		{ $skip: skip },
 		{ $limit: POSTS_PER_PAGE },
 		...attachAuthorStages,
 		...viewerLikeStages,
+		...ratingLookupStages,
 		{
 			$lookup: {
 				from: "posts",
@@ -218,6 +277,7 @@ exports.getPosts = asyncHandler(async (req, res) => {
 		{
 			$project: {
 				...basePostProjection,
+				...reviewProjection,
 				replyCount: 1,
 				replyPreview: { $arrayElemAt: ["$replyPreviewArr", 0] },
 			},
