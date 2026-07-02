@@ -1,7 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const upload = require("../middlewares/uploadMiddleware"); 
+const upload = require("../middlewares/uploadMiddleware");
+
+const uploadImage = (req, res, next) => {
+	upload.single("image")(req, res, (err) => {
+		if (err) {
+			const msg =
+				err.code === "LIMIT_FILE_SIZE"
+					? "A imagem excede o tamanho máximo permitido."
+					: err.message || "Erro ao enviar a imagem.";
+			return res.status(400).json({ msg });
+		}
+		next();
+	});
+};
 
 const {
 	authController,
@@ -177,7 +190,7 @@ router.delete(
 router.post(
 	"/post",
 	requireAuth,
-	upload.single("image"),
+	uploadImage,
 	postValidation,
 	validateRequest,
 	postController.createPost,
