@@ -305,6 +305,12 @@ const postIsAdultContentValidation = body("isAdultContent")
 	.withMessage("isAdultContent deve ser verdadeiro ou falso.")
 	.toBoolean();
 
+const postRemoveImageValidation = body("removeImage")
+	.optional()
+	.isBoolean()
+	.withMessage("removeImage deve ser verdadeiro ou falso.")
+	.toBoolean();
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -338,6 +344,7 @@ const postValidation = [
 	postIsReviewValidation,
 	postIsSpoilerValidation,
 	postIsAdultContentValidation,
+	postRemoveImageValidation,
 ];
 
 const ratingValidation = [

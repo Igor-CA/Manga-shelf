@@ -3,6 +3,7 @@ import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import createPostRequest from "./createPostRequest";
+import editPostRequest from "./editPostRequest";
 
 export const REPLIES_PER_PAGE = 5;
 
@@ -118,6 +119,71 @@ export default function useReplies(post, seriesId, volumeId) {
 		}
 	};
 
+	const editReply = async (replyId, patch) => {
+		const target = replies?.find((r) => r._id === replyId);
+		if (!target) return false;
+
+		const hadImage = !!target.image;
+		const isNewFile = patch.image instanceof File;
+		const removeImage = !isNewFile && patch.image === null && hadImage;
+		const optimisticImage = isNewFile
+			? URL.createObjectURL(patch.image)
+			: removeImage
+				? null
+				: target.image;
+
+		setReplies((prev) =>
+			prev.map((r) =>
+				r._id === replyId
+					? {
+							...r,
+							text: patch.text,
+							isSpoiler: patch.isSpoiler,
+							isAdultContent: patch.isAdultContent,
+							image: optimisticImage,
+							editedAt: new Date().toISOString(),
+						}
+					: r,
+			),
+		);
+
+		try {
+			const res = await editPostRequest({
+				postId: replyId,
+				seriesId,
+				volumeId,
+				text: patch.text,
+				isSpoiler: patch.isSpoiler,
+				isAdultContent: patch.isAdultContent,
+				image: isNewFile ? patch.image : null,
+				removeImage,
+			});
+			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
+			setReplies((prev) =>
+				prev.map((r) =>
+					r._id === replyId
+						? {
+								...r,
+								text: res.data.post.text,
+								image: res.data.post.image,
+								isSpoiler: res.data.post.isSpoiler,
+								isAdultContent: res.data.post.isAdultContent,
+								editedAt: res.data.post.editedAt,
+							}
+						: r,
+				),
+			);
+			setMessageType("Success");
+			addMessage("Alterações salvas");
+			return true;
+		} catch (error) {
+			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
+			setReplies((prev) => prev.map((r) => (r._id === replyId ? target : r)));
+			addMessage(error.response?.data?.msg || "Erro ao salvar alterações");
+			return false;
+		}
+	};
+
 	const deleteFromServer = async (replyId) => {
 		await axios({
 			method: "DELETE",
@@ -166,6 +232,7 @@ export default function useReplies(post, seriesId, volumeId) {
 		collapse,
 		loadMore,
 		submitReply,
+		editReply,
 		deleteReply,
 		deletePreview,
 	};

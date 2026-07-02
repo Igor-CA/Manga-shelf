@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import RichText from "../RichText";
 import PostReplies from "./PostReplies";
+import PostForm from "./PostForm";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import "./PostCard.css";
@@ -13,6 +14,7 @@ import {
 	FaStar,
 	FaEllipsisH,
 	FaReply,
+	FaPen,
 } from "react-icons/fa";
 
 const READ_MORE_THRESHOLD = 500;
@@ -21,6 +23,7 @@ export default function PostCard({
 	post,
 	canDelete,
 	onDelete,
+	onEdit,
 	seriesId,
 	volumeId,
 	isReply = false,
@@ -29,8 +32,17 @@ export default function PostCard({
 	const { user } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
 	const navigate = useNavigate();
-	const { author, text, createdAt, isReview, reviewScore, image, isSpoiler, isAdultContent } =
-		post;
+	const {
+		author,
+		text,
+		createdAt,
+		editedAt,
+		isReview,
+		reviewScore,
+		image,
+		isSpoiler,
+		isAdultContent,
+	} = post;
 	const [expanded, setExpanded] = useState(false);
 	const [revealed, setRevealed] = useState(false);
 	const [showReplyForm, setShowReplyForm] = useState(false);
@@ -38,6 +50,8 @@ export default function PostCard({
 	const [likedByViewer, setLikedByViewer] = useState(post.likedByViewer ?? false);
 	const [liking, setLiking] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [editing, setEditing] = useState(false);
+	const [editSubmitting, setEditSubmitting] = useState(false);
 	const menuRef = useRef(null);
 
 	useEffect(() => {
@@ -56,6 +70,14 @@ export default function PostCard({
 
 	const menuActions = [];
 	if (canDelete) {
+		if (onEdit) {
+			menuActions.push({
+				key: "edit",
+				label: "Editar",
+				icon: <FaPen aria-hidden="true" />,
+				onClick: () => setEditing(true),
+			});
+		}
 		menuActions.push({
 			key: "delete",
 			label: "Excluir",
@@ -64,6 +86,22 @@ export default function PostCard({
 			onClick: () => onDelete(post._id),
 		});
 	}
+
+	const handleEditSubmit = async ({ text: newText, isSpoiler: newIsSpoiler, isAdultContent: newIsAdultContent, image: newImage }) => {
+		setEditSubmitting(true);
+		try {
+			const ok = await onEdit(post._id, {
+				text: newText,
+				isSpoiler: newIsSpoiler,
+				isAdultContent: newIsAdultContent,
+				image: newImage,
+			});
+			if (ok) setEditing(false);
+			return ok;
+		} finally {
+			setEditSubmitting(false);
+		}
+	};
 
 	const isLong = text.length > READ_MORE_THRESHOLD;
 	const shownText =
@@ -75,10 +113,15 @@ export default function PostCard({
 		year: "numeric",
 	});
 
-	const imageSrc = image
-		? image.startsWith("blob:")
-			? image
-			: `${import.meta.env.REACT_APP_HOST_ORIGIN}${image}`
+	const bustedImage =
+		image && !image.startsWith("blob:") && editedAt
+			? `${image}?t=${new Date(editedAt).getTime()}`
+			: image;
+
+	const imageSrc = bustedImage
+		? bustedImage.startsWith("blob:")
+			? bustedImage
+			: `${import.meta.env.REACT_APP_HOST_ORIGIN}${bustedImage}`
 		: null;
 
 	const handleLike = async () => {
@@ -147,7 +190,10 @@ export default function PostCard({
 							</span>
 						)}
 					</div>
-					<span className="post-card__date">{date}</span>
+					<span className="post-card__date">
+						{date}
+						{editedAt && <span className="post-card__edited"> · editado</span>}
+					</span>
 				</div>
 				<div className="post-card__header-right">
 					{menuActions.length > 0 && (
@@ -187,7 +233,19 @@ export default function PostCard({
 				</div>
 			</div>
 
-			{isSpoiler && !revealed ? (
+			{editing ? (
+				<PostForm
+					isEdit
+					isTopLevel={false}
+					initialValue={text}
+					initialIsSpoiler={isSpoiler}
+					initialIsAdultContent={isAdultContent}
+					initialImage={bustedImage}
+					submitting={editSubmitting}
+					onSubmit={handleEditSubmit}
+					onCancel={() => setEditing(false)}
+				/>
+			) : isSpoiler && !revealed ? (
 				<button
 					type="button"
 					className="post-card__spoiler-cover"

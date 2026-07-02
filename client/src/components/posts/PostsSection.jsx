@@ -9,6 +9,7 @@ import PostForm from "./PostForm";
 import SkeletonPostCard from "./SkeletonPostCard";
 import usePostList, { POSTS_PER_PAGE } from "./usePostList";
 import createPostRequest from "./createPostRequest";
+import editPostRequest from "./editPostRequest";
 import "./PostsSection.css";
 
 function renderSkeletons(count) {
@@ -23,6 +24,7 @@ function PostList({
 	volumeId,
 	user,
 	onDelete,
+	onEdit,
 	emptyMessage,
 	label,
 	icon,
@@ -71,6 +73,7 @@ function PostList({
 							post={post}
 							canDelete={user && user.username === post.author?.username}
 							onDelete={onDelete}
+							onEdit={onEdit}
 							seriesId={seriesId}
 							volumeId={volumeId}
 						/>
@@ -250,6 +253,71 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 		}
 	};
 
+	const makeEditHandler = (list) => async (postId, patch) => {
+		const target = list.posts.find((p) => p._id === postId);
+		if (!target) return false;
+
+		const hadImage = !!target.image;
+		const isNewFile = patch.image instanceof File;
+		const removeImage = !isNewFile && patch.image === null && hadImage;
+		const optimisticImage = isNewFile
+			? URL.createObjectURL(patch.image)
+			: removeImage
+				? null
+				: target.image;
+
+		list.setPosts((prev) =>
+			prev.map((p) =>
+				p._id === postId
+					? {
+							...p,
+							text: patch.text,
+							isSpoiler: patch.isSpoiler,
+							isAdultContent: patch.isAdultContent,
+							image: optimisticImage,
+							editedAt: new Date().toISOString(),
+						}
+					: p,
+			),
+		);
+
+		try {
+			const res = await editPostRequest({
+				postId,
+				seriesId,
+				volumeId,
+				text: patch.text,
+				isSpoiler: patch.isSpoiler,
+				isAdultContent: patch.isAdultContent,
+				image: isNewFile ? patch.image : null,
+				removeImage,
+			});
+			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
+			list.setPosts((prev) =>
+				prev.map((p) =>
+					p._id === postId
+						? {
+								...p,
+								text: res.data.post.text,
+								image: res.data.post.image,
+								isSpoiler: res.data.post.isSpoiler,
+								isAdultContent: res.data.post.isAdultContent,
+								editedAt: res.data.post.editedAt,
+							}
+						: p,
+				),
+			);
+			setMessageType("Success");
+			addMessage("Alterações salvas");
+			return true;
+		} catch (err) {
+			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
+			list.setPosts((prev) => prev.map((p) => (p._id === postId ? target : p)));
+			addMessage(err.response?.data?.msg || "Erro ao salvar alterações");
+			return false;
+		}
+	};
+
 	const makeDeleteHandler =
 		(list, { confirmText, successText, errorNoun }) =>
 		(postId) => {
@@ -298,6 +366,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 							successText: "Review removida",
 							errorNoun: "review",
 						})}
+						onEdit={makeEditHandler(reviewList)}
 						label="Reviews"
 						icon={<FaStar aria-hidden="true" />}
 						emptyMessage="Nenhuma review ainda."
@@ -313,6 +382,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 							successText: "Comentário removido",
 							errorNoun: "comentário",
 						})}
+						onEdit={makeEditHandler(commentList)}
 						label="Comentários"
 						icon={<FaRegCommentAlt aria-hidden="true" />}
 						emptyMessage="Nenhum comentário ainda. Seja o primeiro a comentar!"

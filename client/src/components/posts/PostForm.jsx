@@ -27,28 +27,39 @@ export default function PostForm({
 	initialValue = "",
 	isTopLevel = false,
 	onCancel,
+	isEdit = false,
+	initialIsSpoiler = false,
+	initialIsAdultContent = false,
+	initialImage = null,
 }) {
 	const { user } = useContext(UserContext);
 	const [text, setText] = useState(initialValue);
 	const [reviewScore, setReviewScore] = useState(null);
-	const [image, setImage] = useState(null);
-	const [isSpoiler, setIsSpoiler] = useState(false);
-	const [isAdultContent, setIsAdultContent] = useState(false);
+	const [image, setImage] = useState(
+		isEdit && initialImage ? { existing: initialImage } : null,
+	);
+	const [isSpoiler, setIsSpoiler] = useState(isEdit ? !!initialIsSpoiler : false);
+	const [isAdultContent, setIsAdultContent] = useState(
+		isEdit ? !!initialIsAdultContent : false,
+	);
 	const [previewUrl, setPreviewUrl] = useState(null);
 
-	const [expanded, setExpanded] = useState(!isTopLevel);
+	const [expanded, setExpanded] = useState(isEdit || !isTopLevel);
 	const textareaRef = useRef(null);
 
-	const isReview = isTopLevel && reviewScore != null;
+	const isReview = !isEdit && isTopLevel && reviewScore != null;
 
 	useEffect(() => {
 		if (!image) {
 			setPreviewUrl(null);
 			return;
 		}
-		const url = URL.createObjectURL(image);
-		setPreviewUrl(url);
-		return () => URL.revokeObjectURL(url);
+		if (image instanceof File) {
+			const url = URL.createObjectURL(image);
+			setPreviewUrl(url);
+			return () => URL.revokeObjectURL(url);
+		}
+		setPreviewUrl(`${import.meta.env.REACT_APP_HOST_ORIGIN}${image.existing}`);
 	}, [image]);
 
 	useEffect(() => {
@@ -81,6 +92,16 @@ export default function PostForm({
 		e.preventDefault();
 		const trimmed = text.trim();
 		if (!trimmed) return;
+
+		if (isEdit) {
+			await onSubmit({
+				text: trimmed,
+				isSpoiler,
+				isAdultContent: image ? isAdultContent : false,
+				image,
+			});
+			return;
+		}
 
 		const reviewData = isReview ? { isReview: true, score: reviewScore } : null;
 		const ok = await onSubmit(trimmed, reviewData, {
@@ -164,7 +185,9 @@ export default function PostForm({
 						className="post-form__image-thumb"
 					/>
 					<div className="post-form__image-meta">
-						<span className="post-form__image-name">{image?.name}</span>
+						<span className="post-form__image-name">
+							{image instanceof File ? image.name : "Imagem atual"}
+						</span>
 						<button
 							type="button"
 							className="post-form__image-remove"
@@ -203,7 +226,7 @@ export default function PostForm({
 				>
 					Spoiler
 				</PillToggle>
-				{isTopLevel && (
+				{isTopLevel && !isEdit && (
 					<div className="post-form__rate">
 						<RateButton
 							myScore={reviewScore}
@@ -219,11 +242,15 @@ export default function PostForm({
 					disabled={submitDisabled}
 					className="button post-form__submit"
 				>
-					{submitting
-						? "Publicando..."
-						: isReview
-							? "Publicar review"
-							: "Comentar"}
+					{isEdit
+						? submitting
+							? "Salvando..."
+							: "Salvar"
+						: submitting
+							? "Publicando..."
+							: isReview
+								? "Publicar review"
+								: "Comentar"}
 				</button>
 			</div>
 		</form>

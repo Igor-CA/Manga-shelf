@@ -43,6 +43,7 @@ const basePostProjection = {
 	image: { $ifNull: ["$image", null] },
 	isSpoiler: { $ifNull: ["$isSpoiler", false] },
 	isAdultContent: { $ifNull: ["$isAdultContent", false] },
+	editedAt: { $ifNull: ["$editedAt", null] },
 };
 
 function makeViewerLikeStages(viewerId) {
@@ -238,6 +239,69 @@ exports.createPost = asyncHandler(async (req, res) => {
 
 	const msg = isReview ? "Review publicada com sucesso" : "Comentário publicado com sucesso";
 	res.status(201).json({ msg, post });
+});
+
+exports.editPost = asyncHandler(async (req, res) => {
+	const postId = req.params.id;
+	if (!mongoose.Types.ObjectId.isValid(postId)) {
+		return res.status(400).json({ msg: "ID de comentário inválido" });
+	}
+
+	const post = await Post.findById(postId);
+	if (!post) {
+		return res.status(404).json({ msg: "Comentário não encontrado" });
+	}
+
+	if (post.author.toString() !== req.user._id.toString()) {
+		return res.status(403).json({ msg: "Não autorizado" });
+	}
+
+	const {
+		text,
+		isSpoiler: isSpoilerFlag,
+		isAdultContent: isAdultContentFlag,
+		removeImage,
+	} = req.body;
+
+	let processedImage = null;
+	if (req.file) {
+		try {
+			processedImage = await sharp(req.file.buffer)
+				.rotate()
+				.webp({ quality: 80 })
+				.toBuffer();
+		} catch (err) {
+			return res.status(400).json({ msg: "Imagem inválida" });
+		}
+	}
+
+	post.text = text;
+	post.isSpoiler = isSpoilerFlag === true;
+	post.isAdultContent = isAdultContentFlag === true;
+
+	if (processedImage) {
+		const folderPath = path.resolve("public/images/posts");
+		if (!fs.existsSync(folderPath)) {
+			fs.mkdirSync(folderPath, { recursive: true });
+		}
+		fs.writeFileSync(path.join(folderPath, `${post._id}.webp`), processedImage);
+		post.image = `/images/posts/${post._id}.webp`;
+	} else if (removeImage && post.image) {
+		const filePath = path.resolve(`public${post.image}`);
+		if (fs.existsSync(filePath)) {
+			try {
+				fs.unlinkSync(filePath);
+			} catch (err) {
+				console.error("Error deleting post image:", err);
+			}
+		}
+		post.image = null;
+	}
+
+	post.editedAt = new Date();
+	await post.save();
+
+	res.json({ msg: "Comentário atualizado com sucesso", post });
 });
 
 exports.getPosts = asyncHandler(async (req, res) => {

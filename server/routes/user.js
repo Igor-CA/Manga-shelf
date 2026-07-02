@@ -195,6 +195,14 @@ router.post(
 	validateRequest,
 	postController.createPost,
 );
+router.patch(
+	"/post/:id",
+	requireAuth,
+	uploadImage,
+	postValidation,
+	validateRequest,
+	postController.editPost,
+);
 router.delete("/post/:id", requireAuth, postController.deletePost);
 router.post("/post/:id/like", requireAuth, postController.likePost);
 router.delete("/post/:id/like", requireAuth, postController.unlikePost);

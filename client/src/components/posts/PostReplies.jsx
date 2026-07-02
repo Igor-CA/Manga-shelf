@@ -27,6 +27,7 @@ export default function PostReplies({
 		collapse,
 		loadMore,
 		submitReply,
+		editReply,
 		deleteReply,
 		deletePreview,
 	} = useReplies(post, seriesId, volumeId);
@@ -70,6 +71,7 @@ export default function PostReplies({
 								post={reply}
 								canDelete={ownsReply(reply)}
 								onDelete={(id) => confirmDelete(id, deleteReply)}
+								onEdit={editReply}
 								isReply={true}
 							/>
 						))}
