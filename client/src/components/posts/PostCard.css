@@ -10,21 +10,27 @@
 
 .post-card__header {
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	align-items: flex-start;
 	gap: 0.5rem;
 }
 
-.post-card__user {
+.post-card__avatar-link {
+	display: flex;
+	flex-shrink: 0;
+}
+
+.post-card__user-info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-width: 0;
+}
+
+.post-card__user-line {
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
-	text-decoration: none;
-	color: var(--text);
-}
-
-.post-card__user:hover {
-	opacity: 0.8;
+	gap: 0.4rem;
+	flex-wrap: wrap;
 }
 
 .post-card__avatar {
@@ -46,6 +52,19 @@
 
 .post-card__username {
 	font-weight: 600;
+	text-decoration: none;
+	color: var(--text);
+}
+
+.post-card__username:hover {
+	text-decoration: underline;
+}
+
+.post-card__header-right {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-left: auto;
 }
 
 .post-card__review-badge {
@@ -55,7 +74,64 @@
 	font-size: 1rem;
 	font-weight: 600;
 	color: var(--accent);
-	margin-left: auto;
+}
+
+.post-card__menu {
+	position: relative;
+	display: flex;
+}
+
+.post-card__menu-btn {
+	background: transparent;
+	border: none;
+	color: var(--text);
+	opacity: 0.6;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	padding: 0.35rem;
+	border-radius: 0.25rem;
+}
+
+.post-card__menu-btn:hover {
+	opacity: 1;
+}
+
+.post-card__menu-list {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	z-index: 5;
+	margin: 0.25rem 0 0;
+	padding: 0.25rem;
+	list-style: none;
+	min-width: 10rem;
+	background-color: var(--foreground);
+	border-radius: 0.5rem;
+	box-shadow: var(--box-shadow);
+}
+
+.post-card__menu-item {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	width: 100%;
+	background: transparent;
+	border: none;
+	color: var(--text);
+	font-size: 0.9rem;
+	text-align: left;
+	cursor: pointer;
+	padding: 0.5rem 0.6rem;
+	border-radius: 0.25rem;
+}
+
+.post-card__menu-item:hover {
+	background-color: var(--background);
+}
+
+.post-card__menu-item--danger {
+	color: var(--red);
 }
 
 .post-card__delete {
@@ -145,14 +221,8 @@
 .post-card__footer {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 0.5rem;
-}
-
-.post-card__footer-actions {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
+	gap: 1rem;
+	justify-content: flex-end;
 }
 
 .post-card__like-btn {
@@ -183,6 +253,9 @@
 }
 
 .post-card__reply-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
 	background: transparent;
 	border: none;
 	color: var(--text);
@@ -190,9 +263,11 @@
 	font-weight: 600;
 	cursor: pointer;
 	padding: 0.25rem 0.5rem;
+	opacity: 0.7;
 }
 
 .post-card__reply-btn:hover {
+	opacity: 1;
 	text-decoration: underline;
 }
 
@@ -280,5 +355,9 @@
 @media (min-width: 768px) {
 	.post-card--reply {
 		margin-left: 1.5rem;
+	}
+
+	.post-card__footer {
+		justify-content: flex-start;
 	}
 }

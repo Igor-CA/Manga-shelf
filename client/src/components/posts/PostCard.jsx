@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import RichText from "../RichText";
@@ -6,7 +6,14 @@ import PostReplies from "./PostReplies";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import "./PostCard.css";
-import { FaTrash, FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
+import {
+	FaTrash,
+	FaHeart,
+	FaRegHeart,
+	FaStar,
+	FaEllipsisH,
+	FaReply,
+} from "react-icons/fa";
 
 const READ_MORE_THRESHOLD = 500;
 
@@ -30,6 +37,33 @@ export default function PostCard({
 	const [likeCount, setLikeCount] = useState(post.likeCount ?? 0);
 	const [likedByViewer, setLikedByViewer] = useState(post.likedByViewer ?? false);
 	const [liking, setLiking] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
+	const menuRef = useRef(null);
+
+	useEffect(() => {
+		if (!menuOpen) return;
+		const onDocClick = (e) => {
+			if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+		};
+		const onKey = (e) => e.key === "Escape" && setMenuOpen(false);
+		document.addEventListener("mousedown", onDocClick);
+		document.addEventListener("keydown", onKey);
+		return () => {
+			document.removeEventListener("mousedown", onDocClick);
+			document.removeEventListener("keydown", onKey);
+		};
+	}, [menuOpen]);
+
+	const menuActions = [];
+	if (canDelete) {
+		menuActions.push({
+			key: "delete",
+			label: "Excluir",
+			icon: <FaTrash aria-hidden="true" />,
+			danger: true,
+			onClick: () => onDelete(post._id),
+		});
+	}
 
 	const isLong = text.length > READ_MORE_THRESHOLD;
 	const shownText =
@@ -82,7 +116,10 @@ export default function PostCard({
 	return (
 		<div className={`post-card${isReply ? " post-card--reply" : ""}`}>
 			<div className="post-card__header">
-				<Link to={`/user/${author.username}`} className="post-card__user">
+				<Link
+					to={`/user/${author.username}`}
+					className="post-card__avatar-link"
+				>
 					{author.profileImageUrl ? (
 						<img
 							src={`${import.meta.env.REACT_APP_HOST_ORIGIN}${author.profileImageUrl}`}
@@ -94,22 +131,60 @@ export default function PostCard({
 							{author.username?.charAt(0).toUpperCase()}
 						</div>
 					)}
-					<span className="post-card__username">{author.username}</span>
 				</Link>
-				{isReview && reviewScore != null && (
-					<span className="post-card__review-badge">
-						<FaStar aria-hidden="true" />
-						{reviewScore}
-					</span>
-				)}
-				{canDelete && (
-					<button
-						className="button button--red"
-						onClick={() => onDelete(post._id)}
-					>
-						<FaTrash />
-					</button>
-				)}
+				<div className="post-card__user-info">
+					<div className="post-card__user-line">
+						<Link
+							to={`/user/${author.username}`}
+							className="post-card__username"
+						>
+							{author.username}
+						</Link>
+						{isReview && reviewScore != null && (
+							<span className="post-card__review-badge">
+								<FaStar aria-hidden="true" />
+								{reviewScore}
+							</span>
+						)}
+					</div>
+					<span className="post-card__date">{date}</span>
+				</div>
+				<div className="post-card__header-right">
+					{menuActions.length > 0 && (
+						<div className="post-card__menu" ref={menuRef}>
+							<button
+								type="button"
+								className="post-card__menu-btn"
+								onClick={() => setMenuOpen((o) => !o)}
+								aria-haspopup="menu"
+								aria-expanded={menuOpen}
+								aria-label="Mais opções"
+							>
+								<FaEllipsisH />
+							</button>
+							{menuOpen && (
+								<ul className="post-card__menu-list" role="menu">
+									{menuActions.map((action) => (
+										<li key={action.key} role="none">
+											<button
+												type="button"
+												role="menuitem"
+												className={`post-card__menu-item${action.danger ? " post-card__menu-item--danger" : ""}`}
+												onClick={() => {
+													setMenuOpen(false);
+													action.onClick();
+												}}
+											>
+												{action.icon}
+												<span>{action.label}</span>
+											</button>
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+					)}
+				</div>
 			</div>
 
 			{isSpoiler && !revealed ? (
@@ -148,26 +223,24 @@ export default function PostCard({
 				</>
 			)}
 			<div className="post-card__footer">
-				<span className="post-card__date">{date}</span>
-				<div className="post-card__footer-actions">
-					{!isReply && user && (
-						<button
-							className="post-card__reply-btn"
-							onClick={() => setShowReplyForm((prev) => !prev)}
-						>
-							Responder
-						</button>
-					)}
+				<button
+					className={`post-card__like-btn${likedByViewer ? " post-card__like-btn--liked" : ""}`}
+					onClick={handleLike}
+					disabled={liking}
+					aria-label={likedByViewer ? "Descurtir" : "Curtir"}
+				>
+					{likedByViewer ? <FaHeart /> : <FaRegHeart />}
+					{likeCount > 0 && <span>{likeCount}</span>}
+				</button>
+				{!isReply && user && (
 					<button
-						className={`post-card__like-btn${likedByViewer ? " post-card__like-btn--liked" : ""}`}
-						onClick={handleLike}
-						disabled={liking}
-						aria-label={likedByViewer ? "Descurtir" : "Curtir"}
+						className="post-card__reply-btn"
+						onClick={() => setShowReplyForm((prev) => !prev)}
 					>
-						{likedByViewer ? <FaHeart /> : <FaRegHeart />}
-						{likeCount > 0 && <span>{likeCount}</span>}
+						<FaReply aria-hidden="true" />
+						Responder
 					</button>
-				</div>
+				)}
 			</div>
 
 			{!isReply && (

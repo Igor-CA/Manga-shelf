@@ -7,7 +7,7 @@ export default function SkeletonPostCard({ isReply = false }) {
 			aria-hidden="true"
 		>
 			<div className="post-card__header">
-				<div className="post-card__user">
+				<div className="post-card__user-line">
 					<div className="loader-animation post-card__skeleton-avatar" />
 					<div className="loader-animation post-card__skeleton-username" />
 				</div>

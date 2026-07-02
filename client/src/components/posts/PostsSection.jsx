@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import axios from "axios";
+import { FaStar, FaRegCommentAlt } from "react-icons/fa";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import { usePrompt } from "../../contexts/PromptContext";
@@ -24,25 +25,37 @@ function PostList({
 	onDelete,
 	emptyMessage,
 	label,
+	icon,
 }) {
 	const { posts, hasMore, loading, sort, setSort, loadMore } = list;
 
 	return (
 		<div className="posts-section">
-			<h2 className="collection-lable">{label}</h2>
+			<div className="posts-section__header">
+				<h2 className="posts-section__title">
+					{icon}
+					<span>{label}</span>
+				</h2>
+				{posts.length > 0 && (
+					<span className="posts-section__count">
+						{posts.length}
+						{hasMore ? "+" : ""}
+					</span>
+				)}
+			</div>
 
-			<div className="posts-section__sort">
+			<div className="posts-section__sort" role="tablist">
 				<button
 					className={`posts-section__sort-btn${sort === "top" ? " posts-section__sort-btn--active" : ""}`}
 					onClick={() => setSort("top")}
 				>
-					Mais curtidos
+					Curtidos
 				</button>
 				<button
 					className={`posts-section__sort-btn${sort === "recent" ? " posts-section__sort-btn--active" : ""}`}
 					onClick={() => setSort("recent")}
 				>
-					Mais recentes
+					Recentes
 				</button>
 			</div>
 
@@ -266,12 +279,11 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 					<hr style={{ margin: "0px 10px" }} />
 
 					{user && (
-						<div style={{ padding: "0 10px" }}>
+						<div style={{ padding: "0.75rem" }}>
 							<PostForm
 								isTopLevel
 								onSubmit={handleSubmit}
 								submitting={submitting}
-								currentScore={rating?.manualScore ?? null}
 							/>
 						</div>
 					)}
@@ -287,6 +299,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 							errorNoun: "review",
 						})}
 						label="Reviews"
+						icon={<FaStar aria-hidden="true" />}
 						emptyMessage="Nenhuma review ainda."
 					/>
 
@@ -301,6 +314,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 							errorNoun: "comentário",
 						})}
 						label="Comentários"
+						icon={<FaRegCommentAlt aria-hidden="true" />}
 						emptyMessage="Nenhum comentário ainda. Seja o primeiro a comentar!"
 					/>
 				</div>

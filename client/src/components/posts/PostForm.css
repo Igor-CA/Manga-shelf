@@ -19,57 +19,162 @@
 	resize: vertical;
 }
 
+.post-form--reply {
+	background-color: var(--background);
+}
+
+.post-form--reply .post-form__textarea,
+.post-form--reply .post-form__collapsed-input,
+.post-form--reply .post-form__image-preview {
+	background-color: var(--foreground);
+}
+
 .post-form__textarea:focus {
 	outline: none;
 	border-color: var(--text);
 }
-.post-form__review-container {
-	display: flex;
+
+.post-form--collapsed {
+	flex-direction: row;
 	align-items: center;
-	justify-content: space-between;
+	gap: 0.5rem;
+	padding: 0.6rem 0.75rem;
 }
 
-.post-form__review-container .custom-toggle {
-	margin-left: auto;
-	padding: 1.25rem 0rem;
+.post-form__collapsed-input {
+	flex: 1;
+	text-align: left;
+	background-color: var(--background);
+	border: 1px solid var(--text);
+	border-radius: 1.25rem;
+	padding: 0.6rem 0.9rem;
+	color: var(--text);
+	opacity: 0.6;
+	font-size: 0.9rem;
+	cursor: text;
 }
-.post-form__review-score {
+
+.post-form__header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.post-form__avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
+}
+
+.post-form__avatar--placeholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--secundary);
+	color: white;
+	font-weight: bold;
+	font-size: 0.875rem;
+}
+
+.post-form__username {
+	font-weight: 600;
+	color: var(--text);
+}
+
+.post-form__review-chip {
+	text-transform: uppercase;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	color: var(--accent);
+	border: 1px solid var(--accent);
+	border-radius: 0.75rem;
+	padding: 0.1rem 0.5rem;
+}
+
+.post-form__close {
+	margin-left: auto;
+	background: transparent;
+	border: none;
+	color: var(--text);
+	opacity: 0.6;
+	cursor: pointer;
+	display: flex;
+	padding: 0.25rem;
+}
+
+.post-form__close:hover {
+	opacity: 1;
+}
+
+.post-form__controls {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
 	flex-wrap: wrap;
 }
 
-.post-form__review-score-label {
-	font-size: 0.9rem;
-	opacity: 0.8;
-}
-
-.post-form__review-score-hint {
-	font-size: 0.8rem;
-	opacity: 0.6;
-	font-style: italic;
-}
-
-.post-form__media {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	flex-wrap: wrap;
-}
-
-.post-form__image-btn {
+/* Pill-style toggle buttons (image / adult / spoiler) */
+.post-form__pill {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.4rem;
+	background: transparent;
+	border: 1px solid var(--text);
+	border-radius: 1.25rem;
+	color: var(--text);
 	font-size: 0.85rem;
 	cursor: pointer;
-	color: var(--text);
-	opacity: 0.8;
+	padding: 0.4rem 0.9rem;
+	opacity: 0.6;
+	transition: opacity 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.post-form__image-btn:hover {
+.post-form__pill:hover {
 	opacity: 1;
+}
+
+.post-form__pill--active {
+	opacity: 1;
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.post-form__rate {
+	display: flex;
+	align-items: center;
+}
+
+/* Match the rating trigger to the pill row */
+.post-form__rate .rate-button {
+	min-width: 0;
+	border: 1px solid var(--text);
+	border-radius: 1.25rem;
+	padding: 0.4rem 0.75rem;
+	font-size: 0.85rem;
+	background-color: transparent;
+	opacity: 0.6;
+}
+
+.post-form__rate .rate-button svg {
+	font-size: 1rem;
+}
+
+.post-form__rate .rate-button:hover:not(:disabled) {
+	opacity: 1;
+}
+
+.post-form__rate .rate-button--rated {
+	opacity: 1;
+	background-color: transparent;
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.post-form__submit {
+	margin-left: auto;
 }
 
 .post-form__image-input {
@@ -77,35 +182,51 @@
 }
 
 .post-form__image-preview {
-	position: relative;
-	align-self: flex-start;
-	max-width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	background-color: var(--background);
+	border-radius: 0.5rem;
+	padding: 0.5rem;
 }
 
-.post-form__image-preview img {
-	max-width: 100%;
-	max-height: 16rem;
+.post-form__image-thumb {
+	width: 3rem;
+	height: 3rem;
+	object-fit: cover;
 	border-radius: 0.25rem;
-	display: block;
+	flex-shrink: 0;
+}
+
+.post-form__image-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+	min-width: 0;
+}
+
+.post-form__image-name {
+	font-size: 0.85rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--text);
 }
 
 .post-form__image-remove {
-	position: absolute;
-	top: 0.4rem;
-	right: 0.4rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 1.75rem;
-	height: 1.75rem;
+	align-self: flex-start;
+	background: transparent;
 	border: none;
-	border-radius: 50%;
-	background-color: rgba(0, 0, 0, 0.6);
-	color: white;
+	color: var(--red);
+	font-size: 0.8rem;
 	cursor: pointer;
+	padding: 0;
 }
 
-.post-form__actions {
-	display: flex;
-	justify-content: flex-end;
+.post-form__image-remove:hover {
+	text-decoration: underline;
+}
+
+.post-form__pill--adult {
+	margin-left: auto;
 }

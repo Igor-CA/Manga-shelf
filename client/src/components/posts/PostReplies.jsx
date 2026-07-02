@@ -57,6 +57,7 @@ export default function PostReplies({
 					onSubmit={handleSubmit}
 					submitting={submitting}
 					initialValue={`@${post.author.username} `}
+					onCancel={onSubmitted}
 				/>
 			)}
 
