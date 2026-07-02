@@ -374,6 +374,35 @@ exports.sendNewReplyNotification = async (reply, recipientId, seriesTitle, serie
 	}
 };
 
+exports.sendNewMentionNotification = async (
+	reply,
+	recipientId,
+	mentioner,
+	seriesTitle,
+	seriesId,
+	volumeId,
+) => {
+	try {
+		const commentsPath = volumeId
+			? `/volume/${volumeId}/comments`
+			: `/series/${seriesId}/comments`;
+		const text = `[[${mentioner.username}|/user/${mentioner.username}]] mencionou você em [[${seriesTitle}|${commentsPath}]]`;
+
+		const notification = await Notification.create({
+			group: "social",
+			eventKey: "new_mention",
+			text,
+			imageUrl: mentioner.profileImageUrl || null,
+			associatedObject: reply._id,
+			objectType: "Post",
+		});
+
+		await sendSiteOnlyNotification(notification, recipientId);
+	} catch (err) {
+		logger.error("Failed to send new_mention notification:", err.message);
+	}
+};
+
 exports.sendNewFollowerNotification = async (followerID, followedID) => {
 	const notification = await createFollowingNotification(followerID);
 	const cooldownPeriod = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);

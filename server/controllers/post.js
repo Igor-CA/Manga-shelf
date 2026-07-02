@@ -11,7 +11,11 @@ const asyncHandler = require("express-async-handler");
 const path = require("path");
 const fs = require("fs");
 const sharp = require("sharp");
-const { sendNewReplyNotification, sendNewLikeNotification } = require("./notifications");
+const {
+	sendNewReplyNotification,
+	sendNewLikeNotification,
+	sendNewMentionNotification,
+} = require("./notifications");
 
 const POSTS_PER_PAGE = 20;
 const REPLIES_PER_PAGE = 5;
@@ -106,6 +110,48 @@ async function resolveReplyTarget(parentId, seriesId, volumeId) {
 		notifyRecipientId: targetPost.author,
 		topLevelParentId: targetPost.parent || targetPost._id,
 	};
+}
+
+function parseMentionedUsernames(text) {
+	if (!text || !text.includes("@")) return [];
+	const matches = text.match(/@([A-Za-z0-9]{3,16})/g) || [];
+	return [...new Set(matches.map((m) => m.slice(1)))];
+}
+
+async function resolveMentionRecipients({
+	text,
+	topLevelParentId,
+	replyTargetId,
+	mentionerId,
+}) {
+	const usernames = parseMentionedUsernames(text);
+	if (usernames.length === 0) return [];
+
+	const [participantIds, mentionedUsers] = await Promise.all([
+		Post.distinct("author", {
+			$or: [{ _id: topLevelParentId }, { parent: topLevelParentId }],
+		}),
+		User.find({
+			username: {
+				$in: usernames.map((name) => new RegExp(`^${name}$`, "i")),
+			},
+		}).select("_id"),
+	]);
+
+	const participantSet = new Set(participantIds.map((id) => id.toString()));
+	const excludeSet = new Set([
+		mentionerId.toString(),
+		replyTargetId ? replyTargetId.toString() : null,
+	]);
+
+	const recipients = new Set();
+	for (const mentionedUser of mentionedUsers) {
+		const id = mentionedUser._id.toString();
+		if (participantSet.has(id) && !excludeSet.has(id)) {
+			recipients.add(id);
+		}
+	}
+	return [...recipients];
 }
 
 async function cleanupPostNotifications(targetIds, session) {
@@ -234,6 +280,27 @@ exports.createPost = asyncHandler(async (req, res) => {
 				seriesId,
 				volumeId || null,
 			).catch(() => {});
+		}
+
+		if (text.includes("@")) {
+			(async () => {
+				const recipients = await resolveMentionRecipients({
+					text,
+					topLevelParentId,
+					replyTargetId: notifyRecipientId,
+					mentionerId: req.user._id,
+				});
+				for (const recipientId of recipients) {
+					await sendNewMentionNotification(
+						post,
+						recipientId,
+						req.user,
+						series.title,
+						seriesId,
+						volumeId || null,
+					);
+				}
+			})().catch(() => {});
 		}
 	}
 

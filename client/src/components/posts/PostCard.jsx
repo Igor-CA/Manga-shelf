@@ -28,6 +28,8 @@ export default function PostCard({
 	volumeId,
 	isReply = false,
 	onLikeChange,
+	onReply,
+	replySubmitting,
 }) {
 	const { user } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
@@ -101,6 +103,12 @@ export default function PostCard({
 		} finally {
 			setEditSubmitting(false);
 		}
+	};
+
+	const handleReplyToReplySubmit = async (replyText, reviewData, media) => {
+		const ok = await onReply(replyText, media);
+		if (ok) setShowReplyForm(false);
+		return ok;
 	};
 
 	const isLong = text.length > READ_MORE_THRESHOLD;
@@ -290,7 +298,7 @@ export default function PostCard({
 					{likedByViewer ? <FaHeart /> : <FaRegHeart />}
 					{likeCount > 0 && <span>{likeCount}</span>}
 				</button>
-				{!isReply && user && (
+				{((!isReply && user) || (isReply && onReply && user)) && (
 					<button
 						className="post-card__reply-btn"
 						onClick={() => setShowReplyForm((prev) => !prev)}
@@ -308,6 +316,14 @@ export default function PostCard({
 					volumeId={volumeId}
 					showForm={showReplyForm}
 					onSubmitted={() => setShowReplyForm(false)}
+				/>
+			)}
+			{isReply && onReply && showReplyForm && (
+				<PostForm
+					onSubmit={handleReplyToReplySubmit}
+					submitting={replySubmitting}
+					initialValue={`@${author.username} `}
+					onCancel={() => setShowReplyForm(false)}
 				/>
 			)}
 		</div>

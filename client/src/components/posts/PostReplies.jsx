@@ -73,6 +73,8 @@ export default function PostReplies({
 								onDelete={(id) => confirmDelete(id, deleteReply)}
 								onEdit={editReply}
 								isReply={true}
+								onReply={submitReply}
+								replySubmitting={submitting}
 							/>
 						))}
 						{loading && renderReplySkeletons()}
@@ -99,6 +101,8 @@ export default function PostReplies({
 							canDelete={ownsReply(post.replyPreview)}
 							onDelete={(id) => confirmDelete(id, deletePreview)}
 							isReply={true}
+							onReply={submitReply}
+							replySubmitting={submitting}
 						/>
 					)}
 					{(previewShown ? replyCount > 1 : replyCount > 0) && (
