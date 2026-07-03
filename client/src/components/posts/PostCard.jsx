@@ -15,9 +15,16 @@ import {
 	FaEllipsisH,
 	FaReply,
 	FaPen,
+	FaFlag,
 } from "react-icons/fa";
 
 const READ_MORE_THRESHOLD = 500;
+
+const REPORT_REASONS = [
+	{ value: "hate", label: "Ódio ou discurso abusivo" },
+	{ value: "adult", label: "Conteúdo adulto não classificado" },
+	{ value: "spoiler", label: "Spoiler não indicado" },
+];
 
 export default function PostCard({
 	post,
@@ -32,7 +39,7 @@ export default function PostCard({
 	replySubmitting,
 }) {
 	const { user } = useContext(UserContext);
-	const { addMessage } = useContext(messageContext);
+	const { addMessage, setMessageType } = useContext(messageContext);
 	const navigate = useNavigate();
 	const {
 		author,
@@ -44,6 +51,7 @@ export default function PostCard({
 		image,
 		isSpoiler,
 		isAdultContent,
+		isHidden,
 	} = post;
 	const [expanded, setExpanded] = useState(false);
 	const [revealed, setRevealed] = useState(false);
@@ -54,21 +62,34 @@ export default function PostCard({
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [editing, setEditing] = useState(false);
 	const [editSubmitting, setEditSubmitting] = useState(false);
+	const [reportMenuOpen, setReportMenuOpen] = useState(false);
+	const [reporting, setReporting] = useState(false);
 	const menuRef = useRef(null);
+	const reportMenuRef = useRef(null);
 
 	useEffect(() => {
-		if (!menuOpen) return;
+		if (!menuOpen && !reportMenuOpen) return;
 		const onDocClick = (e) => {
 			if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+			if (
+				reportMenuRef.current &&
+				!reportMenuRef.current.contains(e.target)
+			)
+				setReportMenuOpen(false);
 		};
-		const onKey = (e) => e.key === "Escape" && setMenuOpen(false);
+		const onKey = (e) => {
+			if (e.key === "Escape") {
+				setMenuOpen(false);
+				setReportMenuOpen(false);
+			}
+		};
 		document.addEventListener("mousedown", onDocClick);
 		document.addEventListener("keydown", onKey);
 		return () => {
 			document.removeEventListener("mousedown", onDocClick);
 			document.removeEventListener("keydown", onKey);
 		};
-	}, [menuOpen]);
+	}, [menuOpen, reportMenuOpen]);
 
 	const menuActions = [];
 	if (canDelete) {
@@ -111,7 +132,7 @@ export default function PostCard({
 		return ok;
 	};
 
-	const isLong = text.length > READ_MORE_THRESHOLD;
+	const isLong = !!text && text.length > READ_MORE_THRESHOLD;
 	const shownText =
 		isLong && !expanded ? `${text.slice(0, READ_MORE_THRESHOLD)}…` : text;
 
@@ -161,6 +182,27 @@ export default function PostCard({
 			addMessage(error.response?.data?.msg || "Erro ao curtir comentário");
 		} finally {
 			setLiking(false);
+		}
+	};
+
+	const handleReport = async (reason) => {
+		if (reporting) return;
+		setReportMenuOpen(false);
+		setReporting(true);
+		try {
+			await axios({
+				method: "POST",
+				withCredentials: true,
+				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post/${post._id}/report`,
+				data: { reason },
+			});
+			setMessageType("Success");
+			addMessage("Denúncia recebida");
+		} catch (error) {
+			addMessage(error.response?.data?.msg || "Erro ao enviar denúncia");
+		} finally {
+			setReporting(false);
 		}
 	};
 
@@ -238,6 +280,37 @@ export default function PostCard({
 							)}
 						</div>
 					)}
+					{user && !canDelete && (
+						<div className="post-card__menu" ref={reportMenuRef}>
+							<button
+								type="button"
+								className="post-card__menu-btn"
+								onClick={() => setReportMenuOpen((o) => !o)}
+								aria-haspopup="menu"
+								aria-expanded={reportMenuOpen}
+								aria-label="Denunciar"
+								disabled={reporting}
+							>
+								<FaFlag />
+							</button>
+							{reportMenuOpen && (
+								<ul className="post-card__menu-list" role="menu">
+									{REPORT_REASONS.map((reason) => (
+										<li key={reason.value} role="none">
+											<button
+												type="button"
+												role="menuitem"
+												className="post-card__menu-item"
+												onClick={() => handleReport(reason.value)}
+											>
+												{reason.label}
+											</button>
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 
@@ -253,6 +326,10 @@ export default function PostCard({
 					onSubmit={handleEditSubmit}
 					onCancel={() => setEditing(false)}
 				/>
+			) : isHidden ? (
+				<div className="post-card__hidden-block">
+					Comentário em análise
+				</div>
 			) : isSpoiler && !revealed ? (
 				<button
 					type="button"

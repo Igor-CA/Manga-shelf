@@ -27,6 +27,7 @@ const notificationsController = require("../controllers/notifications");
 const collectionPhotosController = require("../controllers/collectionPhotos");
 const submissionController = require("../controllers/submission");
 const postController = require("../controllers/post");
+const postReportController = require("../controllers/postReport");
 const ratingController = require("../controllers/rating");
 const { requireAuth } = require("../middlewares/authentications");
 const {
@@ -43,6 +44,7 @@ const {
 	photoValidation,
 	submissionValidation,
 	postValidation,
+	reportValidation,
 	ratingValidation,
 	ratingDeleteValidation,
 } = require("../middlewares/validators");
@@ -206,6 +208,13 @@ router.patch(
 router.delete("/post/:id", requireAuth, postController.deletePost);
 router.post("/post/:id/like", requireAuth, postController.likePost);
 router.delete("/post/:id/like", requireAuth, postController.unlikePost);
+router.post(
+	"/post/:id/report",
+	requireAuth,
+	reportValidation,
+	validateRequest,
+	postReportController.createReport,
+);
 
 // Collection photos routes
 router.post(

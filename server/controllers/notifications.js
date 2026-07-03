@@ -367,6 +367,39 @@ exports.sendNewLikeNotification = async (post, recipientId, liker, likeCount) =>
 	}
 };
 
+exports.sendPostHiddenNotification = async (post) => {
+	try {
+		const series = await Series.findById(post.series).select("title");
+		const seriesTitle = series ? series.title : "";
+		const commentsPath = post.volume
+			? `/volume/${post.volume}/comments`
+			: `/series/${post.series}/comments`;
+
+		const text = `Seu comentário em [[${seriesTitle}|${commentsPath}]] foi denunciado por "Ódio ou discurso abusivo" e por isso está oculto e em análise`;
+
+		let notification = await Notification.findOne({
+			eventKey: "post_hidden",
+			associatedObject: post._id,
+			objectType: "Post",
+		});
+
+		if (!notification) {
+			notification = await Notification.create({
+				group: "system",
+				eventKey: "post_hidden",
+				text,
+				imageUrl: `/android-chrome-192x192.png`,
+				associatedObject: post._id,
+				objectType: "Post",
+			});
+		}
+
+		await sendSiteOnlyNotification(notification, post.author);
+	} catch (err) {
+		logger.error("Failed to send post_hidden notification:", err.message);
+	}
+};
+
 exports.sendNewReplyNotification = async (reply, recipientId, topLevelParentId) => {
 	try {
 		const replier = await User.findById(reply.author).select("username");

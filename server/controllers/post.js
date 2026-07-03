@@ -49,7 +49,16 @@ const basePostProjection = {
 	isSpoiler: { $ifNull: ["$isSpoiler", false] },
 	isAdultContent: { $ifNull: ["$isAdultContent", false] },
 	editedAt: { $ifNull: ["$editedAt", null] },
+	isHidden: { $ifNull: ["$isHidden", false] },
 };
+
+function withholdHidden(post) {
+	if (post.isHidden) {
+		post.text = null;
+		post.image = null;
+	}
+	return post;
+}
 
 function makeViewerLikeStages(viewerId) {
 	if (viewerId) {
@@ -85,8 +94,13 @@ function makeViewerLikeStages(viewerId) {
 	return [{ $addFields: { likedByViewer: false } }];
 }
 
-function gateImage(post, viewerAllowsAdult) {
-	if (post.image && post.isAdultContent && !viewerAllowsAdult) post.image = null;
+function gateImage(post, viewerAllowsAdult, viewerId) {
+	const isAuthor =
+		viewerId &&
+		post.author?._id &&
+		post.author._id.toString() === viewerId.toString();
+	if (post.image && post.isAdultContent && !viewerAllowsAdult && !isAuthor)
+		post.image = null;
 	return post;
 }
 
@@ -462,8 +476,12 @@ exports.getPosts = asyncHandler(async (req, res) => {
 	]);
 
 	posts.forEach((post) => {
-		gateImage(post, viewerAllowsAdult);
-		if (post.replyPreview) gateImage(post.replyPreview, viewerAllowsAdult);
+		gateImage(post, viewerAllowsAdult, viewerId);
+		withholdHidden(post);
+		if (post.replyPreview) {
+			gateImage(post.replyPreview, viewerAllowsAdult, viewerId);
+			withholdHidden(post.replyPreview);
+		}
 	});
 
 	res.json(posts);
@@ -479,8 +497,9 @@ exports.getReplies = asyncHandler(async (req, res) => {
 	const skip = REPLIES_PER_PAGE * (page - 1);
 
 	const viewerAllowsAdult = !!req.user?.allowAdult;
+	const viewerId = req.user ? req.user._id : null;
 
-	const viewerLikeStages = makeViewerLikeStages(req.user ? req.user._id : null);
+	const viewerLikeStages = makeViewerLikeStages(viewerId);
 
 	const replies = await Post.aggregate([
 		{ $match: { parent: new mongoose.Types.ObjectId(postId) } },
@@ -492,7 +511,10 @@ exports.getReplies = asyncHandler(async (req, res) => {
 		{ $project: basePostProjection },
 	]);
 
-	replies.forEach((reply) => gateImage(reply, viewerAllowsAdult));
+	replies.forEach((reply) => {
+		gateImage(reply, viewerAllowsAdult, viewerId);
+		withholdHidden(reply);
+	});
 
 	res.json(replies);
 });
@@ -559,6 +581,66 @@ exports.unlikePost = asyncHandler(async (req, res) => {
 	res.json({ likeCount, likedByViewer: false });
 });
 
+async function deletePostCascade(post, session) {
+	const imagePaths = [];
+	if (post.image) imagePaths.push(post.image);
+
+		if (!post.parent) {
+			const replies = await post.find(
+				{ parent: post._id },
+				"_id image",
+			).session(session);
+			const replyids = replies.map((r) => r._id);
+			replies.foreach((r) => {
+				if (r.image) imagepaths.push(r.image);
+			});
+
+			await cleanuppostnotifications([post._id, ...replyids], session);
+			await pendingreplydigest.deleteone({ toplevelcomment: post._id }).session(
+				session,
+			);
+
+			await like.deletemany({
+				post: { $in: [post._id, ...replyids] },
+			}).session(session);
+
+			if (replyids.length > 0) {
+				await post.deletemany({ _id: { $in: replyids } }).session(session);
+			}
+			await post.findbyidanddelete(post._id).session(session);
+		} else {
+			await cleanuppostnotifications([post._id], session);
+			await pendingreplydigest.deleteone({
+				toplevelcomment: post.parent,
+			}).session(session);
+
+			await like.deletemany({ post: post._id }).session(session);
+
+			await post.findbyidanddelete(post._id).session(session);
+			await post.findoneandupdate(
+				{ _id: post.parent, replycount: { $gt: 0 } },
+				{ $inc: { replycount: -1 } },
+			).session(session);
+		}
+
+	return imagePaths;
+}
+exports.deletePostCascade = deletePostCascade;
+
+function unlinkImages(imagePaths) {
+	imagePaths.forEach((image) => {
+		const filePath = path.resolve(`public${image}`);
+		if (fs.existsSync(filePath)) {
+			try {
+				fs.unlinkSync(filePath);
+			} catch (err) {
+				console.error("Error deleting post image:", err);
+			}
+		}
+	});
+}
+exports.unlinkImages = unlinkImages;
+
 exports.deletePost = asyncHandler(async (req, res) => {
 	const postId = req.params.id;
 	if (!mongoose.Types.ObjectId.isValid(postId)) {
@@ -577,62 +659,11 @@ exports.deletePost = asyncHandler(async (req, res) => {
 	const session = await mongoose.startSession();
 	session.startTransaction();
 
-	const imagePaths = [];
-	if (post.image) imagePaths.push(post.image);
-
 	try {
-		if (!post.parent) {
-			// Top-level: cascade-delete replies + their new_reply notifications
-			const replies = await Post.find(
-				{ parent: post._id },
-				"_id image",
-			).session(session);
-			const replyIds = replies.map((r) => r._id);
-			replies.forEach((r) => {
-				if (r.image) imagePaths.push(r.image);
-			});
-
-			await cleanupPostNotifications([post._id, ...replyIds], session);
-			await PendingReplyDigest.deleteOne({ topLevelComment: post._id }).session(
-				session,
-			);
-
-			await Like.deleteMany({
-				post: { $in: [post._id, ...replyIds] },
-			}).session(session);
-
-			if (replyIds.length > 0) {
-				await Post.deleteMany({ _id: { $in: replyIds } }).session(session);
-			}
-			await Post.findByIdAndDelete(post._id).session(session);
-		} else {
-			// Reply: clean up its notification, delete, decrement parent count
-			await cleanupPostNotifications([post._id], session);
-			await PendingReplyDigest.deleteOne({
-				topLevelComment: post.parent,
-			}).session(session);
-
-			await Like.deleteMany({ post: post._id }).session(session);
-
-			await Post.findByIdAndDelete(post._id).session(session);
-			await Post.findOneAndUpdate(
-				{ _id: post.parent, replyCount: { $gt: 0 } },
-				{ $inc: { replyCount: -1 } },
-			).session(session);
-		}
-
+		const imagePaths = await deletePostCascade(post, session);
 		await session.commitTransaction();
 
-		imagePaths.forEach((image) => {
-			const filePath = path.resolve(`public${image}`);
-			if (fs.existsSync(filePath)) {
-				try {
-					fs.unlinkSync(filePath);
-				} catch (err) {
-					console.error("Error deleting post image:", err);
-				}
-			}
-		});
+		unlinkImages(imagePaths);
 
 		res.json({ msg: "Comentário removido com sucesso" });
 	} catch (err) {

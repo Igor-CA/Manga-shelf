@@ -57,6 +57,10 @@ const PostSchema = new Schema(
 			type: Date,
 			default: null,
 		},
+		isHidden: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{ timestamps: true },
 );

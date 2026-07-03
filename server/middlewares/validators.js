@@ -311,6 +311,14 @@ const postRemoveImageValidation = body("removeImage")
 	.withMessage("removeImage deve ser verdadeiro ou falso.")
 	.toBoolean();
 
+// Post reports (moderation)
+const reportReasonValidation = body("reason")
+	.trim()
+	.notEmpty()
+	.withMessage("O motivo da denúncia é obrigatório.")
+	.isIn(["hate", "adult", "spoiler"])
+	.withMessage("O motivo da denúncia deve ser 'hate', 'adult' ou 'spoiler'.");
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -346,6 +354,8 @@ const postValidation = [
 	postIsAdultContentValidation,
 	postRemoveImageValidation,
 ];
+
+const reportValidation = [reportReasonValidation];
 
 const ratingValidation = [
 	ratingSeriesIdValidation,
@@ -411,6 +421,7 @@ module.exports = {
 	photoValidation,
 	submissionValidation,
 	postValidation,
+	reportValidation,
 	ratingValidation,
 	ratingDeleteValidation,
 	validateRequest,
