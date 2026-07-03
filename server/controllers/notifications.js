@@ -15,6 +15,10 @@ const LIKE_MILESTONES = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
 const isLikeMilestone = (count) => LIKE_MILESTONES.includes(count);
 const REPLY_DIGEST_WINDOW_MIN = 5;
 
+function othersPhrase(count) {
+	return count === 1 ? "e outra pessoa" : `e outras ${count} pessoas`;
+}
+
 exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 	if (!req.isAuthenticated()) {
 		return res.status(401).json({ msg: "Usuário deve estar logado" });
@@ -334,7 +338,7 @@ exports.sendNewLikeNotification = async (post, recipientId, liker, likeCount) =>
 
 		const text = likeCount === 1
 			? `${likerLink} curtiu seu comentário em [[${seriesTitle}|${commentsPath}]]`
-			: `${likerLink} e outras ${likeCount - 1} pessoas curtiram seu comentário em [[${seriesTitle}|${commentsPath}]]`;
+			: `${likerLink} ${othersPhrase(likeCount - 1)} curtiram seu comentário em [[${seriesTitle}|${commentsPath}]]`;
 
 		let notification = await Notification.findOne({
 			eventKey: "new_like",
@@ -421,7 +425,7 @@ exports.dispatchReplyDigests = async () => {
 			const [first, ...rest] = digest.repliers;
 			const firstLink = `[[${first.username}|/user/${first.username}]]`;
 			const text = rest.length > 0
-				? `${firstLink} e outras ${rest.length} pessoas responderam seu comentário em [[${seriesTitle}|${commentsPath}]]`
+				? `${firstLink} ${othersPhrase(rest.length)} responderam seu comentário em [[${seriesTitle}|${commentsPath}]]`
 				: `${firstLink} respondeu seu comentário em [[${seriesTitle}|${commentsPath}]]`;
 
 			const firstReplier = await User.findById(first.user).select(
