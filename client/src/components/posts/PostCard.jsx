@@ -328,7 +328,7 @@ export default function PostCard({
 				/>
 			) : isHidden ? (
 				<div className="post-card__hidden-block">
-					Comentário em análise
+					Comentário denunciado por "Ódio ou discurso abusivo", em análise pela moderação
 				</div>
 			) : isSpoiler && !revealed ? (
 				<button
