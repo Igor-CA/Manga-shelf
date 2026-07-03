@@ -6,6 +6,9 @@ const { dispatchWeeklyVolumes } = require("./jobs/weeklyVolumesDispatcher");
 const {
 	dispatchPendingNotifications,
 } = require("./jobs/pendingNotificationsDispatcher");
+const {
+	dispatchReplyDigests,
+} = require("./jobs/replyDigestDispatcher");
 const APP_TIMEZONE = "America/Sao_Paulo";
 
 function startScheduledJobs() {
@@ -61,6 +64,19 @@ function startScheduledJobs() {
 				await dispatchPendingNotifications();
 			} catch (error) {
 				logger.error("CRON: pending notification routine failed.", error);
+			}
+		},
+		{ timezone: APP_TIMEZONE },
+	);
+
+	cron.schedule(
+		"*/2 * * * *",
+		async () => {
+			logger.info("CRON: Triggering reply digest dispatcher...");
+			try {
+				await dispatchReplyDigests();
+			} catch (error) {
+				logger.error("CRON: reply digest dispatcher failed.", error);
 			}
 		},
 		{ timezone: APP_TIMEZONE },

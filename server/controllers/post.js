@@ -5,6 +5,7 @@ const Series = require("../models/Series");
 const Volume = require("../models/volume");
 const Notification = require("../models/Notification");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
+const PendingReplyDigest = require("../models/PendingReplyDigest");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
@@ -276,9 +277,7 @@ exports.createPost = asyncHandler(async (req, res) => {
 			sendNewReplyNotification(
 				post,
 				notifyRecipientId,
-				series.title,
-				seriesId,
-				volumeId || null,
+				topLevelParentId,
 			).catch(() => {});
 		}
 
@@ -526,7 +525,7 @@ exports.likePost = asyncHandler(async (req, res) => {
 
 		const isSelfLike = post.author.toString() === req.user._id.toString();
 		if (!isSelfLike) {
-			sendNewLikeNotification(post, post.author, req.user).catch(() => {});
+			sendNewLikeNotification(post, post.author, req.user, likeCount).catch(() => {});
 		}
 	}
 
@@ -594,6 +593,9 @@ exports.deletePost = asyncHandler(async (req, res) => {
 			});
 
 			await cleanupPostNotifications([post._id, ...replyIds], session);
+			await PendingReplyDigest.deleteOne({ topLevelComment: post._id }).session(
+				session,
+			);
 
 			await Like.deleteMany({
 				post: { $in: [post._id, ...replyIds] },
@@ -606,6 +608,9 @@ exports.deletePost = asyncHandler(async (req, res) => {
 		} else {
 			// Reply: clean up its notification, delete, decrement parent count
 			await cleanupPostNotifications([post._id], session);
+			await PendingReplyDigest.deleteOne({
+				topLevelComment: post.parent,
+			}).session(session);
 
 			await Like.deleteMany({ post: post._id }).session(session);
 
