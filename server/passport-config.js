@@ -59,7 +59,7 @@ module.exports = function (passport) {
 	passport.deserializeUser(
 		asyncHandler(async (id, done) => {
 			const user = await User.findById(id)
-				.select("username isAdmin allowAdult following")
+				.select("username isAdmin allowAdult following profileImageUrl")
 				.lean();
 			if (!user) return done(null, false);
 			done(null, user);
