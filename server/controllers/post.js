@@ -677,43 +677,43 @@ async function deletePostCascade(post, session) {
 	const imagePaths = [];
 	if (post.image) imagePaths.push(post.image);
 
-		if (!post.parent) {
-			const replies = await post.find(
-				{ parent: post._id },
-				"_id image",
-			).session(session);
-			const replyids = replies.map((r) => r._id);
-			replies.foreach((r) => {
-				if (r.image) imagepaths.push(r.image);
-			});
+	if (!post.parent) {
+		const replies = await Post.find(
+			{ parent: post._id },
+			"_id image",
+		).session(session);
+		const replyIds = replies.map((r) => r._id);
+		replies.forEach((r) => {
+			if (r.image) imagePaths.push(r.image);
+		});
 
-			await cleanuppostnotifications([post._id, ...replyids], session);
-			await pendingreplydigest.deleteone({ toplevelcomment: post._id }).session(
-				session,
-			);
+		await cleanupPostNotifications([post._id, ...replyIds], session);
+		await PendingReplyDigest.deleteOne({ topLevelComment: post._id }).session(
+			session,
+		);
 
-			await like.deletemany({
-				post: { $in: [post._id, ...replyids] },
-			}).session(session);
+		await Like.deleteMany({
+			post: { $in: [post._id, ...replyIds] },
+		}).session(session);
 
-			if (replyids.length > 0) {
-				await post.deletemany({ _id: { $in: replyids } }).session(session);
-			}
-			await post.findbyidanddelete(post._id).session(session);
-		} else {
-			await cleanuppostnotifications([post._id], session);
-			await pendingreplydigest.deleteone({
-				toplevelcomment: post.parent,
-			}).session(session);
-
-			await like.deletemany({ post: post._id }).session(session);
-
-			await post.findbyidanddelete(post._id).session(session);
-			await post.findoneandupdate(
-				{ _id: post.parent, replycount: { $gt: 0 } },
-				{ $inc: { replycount: -1 } },
-			).session(session);
+		if (replyIds.length > 0) {
+			await Post.deleteMany({ _id: { $in: replyIds } }).session(session);
 		}
+		await Post.findByIdAndDelete(post._id).session(session);
+	} else {
+		await cleanupPostNotifications([post._id], session);
+		await PendingReplyDigest.deleteOne({
+			topLevelComment: post.parent,
+		}).session(session);
+
+		await Like.deleteMany({ post: post._id }).session(session);
+
+		await Post.findByIdAndDelete(post._id).session(session);
+		await Post.findOneAndUpdate(
+			{ _id: post.parent, replyCount: { $gt: 0 } },
+			{ $inc: { replyCount: -1 } },
+		).session(session);
+	}
 
 	return imagePaths;
 }
