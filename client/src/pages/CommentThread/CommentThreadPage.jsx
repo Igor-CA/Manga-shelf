@@ -107,11 +107,17 @@ export default function CommentThreadPage() {
 			<div className="container">
 				<div className="comment-thread__context-card">
 					<Link to={detailLink} className="comment-thread__context-cover-link">
-						<img
-							src={`${import.meta.env.REACT_APP_HOST_ORIGIN}/images/medium/${context.coverFilename}`}
-							alt={context.seriesTitle}
-							className="comment-thread__context-cover"
-						/>
+						{context.coverFilename ? (
+							<img
+								src={`${import.meta.env.REACT_APP_HOST_ORIGIN}/images/medium/${context.coverFilename}`}
+								alt={context.seriesTitle}
+								className="comment-thread__context-cover"
+							/>
+						) : (
+							<div className="comment-thread__context-cover comment-thread__context-cover--adult">
+								+18
+							</div>
+						)}
 					</Link>
 					<div className="comment-thread__context-info">
 						<Link to={detailLink} className="comment-thread__context-title">

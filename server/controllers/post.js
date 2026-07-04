@@ -577,13 +577,15 @@ exports.getPostThread = asyncHandler(async (req, res) => {
 		withholdHidden(reply);
 	});
 
-	const series = await Series.findById(topLevelDoc.series).select("title");
+	const series = await Series.findById(topLevelDoc.series).select("title isAdult");
 	if (!series) {
 		return res.status(404).json({ msg: "Esse comentário não existe mais" });
 	}
 
+	const hideCover = series.isAdult && !viewerAllowsAdult;
+
 	let volumeNumber = null;
-	let coverFilename = getSeriesCoverURL(series);
+	let coverFilename = hideCover ? null : getSeriesCoverURL(series);
 	if (topLevelDoc.volume) {
 		const volume = await Volume.findById(topLevelDoc.volume).select(
 			"number isVariant variantNumber",
@@ -592,17 +594,20 @@ exports.getPostThread = asyncHandler(async (req, res) => {
 			return res.status(404).json({ msg: "Esse comentário não existe mais" });
 		}
 		volumeNumber = volume.number;
-		coverFilename = getVolumeCoverURL(
-			series,
-			volume.number,
-			volume.isVariant,
-			volume.variantNumber,
-		);
+		coverFilename = hideCover
+			? null
+			: getVolumeCoverURL(
+					series,
+					volume.number,
+					volume.isVariant,
+					volume.variantNumber,
+				);
 	}
 
 	const context = {
 		seriesId: topLevelDoc.series,
 		seriesTitle: series.title,
+		isAdult: series.isAdult,
 		volumeId: topLevelDoc.volume,
 		volumeNumber,
 		coverFilename,

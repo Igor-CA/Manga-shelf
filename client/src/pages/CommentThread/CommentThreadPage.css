@@ -20,6 +20,17 @@
 	border-radius: 0.25rem;
 }
 
+.comment-thread__context-cover--adult {
+	aspect-ratio: 2 / 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: black;
+	color: white;
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+
 .comment-thread__context-info {
 	display: flex;
 	flex-direction: column;
