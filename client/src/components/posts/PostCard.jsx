@@ -37,10 +37,20 @@ export default function PostCard({
 	onLikeChange,
 	onReply,
 	replySubmitting,
+	highlightId,
+	initialReplies,
 }) {
 	const { user } = useContext(UserContext);
 	const { addMessage, setMessageType } = useContext(messageContext);
 	const navigate = useNavigate();
+	const cardRef = useRef(null);
+	const isHighlighted = !!highlightId && post._id === highlightId;
+
+	useEffect(() => {
+		if (isHighlighted && cardRef.current) {
+			cardRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+		}
+	}, [isHighlighted]);
 	const {
 		author,
 		text,
@@ -207,7 +217,10 @@ export default function PostCard({
 	};
 
 	return (
-		<div className={`post-card${isReply ? " post-card--reply" : ""}`}>
+		<div
+			ref={cardRef}
+			className={`post-card${isReply ? " post-card--reply" : ""}${isHighlighted ? " post-card--highlighted" : ""}`}
+		>
 			<div className="post-card__header">
 				<Link
 					to={`/user/${author.username}`}
@@ -393,6 +406,8 @@ export default function PostCard({
 					volumeId={volumeId}
 					showForm={showReplyForm}
 					onSubmitted={() => setShowReplyForm(false)}
+					initialReplies={initialReplies}
+					highlightId={highlightId}
 				/>
 			)}
 			{isReply && onReply && showReplyForm && (

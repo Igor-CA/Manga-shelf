@@ -40,6 +40,9 @@ const VolumeSubmissionPage = lazy(
 	() => import("./pages/SubmissionsPage/VolumesSubmissionPage"),
 );
 const AdminDashboard = lazy(() => import("./pages/AdminPages/AdminDashboard"));
+const CommentThreadPage = lazy(
+	() => import("./pages/CommentThread/CommentThreadPage"),
+);
 
 export const LoadingPageComponent = () => {
 	return (
@@ -100,6 +103,7 @@ function App() {
 							element={<VolumeSubmissionPage />}
 						></Route>
 						<Route path="/dashboard" element={<AdminDashboard />}></Route>
+						<Route path="/post/:postId" element={<CommentThreadPage />}></Route>
 
 						<Route path="*" element={<NotFound />}></Route>
 					</Routes>

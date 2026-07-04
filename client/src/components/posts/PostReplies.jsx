@@ -12,6 +12,8 @@ export default function PostReplies({
 	volumeId,
 	showForm,
 	onSubmitted,
+	initialReplies,
+	highlightId,
 }) {
 	const { user } = useContext(UserContext);
 	const { confirm } = usePrompt();
@@ -30,7 +32,7 @@ export default function PostReplies({
 		editReply,
 		deleteReply,
 		deletePreview,
-	} = useReplies(post, seriesId, volumeId);
+	} = useReplies(post, seriesId, volumeId, initialReplies);
 
 	const handleSubmit = async (text, reviewData, media) => {
 		const ok = await submitReply(text, media);
@@ -75,6 +77,7 @@ export default function PostReplies({
 								isReply={true}
 								onReply={submitReply}
 								replySubmitting={submitting}
+								highlightId={highlightId}
 							/>
 						))}
 						{loading && renderReplySkeletons()}
@@ -87,9 +90,11 @@ export default function PostReplies({
 							Ver mais respostas
 						</button>
 					)}
-					<button className="post-card__toggle-replies" onClick={collapse}>
-						Ocultar respostas
-					</button>
+					{replyCount > 0 && (
+						<button className="post-card__toggle-replies" onClick={collapse}>
+							Ocultar respostas
+						</button>
+					)}
 				</>
 			) : loading ? (
 				<div className="post-card__replies-list">{renderReplySkeletons()}</div>
@@ -103,6 +108,7 @@ export default function PostReplies({
 							isReply={true}
 							onReply={submitReply}
 							replySubmitting={submitting}
+							highlightId={highlightId}
 						/>
 					)}
 					{(previewShown ? replyCount > 1 : replyCount > 0) && (

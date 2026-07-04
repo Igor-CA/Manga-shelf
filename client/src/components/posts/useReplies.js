@@ -3,21 +3,31 @@ import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import createPostRequest from "./createPostRequest";
-import editPostRequest from "./editPostRequest";
+import usePostMutations from "./usePostMutations";
 
 export const REPLIES_PER_PAGE = 5;
 
-export default function useReplies(post, seriesId, volumeId) {
+export default function useReplies(post, seriesId, volumeId, initialReplies = null) {
 	const { user } = useContext(UserContext);
 	const { addMessage, setMessageType } = useContext(messageContext);
 
 	const [replyCount, setReplyCount] = useState(post.replyCount || 0);
-	const [replies, setReplies] = useState(null);
+	const [replies, setReplies] = useState(initialReplies);
 	const [page, setPage] = useState(1);
 	const [hasMore, setHasMore] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const [previewHidden, setPreviewHidden] = useState(false);
+
+	const { editPost: editReply, deletePost } = usePostMutations({
+		seriesId,
+		volumeId,
+		getPost: (id) => (replies ? replies.find((r) => r._id === id) : null),
+		patchPost: (id, fields) =>
+			setReplies((prev) =>
+				prev ? prev.map((r) => (r._id === id ? { ...r, ...fields } : r)) : prev,
+			),
+	});
 
 	const isExpanded = replies !== null;
 
@@ -119,104 +129,30 @@ export default function useReplies(post, seriesId, volumeId) {
 		}
 	};
 
-	const editReply = async (replyId, patch) => {
-		const target = replies?.find((r) => r._id === replyId);
-		if (!target) return false;
-
-		const hadImage = !!target.image;
-		const isNewFile = patch.image instanceof File;
-		const removeImage = !isNewFile && patch.image === null && hadImage;
-		const optimisticImage = isNewFile
-			? URL.createObjectURL(patch.image)
-			: removeImage
-				? null
-				: target.image;
-
-		setReplies((prev) =>
-			prev.map((r) =>
-				r._id === replyId
-					? {
-							...r,
-							text: patch.text,
-							isSpoiler: patch.isSpoiler,
-							isAdultContent: patch.isAdultContent,
-							image: optimisticImage,
-							editedAt: new Date().toISOString(),
-						}
-					: r,
-			),
-		);
-
-		try {
-			const res = await editPostRequest({
-				postId: replyId,
-				seriesId,
-				volumeId,
-				text: patch.text,
-				isSpoiler: patch.isSpoiler,
-				isAdultContent: patch.isAdultContent,
-				image: isNewFile ? patch.image : null,
-				removeImage,
-			});
-			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
-			setReplies((prev) =>
-				prev.map((r) =>
-					r._id === replyId
-						? {
-								...r,
-								text: res.data.post.text,
-								image: res.data.post.image,
-								isSpoiler: res.data.post.isSpoiler,
-								isAdultContent: res.data.post.isAdultContent,
-								editedAt: res.data.post.editedAt,
-							}
-						: r,
-				),
-			);
-			setMessageType("Success");
-			addMessage("Alterações salvas");
-			return true;
-		} catch (error) {
-			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
-			setReplies((prev) => prev.map((r) => (r._id === replyId ? target : r)));
-			addMessage(error.response?.data?.msg || "Erro ao salvar alterações");
-			return false;
-		}
-	};
-
-	const deleteFromServer = async (replyId) => {
-		await axios({
-			method: "DELETE",
-			withCredentials: true,
-			headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-			url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post/${replyId}`,
+	const deleteReply = async (replyId) => {
+		await deletePost(replyId, {
+			applyRemoval: () => {
+				const previous = replies;
+				setReplies((prev) => (prev ? prev.filter((r) => r._id !== replyId) : prev));
+				setReplyCount((prev) => Math.max(0, prev - 1));
+				return () => {
+					setReplies(previous);
+					setReplyCount((prev) => prev + 1);
+				};
+			},
+			successText: "Resposta removida",
+			errorText: "Erro ao remover resposta",
 		});
 	};
 
-	const deleteReply = async (replyId) => {
-		const previous = replies;
-		setReplies((prev) => (prev ? prev.filter((r) => r._id !== replyId) : prev));
-		setReplyCount((prev) => Math.max(0, prev - 1));
-		try {
-			await deleteFromServer(replyId);
-			setMessageType("Success");
-			addMessage("Resposta removida");
-		} catch (error) {
-			setReplies(previous);
-			setReplyCount((prev) => prev + 1);
-			addMessage(error.response?.data?.msg || "Erro ao remover resposta");
-		}
-	};
-
 	const deletePreview = async (replyId) => {
-		try {
-			await deleteFromServer(replyId);
+		const ok = await deletePost(replyId, {
+			successText: "Resposta removida",
+			errorText: "Erro ao remover resposta",
+		});
+		if (ok) {
 			setPreviewHidden(true);
 			setReplyCount((prev) => Math.max(0, prev - 1));
-			setMessageType("Success");
-			addMessage("Resposta removida");
-		} catch (error) {
-			addMessage(error.response?.data?.msg || "Erro ao remover resposta");
 		}
 	};
 

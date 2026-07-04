@@ -9,7 +9,7 @@ import PostForm from "./PostForm";
 import SkeletonPostCard from "./SkeletonPostCard";
 import usePostList, { POSTS_PER_PAGE } from "./usePostList";
 import createPostRequest from "./createPostRequest";
-import editPostRequest from "./editPostRequest";
+import usePostMutations from "./usePostMutations";
 import "./PostsSection.css";
 
 function renderSkeletons(count) {
@@ -99,6 +99,25 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 
 	const reviewList = usePostList(seriesId, volumeId, "review", "top");
 	const commentList = usePostList(seriesId, volumeId, "comment", "top");
+
+	const reviewMutations = usePostMutations({
+		seriesId,
+		volumeId,
+		getPost: (id) => reviewList.posts.find((p) => p._id === id),
+		patchPost: (id, fields) =>
+			reviewList.setPosts((prev) =>
+				prev.map((p) => (p._id === id ? { ...p, ...fields } : p)),
+			),
+	});
+	const commentMutations = usePostMutations({
+		seriesId,
+		volumeId,
+		getPost: (id) => commentList.posts.find((p) => p._id === id),
+		patchPost: (id, fields) =>
+			commentList.setPosts((prev) =>
+				prev.map((p) => (p._id === id ? { ...p, ...fields } : p)),
+			),
+	});
 
 	const ratingRequest = (method, score) =>
 		axios({
@@ -253,91 +272,20 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 		}
 	};
 
-	const makeEditHandler = (list) => async (postId, patch) => {
-		const target = list.posts.find((p) => p._id === postId);
-		if (!target) return false;
-
-		const hadImage = !!target.image;
-		const isNewFile = patch.image instanceof File;
-		const removeImage = !isNewFile && patch.image === null && hadImage;
-		const optimisticImage = isNewFile
-			? URL.createObjectURL(patch.image)
-			: removeImage
-				? null
-				: target.image;
-
-		list.setPosts((prev) =>
-			prev.map((p) =>
-				p._id === postId
-					? {
-							...p,
-							text: patch.text,
-							isSpoiler: patch.isSpoiler,
-							isAdultContent: patch.isAdultContent,
-							image: optimisticImage,
-							editedAt: new Date().toISOString(),
-						}
-					: p,
-			),
-		);
-
-		try {
-			const res = await editPostRequest({
-				postId,
-				seriesId,
-				volumeId,
-				text: patch.text,
-				isSpoiler: patch.isSpoiler,
-				isAdultContent: patch.isAdultContent,
-				image: isNewFile ? patch.image : null,
-				removeImage,
-			});
-			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
-			list.setPosts((prev) =>
-				prev.map((p) =>
-					p._id === postId
-						? {
-								...p,
-								text: res.data.post.text,
-								image: res.data.post.image,
-								isSpoiler: res.data.post.isSpoiler,
-								isAdultContent: res.data.post.isAdultContent,
-								editedAt: res.data.post.editedAt,
-							}
-						: p,
-				),
-			);
-			setMessageType("Success");
-			addMessage("Alterações salvas");
-			return true;
-		} catch (err) {
-			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
-			list.setPosts((prev) => prev.map((p) => (p._id === postId ? target : p)));
-			addMessage(err.response?.data?.msg || "Erro ao salvar alterações");
-			return false;
-		}
-	};
-
 	const makeDeleteHandler =
-		(list, { confirmText, successText, errorNoun }) =>
+		(list, mutations, { confirmText, successText, errorNoun }) =>
 		(postId) => {
-			confirm(confirmText, async () => {
-				const previous = list.posts;
-				list.setPosts((prev) => prev.filter((p) => p._id !== postId));
-				try {
-					await axios({
-						method: "DELETE",
-						withCredentials: true,
-						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-						url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post/${postId}`,
-					});
-					setMessageType("Success");
-					addMessage(successText);
-				} catch (err) {
-					list.setPosts(previous);
-					addMessage(err.response?.data?.msg || `Erro ao remover ${errorNoun}`);
-				}
-			});
+			confirm(confirmText, () =>
+				mutations.deletePost(postId, {
+					applyRemoval: () => {
+						const previous = list.posts;
+						list.setPosts((prev) => prev.filter((p) => p._id !== postId));
+						return () => list.setPosts(previous);
+					},
+					successText,
+					errorText: `Erro ao remover ${errorNoun}`,
+				}),
+			);
 		};
 
 	return (
@@ -361,12 +309,12 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 						seriesId={seriesId}
 						volumeId={volumeId}
 						user={user}
-						onDelete={makeDeleteHandler(reviewList, {
+						onDelete={makeDeleteHandler(reviewList, reviewMutations, {
 							confirmText: "Tem certeza que deseja excluir sua review?",
 							successText: "Review removida",
 							errorNoun: "review",
 						})}
-						onEdit={makeEditHandler(reviewList)}
+						onEdit={reviewMutations.editPost}
 						label="Reviews"
 						icon={<FaStar aria-hidden="true" />}
 						emptyMessage="Nenhuma review ainda."
@@ -377,12 +325,12 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 						seriesId={seriesId}
 						volumeId={volumeId}
 						user={user}
-						onDelete={makeDeleteHandler(commentList, {
+						onDelete={makeDeleteHandler(commentList, commentMutations, {
 							confirmText: "Tem certeza que deseja excluir seu comentário?",
 							successText: "Comentário removido",
 							errorNoun: "comentário",
 						})}
-						onEdit={makeEditHandler(commentList)}
+						onEdit={commentMutations.editPost}
 						label="Comentários"
 						icon={<FaRegCommentAlt aria-hidden="true" />}
 						emptyMessage="Nenhum comentário ainda. Seja o primeiro a comentar!"

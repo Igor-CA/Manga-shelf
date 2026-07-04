@@ -28,6 +28,7 @@ router.get("/series/:id", seriesController.getSeriesDetails);
 //Comments api
 router.get("/posts", postController.getPosts);
 router.get("/posts/:id/replies", postController.getReplies);
+router.get("/post/:id/thread", postController.getPostThread);
 
 //Volumes api
 router.get("/volume/:id", volumesController.getVolumeDetails);

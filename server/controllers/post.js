@@ -12,6 +12,7 @@ const asyncHandler = require("express-async-handler");
 const path = require("path");
 const fs = require("fs");
 const sharp = require("sharp");
+const { getSeriesCoverURL, getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const {
 	sendNewReplyNotification,
 	sendNewLikeNotification,
@@ -93,6 +94,36 @@ function makeViewerLikeStages(viewerId) {
 	}
 	return [{ $addFields: { likedByViewer: false } }];
 }
+
+const reviewScoreLookupStages = [
+	{
+		$lookup: {
+			from: "ratings",
+			let: { author: "$author", series: "$series", volume: "$volume" },
+			pipeline: [
+				{
+					$match: {
+						$expr: {
+							$and: [
+								{ $eq: ["$user", "$$author"] },
+								{ $eq: ["$series", "$$series"] },
+								{ $eq: ["$volume", "$$volume"] },
+							],
+						},
+					},
+				},
+				{ $limit: 1 },
+			],
+			as: "ratingArr",
+		},
+	},
+	{
+		$addFields: {
+			reviewScore: { $arrayElemAt: ["$ratingArr.score", 0] },
+		},
+	},
+	{ $unset: "ratingArr" },
+];
 
 function gateImage(post, viewerAllowsAdult, viewerId) {
 	const isAuthor =
@@ -410,35 +441,7 @@ exports.getPosts = asyncHandler(async (req, res) => {
 		...(isReviewType ? { isReview: true } : { isReview: { $ne: true } }),
 	};
 
-	const ratingLookupStages = isReviewType ? [
-		{
-			$lookup: {
-				from: "ratings",
-				let: { author: "$author", series: "$series", volume: "$volume" },
-				pipeline: [
-					{
-						$match: {
-							$expr: {
-								$and: [
-									{ $eq: ["$user", "$$author"] },
-									{ $eq: ["$series", "$$series"] },
-									{ $eq: ["$volume", "$$volume"] },
-								],
-							},
-						},
-					},
-					{ $limit: 1 },
-				],
-				as: "ratingArr",
-			},
-		},
-		{
-			$addFields: {
-				reviewScore: { $arrayElemAt: ["$ratingArr.score", 0] },
-			},
-		},
-		{ $unset: "ratingArr" },
-	] : [];
+	const ratingLookupStages = isReviewType ? reviewScoreLookupStages : [];
 
 	const reviewProjection = isReviewType ? { isReview: 1, reviewScore: 1 } : {};
 
@@ -517,6 +520,95 @@ exports.getReplies = asyncHandler(async (req, res) => {
 	});
 
 	res.json(replies);
+});
+
+exports.getPostThread = asyncHandler(async (req, res) => {
+	const postId = req.params.id;
+	if (!mongoose.Types.ObjectId.isValid(postId)) {
+		return res.status(400).json({ msg: "ID de comentário inválido" });
+	}
+
+	const requestedPost = await Post.findById(postId).select("parent");
+	if (!requestedPost) {
+		return res.status(404).json({ msg: "Esse comentário não existe mais" });
+	}
+
+	const highlightId = requestedPost._id;
+	const topLevelId = requestedPost.parent || requestedPost._id;
+
+	const topLevelDoc = await Post.findById(topLevelId).select(
+		"series volume isReview",
+	);
+	if (!topLevelDoc) {
+		return res.status(404).json({ msg: "Esse comentário não existe mais" });
+	}
+
+	const viewerAllowsAdult = !!req.user?.allowAdult;
+	const viewerId = req.user ? req.user._id : null;
+	const viewerLikeStages = makeViewerLikeStages(viewerId);
+
+	const [topLevel] = await Post.aggregate([
+		{ $match: { _id: topLevelId } },
+		...attachAuthorStages,
+		...viewerLikeStages,
+		...(topLevelDoc.isReview ? reviewScoreLookupStages : []),
+		{
+			$project: {
+				...basePostProjection,
+				replyCount: 1,
+				...(topLevelDoc.isReview ? { isReview: 1, reviewScore: 1 } : {}),
+			},
+		},
+	]);
+
+	gateImage(topLevel, viewerAllowsAdult, viewerId);
+	withholdHidden(topLevel);
+
+	const replies = await Post.aggregate([
+		{ $match: { parent: topLevelId } },
+		{ $sort: { createdAt: 1 } },
+		...attachAuthorStages,
+		...viewerLikeStages,
+		{ $project: basePostProjection },
+	]);
+
+	replies.forEach((reply) => {
+		gateImage(reply, viewerAllowsAdult, viewerId);
+		withholdHidden(reply);
+	});
+
+	const series = await Series.findById(topLevelDoc.series).select("title");
+	if (!series) {
+		return res.status(404).json({ msg: "Esse comentário não existe mais" });
+	}
+
+	let volumeNumber = null;
+	let coverFilename = getSeriesCoverURL(series);
+	if (topLevelDoc.volume) {
+		const volume = await Volume.findById(topLevelDoc.volume).select(
+			"number isVariant variantNumber",
+		);
+		if (!volume) {
+			return res.status(404).json({ msg: "Esse comentário não existe mais" });
+		}
+		volumeNumber = volume.number;
+		coverFilename = getVolumeCoverURL(
+			series,
+			volume.number,
+			volume.isVariant,
+			volume.variantNumber,
+		);
+	}
+
+	const context = {
+		seriesId: topLevelDoc.series,
+		seriesTitle: series.title,
+		volumeId: topLevelDoc.volume,
+		volumeNumber,
+		coverFilename,
+	};
+
+	res.json({ topLevel, replies, highlightId, context });
 });
 
 exports.likePost = asyncHandler(async (req, res) => {

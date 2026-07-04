@@ -335,10 +335,11 @@ exports.sendNewLikeNotification = async (post, recipientId, liker, likeCount) =>
 		const commentsPath = post.volume
 			? `/volume/${post.volume}/comments`
 			: `/series/${post.series}/comments`;
+		const postLink = `[[${post.isReview ? "sua review" : "seu comentário"}|/post/${post._id}]]`;
 
 		const text = likeCount === 1
-			? `${likerLink} curtiu seu comentário em [[${seriesTitle}|${commentsPath}]]`
-			: `${likerLink} ${othersPhrase(likeCount - 1)} curtiram seu comentário em [[${seriesTitle}|${commentsPath}]]`;
+			? `${likerLink} curtiu ${postLink} em [[${seriesTitle}|${commentsPath}]]`
+			: `${likerLink} ${othersPhrase(likeCount - 1)} curtiram ${postLink} em [[${seriesTitle}|${commentsPath}]]`;
 
 		let notification = await Notification.findOne({
 			eventKey: "new_like",
@@ -371,11 +372,8 @@ exports.sendPostHiddenNotification = async (post) => {
 	try {
 		const series = await Series.findById(post.series).select("title");
 		const seriesTitle = series ? series.title : "";
-		const commentsPath = post.volume
-			? `/volume/${post.volume}/comments`
-			: `/series/${post.series}/comments`;
 
-		const text = `Seu comentário em [[${seriesTitle}|${commentsPath}]] foi denunciado por "Ódio ou discurso abusivo" e por isso está oculto e em análise`;
+		const text = `[[Seu comentário|/post/${post._id}]] em ${seriesTitle} foi denunciado por "Ódio ou discurso abusivo" e por isso está oculto e em análise`;
 
 		let notification = await Notification.findOne({
 			eventKey: "post_hidden",
@@ -440,7 +438,7 @@ exports.dispatchReplyDigests = async () => {
 		try {
 			const topLevelComment = await Post.findById(
 				digest.topLevelComment,
-			).select("series volume");
+			).select("series volume isReview");
 
 			if (!topLevelComment) {
 				await PendingReplyDigest.deleteOne({ _id: digest._id });
@@ -454,12 +452,13 @@ exports.dispatchReplyDigests = async () => {
 			const commentsPath = topLevelComment.volume
 				? `/volume/${topLevelComment.volume}/comments`
 				: `/series/${topLevelComment.series}/comments`;
+			const postLink = `[[${topLevelComment.isReview ? "sua review" : "seu comentário"}|/post/${topLevelComment._id}]]`;
 
 			const [first, ...rest] = digest.repliers;
 			const firstLink = `[[${first.username}|/user/${first.username}]]`;
 			const text = rest.length > 0
-				? `${firstLink} ${othersPhrase(rest.length)} responderam seu comentário em [[${seriesTitle}|${commentsPath}]]`
-				: `${firstLink} respondeu seu comentário em [[${seriesTitle}|${commentsPath}]]`;
+				? `${firstLink} ${othersPhrase(rest.length)} responderam ${postLink} em [[${seriesTitle}|${commentsPath}]]`
+				: `${firstLink} respondeu ${postLink} em [[${seriesTitle}|${commentsPath}]]`;
 
 			const firstReplier = await User.findById(first.user).select(
 				"profileImageUrl",
@@ -495,7 +494,8 @@ exports.sendNewMentionNotification = async (
 		const commentsPath = volumeId
 			? `/volume/${volumeId}/comments`
 			: `/series/${seriesId}/comments`;
-		const text = `[[${mentioner.username}|/user/${mentioner.username}]] mencionou você em [[${seriesTitle}|${commentsPath}]]`;
+		const mentionerLink = `[[${mentioner.username}|/user/${mentioner.username}]]`;
+		const text = `${mentionerLink} mencionou você em [[um comentário|/post/${reply._id}]] sobre [[${seriesTitle}|${commentsPath}]]`;
 
 		const notification = await Notification.create({
 			group: "social",
