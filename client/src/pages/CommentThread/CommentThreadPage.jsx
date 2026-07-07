@@ -143,6 +143,7 @@ export default function CommentThreadPage() {
 						volumeId={context.volumeId}
 						highlightId={highlightId}
 						initialReplies={replies}
+						showThreadLink={false}
 					/>
 				</div>
 			</div>

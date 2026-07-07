@@ -342,6 +342,20 @@
 	cursor: not-allowed;
 }
 
+.post-card__thread-link {
+	color: var(--text);
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-decoration: none;
+	align-self: flex-start;
+	opacity: 0.7;
+}
+
+.post-card__thread-link:hover {
+	opacity: 1;
+	text-decoration: underline;
+}
+
 .post-card__more-replies {
 	margin: 0.5rem 0.75rem;
 	align-self: flex-start;

@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { Link } from "react-router-dom";
 import PostCard from "./PostCard";
 import PostForm from "./PostForm";
 import SkeletonPostCard from "./SkeletonPostCard";
@@ -14,6 +15,7 @@ export default function PostReplies({
 	onSubmitted,
 	initialReplies,
 	highlightId,
+	showThreadLink = true,
 }) {
 	const { user } = useContext(UserContext);
 	const { confirm } = usePrompt();
@@ -117,6 +119,12 @@ export default function PostReplies({
 						</button>
 					)}
 				</>
+			)}
+
+			{showThreadLink && (
+				<Link to={`/post/${post._id}`} className="post-card__thread-link">
+					Ver conversa completa
+				</Link>
 			)}
 		</div>
 	);

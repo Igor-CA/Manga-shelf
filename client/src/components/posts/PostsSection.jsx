@@ -4,92 +4,12 @@ import { FaStar, FaRegCommentAlt } from "react-icons/fa";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import { usePrompt } from "../../contexts/PromptContext";
-import PostCard from "./PostCard";
 import PostForm from "./PostForm";
-import SkeletonPostCard from "./SkeletonPostCard";
-import usePostList, { POSTS_PER_PAGE } from "./usePostList";
+import PostList from "./PostList";
+import usePostList from "./usePostList";
 import createPostRequest from "./createPostRequest";
 import usePostMutations from "./usePostMutations";
 import "./PostsSection.css";
-
-function renderSkeletons(count) {
-	return Array.from({ length: count }).map((_, i) => (
-		<SkeletonPostCard key={`skeleton-${i}`} />
-	));
-}
-
-function PostList({
-	list,
-	seriesId,
-	volumeId,
-	user,
-	onDelete,
-	onEdit,
-	emptyMessage,
-	label,
-	icon,
-}) {
-	const { posts, hasMore, loading, sort, setSort, loadMore } = list;
-
-	return (
-		<div className="posts-section">
-			<div className="posts-section__header">
-				<h2 className="posts-section__title">
-					{icon}
-					<span>{label}</span>
-				</h2>
-				{posts.length > 0 && (
-					<span className="posts-section__count">
-						{posts.length}
-						{hasMore ? "+" : ""}
-					</span>
-				)}
-			</div>
-
-			<div className="posts-section__sort" role="tablist">
-				<button
-					className={`posts-section__sort-btn${sort === "top" ? " posts-section__sort-btn--active" : ""}`}
-					onClick={() => setSort("top")}
-				>
-					Curtidos
-				</button>
-				<button
-					className={`posts-section__sort-btn${sort === "recent" ? " posts-section__sort-btn--active" : ""}`}
-					onClick={() => setSort("recent")}
-				>
-					Recentes
-				</button>
-			</div>
-
-			{loading && posts.length === 0 ? (
-				<div className="posts-list">{renderSkeletons(POSTS_PER_PAGE)}</div>
-			) : posts.length === 0 ? (
-				<p className="posts-section__empty">{emptyMessage}</p>
-			) : (
-				<div className="posts-list">
-					{posts.map((post) => (
-						<PostCard
-							key={post._id}
-							post={post}
-							canDelete={user && user.username === post.author?.username}
-							onDelete={onDelete}
-							onEdit={onEdit}
-							seriesId={seriesId}
-							volumeId={volumeId}
-						/>
-					))}
-					{loading && renderSkeletons(POSTS_PER_PAGE)}
-				</div>
-			)}
-
-			{hasMore && !loading && (
-				<button className="button posts-section__more" onClick={loadMore}>
-					Ver mais
-				</button>
-			)}
-		</div>
-	);
-}
 
 export default function PostsSection({ seriesId, volumeId, rating }) {
 	const { user } = useContext(UserContext);
@@ -97,8 +17,17 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 	const { confirm } = usePrompt();
 	const [submitting, setSubmitting] = useState(false);
 
-	const reviewList = usePostList(seriesId, volumeId, "review", "top");
-	const commentList = usePostList(seriesId, volumeId, "comment", "top");
+	const postsUrl = `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/posts`;
+	const reviewList = usePostList(
+		postsUrl,
+		{ seriesId, volumeId, type: "review" },
+		"top",
+	);
+	const commentList = usePostList(
+		postsUrl,
+		{ seriesId, volumeId, type: "comment" },
+		"top",
+	);
 
 	const reviewMutations = usePostMutations({
 		seriesId,

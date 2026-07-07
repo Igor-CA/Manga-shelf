@@ -25,7 +25,8 @@ export default function ProfileHeader({ user }) {
 			{ to: `/user/${user}/stats`, label: "Informações" },
 			{ to: `/user/${user}/gallery`, label: "Galeria" },
 			{ to: `/user/${user}/socials`, label: "Social" },
-			{ to: `/user/${user}/submissions`, label: "Submissões"}
+			{ to: `/user/${user}/submissions`, label: "Submissões"},
+			{ to: `/user/${user}/comments`, label: "Comentários" }
 		],
 		[user]
 	);

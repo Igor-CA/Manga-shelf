@@ -490,6 +490,87 @@ exports.getPosts = asyncHandler(async (req, res) => {
 	res.json(posts);
 });
 
+exports.getUserPosts = asyncHandler(async (req, res) => {
+	const { username } = req.params;
+	const { sort, type } = req.query;
+
+	const targetUser = await User.findOne({ username }).select("_id");
+	if (!targetUser) {
+		return res.status(404).json({ msg: "Usuário não encontrado" });
+	}
+
+	const viewerAllowsAdult = !!req.user?.allowAdult;
+	const viewerId = req.user ? req.user._id : null;
+	const viewerLikeStages = makeViewerLikeStages(viewerId);
+
+	const page = parseInt(req.query.p) || 1;
+	const skip = POSTS_PER_PAGE * (page - 1);
+
+	const sortStage = sort === "recent"
+		? { createdAt: -1 }
+		: { likeCount: -1, createdAt: -1 };
+
+	const isReviewType = type === "review";
+
+	const matchStage = {
+		author: targetUser._id,
+		parent: null,
+		...(isReviewType ? { isReview: true } : { isReview: { $ne: true } }),
+	};
+
+	const ratingLookupStages = isReviewType ? reviewScoreLookupStages : [];
+	const reviewProjection = isReviewType ? { isReview: 1, reviewScore: 1 } : {};
+
+	const posts = await Post.aggregate([
+		{ $match: matchStage },
+		{ $sort: sortStage },
+		{ $skip: skip },
+		{ $limit: POSTS_PER_PAGE },
+		...attachAuthorStages,
+		...viewerLikeStages,
+		...ratingLookupStages,
+		{
+			$lookup: {
+				from: "series",
+				localField: "series",
+				foreignField: "_id",
+				as: "seriesInfo",
+				pipeline: [{ $project: { title: 1 } }],
+			},
+		},
+		{ $unwind: "$seriesInfo" },
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "volume",
+				foreignField: "_id",
+				as: "volumeInfo",
+				pipeline: [{ $project: { number: 1 } }],
+			},
+		},
+		{
+			$project: {
+				...basePostProjection,
+				...reviewProjection,
+				replyCount: 1,
+				context: {
+					seriesId: "$series",
+					seriesTitle: "$seriesInfo.title",
+					volumeId: "$volume",
+					volumeNumber: { $arrayElemAt: ["$volumeInfo.number", 0] },
+				},
+			},
+		},
+	]);
+
+	posts.forEach((post) => {
+		gateImage(post, viewerAllowsAdult, viewerId);
+		withholdHidden(post);
+	});
+
+	res.json(posts);
+});
+
 exports.getReplies = asyncHandler(async (req, res) => {
 	const postId = req.params.id;
 	if (!mongoose.Types.ObjectId.isValid(postId)) {

@@ -39,6 +39,7 @@ export default function PostCard({
 	replySubmitting,
 	highlightId,
 	initialReplies,
+	showThreadLink = true,
 }) {
 	const { user } = useContext(UserContext);
 	const { addMessage, setMessageType } = useContext(messageContext);
@@ -408,6 +409,7 @@ export default function PostCard({
 					onSubmitted={() => setShowReplyForm(false)}
 					initialReplies={initialReplies}
 					highlightId={highlightId}
+					showThreadLink={showThreadLink}
 				/>
 			)}
 			{isReply && onReply && showReplyForm && (

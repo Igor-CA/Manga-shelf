@@ -3,7 +3,7 @@ import axios from "axios";
 
 export const POSTS_PER_PAGE = 20;
 
-export default function usePostList(seriesId, volumeId, type, defaultSort = "top") {
+export default function usePostList(url, params, defaultSort = "top") {
 	const [posts, setPosts] = useState([]);
 	const [page, setPage] = useState(1);
 	const [hasMore, setHasMore] = useState(false);
@@ -11,14 +11,12 @@ export default function usePostList(seriesId, volumeId, type, defaultSort = "top
 	const [sort, setSort] = useState(defaultSort);
 
 	const doFetch = async (pageToFetch, sortValue) => {
-		const params = { seriesId, p: pageToFetch, sort: sortValue, type };
-		if (volumeId) params.volumeId = volumeId;
 		const res = await axios({
 			method: "GET",
 			withCredentials: true,
 			headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
-			url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/posts`,
-			params,
+			url,
+			params: { ...params, p: pageToFetch, sort: sortValue },
 		});
 		return res.data;
 	};
@@ -39,7 +37,7 @@ export default function usePostList(seriesId, volumeId, type, defaultSort = "top
 		return () => {
 			active = false;
 		};
-	}, [seriesId, volumeId, sort]);
+	}, [url, JSON.stringify(params), sort]);
 
 	const loadMore = async () => {
 		setLoading(true);

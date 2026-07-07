@@ -10,6 +10,9 @@ export default function usePostMutations({ seriesId, volumeId, getPost, patchPos
 		const target = getPost(postId);
 		if (!target) return false;
 
+		const effectiveSeriesId = seriesId ?? target.context?.seriesId;
+		const effectiveVolumeId = volumeId ?? target.context?.volumeId;
+
 		const hadImage = !!target.image;
 		const isNewFile = patch.image instanceof File;
 		const removeImage = !isNewFile && patch.image === null && hadImage;
@@ -30,8 +33,8 @@ export default function usePostMutations({ seriesId, volumeId, getPost, patchPos
 		try {
 			const res = await editPostRequest({
 				postId,
-				seriesId,
-				volumeId,
+				seriesId: effectiveSeriesId,
+				volumeId: effectiveVolumeId,
 				text: patch.text,
 				isSpoiler: patch.isSpoiler,
 				isAdultContent: patch.isAdultContent,
