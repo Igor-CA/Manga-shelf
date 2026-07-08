@@ -1,4 +1,5 @@
 const User = require("../../models/User");
+const Rating = require("../../models/Rating");
 const asyncHandler = require("express-async-handler");
 const {
 	getVolumeCoverURL,
@@ -251,15 +252,57 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 		skip,
 	);
 	const userCollection = await User.aggregate(pipeline);
+
+	const pageSeriesIds = userCollection.map((series) => series._id);
+	const ratingsBySeriesId = new Map();
+	if (pageSeriesIds.length) {
+		const owner = await User.findOne({ username: targetUser }).select("_id");
+		if (owner) {
+			const ratings = await Rating.find({
+				user: owner._id,
+				series: { $in: pageSeriesIds },
+			}).select("series volume score");
+			for (const rating of ratings) {
+				const key = rating.series.toString();
+				if (!ratingsBySeriesId.has(key)) ratingsBySeriesId.set(key, []);
+				ratingsBySeriesId.get(key).push(rating);
+			}
+		}
+	}
+
 	const filteredList = userCollection.map((series) => {
 		let image = getSeriesCoverURL(series);
 
 		if (series.isAdult && !req.user?.allowAdult) {
 			image = null;
 		}
+
+		const seriesRatings = ratingsBySeriesId.get(series._id.toString());
+		let ratingScore = null;
+		let isDerived = false;
+		if (seriesRatings?.length) {
+			const manual = seriesRatings.find((rating) => rating.volume == null);
+			if (manual) {
+				ratingScore = Math.round(manual.score);
+			} else {
+				const volumeScores = seriesRatings
+					.filter((rating) => rating.volume != null)
+					.map((rating) => rating.score);
+				if (volumeScores.length) {
+					const mean =
+						volumeScores.reduce((sum, score) => sum + score, 0) /
+						volumeScores.length;
+					ratingScore = Math.round(mean);
+					isDerived = true;
+				}
+			}
+		}
+
 		return {
 			...series,
 			image: image,
+			ratingScore,
+			isDerived,
 		};
 	});
 
@@ -839,6 +882,22 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 		skip,
 	);
 	const userCollection = await User.aggregate(pipeline);
+
+	const pageVolumeIds = userCollection.map((volume) => volume._id);
+	const scoreByVolumeId = new Map();
+	if (pageVolumeIds.length) {
+		const owner = await User.findOne({ username: targetUser }).select("_id");
+		if (owner) {
+			const ratings = await Rating.find({
+				user: owner._id,
+				volume: { $in: pageVolumeIds },
+			}).select("volume score");
+			for (const rating of ratings) {
+				scoreByVolumeId.set(rating.volume.toString(), rating.score);
+			}
+		}
+	}
+
 	const filteredList = userCollection.map((volume) => {
 		const seriesObject = {
 			title: volume.title,
@@ -852,9 +911,15 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 		if (volume.isAdult && !req.user?.allowAdult) {
 			image = null;
 		}
+
+		const score = scoreByVolumeId.get(volume._id.toString());
+		const ratingScore = score != null ? Math.round(score) : null;
+
 		return {
 			...volume,
 			image: image,
+			ratingScore,
+			isDerived: false,
 		};
 	});
 	res.send(filteredList);

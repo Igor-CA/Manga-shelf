@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import "./SeriesCard.css";
 import { Link, useParams } from "react-router-dom";
-import { FaMinus, FaPlus } from "react-icons/fa";
+import { FaMinus, FaPlus, FaStar } from "react-icons/fa";
 
 import { FaPencil, FaRegBookmark } from "react-icons/fa6";
 import { UserContext } from "../../contexts/userProvider";
@@ -35,6 +35,8 @@ export function SeriesCard({
 		seriesSize,
 		seriesStatus,
 		seriesId,
+		ratingScore,
+		isDerived,
 	} = itemDetails;
 	const link = itemType === "Series" ? `/series/${_id}` : `/volume/${_id}`;
 	const imageText =
@@ -199,6 +201,23 @@ export function SeriesCard({
 	return (
 		<div className="series-card">
 			<Link to={link} className="series-card__image-container">
+				{ratingScore != null && (
+					<div
+						className={`series-card__rating ${
+							isDerived
+								? "series-card__rating--derived"
+								: "series-card__rating--manual"
+						}`}
+						title={
+							isDerived
+								? `Nota: ${ratingScore} (média dos volumes)`
+								: `Nota: ${ratingScore}`
+						}
+					>
+						<FaStar aria-hidden="true" />
+						<span className="series-card__rating-value">{ratingScore}</span>
+					</div>
+				)}
 				{isAdult && !user?.allowAdult ? (
 					<div className="series-card__adult-content-block__container">
 						<div className="series-card__adult-content-block">Conteúdo +18</div>

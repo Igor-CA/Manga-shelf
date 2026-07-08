@@ -468,7 +468,7 @@ function NotificationSettings() {
 					></CustomCheckbox>
 					<CustomCheckbox
 						htmlId={"social"}
-						label={"Notificar novos seguidores"}
+						label={"Notificar interações sociais"}
 						defaultValue={userNotifications?.groups?.social}
 					></CustomCheckbox>
 					<CustomCheckbox
