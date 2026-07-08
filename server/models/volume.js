@@ -14,10 +14,10 @@ const VolumeSchema = new Schema(
 		isVariant: { type: Boolean, default: false },
 		variantNumber: { type: Number, default: 1 },
 		chapters: { type: String },
+		ratingAverage: { type: Number, default: 0 },
+		ratingCount: { type: Number, default: 0 },
 	},
 	{ timestamps: true }
 );
 
 module.exports = mongoose.model("Volume", VolumeSchema);
-
-const generateVolumeURL = () => {};

@@ -1,7 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const upload = require("../middlewares/uploadMiddleware"); 
+const upload = require("../middlewares/uploadMiddleware");
+
+const uploadImage = (req, res, next) => {
+	upload.single("image")(req, res, (err) => {
+		if (err) {
+			const msg =
+				err.code === "LIMIT_FILE_SIZE"
+					? "A imagem excede o tamanho máximo permitido."
+					: err.message || "Erro ao enviar a imagem.";
+			return res.status(400).json({ msg });
+		}
+		next();
+	});
+};
 
 const {
 	authController,
@@ -13,6 +26,9 @@ const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
 const collectionPhotosController = require("../controllers/collectionPhotos");
 const submissionController = require("../controllers/submission");
+const postController = require("../controllers/post");
+const postReportController = require("../controllers/postReport");
+const ratingController = require("../controllers/rating");
 const { requireAuth } = require("../middlewares/authentications");
 const {
 	signupValidation,
@@ -27,6 +43,10 @@ const {
 	editOwnedValidation,
 	photoValidation,
 	submissionValidation,
+	postValidation,
+	reportValidation,
+	ratingValidation,
+	ratingDeleteValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -152,6 +172,50 @@ router.put(
 	notificationsController.setNotificationAsSeen,
 );
 
+// Ratings
+router.post(
+	"/rating",
+	requireAuth,
+	ratingValidation,
+	validateRequest,
+	ratingController.upsertRating,
+);
+router.delete(
+	"/rating",
+	requireAuth,
+	ratingDeleteValidation,
+	validateRequest,
+	ratingController.removeRating,
+);
+
+// Posts (comments)
+router.post(
+	"/post",
+	requireAuth,
+	uploadImage,
+	postValidation,
+	validateRequest,
+	postController.createPost,
+);
+router.patch(
+	"/post/:id",
+	requireAuth,
+	uploadImage,
+	postValidation,
+	validateRequest,
+	postController.editPost,
+);
+router.delete("/post/:id", requireAuth, postController.deletePost);
+router.post("/post/:id/like", requireAuth, postController.likePost);
+router.delete("/post/:id/like", requireAuth, postController.unlikePost);
+router.post(
+	"/post/:id/report",
+	requireAuth,
+	reportValidation,
+	validateRequest,
+	postReportController.createReport,
+);
+
 // Collection photos routes
 router.post(
 	"/collection-photos",
@@ -187,7 +251,6 @@ const parseSubmissionBody = (req, res, next) => {
 			req.body.payload = null;
 		}
 	}
-	console.log("parsed")
 	next();
 };
 router.post(

@@ -3,6 +3,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const Series = require("../models/Series");
+const Rating = require("../models/Rating");
 const {
 	getNewUserSeriesStatus,
 } = require("../controllers/user/userActionsController");
@@ -130,6 +131,7 @@ async function syncAndRecalculateData() {
 	await updateSeriesRelations();
 	await recalculateUserListInfo();
 	await updateSeriesPopularity();
+	await recalculateRatings();
 }
 
 async function updateSeriesRelations() {
@@ -491,6 +493,100 @@ async function updateSeriesPopularity() {
 		await Series.bulkWrite(bulkOps);
 	} catch (error) {
 		logger.error("Error updating series popularity:", error);
+		throw error;
+	}
+}
+
+async function recalculateRatings() {
+	logger.info("Recalculating series/volume rating averages...");
+
+	try {
+		// Volumes: plain average of that volume's scores.
+		const volumeAgg = await Rating.aggregate([
+			{ $match: { volume: { $ne: null } } },
+			{ $group: { _id: "$volume", avg: { $avg: "$score" }, count: { $sum: 1 } } },
+		]);
+
+		const volumeBulk = volumeAgg.map(({ _id, avg, count }) => ({
+			updateOne: {
+				filter: { _id },
+				update: {
+					$set: { ratingAverage: Math.round(avg * 10) / 10, ratingCount: count },
+				},
+			},
+		}));
+		if (volumeBulk.length > 0) await volume.bulkWrite(volumeBulk);
+
+		await volume.updateMany(
+			{
+				_id: { $nin: volumeAgg.map((v) => v._id) },
+				$or: [{ ratingAverage: { $gt: 0 } }, { ratingCount: { $gt: 0 } }],
+			},
+			{ $set: { ratingAverage: 0, ratingCount: 0 } },
+		);
+
+		const seriesAgg = await Rating.aggregate([
+			{
+				$group: {
+					_id: { series: "$series", user: "$user" },
+					manualScore: {
+						$max: { $cond: [{ $eq: ["$volume", null] }, "$score", null] },
+					},
+					volumeScores: {
+						$push: { $cond: [{ $ne: ["$volume", null] }, "$score", "$$REMOVE"] },
+					},
+				},
+			},
+			{
+				$addFields: {
+					effectiveScore: {
+						$cond: [
+							{ $ne: ["$manualScore", null] },
+							"$manualScore",
+							{
+								$cond: [
+									{ $gt: [{ $size: "$volumeScores" }, 0] },
+									{ $avg: "$volumeScores" },
+									null,
+								],
+							},
+						],
+					},
+				},
+			},
+			{ $match: { effectiveScore: { $ne: null } } },
+			{
+				$group: {
+					_id: "$_id.series",
+					avg: { $avg: "$effectiveScore" },
+					count: { $sum: 1 },
+				},
+			},
+		]);
+
+		const seriesBulk = seriesAgg.map(({ _id, avg, count }) => ({
+			updateOne: {
+				filter: { _id },
+				update: {
+					$set: { ratingAverage: Math.round(avg * 10) / 10, ratingCount: count },
+				},
+			},
+		}));
+		if (seriesBulk.length > 0) await Series.bulkWrite(seriesBulk);
+
+		await Series.updateMany(
+			{
+				_id: { $nin: seriesAgg.map((s) => s._id) },
+				$or: [{ ratingAverage: { $gt: 0 } }, { ratingCount: { $gt: 0 } }],
+			},
+			{ $set: { ratingAverage: 0, ratingCount: 0 } },
+		);
+
+		logger.info(
+			`Rating recalculation complete. Volumes rated: ${volumeAgg.length}, Series rated: ${seriesAgg.length}.`,
+		);
+	} catch (error) {
+		logger.error("Error recalculating ratings:", error);
 		throw error;
 	}
 }

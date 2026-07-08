@@ -13,7 +13,6 @@ const OwnedVolumeSchema = new Schema(
 		isRead: { type: Boolean, default: false },
 		readAt: { type: Date },
 		readCount: { type: Number },
-		readAt: { type: Date },
 		purchasePrice: { type: Number },
 		notes: { type: String },
 	},

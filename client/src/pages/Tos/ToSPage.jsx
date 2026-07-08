@@ -24,7 +24,32 @@ export default function ToSPage() {
                         <li>
                             <strong>Conduta do Usuário:</strong> Você concorda em não se envolver
                             em atividades proibidas, incluindo, mas não se limitando a, hacking,
-                            spam ou qualquer comportamento ilegal, prejudicial ou abusivo.
+                            spam, ou a publicação de conteúdo ilegal, prejudicial, difamatório,
+                            assediador ou que promova ódio, violência ou discriminação de
+                            qualquer natureza (por raça, etnia, nacionalidade, religião, gênero,
+                            orientação sexual, deficiência ou qualquer outra característica).
+                        </li>
+                        <li>
+                            <strong>Conteúdo do Usuário:</strong> O Manga Shelf permite que
+                            usuários publiquem conteúdo, como comentários, avaliações (reviews) e
+                            imagens. Você é o único responsável pelo conteúdo que publica e
+                            garante possuir os direitos necessários para compartilhá-lo. Ao
+                            enviar conteúdo, você concorda em classificá-lo corretamente:
+                            marcando como conteúdo adulto (+18) qualquer imagem imprópria para
+                            menores e como spoiler qualquer conteúdo que revele partes
+                            importantes de uma obra. A classificação incorreta ou ausente
+                            constitui violação destes termos.
+                        </li>
+                        <li>
+                            <strong>Moderação e Denúncias:</strong> Para manter um ambiente
+                            seguro, o Manga Shelf disponibiliza ferramentas para que usuários
+                            denunciem conteúdo que considerem impróprio (por ódio ou abuso,
+                            conteúdo adulto não classificado, ou spoiler não marcado).
+                            Reservamo-nos o direito de ocultar, remover ou reclassificar conteúdo
+                            denunciado ou que viole estes termos, bem como de suspender contas
+                            reincidentes. As denúncias e as ações tomadas são registradas. A
+                            ocultação de um conteúdo enquanto ele é analisado não constitui
+                            julgamento definitivo.
                         </li>
                         <li>
                             <strong>Propriedade Intelectual:</strong> Reconhecemos que não

@@ -8,6 +8,7 @@ const asyncHandler = require("express-async-handler");
 const Volume = require("../models/volume");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
+const Rating = require("../models/Rating");
 const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
 
@@ -144,6 +145,7 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		volumes: { attribute: "volumesLength", order: -1 },
 		dateJp: { attribute: "originalRun.dates.publishedAt", order: -1 },
 		dateBr: { attribute: "dates.publishedAt", order: -1 },
+		rating: { attribute: "ratingAverage", order: -1 },
 	};
 	const ordering = req.query.ordering || "popularity";
 	const sortStage = {};
@@ -386,6 +388,22 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		};
 	});
 
+	let mySeriesScore = null;
+	let myVolumeScores = {};
+	if (req.user) {
+		const userRatings = await Rating.find({
+			user: req.user._id,
+			series: seriesId,
+		}).select("volume score").lean();
+		for (const r of userRatings) {
+			if (r.volume === null || r.volume == null) {
+				mySeriesScore = r.score;
+			} else {
+				myVolumeScores[r.volume.toString()] = r.score;
+			}
+		}
+	}
+
 	const {
 		_id: id,
 		__v,
@@ -401,6 +419,8 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		...rest,
 		volumes: volumesWithImages,
 		related: relatedInfoImages,
+		mySeriesScore,
+		myVolumeScores,
 	};
 	res.send(jsonResponse);
 });

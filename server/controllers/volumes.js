@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Series = require("../models/Series");
 const Notification = require("../models/Notification");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
+const Rating = require("../models/Rating");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
 const logger = require("../Utils/logger");
@@ -40,6 +41,16 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 
 	const { serie, number } = desiredVolume;
 	const variant = desiredVolume.isVariant || false;
+
+	let myVolumeScore = null;
+	if (req.user) {
+		const userRating = await Rating.findOne({
+			user: req.user._id,
+			volume: desiredVolume._id,
+		}).select("score").lean();
+		if (userRating) myVolumeScore = userRating.score;
+	}
+
 	res.send({
 		...desiredVolume._doc,
 		image: getVolumeCoverURL(
@@ -48,6 +59,7 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 			variant,
 			desiredVolume.variantNumber,
 		),
+		myVolumeScore,
 	});
 });
 

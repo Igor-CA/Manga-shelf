@@ -242,6 +242,83 @@ const payloadNumbersValidation = body([
 	.withMessage("Dimensões e totais devem ser números positivos.")
 	.toFloat();
 
+// Ratings
+const ratingSeriesIdValidation = body("seriesId")
+	.trim()
+	.notEmpty()
+	.withMessage("A obra é obrigatória.")
+	.isMongoId()
+	.withMessage("ID de obra inválido.");
+
+const ratingVolumeIdValidation = body("volumeId")
+	.optional({ nullable: true, checkFalsy: true })
+	.isMongoId()
+	.withMessage("ID de volume inválido.");
+
+const ratingScoreValidation = body("score")
+	.notEmpty()
+	.withMessage("A nota é obrigatória.")
+	.isInt({ min: 1, max: 10 })
+	.withMessage("A nota deve ser entre 1 e 10.")
+	.toInt();
+
+// Posts (comments)
+const postSeriesIdValidation = body("seriesId")
+	.trim()
+	.notEmpty()
+	.withMessage("A obra é obrigatória.")
+	.isMongoId()
+	.withMessage("ID de obra inválido.");
+
+const postVolumeIdValidation = body("volumeId")
+	.optional({ nullable: true, checkFalsy: true })
+	.isMongoId()
+	.withMessage("ID de volume inválido.");
+
+const postTextValidation = body("text")
+	.trim()
+	.notEmpty()
+	.withMessage("O comentário não pode estar vazio.")
+	.isLength({ max: 5000 })
+	.withMessage("O comentário não pode exceder 5000 caracteres.");
+
+const postParentIdValidation = body("parentId")
+	.optional({ nullable: true, checkFalsy: true })
+	.isMongoId()
+	.withMessage("ID de comentário pai inválido.");
+
+const postIsReviewValidation = body("isReview")
+	.optional()
+	.isBoolean()
+	.withMessage("isReview deve ser verdadeiro ou falso.")
+	.toBoolean();
+
+const postIsSpoilerValidation = body("isSpoiler")
+	.optional()
+	.isBoolean()
+	.withMessage("isSpoiler deve ser verdadeiro ou falso.")
+	.toBoolean();
+
+const postIsAdultContentValidation = body("isAdultContent")
+	.optional()
+	.isBoolean()
+	.withMessage("isAdultContent deve ser verdadeiro ou falso.")
+	.toBoolean();
+
+const postRemoveImageValidation = body("removeImage")
+	.optional()
+	.isBoolean()
+	.withMessage("removeImage deve ser verdadeiro ou falso.")
+	.toBoolean();
+
+// Post reports (moderation)
+const reportReasonValidation = body("reason")
+	.trim()
+	.notEmpty()
+	.withMessage("O motivo da denúncia é obrigatório.")
+	.isIn(["hate", "adult", "spoiler"])
+	.withMessage("O motivo da denúncia deve ser 'hate', 'adult' ou 'spoiler'.");
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -265,6 +342,30 @@ const reportsValidation = [
 	reportTypeValidation,
 	reportPageValidation,
 	reportUserValidation,
+];
+
+const postValidation = [
+	postSeriesIdValidation,
+	postVolumeIdValidation,
+	postTextValidation,
+	postParentIdValidation,
+	postIsReviewValidation,
+	postIsSpoilerValidation,
+	postIsAdultContentValidation,
+	postRemoveImageValidation,
+];
+
+const reportValidation = [reportReasonValidation];
+
+const ratingValidation = [
+	ratingSeriesIdValidation,
+	ratingVolumeIdValidation,
+	ratingScoreValidation,
+];
+
+const ratingDeleteValidation = [
+	ratingSeriesIdValidation,
+	ratingVolumeIdValidation,
 ];
 
 const editOwnedValidation = [
@@ -319,5 +420,9 @@ module.exports = {
 	editOwnedValidation,
 	photoValidation,
 	submissionValidation,
+	postValidation,
+	reportValidation,
+	ratingValidation,
+	ratingDeleteValidation,
 	validateRequest,
 };

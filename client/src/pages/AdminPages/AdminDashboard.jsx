@@ -4,12 +4,14 @@ import SideNavbar from "../../components/navbars/SideNavbar"; // Reusing your la
 import "./AdminDashboard.css";
 import "../Settings/Settings.css";
 import SubmissionCard from "./SubmissionCard";
+import ReportCard from "./ReportCard";
 import PatchNotesForm from "./PatchNotesForm";
 import { UserContext } from "../../contexts/userProvider";
 import { useNavigate } from "react-router-dom";
 
 const navbarOptions = [
 	{ label: "Submissões Pendentes", id: "pending" },
+	{ label: "Denúncias", id: "reports" },
 	{ label: "Enviar Patch notes", id: "patch-notes" },
 ];
 
@@ -17,6 +19,8 @@ export default function AdminDashboard() {
 	const navigate = useNavigate();
 	const [submissions, setSubmissions] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [reports, setReports] = useState([]);
+	const [reportsLoading, setReportsLoading] = useState(true);
 	const { user } = useContext(UserContext);
 
 
@@ -26,6 +30,7 @@ export default function AdminDashboard() {
 			return
 		}
 		fetchSubmissions();
+		fetchReports();
 	}, [user, navigate]);
 
 	const fetchSubmissions = async () => {
@@ -45,8 +50,29 @@ export default function AdminDashboard() {
 		}
 	};
 
+	const fetchReports = async () => {
+		try {
+			const response = await axios.get(
+				`${import.meta.env.REACT_APP_HOST_ORIGIN}/admin/reports`,
+				{
+					withCredentials: true,
+					headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+				},
+			);
+			setReports(response.data);
+			setReportsLoading(false);
+		} catch (error) {
+			console.error("Erro ao buscar denúncias", error);
+			setReportsLoading(false);
+		}
+	};
+
 	const handleProcess = (submissionId) => {
 		setSubmissions((prev) => prev.filter((sub) => sub._id !== submissionId));
+	};
+
+	const handleReportProcess = (reportId) => {
+		setReports((prev) => prev.filter((rep) => rep._id !== reportId));
 	};
 
 	return (
@@ -72,6 +98,30 @@ export default function AdminDashboard() {
 									key={sub._id}
 									submission={sub}
 									onProcess={handleProcess}
+								/>
+							))}
+						</div>
+					)}
+				</div>
+				<div className="settings-group">
+					<h2 className="settings-group__title" id="reports">
+						Denúncias ({reports.length})
+					</h2>
+					<br />
+
+					{reportsLoading ? (
+						<div className="loading">Carregando denúncias...</div>
+					) : reports.length === 0 ? (
+						<div className="empty-state">
+							<p>Nenhuma denúncia pendente</p>
+						</div>
+					) : (
+						<div className="cards-list">
+							{reports.map((report) => (
+								<ReportCard
+									key={report._id}
+									report={report}
+									onProcess={handleReportProcess}
 								/>
 							))}
 						</div>

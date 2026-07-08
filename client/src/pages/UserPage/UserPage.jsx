@@ -12,6 +12,7 @@ const WishlistPage = lazy(() => import("./WishlistPage"));
 const ReadListPage = lazy(() => import("./ReadListPage"));
 const CollectionGallery = lazy(() => import("./CollectionGallery"));
 const UserSubmissionsPage = lazy(() => import("./UserSubmissionsPage"));
+const UserCommentsPage = lazy(() => import("./UserCommentsPage"));
 
 export default function UserPage() {
 	const { username } = useParams();
@@ -29,6 +30,7 @@ export default function UserPage() {
 						<Route path="volumes" element={<ReadListPage />}></Route>
 						<Route path="gallery" element={<CollectionGallery />}></Route>
 						<Route path="submissions" element={<UserSubmissionsPage />}></Route>
+						<Route path="comments" element={<UserCommentsPage />}></Route>
 						<Route path="" element={<UserCollection />}></Route>
 					</Routes>
 				</Suspense>

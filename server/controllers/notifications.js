@@ -1,12 +1,23 @@
 const Notification = require("../models/Notification");
 const asyncHandler = require("express-async-handler");
 const Volume = require("../models/volume");
+const Series = require("../models/Series");
 const User = require("../models/User");
+const Post = require("../models/Post");
+const PendingReplyDigest = require("../models/PendingReplyDigest");
 
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const { sendEmail } = require("../Utils/sendEmail");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
 const logger = require("../Utils/logger");
+
+const LIKE_MILESTONES = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
+const isLikeMilestone = (count) => LIKE_MILESTONES.includes(count);
+const REPLY_DIGEST_WINDOW_MIN = 5;
+
+function othersPhrase(count) {
+	return count === 1 ? "e outra pessoa" : `e outras ${count} pessoas`;
+}
 
 exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
 	if (!req.isAuthenticated()) {
@@ -314,6 +325,193 @@ async function createFollowingNotification(userId) {
 	await newNotification.save();
 	return newNotification;
 }
+exports.sendNewLikeNotification = async (post, recipientId, liker, likeCount) => {
+	try {
+		if (!isLikeMilestone(likeCount)) return;
+
+		const likerLink = `[[${liker.username}|/user/${liker.username}]]`;
+		const series = await Series.findById(post.series).select("title");
+		const seriesTitle = series ? series.title : "";
+		const commentsPath = post.volume
+			? `/volume/${post.volume}/comments`
+			: `/series/${post.series}/comments`;
+		const postLink = `[[${post.isReview ? "sua review" : "seu comentário"}|/post/${post._id}]]`;
+
+		const text = likeCount === 1
+			? `${likerLink} curtiu ${postLink} em [[${seriesTitle}|${commentsPath}]]`
+			: `${likerLink} ${othersPhrase(likeCount - 1)} curtiram ${postLink} em [[${seriesTitle}|${commentsPath}]]`;
+
+		let notification = await Notification.findOne({
+			eventKey: "new_like",
+			associatedObject: post._id,
+			objectType: "Post",
+		});
+
+		if (notification) {
+			notification.text = text;
+			notification.imageUrl = liker.profileImageUrl || null;
+			await notification.save();
+		} else {
+			notification = await Notification.create({
+				group: "social",
+				eventKey: "new_like",
+				text,
+				imageUrl: liker.profileImageUrl || null,
+				associatedObject: post._id,
+				objectType: "Post",
+			});
+		}
+
+		await reAlertSiteNotification(notification, recipientId);
+	} catch (err) {
+		logger.error("Failed to send new_like notification:", err.message);
+	}
+};
+
+exports.sendPostHiddenNotification = async (post) => {
+	try {
+		const series = await Series.findById(post.series).select("title");
+		const seriesTitle = series ? series.title : "";
+
+		const text = `[[Seu comentário|/post/${post._id}]] em ${seriesTitle} foi denunciado por "Ódio ou discurso abusivo" e por isso está oculto e em análise`;
+
+		let notification = await Notification.findOne({
+			eventKey: "post_hidden",
+			associatedObject: post._id,
+			objectType: "Post",
+		});
+
+		if (!notification) {
+			notification = await Notification.create({
+				group: "system",
+				eventKey: "post_hidden",
+				text,
+				imageUrl: `/android-chrome-192x192.png`,
+				associatedObject: post._id,
+				objectType: "Post",
+			});
+		}
+
+		await sendSiteOnlyNotification(notification, post.author);
+	} catch (err) {
+		logger.error("Failed to send post_hidden notification:", err.message);
+	}
+};
+
+exports.sendNewReplyNotification = async (reply, recipientId, topLevelParentId) => {
+	try {
+		const replier = await User.findById(reply.author).select("username");
+		if (!replier) return;
+
+		const existing = await PendingReplyDigest.findOne({
+			recipient: recipientId,
+			topLevelComment: topLevelParentId,
+		});
+
+		if (existing) {
+			const alreadyIncluded = existing.repliers.some(
+				(r) => r.user.toString() === replier._id.toString(),
+			);
+			if (!alreadyIncluded) {
+				existing.repliers.push({ user: replier._id, username: replier.username });
+				await existing.save();
+			}
+		} else {
+			await PendingReplyDigest.create({
+				recipient: recipientId,
+				topLevelComment: topLevelParentId,
+				flushAfter: new Date(Date.now() + REPLY_DIGEST_WINDOW_MIN * 60 * 1000),
+				repliers: [{ user: replier._id, username: replier.username }],
+			});
+		}
+	} catch (err) {
+		logger.error("Failed to enqueue new_reply digest:", err.message);
+	}
+};
+
+exports.dispatchReplyDigests = async () => {
+	const pending = await PendingReplyDigest.find({
+		flushAfter: { $lte: new Date() },
+	});
+
+	for (const digest of pending) {
+		try {
+			const topLevelComment = await Post.findById(
+				digest.topLevelComment,
+			).select("series volume isReview");
+
+			if (!topLevelComment) {
+				await PendingReplyDigest.deleteOne({ _id: digest._id });
+				continue;
+			}
+
+			const series = await Series.findById(topLevelComment.series).select(
+				"title",
+			);
+			const seriesTitle = series ? series.title : "";
+			const commentsPath = topLevelComment.volume
+				? `/volume/${topLevelComment.volume}/comments`
+				: `/series/${topLevelComment.series}/comments`;
+			const postLink = `[[${topLevelComment.isReview ? "sua review" : "seu comentário"}|/post/${topLevelComment._id}]]`;
+
+			const [first, ...rest] = digest.repliers;
+			const firstLink = `[[${first.username}|/user/${first.username}]]`;
+			const text = rest.length > 0
+				? `${firstLink} ${othersPhrase(rest.length)} responderam ${postLink} em [[${seriesTitle}|${commentsPath}]]`
+				: `${firstLink} respondeu ${postLink} em [[${seriesTitle}|${commentsPath}]]`;
+
+			const firstReplier = await User.findById(first.user).select(
+				"profileImageUrl",
+			);
+
+			const notification = await Notification.create({
+				group: "social",
+				eventKey: "new_reply",
+				text,
+				imageUrl: firstReplier?.profileImageUrl || null,
+				associatedObject: topLevelComment._id,
+				objectType: "Post",
+			});
+
+			await sendSiteOnlyNotification(notification, digest.recipient);
+
+			await PendingReplyDigest.deleteOne({ _id: digest._id });
+		} catch (err) {
+			logger.error("Failed to dispatch reply digest:", err.message);
+		}
+	}
+};
+
+exports.sendNewMentionNotification = async (
+	reply,
+	recipientId,
+	mentioner,
+	seriesTitle,
+	seriesId,
+	volumeId,
+) => {
+	try {
+		const commentsPath = volumeId
+			? `/volume/${volumeId}/comments`
+			: `/series/${seriesId}/comments`;
+		const mentionerLink = `[[${mentioner.username}|/user/${mentioner.username}]]`;
+		const text = `${mentionerLink} mencionou você em [[um comentário|/post/${reply._id}]] sobre [[${seriesTitle}|${commentsPath}]]`;
+
+		const notification = await Notification.create({
+			group: "social",
+			eventKey: "new_mention",
+			text,
+			imageUrl: mentioner.profileImageUrl || null,
+			associatedObject: reply._id,
+			objectType: "Post",
+		});
+
+		await sendSiteOnlyNotification(notification, recipientId);
+	} catch (err) {
+		logger.error("Failed to send new_mention notification:", err.message);
+	}
+};
+
 exports.sendNewFollowerNotification = async (followerID, followedID) => {
 	const notification = await createFollowingNotification(followerID);
 	const cooldownPeriod = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -332,10 +530,10 @@ exports.sendNewFollowerNotification = async (followerID, followedID) => {
 		user: followedID,
 		notification: notification._id,
 		siteStatus: "sent",
-		emailStatus: "sent",
+		emailStatus: "disabled",
 	});
 
-	return sendNotification(notification, followedID);
+	return sendSiteOnlyNotification(notification, followedID);
 };
 async function checkNotificationSettings(userId, group) {
 	const user = await User.findById(userId).select("settings");
@@ -354,33 +552,6 @@ async function checkNotificationSettings(userId, group) {
 const sendEmailNotification = async (notification, targetUserId, dataList) => {
 	const targetUser = await User.findById(targetUserId);
 	if (!targetUser) return;
-
-	if (notification.eventKey === "new_follower") {
-		const followedUser = await User.findById(notification.associatedObject);
-		await sendEmail(
-			targetUser.email,
-			"Novo seguidor Manga Shelf",
-			"newFollower",
-			{
-				username: targetUser.username,
-				newFollower: followedUser.username,
-				imageName: "img1.webp",
-			},
-			[
-				{
-					filename: notification.imageUrl,
-					path: `${process.env.SITE_DOMAIN}/${
-						notification.imageUrl
-							? notification.imageUrl
-							: "/images/deffault-profile-picture.webp"
-					}`,
-					contentDisposition: "inline",
-					cid: "img1.webp",
-					contentType: "img/webp",
-				},
-			],
-		);
-	}
 
 	if (notification.group === "media") {
 		if (notification.eventKey === "new_volume" && dataList) {
@@ -437,6 +608,46 @@ const sendEmailNotification = async (notification, targetUserId, dataList) => {
 
 	return;
 };
+async function sendSiteOnlyNotification(notification, targetUserId) {
+	const { allowSite } = await checkNotificationSettings(
+		targetUserId,
+		notification.group,
+	);
+	if (allowSite) {
+		await sendSiteNotification(notification._id, targetUserId);
+	}
+}
+
+async function reAlertSiteNotification(notification, targetUserId) {
+	const { allowSite } = await checkNotificationSettings(
+		targetUserId,
+		notification.group,
+	);
+	if (!allowSite) return;
+
+	const result = await User.updateOne(
+		{ _id: targetUserId, "notifications.notification": notification._id },
+		{
+			$set: {
+				"notifications.$.seen": false,
+				"notifications.$.date": new Date(),
+			},
+		},
+	);
+
+	if (result.matchedCount === 0) {
+		await User.findByIdAndUpdate(targetUserId, {
+			$push: {
+				notifications: {
+					notification: notification._id,
+					seen: false,
+					date: new Date(),
+				},
+			},
+		});
+	}
+}
+
 const sendSiteNotification = async (notificationId, targetUserId) => {
 	await User.findByIdAndUpdate(
 		targetUserId,

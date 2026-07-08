@@ -7,11 +7,22 @@ import "../SeriesPage/SeriesPage.css";
 import { LoadingPageComponent } from "../../App";
 import VolumesOverallPage from "./VolumesOverallPage";
 import VolumeHeader from "./VolumePageHeader";
+import PostsSection from "../../components/posts/PostsSection";
+import { useRating } from "../../utils/useRating";
 export default function VolumePage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const [volumeData, setVolumeData] = useState();
 	const { user, isFetching } = useContext(UserContext);
+
+	const rating = useRating({
+		seriesId: volumeData?.serie?._id?.toString(),
+		volumeId: id,
+		manualScore: volumeData?.myVolumeScore ?? null,
+		derivedScore: null,
+		average: volumeData?.ratingAverage ?? 0,
+		count: volumeData?.ratingCount ?? 0,
+	});
 	useEffect(() => {
 		if (
 			!isFetching &&
@@ -31,10 +42,9 @@ export default function VolumePage() {
 				const response = await axios.get(
 					`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/volume/${id}`,
 					{
-						headers: {
-							Authorization: import.meta.env.REACT_APP_API_KEY,
-						},
-					}
+						withCredentials: true,
+						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+					},
 				);
 				const responseData = response.data;
 				setVolumeData(responseData);
@@ -52,10 +62,20 @@ export default function VolumePage() {
 
 	return (
 		<div className="page-content">
-			<VolumeHeader volumeData={volumeData}></VolumeHeader>
+			<VolumeHeader volumeData={volumeData} rating={rating}></VolumeHeader>
 			{volumeData && (
 				<Suspense fallback={<LoadingPageComponent />}>
 					<Routes>
+						<Route
+							path="comments"
+							element={
+								<PostsSection
+									seriesId={volumeData.serie._id}
+									volumeId={id}
+									rating={rating}
+								/>
+							}
+						></Route>
 						<Route
 							path=""
 							element={<VolumesOverallPage volume={volumeData} />}

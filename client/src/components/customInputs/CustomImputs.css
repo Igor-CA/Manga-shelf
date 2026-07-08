@@ -92,3 +92,64 @@
 .custom-checkbox input:checked + .checkbox-wrapper {
 	animation: bounce 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.custom-toggle {
+	--toggle-width: 38px;
+	--toggle-height: 22px;
+	--toggle-color: var(--accent);
+
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	position: relative;
+	cursor: pointer;
+	user-select: none;
+	color: var(--text);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.custom-toggle__input {
+	display: none;
+}
+
+.custom-toggle__track {
+	position: relative;
+	display: inline-block;
+	width: var(--toggle-width);
+	height: var(--toggle-height);
+	flex-shrink: 0;
+	background-color: rgba(var(--gray));
+	border: 1px solid var(--text);
+	border-radius: var(--toggle-height);
+	transition:
+		background-color 0.2s ease,
+		border-color 0.2s ease;
+}
+
+.custom-toggle__thumb {
+	position: absolute;
+	top: 50%;
+	left: 3px;
+	transform: translateY(-50%);
+	width: calc(var(--toggle-height) - 6px);
+	height: calc(var(--toggle-height) - 6px);
+	background-color: var(--text);
+	border-radius: 50%;
+	transition:
+		transform 0.2s ease,
+		background-color 0.2s ease;
+}
+
+.custom-toggle__input:checked + .custom-toggle__track {
+	background-color: var(--toggle-color);
+	border-color: transparent;
+}
+
+.custom-toggle__input:checked + .custom-toggle__track .custom-toggle__thumb {
+	transform: translateY(-50%) translateX(calc(var(--toggle-width) - var(--toggle-height)));
+	background-color: white;
+}
+
+.custom-toggle__input:focus-visible + .custom-toggle__track {
+	box-shadow: 0 0 0 3px var(--toggle-color);
+}

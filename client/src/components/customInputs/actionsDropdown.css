@@ -17,7 +17,13 @@
 	gap: 10px;
 	position: relative;
 }
+.button-select__action-row {
+	display: flex;
+	gap: 10px;
+	align-items: stretch;
+}
 .button-select {
+	flex-grow: 1;
 	text-align: center;
 	font-size: 1rem;
 	display: flex;
@@ -47,7 +53,7 @@
 .button-select__dropdown {
 	background-color: rgba(255, 255, 255, 0.2);
 	font-size: 2rem;
-	padding: 10px 20px;
+	padding: 0.75rem;
 	display: flex;
 	align-items: center;
 }

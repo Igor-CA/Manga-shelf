@@ -6,8 +6,10 @@ import {
 	getSeriesStatus,
 } from "../../utils/seriesDataFunctions";
 import ContentHeader from "../../components/contentHeader/contentHeader";
+import RatingWidget from "../../components/contentHeader/RatingWidget";
+import RateButton from "../../components/contentHeader/RateButton";
 
-export default function SeriesPageHeader({ seriesInfo, actions }) {
+export default function SeriesPageHeader({ seriesInfo, actions, rating }) {
 	const { user } = useContext(UserContext);
 	const {
 		handleSelectAllVolumes,
@@ -16,8 +18,15 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 		toggleDrop,
 	} = actions;
 
-	const { seriesCover, title, summary, genres, authors, id, isAdult } =
-		seriesInfo || {};
+	const {
+		seriesCover,
+		title,
+		summary,
+		genres,
+		authors,
+		id,
+		isAdult,
+	} = seriesInfo || {};
 
 	const isSeriesInUserList =
 		user?.userList?.some(
@@ -63,10 +72,7 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 			{ to: `/series/${id}`, label: "Geral", end: true },
 			{ to: `/series/${id}/volumes`, label: "Volumes" },
 			{ to: `/series/${id}/related`, label: "Obras Relacionadas" },
-			/*
-			{ to: `/series/${id}/reviews`, label: "Reviews" },
-			{ to: `/series/${id}/user-volumes`, label: "Seus volumes" }, //Conditioned rendered
-			*/
+			{ to: `/series/${id}/comments`, label: "Comentários" },
 		],
 		[id],
 	);
@@ -85,6 +91,25 @@ export default function SeriesPageHeader({ seriesInfo, actions }) {
 			summary={summary}
 			actions={{ mainAction, dropdownOptions, isDisabled: !user }}
 			navLinks={navLinks}
+			ratingWidget={
+				id ? (
+					<RatingWidget
+						ratingAverage={rating.average}
+						ratingCount={rating.count}
+					/>
+				) : null
+			}
+			ratingButton={
+				id ? (
+					<RateButton
+						myScore={rating.myScore}
+						isDerived={rating.isDerived}
+						loading={rating.loading}
+						onSubmit={rating.submit}
+						onRemove={rating.remove}
+					/>
+				) : null
+			}
 		/>
 	);
 }
