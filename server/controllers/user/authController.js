@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { sendEmail } = require("../../Utils/sendEmail");
+const logger = require("../../Utils/logger");
 
 exports.signup = asyncHandler(async (req, res, next) => {
 	const username = req.body.username.trim();
@@ -83,13 +84,16 @@ exports.sendResetEmail = asyncHandler(async (req, res, next) => {
 	await user.save();
 
 	const urlCode = `${user._id}/${token}`;
-	sendEmail(user.email, "Mudança de senha", "forgotEmail", {
-		username: user.username,
-		link: `${process.env.HOST_ORIGIN}/reset/${urlCode}`,
-	})
-		.then(() => res.send({ msg: "Email enviado com sucesso" }))
-		.catch((error) => res.send(error));
-	return;
+	try {
+		await sendEmail(user.email, "Mudança de senha", "forgotEmail", {
+			username: user.username,
+			link: `${process.env.HOST_ORIGIN}/reset/${urlCode}`,
+		});
+		res.send({ msg: "Email enviado com sucesso" });
+	} catch (error) {
+		logger.error("Reset email failed:", error);
+		res.status(500).json({ msg: "Erro ao enviar o email" });
+	}
 });
 
 exports.resetPassword = asyncHandler(async (req, res, next) => {

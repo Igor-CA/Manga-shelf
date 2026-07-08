@@ -20,17 +20,13 @@ function othersPhrase(count) {
 }
 
 exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
-	if (!req.isAuthenticated()) {
-		return res.status(401).json({ msg: "Usuário deve estar logado" });
-	}
+	
 	const seenNotification = req.body.notification;
-	User.findOneAndUpdate(
+	await User.findOneAndUpdate(
 		{ _id: req.user._id, "notifications._id": seenNotification },
 		{ $set: { "notifications.$.seen": true } },
-		{ new: true },
-	)
-		.then(() => res.send({ msg: "Updated" }))
-		.catch((error) => res.send(error));
+	);
+	res.send({ msg: "Notificação marcada como lida" });
 });
 
 exports.getUserNotifications = asyncHandler(async (req, res, next) => {
