@@ -89,6 +89,32 @@
 	right: 0.5rem;
 	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.05);
 }
+.series-card__rating {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	z-index: 1;
+	top: 0.5rem;
+	left: 0.5rem;
+	padding: 0.3rem 0.5rem;
+	border-radius: 0.25rem;
+	font-weight: bold;
+	font-size: 0.8rem;
+	line-height: 1;
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.05);
+}
+.series-card__rating svg {
+	font-size: 0.85rem;
+}
+.series-card__rating--manual {
+	background-color: var(--accent);
+	color: white;
+}
+.series-card__rating--derived {
+	background-color: rgba(0, 0, 0, 0.6);
+	color: white;
+}
 .series-card__bar {
 	position: absolute;
 	z-index: 1;
