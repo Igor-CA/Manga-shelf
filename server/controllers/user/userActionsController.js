@@ -398,7 +398,10 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 		await user.save();
 		await targetUser.save();
 
-		sendNewFollowerNotification(user._id, targetUser._id);
+		sendNewFollowerNotification(user._id, targetUser._id).catch((err) =>
+			logger.error("Failed to send follower notification:", err.message),
+		);
+		
 		return res.send({ msg: "Seguindo com sucesso" });
 	} else {
 		user.following = user.following.filter((id) => !id.equals(targetUser._id));
