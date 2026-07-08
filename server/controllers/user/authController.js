@@ -93,23 +93,32 @@ exports.sendResetEmail = asyncHandler(async (req, res, next) => {
 });
 
 exports.resetPassword = asyncHandler(async (req, res, next) => {
-	const user = await User.findOne({ _id: req.body.userId });
-	if (!user) {
-		return res.status(400).json({ msg: "Esse usuário não existe" });
+	const { userId, token, password } = req.body;
+	if (!token || !userId) {
+		return res.status(400).json({ msg: "Link inválido" });
 	}
-
-	if (user.token !== req.body.token) {
+	const user = await User.findOne({ _id: userId }).select(
+		"token tokenTimestamp",
+	);
+	if (!user || !user.token || !user.tokenTimestamp) {
 		return res.status(400).json({ msg: "Link inválido" });
 	}
 
-	const currentTimeStamp = new Date();
-	if (currentTimeStamp > user.tokenTimestamp) {
-		return res.status(400).json({ msg: "Link expirado" });
+	const provided = String(token);
+	if (
+		user.token.length !== provided.length ||
+		!crypto.timingSafeEqual(Buffer.from(user.token), Buffer.from(provided))
+	) {
+		return res.status(400).json({ msg: "Link inválido" });
 	}
 
-	const newHashedPassword = await bcrypt.hash(req.body.password, 10);
+	if (new Date() > user.tokenTimestamp) {
+		return res.status(400).json({ msg: "Link expirado" });
+	}
+	const newHashedPassword = await bcrypt.hash(password, 10);
 	user.password = newHashedPassword;
 	user.token = null;
+	user.tokenTimestamp = null;
 	await user.save();
 	res.send({ msg: "Senha alterada com sucesso" });
 });

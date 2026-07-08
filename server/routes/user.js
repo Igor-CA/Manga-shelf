@@ -33,7 +33,7 @@ const { requireAuth } = require("../middlewares/authentications");
 const {
 	signupValidation,
 	loginValidation,
-	newPasswordValidator,
+	resetPasswordValidator,
 	forgotPasswordValidation,
 	validateRequest,
 	changeUsernameValidator,
@@ -79,7 +79,7 @@ router.post(
 
 router.post(
 	"/reset-password",
-	newPasswordValidator,
+	resetPasswordValidator,
 	validateRequest,
 	authController.resetPassword,
 );

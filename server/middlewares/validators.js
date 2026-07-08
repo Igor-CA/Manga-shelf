@@ -42,6 +42,14 @@ const newPasswordValidation = body("password")
 		"A senha deve conter pelo menos uma letra, número e caractere especial(!@#$%^&*) e ter entre 8 e 20 caracteres.",
 	);
 
+const resetTokenValidation = body("token")
+	.notEmpty()
+	.withMessage("Link invalido");
+
+const resetUserIdValidation = body("userId")
+	.isMongoId()
+	.withMessage("Link inválido");
+
 const confirmPasswordValidation = body("confirm-password")
 	.trim()
 	.notEmpty()
@@ -322,7 +330,12 @@ const reportReasonValidation = body("reason")
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
-const newPasswordValidator = [newPasswordValidation, confirmPasswordValidation];
+const resetPasswordValidator = [
+	resetUserIdValidation,
+	resetTokenValidation,
+	newPasswordValidation,
+	confirmPasswordValidation,
+];
 const signupValidation = [
 	emailValidation,
 	usernameValidation,
@@ -412,7 +425,7 @@ module.exports = {
 	forgotPasswordValidation,
 	signupValidation,
 	loginValidation,
-	newPasswordValidator,
+	resetPasswordValidator,
 	changeUsernameValidator,
 	changeEmailValidator,
 	changePasswordValidator,
