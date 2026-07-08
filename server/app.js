@@ -28,12 +28,11 @@ process.on("uncaughtException", (error) => {
 	process.exit(1);
 });
 
-process.on("unhandledRejection", (reason, promise) => {
+process.on("unhandledRejection", (reason) => {
 	logger.error("Unhandled Rejection:", {
-		reason: reason.message,
-		stack: reason.stack,
+		reason: reason instanceof Error ? reason.message : String(reason),
+		stack: reason instanceof Error ? reason.stack : undefined,
 	});
-	process.exit(1);
 });
 
 //Middleware for API Key
