@@ -43,8 +43,9 @@ const buildSortStage = (ordering, field) => {
 		status: { attribute: "userList.completionPercentage", order: 1 },
 	};
 
+	const selectedOption = sortOptions[ordering] || sortOptions.title;
 	const sortStage = {
-		[sortOptions[ordering].attribute]: sortOptions[ordering].order,
+		[selectedOption.attribute]: selectedOption.order,
 		"userList.Series.title": 1,
 	};
 	return sortStage;

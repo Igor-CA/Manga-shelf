@@ -149,7 +149,8 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	};
 	const ordering = req.query.ordering || "popularity";
 	const sortStage = {};
-	sortStage[sortOptions[ordering].attribute] = sortOptions[ordering].order;
+	const selected = sortOptions[ordering] || sortOptions.popularity;
+	sortStage[selected.attribute] = selected.order;
 	sortStage["title"] = 1;
 	const isValidSearch = search && search.trim() !== "";
 
