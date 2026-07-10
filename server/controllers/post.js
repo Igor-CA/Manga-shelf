@@ -420,6 +420,9 @@ exports.getPosts = asyncHandler(async (req, res) => {
 	if (!mongoose.Types.ObjectId.isValid(seriesId)) {
 		return res.status(400).json({ msg: "ID de obra inválido" });
 	}
+	if (volumeId && !mongoose.Types.ObjectId.isValid(volumeId)) {
+		return res.status(400).json({ msg: "ID de volume inválido" });
+	}
 
 	const viewerAllowsAdult = !!req.user?.allowAdult;
 

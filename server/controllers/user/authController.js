@@ -34,7 +34,7 @@ exports.login = asyncHandler(async (req, res, next) => {
 		$or: [{ username: loginOriginalCase }, { email: loginLowerCase }],
 	});
 
-	if (!user) {
+	if (!user || !user.password) {
 		return res
 			.status(401)
 			.json({ msg: "Usuário ou senha errados, tente novamente." });
