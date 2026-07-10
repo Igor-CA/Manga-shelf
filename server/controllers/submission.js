@@ -178,7 +178,7 @@ exports.getUserSubmissions = asyncHandler(async (req, res) => {
 		.populate("user", "username email")
 		.populate({
 			path: "targetId",
-			select: "title number variant variantNumber seriesCover",
+			select: "title number isVariant variantNumber seriesCover",
 			populate: {
 				path: "serie",
 				select: "title",
@@ -189,9 +189,9 @@ exports.getUserSubmissions = asyncHandler(async (req, res) => {
 
 	const imageSubmissions = submissions.map((submission) => {
 		let cover = submission?.targetId?.seriesCover || "";
-		if (submission.targetModel === "Volume") {
-			const { serie, number, variant, variantNumber } = submission.targetId;
-			cover = getVolumeCoverURL(serie, number, variant, variantNumber);
+		if (submission.targetModel === "Volume" && submission.targetId?.serie) {
+			const { serie, number, isVariant, variantNumber } = submission.targetId;
+			cover = getVolumeCoverURL(serie, number, isVariant, variantNumber);
 		}
 		return { cover, ...submission._doc };
 	});
