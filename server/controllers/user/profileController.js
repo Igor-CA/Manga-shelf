@@ -65,14 +65,20 @@ exports.changeProfileBanner = changeUserImage(
 	"public/images/banner",
 );
 exports.setUserName = asyncHandler(async (req, res, next) => {
-	const user = await User.findOne({ username: req.body.username });
+	const username = req.body.username.trim();
+	const user = await User.findOne({ username });
 	if (user) {
 		return res.status(409).json({ msg: "Nome de usuário já existe" });
 	}
 
-	await User.findByIdAndUpdate(req.user._id, {
-		username: req.body.username,
-	});
+	try {
+		await User.findByIdAndUpdate(req.user._id, { username });
+	} catch (err) {
+		if (err.code === 11000) {
+			return res.status(409).json({ msg: "Nome de usuário já existe" });
+		}
+		throw err;
+	}
 	res.send({ msg: "Nome atualizado com sucesso" });
 });
 
@@ -102,14 +108,19 @@ exports.changePassword = asyncHandler(async (req, res, next) => {
 	res.status(201).json({ msg: "Senha atualizada com sucesso" });
 });
 exports.changeEmail = asyncHandler(async (req, res, next) => {
-	const { email } = req.body;
+	const email = req.body.email.toLowerCase().trim();
 	const user = await User.findOne({ email });
 	if (user) {
 		return res.status(409).json({ msg: "Email já está em uso" });
 	}
-	await User.findByIdAndUpdate(req.user._id, {
-		email,
-	});
+	try {
+		await User.findByIdAndUpdate(req.user._id, { email });
+	} catch (err) {
+		if (err.code === 11000) {
+			return res.status(409).json({ msg: "Email já está em uso" });
+		}
+		throw err;
+	}
 	res.status(201).json({ msg: "Email atualizado com sucesso" });
 });
 

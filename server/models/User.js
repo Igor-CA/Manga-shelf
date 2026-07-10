@@ -83,4 +83,10 @@ const UserSchema = new Schema({
 });
 UserSchema.index({ "ownedVolumes.volume": 1 });
 
+UserSchema.index(
+	{ username: 1 },
+	{ unique: true, partialFilterExpression: { username: { $type: "string" } } },
+);
+UserSchema.index({ email: 1 }, { unique: true });
+
 module.exports = mongoose.model("User", UserSchema);

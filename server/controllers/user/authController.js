@@ -22,7 +22,16 @@ exports.signup = asyncHandler(async (req, res, next) => {
 		email,
 		TOSAcceptedAt: new Date(),
 	});
-	await newUser.save();
+	try {
+		await newUser.save();
+	} catch (err) {
+		if (err.code === 11000) {
+			return res
+				.status(409)
+				.json({ msg: "Email ou nome de usuário já existe" });
+		}
+		throw err;
+	}
 	res.status(201).json({ msg: "Usuário criado com sucesso" });
 });
 
@@ -66,7 +75,8 @@ exports.logout = (req, res, next) => {
 };
 
 exports.sendResetEmail = asyncHandler(async (req, res, next) => {
-	const user = await User.findOne({ email: req.body.email });
+	const email = req.body.email.toLowerCase().trim();
+	const user = await User.findOne({ email });
 
 	if (!user) {
 		return res
