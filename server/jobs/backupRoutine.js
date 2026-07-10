@@ -31,6 +31,11 @@ function backupDatabase() {
 			logger.info(`mongodump stdout: ${data}`);
 		});
 
+		mongodump.on("error", (err) => {
+			logger.error("mongodump failed to start:", err.message);
+			reject(err);
+		});
+
 		mongodump.on("close", (code) => {
 			if (code === 0) {
 				logger.info(
@@ -39,7 +44,7 @@ function backupDatabase() {
 				resolve();
 			} else {
 				logger.error(`mongodump process exited with code ${code}`);
-				reject(`mongodump process exited with code ${code}`); 
+				reject(new Error(`mongodump process exited with code ${code}`));
 			}
 		});
 	});

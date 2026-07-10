@@ -490,7 +490,7 @@ async function updateSeriesPopularity() {
 		}));
 
 		logger.info("Series popularity updated");
-		await Series.bulkWrite(bulkOps);
+		if (bulkOps.length > 0) await Series.bulkWrite(bulkOps);
 	} catch (error) {
 		logger.error("Error updating series popularity:", error);
 		throw error;
