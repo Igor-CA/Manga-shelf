@@ -123,13 +123,13 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 	if (userUpdate.matchedCount === 0)
 		return res.status(400).json({ msg: "Usuário não encontrado" });
 
-	const seriesUpdate = await Series.findOneAndUpdate(
+	if (userUpdate.modifiedCount === 0)
+		return res.status(400).json({ msg: "Obra não está na sua lista" });
+
+	await Series.updateOne(
 		{ _id: seriesId, popularity: { $gt: 0 } },
 		{ $inc: { popularity: -1 } }
 	);
-
-	if (!seriesUpdate)
-		return res.status(400).json({ msg: "Obra não encontrada" });
 
 	return res.send({ msg: "Obra removida com sucesso" });
 });
