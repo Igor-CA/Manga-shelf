@@ -160,11 +160,15 @@ exports.getPhoto = asyncHandler(async (req, res) => {
 		return res.status(404).json({ msg: "Foto não encontrada" });
 	}
 
-	if (
-		!photo.isVisible &&
-		(!req.user || req.user._id.toString() !== photo.user._id.toString())
-	) {
-		return res.status(403).json({ msg: "Foto não disponível" });
+	const isOwner =
+		req.user && req.user._id.toString() === photo.user._id.toString();
+	if (!isOwner) {
+		if (!photo.isVisible) {
+			return res.status(403).json({ msg: "Foto não disponível" });
+		}
+		if (photo.isAdultContent && !req.user?.allowAdult) {
+			return res.status(403).json({ msg: "Foto não disponível" });
+		}
 	}
 
 	res.json({ photo });
