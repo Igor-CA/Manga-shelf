@@ -377,42 +377,30 @@ exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 	if (!targetUserName) {
 		return res.status(400).json({ msg: "Usuário não encontrado" });
 	}
-	const user = await User.findById(userId);
-	const targetUser = await User.findOne({ username: targetUserName });
-
-	if (!targetUser || !user) {
-		return res.send({ msg: "Usuário não encontrado" });
+	const targetUser = await User.findOne({ username: targetUserName }).select(
+		"_id",
+	);
+	if (!targetUser) {
+		return res.status(404).json({ msg: "Usuário não encontrado" });
 	}
 
-	if (user._id.equals(targetUser._id)) {
+	if (targetUser._id.equals(userId)) {
 		return res.status(400).json({ msg: "Não é possível seguir a si mesmo" });
 	}
 
-	if (follow) {
-		if (!user.following.some((id) => id.equals(targetUser._id))) {
-			user.following.push(targetUser._id);
-		}
-		if (!targetUser.followers.some((id) => id.equals(user._id))) {
-			targetUser.followers.push(userId);
-		}
-		await user.save();
-		await targetUser.save();
+	const op = follow ? "$addToSet" : "$pull";
+	await Promise.all([
+		User.updateOne({ _id: userId }, { [op]: { following: targetUser._id } }),
+		User.updateOne({ _id: targetUser._id }, { [op]: { followers: userId } }),
+	]);
 
-		sendNewFollowerNotification(user._id, targetUser._id).catch((err) =>
+	if (follow) {
+		sendNewFollowerNotification(userId, targetUser._id).catch((err) =>
 			logger.error("Failed to send follower notification:", err.message),
 		);
-		
 		return res.send({ msg: "Seguindo com sucesso" });
-	} else {
-		user.following = user.following.filter((id) => !id.equals(targetUser._id));
-		targetUser.followers = targetUser.followers.filter(
-			(id) => !id.equals(user._id)
-		);
-
-		await user.save();
-		await targetUser.save();
-		res.send({ msg: "Deixou de seguir com sucesso" });
 	}
+	res.send({ msg: "Deixou de seguir com sucesso" });
 });
 
 exports.dropSeries = asyncHandler(async (req, res, next) => {
