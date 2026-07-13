@@ -3,6 +3,7 @@ const router = express.Router();
 
 const seriesController = require("../controllers/series");
 const volumesController = require("../controllers/volumes");
+const purchasesController = require("../controllers/purchases");
 const Notifications = require("../controllers/notifications");
 const { requireAuth } = require("../middlewares/authentications");
 const { authController, userInfoController } = require("../controllers/user/index");
@@ -23,6 +24,7 @@ router.get("/get-user-socials/:type/:username", userInfoController.getSocials); 
 router.get("/browse", seriesController.browse);
 router.get("/series/filters", seriesController.getInfoFilters);
 router.get("/series/:id", seriesController.getSeriesDetails);
+router.get("/series/:id/purchases", purchasesController.getAllSeriesPurchases);
 
 //Volumes api
 router.get("/volume/:id", volumesController.getVolumeDetails);

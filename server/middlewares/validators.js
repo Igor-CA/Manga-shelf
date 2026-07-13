@@ -242,6 +242,28 @@ const payloadNumbersValidation = body([
 	.withMessage("Dimensões e totais devem ser números positivos.")
 	.toFloat();
 
+// Purchase registration
+const purchaseSeriesIdValidation = body("seriesId")
+	.notEmpty()
+	.withMessage("O ID da série é obrigatório.")
+	.isMongoId()
+	.withMessage("ID da série inválido.");
+
+const purchaseAmountValidation = body("amount")
+	.notEmpty()
+	.withMessage("O valor é obrigatório.")
+	.isFloat({ min: 0 })
+	.withMessage("O valor deve ser um número positivo.")
+	.toFloat();
+
+const purchaseVolumeIdsValidation = body("volumeIds")
+	.isArray({ min: 1 })
+	.withMessage("Selecione ao menos um volume.");
+
+const purchaseVolumeIdsItemsValidation = body("volumeIds.*")
+	.isMongoId()
+	.withMessage("ID de volume inválido.");
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -265,6 +287,13 @@ const reportsValidation = [
 	reportTypeValidation,
 	reportPageValidation,
 	reportUserValidation,
+];
+
+const purchaseValidation = [
+	purchaseSeriesIdValidation,
+	purchaseAmountValidation,
+	purchaseVolumeIdsValidation,
+	purchaseVolumeIdsItemsValidation,
 ];
 
 const editOwnedValidation = [
@@ -319,5 +348,6 @@ module.exports = {
 	editOwnedValidation,
 	photoValidation,
 	submissionValidation,
+	purchaseValidation,
 	validateRequest,
 };

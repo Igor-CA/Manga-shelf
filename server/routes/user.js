@@ -13,6 +13,7 @@ const reportController = require("../controllers/report");
 const notificationsController = require("../controllers/notifications");
 const collectionPhotosController = require("../controllers/collectionPhotos");
 const submissionController = require("../controllers/submission");
+const purchasesController = require("../controllers/purchases");
 const { requireAuth } = require("../middlewares/authentications");
 const {
 	signupValidation,
@@ -27,6 +28,7 @@ const {
 	editOwnedValidation,
 	photoValidation,
 	submissionValidation,
+	purchaseValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -150,6 +152,30 @@ router.put(
 	"/mark-notification-seen",
 	requireAuth,
 	notificationsController.setNotificationAsSeen,
+);
+
+// Purchases CRUD
+router.get(
+	"/purchases/:seriesId",
+	requireAuth,
+	purchasesController.getSeriesPurchases,
+);
+router.post(
+	"/purchases",
+	requireAuth,
+	purchaseValidation,
+	validateRequest,
+	purchasesController.createPurchase,
+);
+router.put(
+	"/purchases/:id",
+	requireAuth,
+	purchasesController.updatePurchase,
+);
+router.delete(
+	"/purchases/:id",
+	requireAuth,
+	purchasesController.deletePurchase,
 );
 
 // Collection photos routes

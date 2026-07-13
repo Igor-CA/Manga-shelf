@@ -31,6 +31,9 @@ export default function UserStatsPage() {
 		queryStats();
 	}, []);
 
+	const formatCurrency = (value) =>
+		value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
 	return (
 		data && (
 			<div className="container">
@@ -58,6 +61,24 @@ export default function UserStatsPage() {
 							</div>
 							<div className="stats-highlight__label">Volumes Faltantes</div>
 						</div>
+						{data.totalSpent > 0 && (
+							<>
+								<div className="stats-highlight">
+									<div className="stats-highlight__value">
+										{formatCurrency(data.totalSpent)}
+									</div>
+									<div className="stats-highlight__label">Total gasto</div>
+								</div>
+								<div className="stats-highlight">
+									<div className="stats-highlight__value">
+										{formatCurrency(data.averagePricePerVolume)}
+									</div>
+									<div className="stats-highlight__label">
+										Preço médio por volume
+									</div>
+								</div>
+							</>
+						)}
 					</div>
 					<BarChartComponent
 						chartTitle="Quantidade de coleções por gênero"
@@ -99,6 +120,13 @@ export default function UserStatsPage() {
 						total={data.volumesCount}
 						data={data.typeByVolume}
 					></PieChartComponent>
+				{data.spendingBySeries?.length > 0 && (
+						<BarChartComponent
+							chartTitle="Gasto por obra (R$)"
+							total={data.totalSpent}
+							data={data.spendingBySeries}
+						/>
+					)}
 				</div>
 			</div>
 		)
