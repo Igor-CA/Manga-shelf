@@ -125,14 +125,10 @@ exports.changeEmail = asyncHandler(async (req, res, next) => {
 });
 
 exports.allowAdultContent = asyncHandler(async (req, res, next) => {
-	if (!req.body.allow) {
-		await User.findByIdAndUpdate(req.user._id, {
-			allowAdult: false,
-		});
-	}
+	const allow = req.body.allow === true;
 	await User.findByIdAndUpdate(req.user._id, {
-		allowAdult: req.body.allow,
-		allowedAdultAt: new Date(),
+		allowAdult: allow,
+		...(allow ? { allowedAdultAt: new Date() } : {}),
 	});
 	res.status(201).json({ msg: "Atualizado com sucesso" });
 });
