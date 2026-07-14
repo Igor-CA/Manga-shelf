@@ -368,6 +368,12 @@ exports.editPost = asyncHandler(async (req, res) => {
 		return res.status(403).json({ msg: "Não autorizado" });
 	}
 
+	if (post.isHidden) {
+		return res
+			.status(403)
+			.json({ msg: "Comentário em análise não pode ser editado" });
+	}
+
 	const {
 		text,
 		isSpoiler: isSpoilerFlag,
