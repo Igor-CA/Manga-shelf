@@ -725,9 +725,14 @@ exports.processPendingNotifications = async (
 			}
 		}
 
+		const statusIds = statuses.map((s) => s._id);
 		await UserNotificationStatus.updateMany(
-			{ _id: { $in: statuses.map((s) => s._id) } },
-			{ $set: { emailStatus: "sent", siteStatus: "sent" } },
+			{ _id: { $in: statusIds }, emailStatus: "pending" },
+			{ $set: { emailStatus: "sent" } },
+		);
+		await UserNotificationStatus.updateMany(
+			{ _id: { $in: statusIds }, siteStatus: "pending" },
+			{ $set: { siteStatus: "sent" } },
 		);
 	}
 };
