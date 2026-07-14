@@ -9,6 +9,8 @@ const Volume = require("../models/volume");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 const Rating = require("../models/Rating");
+const Submission = require("../models/Submission");
+const { deletePostsForTarget, unlinkImages } = require("./post");
 const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
 
@@ -666,11 +668,25 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 			{ $pull: { relatedSeries: { series: seriesId } } },
 		).session(session);
 
+		const postImagePaths = await deletePostsForTarget(
+			{ series: seriesId },
+			session,
+		);
+		await Rating.deleteMany({ series: seriesId }).session(session);
+		await Submission.deleteMany({
+			$or: [
+				{ targetModel: "Series", targetId: seriesId },
+				{ targetModel: "Volume", targetId: { $in: relatedVolumeIds } },
+			],
+		}).session(session);
+
 		await Volume.deleteMany({ serie: seriesId }).session(session);
 
 		await Series.deleteOne({ _id: seriesId }).session(session);
 
 		await session.commitTransaction();
+
+		unlinkImages(postImagePaths);
 
 		logger.warn(`Series removed by ${req.user.username}`);
 

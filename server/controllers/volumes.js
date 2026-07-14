@@ -5,6 +5,8 @@ const Series = require("../models/Series");
 const Notification = require("../models/Notification");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
 const Rating = require("../models/Rating");
+const Submission = require("../models/Submission");
+const { deletePostsForTarget, unlinkImages } = require("./post");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const asyncHandler = require("express-async-handler");
 const logger = require("../Utils/logger");
@@ -141,9 +143,22 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 			}).session(session);
 		}
 
+		const postImagePaths = await deletePostsForTarget(
+			{ volume: volumeId },
+			session,
+		);
+		await Rating.deleteMany({ volume: volumeId }).session(session);
+		await Submission.deleteMany({
+			targetModel: "Volume",
+			targetId: volumeId,
+		}).session(session);
+
 		await Volume.deleteOne({ _id: volumeId }).session(session);
 
 		await session.commitTransaction();
+		
+		unlinkImages(postImagePaths);
+
 		logger.warn(`Volume removed by ${req.user.username}`);
 
 		return res.status(200).json({

@@ -6,6 +6,7 @@ const Volume = require("../models/volume");
 const Notification = require("../models/Notification");
 const UserNotificationStatus = require("../models/UserNotificationStatus");
 const PendingReplyDigest = require("../models/PendingReplyDigest");
+const PostReport = require("../models/PostReport");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
@@ -821,6 +822,31 @@ function unlinkImages(imagePaths) {
 	});
 }
 exports.unlinkImages = unlinkImages;
+
+async function deletePostsForTarget(postMatch, session) {
+	const posts = await Post.find(postMatch, "_id image parent").session(session);
+	if (posts.length === 0) return [];
+
+	const postIds = posts.map((p) => p._id);
+	const topLevelIds = posts.filter((p) => !p.parent).map((p) => p._id);
+	const imagePaths = posts.filter((p) => p.image).map((p) => p.image);
+
+	await cleanupPostNotifications(postIds, session);
+	if (topLevelIds.length > 0) {
+		await PendingReplyDigest.deleteMany({
+			topLevelComment: { $in: topLevelIds },
+		}).session(session);
+	}
+	await Like.deleteMany({ post: { $in: postIds } }).session(session);
+	await PostReport.updateMany(
+		{ post: { $in: postIds }, status: "Pendente" },
+		{ $set: { status: "Resolvido", resolution: "target-deleted" } },
+	).session(session);
+	await Post.deleteMany({ _id: { $in: postIds } }).session(session);
+
+	return imagePaths;
+}
+exports.deletePostsForTarget = deletePostsForTarget;
 
 exports.deletePost = asyncHandler(async (req, res) => {
 	const postId = req.params.id;
