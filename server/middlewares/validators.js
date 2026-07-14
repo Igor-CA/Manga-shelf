@@ -187,6 +187,14 @@ const photoAdultValidation = body("isAdultContent")
 	.withMessage("isAdultContent deve ser verdadeiro ou falso.")
 	.toBoolean();
 
+const collectionVolumeValidation = [
+	body("seriesId").isMongoId().withMessage("ID de obra inválido"),
+	body("idList")
+		.isArray({ min: 1, max: 500 })
+		.withMessage("Lista de volumes inválida"),
+	body("idList.*").isMongoId().withMessage("ID de volume inválido"),
+];
+
 //Submissions
 const submissionTargetModelValidation = body("targetModel")
 	.trim()
@@ -423,6 +431,7 @@ const validateRequest = (req, res, next) => {
 // Export
 module.exports = {
 	forgotPasswordValidation,
+	collectionVolumeValidation,
 	signupValidation,
 	loginValidation,
 	resetPasswordValidator,

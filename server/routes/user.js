@@ -47,6 +47,7 @@ const {
 	reportValidation,
 	ratingValidation,
 	ratingDeleteValidation,
+	collectionVolumeValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -97,14 +98,26 @@ router.post(
 	requireAuth,
 	userActionsController.addToWishlist,
 );
-router.post("/add-volume", requireAuth, userActionsController.addVolume);
+router.post(
+	"/add-volume",
+	requireAuth,
+	collectionVolumeValidation,
+	validateRequest,
+	userActionsController.addVolume,
+);
 router.post("/remove-series", requireAuth, userActionsController.removeSeries);
 router.post(
 	"/remove-from-wishlist",
 	requireAuth,
 	userActionsController.removeFromWishList,
 );
-router.post("/remove-volume", requireAuth, userActionsController.removeVolume);
+router.post(
+	"/remove-volume",
+	requireAuth,
+	collectionVolumeValidation,
+	validateRequest,
+	userActionsController.removeVolume,
+);
 router.post("/drop-series", requireAuth, userActionsController.dropSeries);
 router.post("/undrop-series", requireAuth, userActionsController.undropSeries);
 router.post(

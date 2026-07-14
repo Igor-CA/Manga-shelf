@@ -172,10 +172,16 @@ const getNewUserSeriesStatus = (currentStatus, completionPercentage) => {
 };
 
 exports.addVolume = asyncHandler(async (req, res, next) => {
-	const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
+	const { seriesId, idList } = req.body;
 
 	if (!idList || idList.length === 0)
 		return res.status(400).json({ msg: "Volume(s) não informado" });
+
+	const [series, totalStandardVolumes] = await Promise.all([
+		Series.findById(seriesId).select("status").lean(),
+		Volumes.countDocuments({ serie: seriesId, isVariant: { $ne: true } }),
+	]);
+	if (!series) return res.status(400).json({ msg: "Obra não encontrada" });
 
 	const bulkOps = idList.map((id) => ({
 		updateOne: {
@@ -243,11 +249,11 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 	const uniqueOwnedCount = calculationResult[0]?.uniqueCount || 0;
 	const existingSeriesEntry = calculationResult[0]?.seriesEntry?.[0];
 
-	const finalTotal = amountVolumesFromSeries > 0 ? amountVolumesFromSeries : 1;
+	const finalTotal = totalStandardVolumes > 0 ? totalStandardVolumes : 1;
 	let completionPercentage = uniqueOwnedCount / finalTotal;
 	if (completionPercentage > 1) completionPercentage = 1;
 
-	const newStatus = getNewUserSeriesStatus(seriesStatus, completionPercentage);
+	const newStatus = getNewUserSeriesStatus(series.status, completionPercentage);
 	const updates = [];
 
 	if (!existingSeriesEntry) {
@@ -288,7 +294,7 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 });
 
 exports.removeVolume = asyncHandler(async (req, res, next) => {
-	const { seriesId, amountVolumesFromSeries, idList, seriesStatus } = req.body;
+	const { seriesId, idList } = req.body;
 
 	if (!idList || idList.length === 0)
 		return res.status(400).json({ msg: "Volume(s) não informado" });
@@ -301,6 +307,11 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 			},
 		}
 	);
+
+	const [series, totalStandardVolumes] = await Promise.all([
+		Series.findById(seriesId).select("status").lean(),
+		Volumes.countDocuments({ serie: seriesId, isVariant: { $ne: true } }),
+	]);
 
 	const calculationResult = await User.aggregate([
 		{ $match: { _id: req.user._id } },
@@ -345,14 +356,13 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 	const uniqueOwnedCount = calculationResult[0]?.uniqueCount || 0;
 	const existingSeriesEntry = calculationResult[0]?.seriesEntry?.[0];
 
-	if (existingSeriesEntry) {
-		const finalTotal =
-			amountVolumesFromSeries > 0 ? amountVolumesFromSeries : 1;
+	if (existingSeriesEntry && series) {
+		const finalTotal = totalStandardVolumes > 0 ? totalStandardVolumes : 1;
 		let completionPercentage = uniqueOwnedCount / finalTotal;
 		if (completionPercentage > 1) completionPercentage = 1;
 
 		const newStatus = getNewUserSeriesStatus(
-			seriesStatus,
+			series.status,
 			completionPercentage
 		);
 
