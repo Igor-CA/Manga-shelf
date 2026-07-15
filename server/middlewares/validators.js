@@ -7,14 +7,12 @@ const emailValidation = body("email")
 	.notEmpty()
 	.withMessage("É obrigatório informar um email.")
 	.isEmail()
-	.withMessage("O email inserido não é um email válido")
-	.escape();
+	.withMessage("O email inserido não é um email válido");
 
 const loginInputValidation = body("login")
 	.trim()
 	.notEmpty()
-	.withMessage("Um email ou nome de usuário deve ser informado.")
-	.escape();
+	.withMessage("Um email ou nome de usuário deve ser informado.");
 
 const passwordValidation = body("password")
 	.trim()
@@ -28,8 +26,7 @@ const usernameValidation = body("username")
 	.matches(/^[A-Za-z0-9]{3,16}$/)
 	.withMessage(
 		"O nome de usuário não pode ter caracteres especiais (!@#$%^&* ) e deve ter entre 3 e 16 caracteres.",
-	)
-	.escape();
+	);
 
 const newPasswordValidation = body("password")
 	.trim()
@@ -73,30 +70,26 @@ const reportDetailsValidation = body("details")
 const reportLocalValidation = body("local")
 	.trim()
 	.notEmpty()
-	.withMessage("O local deve ser especificado.")
-	.escape();
+	.withMessage("O local deve ser especificado.");
 
 const reportPageValidation = body("page")
 	.trim()
 	.notEmpty()
-	.withMessage("A página em específico deve ser citada.")
-	.escape();
+	.withMessage("A página em específico deve ser citada.");
 
 const reportTypeValidation = body("type")
 	.trim()
 	.notEmpty()
-	.withMessage("O tipo de sugestão deve ser especificada.")
-	.escape();
+	.withMessage("O tipo de sugestão deve ser especificada.");
 
-const reportUserValidation = body("user").trim().escape();
+const reportUserValidation = body("user").trim();
 
 const volumeIdValidation = body("_id")
 	.trim()
 	.notEmpty()
 	.withMessage("O ID do volume é obrigatório.")
 	.isMongoId()
-	.withMessage("ID de volume inválido.")
-	.escape();
+	.withMessage("ID de volume inválido.");
 
 const acquiredAtValidation = body("acquiredAt")
 	.optional({ checkFalsy: true, nullable: true })
@@ -142,15 +135,13 @@ const notesValidation = body("notes")
 	.optional()
 	.trim()
 	.isLength({ max: 500 })
-	.withMessage("As anotações não podem exceder 500 caracteres.")
-	.escape();
+	.withMessage("As anotações não podem exceder 500 caracteres.");
 
 const photoDescriptionValidation = body("description")
 	.optional()
 	.trim()
 	.isLength({ max: 1000 })
-	.withMessage("A descrição não pode exceder 1000 caracteres.")
-	.escape();
+	.withMessage("A descrição não pode exceder 1000 caracteres.");
 
 const photoDateValidation = body("date")
 	.optional()
@@ -211,8 +202,7 @@ const submissionTargetIdValidation = body("targetId")
 const submissionNotesValidation = body("notes")
 	.trim()
 	.notEmpty()
-	.withMessage("É obrigatório informar anotações/notas.")
-	.escape();
+	.withMessage("É obrigatório informar anotações/notas.");
 
 const payloadValidation = body("payload")
 	.exists()
@@ -224,8 +214,7 @@ const payloadTitleValidation = body("payload.title")
 	.optional()
 	.trim()
 	.notEmpty()
-	.withMessage("O título não pode estar vazio.")
-	.escape();
+	.withMessage("O título não pode estar vazio.");
 
 const payloadArrayValidation = body([
 	"payload.authors",
