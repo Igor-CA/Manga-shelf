@@ -64,6 +64,8 @@ function AccountSettings() {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [passwordButtonVisible, setPasswordButtonVisible] = useState(false);
+	const [emailCurrentPassword, setEmailCurrentPassword] = useState("");
+	const [passwordCurrentPassword, setPasswordCurrentPassword] = useState("");
 	const [adultAllowed, setadultAllowed] = useState();
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [confirmationMessage, setConfirmationMessage] = useState("");
@@ -93,14 +95,26 @@ function AccountSettings() {
 		setEmailButtonVisible(true);
 	};
 
+	const syncPasswordMatch = (newPassword, newConfirmPassword) => {
+		const confirmInput = document.getElementById("confirm-password");
+		if (!confirmInput) return;
+		confirmInput.setCustomValidity(
+			newConfirmPassword && newPassword !== newConfirmPassword
+				? "As senhas devem coincidir"
+				: ""
+		);
+	};
+
 	const handlePasswordChange = (e) => {
 		setPassword(e.target.value);
+		syncPasswordMatch(e.target.value, confirmPassword);
 		if (e.target.value.trim() === "" || confirmPassword.trim() === "")
 			return;
 		setPasswordButtonVisible(true);
 	};
 	const handleConfirmPasswordChange = (e) => {
 		setConfirmPassword(e.target.value);
+		syncPasswordMatch(password, e.target.value);
 		if (e.target.value.trim() === "" || password.trim() === "") return;
 		setPasswordButtonVisible(true);
 	};
@@ -124,16 +138,27 @@ function AccountSettings() {
 				tooShort: "A senha precisa de pelo menos 8 caracteres",
 			},
 			"confirm-password": {
-				patternMismatch: "As senhas devem coincidir",
+				customError: "As senhas devem coincidir",
+			},
+			currentPassword: {
+				valueMissing: "É obrigatório informar sua senha atual",
 			},
 		};
 
-		const validationTypes = ["tooShort", "patternMismatch", "typeMismatch"];
+		const validationTypes = [
+			"tooShort",
+			"patternMismatch",
+			"typeMismatch",
+			"valueMissing",
+			"customError",
+		];
 		const inputValidity = validationTypes.find(
 			(type) => input.validity[type]
 		);
 
-		const customErrorMessage = validationMessages[inputName][inputValidity];
+		const customErrorMessage =
+			validationMessages[inputName]?.[inputValidity] ||
+			input.validationMessage;
 
 		addMessage(customErrorMessage);
 	};
@@ -166,7 +191,11 @@ function AccountSettings() {
 
 	const handleEmailSubmit = (e) => {
 		e.preventDefault();
-		submitTo("change-email", { email });
+		submitTo("change-email", {
+			email,
+			currentPassword: emailCurrentPassword,
+		});
+		setEmailCurrentPassword("");
 	};
 
 	const handlePasswordSubmit = (e) => {
@@ -174,7 +203,9 @@ function AccountSettings() {
 		submitTo("change-password", {
 			password,
 			"confirm-password": confirmPassword,
+			currentPassword: passwordCurrentPassword,
 		});
+		setPasswordCurrentPassword("");
 	};
 
 	const handleAdultContent = (e) => {
@@ -267,6 +298,23 @@ function AccountSettings() {
 					onInvalid={handleInvalid}
 				/>
 			</label>
+			{emailButtonVisible && user?.hasPassword && (
+				<label htmlFor="email-current-password" className="input_label">
+					Senha atual
+					<input
+						placeholder="Sua senha atual"
+						type="password"
+						name="currentPassword"
+						id="email-current-password"
+						className="input"
+						autoComplete="current-password"
+						value={emailCurrentPassword}
+						onChange={(e) => setEmailCurrentPassword(e.target.value)}
+						onInvalid={handleInvalid}
+						required
+					/>
+				</label>
+			)}
 			{emailButtonVisible && (
 				<button className="button" type="submit">
 					Salvar email
@@ -302,6 +350,28 @@ function AccountSettings() {
 					onInvalid={handleInvalid}
 				/>
 			</label>
+			{passwordButtonVisible && user?.hasPassword && (
+				<label
+					htmlFor="password-current-password"
+					className="input_label"
+				>
+					Senha atual
+					<input
+						placeholder="Sua senha atual"
+						type="password"
+						name="currentPassword"
+						id="password-current-password"
+						className="input"
+						autoComplete="current-password"
+						value={passwordCurrentPassword}
+						onChange={(e) =>
+							setPasswordCurrentPassword(e.target.value)
+						}
+						onInvalid={handleInvalid}
+						required
+					/>
+				</label>
+			)}
 			{passwordButtonVisible && (
 				<button className="button" type="submit">
 					Salvar senha

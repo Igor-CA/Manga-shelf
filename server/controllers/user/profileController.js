@@ -99,8 +99,29 @@ exports.setUserNotifications = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Atualizado com sucesso" });
 });
 
+async function verifyCurrentPassword(userId, currentPassword) {
+	const user = await User.findById(userId).select("password").lean();
+	if (!user) return { error: { status: 404, msg: "Usuário não encontrado" } };
+	if (!user.password) return { ok: true };
+
+	if (!currentPassword) {
+		return { error: { status: 400, msg: "Informe sua senha atual" } };
+	}
+	const matches = await bcrypt.compare(currentPassword, user.password);
+	if (!matches) {
+		return { error: { status: 401, msg: "Senha atual incorreta" } };
+	}
+	return { ok: true };
+}
+
 exports.changePassword = asyncHandler(async (req, res, next) => {
-	const { password } = req.body;
+	const { password, currentPassword } = req.body;
+
+	const check = await verifyCurrentPassword(req.user._id, currentPassword);
+	if (check.error) {
+		return res.status(check.error.status).json({ msg: check.error.msg });
+	}
+
 	const hashedPassword = await bcrypt.hash(password, 10);
 	await User.findByIdAndUpdate(req.user._id, {
 		password: hashedPassword,
@@ -109,6 +130,12 @@ exports.changePassword = asyncHandler(async (req, res, next) => {
 });
 exports.changeEmail = asyncHandler(async (req, res, next) => {
 	const email = req.body.email.toLowerCase().trim();
+
+	const check = await verifyCurrentPassword(req.user._id, req.body.currentPassword);
+	if (check.error) {
+		return res.status(check.error.status).json({ msg: check.error.msg });
+	}
+
 	const user = await User.findOne({ email });
 	if (user) {
 		return res.status(409).json({ msg: "Email já está em uso" });

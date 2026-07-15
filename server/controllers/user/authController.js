@@ -165,6 +165,7 @@ exports.getLoggedUser = asyncHandler(async (req, res, next) => {
 		wishList: user.wishList,
 		notificationCount,
 		isAdmin: user.isAdmin,
+		hasPassword: !!user.password,
 	};
 	return res.send(userInfo);
 });
