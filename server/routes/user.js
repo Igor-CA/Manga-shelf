@@ -30,6 +30,7 @@ const postController = require("../controllers/post");
 const postReportController = require("../controllers/postReport");
 const ratingController = require("../controllers/rating");
 const { requireAuth } = require("../middlewares/authentications");
+const { createAuthLimiter } = require("../middlewares/rateLimiters");
 const {
 	signupValidation,
 	loginValidation,
@@ -53,11 +54,18 @@ const {
 //Authentication related functions
 router.post(
 	"/signup",
+	createAuthLimiter(),
 	signupValidation,
 	validateRequest,
 	authController.signup,
 );
-router.post("/login", loginValidation, validateRequest, authController.login);
+router.post(
+	"/login",
+	createAuthLimiter(),
+	loginValidation,
+	validateRequest,
+	authController.login,
+);
 router.get("/logout", requireAuth, authController.logout);
 router.get(
 	"/login/auth/google",
@@ -73,6 +81,7 @@ router.get(
 
 router.post(
 	"/forgot",
+	createAuthLimiter(),
 	forgotPasswordValidation,
 	validateRequest,
 	authController.sendResetEmail,
@@ -80,6 +89,7 @@ router.post(
 
 router.post(
 	"/reset-password",
+	createAuthLimiter(),
 	resetPasswordValidator,
 	validateRequest,
 	authController.resetPassword,

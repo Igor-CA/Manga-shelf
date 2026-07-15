@@ -4,6 +4,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -83,6 +84,13 @@ startScheduledJobs();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.set("trust proxy", 1);
+
+app.use(
+	helmet({
+		contentSecurityPolicy: false,
+		crossOriginResourcePolicy: { policy: "cross-origin" },
+	})
+);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
