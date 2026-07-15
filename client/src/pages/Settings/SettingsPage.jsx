@@ -65,7 +65,6 @@ function AccountSettings() {
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [passwordButtonVisible, setPasswordButtonVisible] = useState(false);
 	const [adultAllowed, setadultAllowed] = useState();
-	const [url, setUrl] = useState("");
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [confirmationMessage, setConfirmationMessage] = useState("");
 	const [onConfirm, setOnConfirm] = useState(null);
@@ -139,31 +138,43 @@ function AccountSettings() {
 		addMessage(customErrorMessage);
 	};
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-		const formData = {
-			username,
-			email,
-			password,
-			"confirm-password": confirmPassword,
-		};
+	const submitTo = async (endpoint, payload) => {
 		try {
 			const response = await axios({
 				method: "PUT",
-				data: formData,
+				data: payload,
 				withCredentials: true,
 				headers: {
 					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
-				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/${url}`,
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/${endpoint}`,
 			});
 			addMessage(response.data.msg);
 			setMessageType("Success");
 			setOutdated(true);
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
-			addMessage(customErrorMessage);
+			addMessage(
+				error.response?.data?.msg || "Erro de conexão. Tente novamente."
+			);
 		}
+	};
+
+	const handleUsernameSubmit = (e) => {
+		e.preventDefault();
+		submitTo("set-username", { username });
+	};
+
+	const handleEmailSubmit = (e) => {
+		e.preventDefault();
+		submitTo("change-email", { email });
+	};
+
+	const handlePasswordSubmit = (e) => {
+		e.preventDefault();
+		submitTo("change-password", {
+			password,
+			"confirm-password": confirmPassword,
+		});
 	};
 
 	const handleAdultContent = (e) => {
@@ -204,7 +215,7 @@ function AccountSettings() {
 	};
 
 	return (
-		<form className="settings-group" onSubmit={handleSubmit}>
+		<div className="settings-group">
 			{showConfirmation && (
 				<PromptConfirm
 					message={confirmationMessage}
@@ -216,6 +227,7 @@ function AccountSettings() {
 			<h2 className="settings-group__title" id="account">
 				Informações da conta
 			</h2>
+			<form onSubmit={handleUsernameSubmit}>
 			<label htmlFor="username" className="input_label">
 				<p>Nome de usuário</p>
 				<p className="input_obs">
@@ -236,15 +248,12 @@ function AccountSettings() {
 				/>
 			</label>
 			{nameButtonVisible && (
-				<button
-					className="button"
-					onClick={() => {
-						setUrl("set-username");
-					}}
-				>
+				<button className="button" type="submit">
 					Salvar nome
 				</button>
 			)}
+			</form>
+			<form onSubmit={handleEmailSubmit}>
 			<label htmlFor="email" className="input_label">
 				Email
 				<input
@@ -259,15 +268,12 @@ function AccountSettings() {
 				/>
 			</label>
 			{emailButtonVisible && (
-				<button
-					className="button"
-					onClick={() => {
-						setUrl("change-email");
-					}}
-				>
+				<button className="button" type="submit">
 					Salvar email
 				</button>
 			)}
+			</form>
+			<form onSubmit={handlePasswordSubmit}>
 			<label htmlFor="password" className="input_label">
 				Senha
 				<input
@@ -297,15 +303,11 @@ function AccountSettings() {
 				/>
 			</label>
 			{passwordButtonVisible && (
-				<button
-					className="button"
-					onClick={() => {
-						setUrl("change-password");
-					}}
-				>
-					Salva senha
+				<button className="button" type="submit">
+					Salvar senha
 				</button>
 			)}
+			</form>
 			{typeof adultAllowed !== "undefined" && (
 				<CustomCheckbox
 					htmlId={"adult"}
@@ -314,7 +316,7 @@ function AccountSettings() {
 					handleChange={handleAdultContent}
 				></CustomCheckbox>
 			)}
-		</form>
+		</div>
 	);
 }
 
