@@ -19,6 +19,9 @@ export default function useReplies(post, seriesId, volumeId, initialReplies = nu
 	const [submitting, setSubmitting] = useState(false);
 	const [previewHidden, setPreviewHidden] = useState(false);
 
+	const [previewOverride, setPreviewOverride] = useState(null);
+	const previewPost = previewOverride ?? post.replyPreview;
+
 	const { editPost: editReply, deletePost } = usePostMutations({
 		seriesId,
 		volumeId,
@@ -27,6 +30,14 @@ export default function useReplies(post, seriesId, volumeId, initialReplies = nu
 			setReplies((prev) =>
 				prev ? prev.map((r) => (r._id === id ? { ...r, ...fields } : r)) : prev,
 			),
+	});
+
+	const { editPost: editPreview } = usePostMutations({
+		seriesId,
+		volumeId,
+		getPost: (id) => (previewPost && previewPost._id === id ? previewPost : null),
+		patchPost: (id, fields) =>
+			setPreviewOverride((prev) => ({ ...(prev ?? post.replyPreview), ...fields })),
 	});
 
 	const isExpanded = replies !== null;
@@ -168,6 +179,8 @@ export default function useReplies(post, seriesId, volumeId, initialReplies = nu
 		loadMore,
 		submitReply,
 		editReply,
+		editPreview,
+		previewPost,
 		deleteReply,
 		deletePreview,
 	};

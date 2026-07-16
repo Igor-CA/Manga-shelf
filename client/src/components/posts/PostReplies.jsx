@@ -32,6 +32,8 @@ export default function PostReplies({
 		loadMore,
 		submitReply,
 		editReply,
+		editPreview,
+		previewPost,
 		deleteReply,
 		deletePreview,
 	} = useReplies(post, seriesId, volumeId, initialReplies);
@@ -48,7 +50,7 @@ export default function PostReplies({
 		);
 
 	const ownsReply = (reply) => user && user.username === reply.author.username;
-	const previewShown = post.replyPreview && !previewHidden;
+	const previewShown = previewPost && !previewHidden;
 
 	const renderReplySkeletons = () =>
 		Array.from({ length: REPLIES_PER_PAGE }).map((_, i) => (
@@ -104,9 +106,10 @@ export default function PostReplies({
 				<>
 					{previewShown && (
 						<PostCard
-							post={post.replyPreview}
-							canDelete={ownsReply(post.replyPreview)}
+							post={previewPost}
+							canDelete={ownsReply(previewPost)}
 							onDelete={(id) => confirmDelete(id, deletePreview)}
+							onEdit={editPreview}
 							isReply={true}
 							onReply={submitReply}
 							replySubmitting={submitting}
