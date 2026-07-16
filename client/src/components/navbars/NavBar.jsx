@@ -32,7 +32,7 @@ function NavLink({ to, icon, label, notification = 0 }) {
 			/>
 			<span
 				className={`navbar__label ${
-					notification && "navbar__link--active"
+					notification ? "navbar__link--active" : ""
 				}`}
 			>
 				{label}{" "}

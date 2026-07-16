@@ -446,7 +446,7 @@ function ProfileSettings() {
 					}`}
 					alt="user profile"
 					className={`settings__picture ${
-						!loadedProfile && "settings__picture--loading"
+						!loadedProfile ? "settings__picture--loading" : ""
 					}`}
 					onLoad={handleLoadedProfile}
 				></img>

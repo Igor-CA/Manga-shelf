@@ -141,7 +141,7 @@ export default function ProfileHeader({ user }) {
 							src={avatarUrl}
 							alt="user profile"
 							className={`profile-header__picture ${
-								!loaded && "profile-header__picture--loading"
+								!loaded ? "profile-header__picture--loading" : ""
 							}`}
 							onLoad={handleLoading}
 						/>

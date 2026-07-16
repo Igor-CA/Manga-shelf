@@ -28,7 +28,7 @@ export default function UserCard({ user }) {
 						onLoad={handleLoading}
 						alt="user profile"
 						className={`user-card__profile-picture ${
-							!loaded && "profile-header__picture--loading"
+							!loaded ? "profile-header__picture--loading" : ""
 						}`}
 					/>
 				</div>

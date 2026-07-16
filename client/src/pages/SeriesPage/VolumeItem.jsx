@@ -52,7 +52,7 @@ export default function VolumeItem({
 					loading="lazy"
 					alt={`Cover volume ${volumeNumber}`}
 					className={`series__volume__image ${
-						!loaded && "series__volume__image--loading"
+						!loaded ? "series__volume__image--loading" : ""
 					}`}
 					onLoad={handleLoading}
 				/>

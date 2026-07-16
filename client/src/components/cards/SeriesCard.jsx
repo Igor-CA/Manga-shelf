@@ -246,7 +246,7 @@ export function SeriesCard({
 						loading="lazy"
 						alt={`cover of ${title}`}
 						className={`series-card__img ${
-							!loaded && "series-card__img--loading"
+							!loaded ? "series-card__img--loading" : ""
 						}`}
 						onLoad={handleLoading}
 					/>

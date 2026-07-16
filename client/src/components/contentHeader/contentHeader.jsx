@@ -77,7 +77,7 @@ export default function ContentHeader({
 								loading="lazy"
 								alt={`cover ${title}`}
 								className={`header__cover-image ${
-									!loaded && "header__cover-image--loading"
+									!loaded ? "header__cover-image--loading" : ""
 								}`}
 								onLoad={handleLoading}
 							/>
