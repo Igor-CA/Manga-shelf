@@ -6,7 +6,7 @@ import { messageContext } from "../../contexts/messageStateProvider";
 import "./Authentication.css";
 export default function ForgotPage() {
 	const [formData, setFormData] = useState({ email: "" });
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const [loading, setLoading] = useState(false);
 
 	const handleChange = (e) => {
@@ -27,8 +27,10 @@ export default function ForgotPage() {
 				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/forgot`,
 			});
-			addMessage("Um link para mudar sua senha foi enviado ao seu email");
-			setMessageType("Success");
+			addMessage(
+				"Um link para mudar sua senha foi enviado ao seu email",
+				"Success",
+			);
 		} catch (error) {
 			const customErrorMessage =
 				error.response?.data?.msg || "Erro de conexão. Tente novamente.";

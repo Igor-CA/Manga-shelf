@@ -13,7 +13,7 @@ export function useRating({
 	average = 0,
 	count = 0,
 }) {
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const { confirm } = usePrompt();
 	const [score, setScore] = useState(manualScore);
 	const [avg, setAvg] = useState(average);
@@ -57,8 +57,7 @@ export function useRating({
 				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 				withCredentials: true,
 			});
-			setMessageType("Success");
-			addMessage(successMsg);
+			addMessage(successMsg, "Success");
 		} catch {
 			setScore(prev.score);
 			setAvg(prev.avg);

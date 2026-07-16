@@ -55,7 +55,7 @@ export default function SettingsPage() {
 }
 
 function AccountSettings() {
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const { user, setOutdated } = useContext(UserContext);
 	const [username, setUserName] = useState("");
 	const [nameButtonVisible, setNameButtonVisible] = useState(false);
@@ -174,8 +174,7 @@ function AccountSettings() {
 				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/${endpoint}`,
 			});
-			addMessage(response.data.msg);
-			setMessageType("Success");
+			addMessage(response.data.msg, "Success");
 			setOutdated(true);
 		} catch (error) {
 			addMessage(
@@ -236,8 +235,7 @@ function AccountSettings() {
 					import.meta.env.REACT_APP_HOST_ORIGIN
 				}/api/user/allow-adult`,
 			});
-			addMessage(response.data.msg);
-			setMessageType("Success");
+			addMessage(response.data.msg, "Success");
 			setOutdated(true);
 		} catch (error) {
 			const customErrorMessage =
@@ -485,7 +483,7 @@ function ProfileSettings() {
 }
 
 function NotificationSettings() {
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const { user, setOutdated } = useContext(UserContext);
 	const [userNotifications, setUserNotification] = useState(
 		user?.settings?.notifications
@@ -513,8 +511,7 @@ function NotificationSettings() {
 					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 			});
-			addMessage("Configurações alteradas com sucesso");
-			setMessageType("Success");
+			addMessage("Configurações alteradas com sucesso", "Success");
 			setOutdated(true);
 		} catch (error) {
 			const customErrorMessage =

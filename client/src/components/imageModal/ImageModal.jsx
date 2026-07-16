@@ -21,7 +21,7 @@ function dataURLtoFile(dataurl, filename) {
 export default function ImageModal({ closeModal, apiUrl, aspectRatio=1 }) {
 	const avatarUrl = useRef("");
 	const { user } = useContext(UserContext);
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const uploadImage = async () => {
 		try {
 			const formData = new FormData();
@@ -37,8 +37,7 @@ export default function ImageModal({ closeModal, apiUrl, aspectRatio=1 }) {
 					Authorization: import.meta.env.REACT_APP_API_KEY,
 				},
 			});
-			addMessage("Sua foto de perfil foi alterada com sucesso");
-			setMessageType("Success");
+			addMessage("Sua foto de perfil foi alterada com sucesso", "Success");
 			window.location.href = `/user/${user.username}`;
 		} catch (error) {
 			const customErrorMessage =

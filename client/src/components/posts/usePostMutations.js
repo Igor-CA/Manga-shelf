@@ -4,7 +4,7 @@ import editPostRequest from "./editPostRequest";
 import deletePostRequest from "./deletePostRequest";
 
 export default function usePostMutations({ seriesId, volumeId, getPost, patchPost }) {
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 
 	const editPost = async (postId, patch) => {
 		const target = getPost(postId);
@@ -49,8 +49,7 @@ export default function usePostMutations({ seriesId, volumeId, getPost, patchPos
 				isAdultContent: res.data.post.isAdultContent,
 				editedAt: res.data.post.editedAt,
 			});
-			setMessageType("Success");
-			addMessage("Alterações salvas");
+			addMessage("Alterações salvas", "Success");
 			return true;
 		} catch (err) {
 			if (isNewFile && optimisticImage) URL.revokeObjectURL(optimisticImage);
@@ -71,8 +70,7 @@ export default function usePostMutations({ seriesId, volumeId, getPost, patchPos
 		const rollback = applyRemoval ? applyRemoval() : null;
 		try {
 			await deletePostRequest(postId);
-			setMessageType("Success");
-			addMessage(successText);
+			addMessage(successText, "Success");
 			return true;
 		} catch (err) {
 			if (rollback) rollback();

@@ -22,7 +22,7 @@ const flattenObject = (obj, prefix = "") => {
 
 export default function SubmissionCard({ submission, onProcess }) {
 	const [comment, setComment] = useState("Muito obrigado!");
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 
 	const changes = flattenObject(submission.payload);
 	const originalData = submission.targetId || {};
@@ -53,8 +53,7 @@ export default function SubmissionCard({ submission, onProcess }) {
 						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 					},
 			);
-			setMessageType("Success");
-			addMessage(response.data?.msg);
+			addMessage(response.data?.msg, "Success");
 			onProcess(submission._id); // Tell parent to remove this card from list
 		} catch (err) {
 			addMessage(`Erro ao processar: ${err?.response?.data?.msg}`);

@@ -20,7 +20,7 @@ export function SeriesCard({
 	const [inUserList, setInUserList] = useState(itemDetails.inUserList);
 	const [isRead, setIsRead] = useState(itemDetails.isRead);
 	const [inWishlist, setInWishlist] = useState(itemDetails.inWishlist);
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const { user, setOutdated } = useContext(UserContext);
 	const { username } = useParams();
 	const { openEditModal } = useEditVolume();
@@ -90,8 +90,10 @@ export function SeriesCard({
 				},
 				url: url,
 			});
-			setMessageType("Success");
-			addMessage(`Obra ${isAdding ? "adicionada" : "removida"} com sucesso`);
+			addMessage(
+				`Obra ${isAdding ? "adicionada" : "removida"} com sucesso`,
+				"Success",
+			);
 			setOutdated(true);
 		} catch (err) {
 			setInUserList(!isAdding);
@@ -126,13 +128,13 @@ export function SeriesCard({
 				url: url,
 			});
 			setOutdated(true);
-			setMessageType("Success");
 			addMessage(
 				`Obra ${
 					isAdding
 						? "adicionada à lista de desejos"
 						: "removida da lista de desejos"
 				} com sucesso`,
+				"Success",
 			);
 		} catch (err) {
 			setInWishlist(!isAdding);
@@ -167,8 +169,10 @@ export function SeriesCard({
 				url: url,
 			});
 			setOutdated(true);
-			setMessageType("Success");
-			addMessage(`Volume ${isAdding ? "adicionado" : "removido"} com sucesso`);
+			addMessage(
+				`Volume ${isAdding ? "adicionado" : "removido"} com sucesso`,
+				"Success",
+			);
 			if (onStatusChange) onStatusChange(isAdding?1:-1);
 		} catch (err) {
 			setInUserList(!isAdding);
@@ -192,8 +196,7 @@ export function SeriesCard({
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/toggle-read`,
 			});
 			setOutdated(true);
-			setMessageType("Success");
-			addMessage(result.data.msg);
+			addMessage(result.data.msg, "Success");
 			if (onStatusChange) onStatusChange();
 		} catch (err) {
 			setIsRead((prev) => !prev);

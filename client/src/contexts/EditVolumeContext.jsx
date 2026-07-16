@@ -41,7 +41,7 @@ const EditVolumeModal = () => {
 	const [isRead, setIsRead] = useState(false);
 	const [readCount, setReadCount] = useState(0);
 	const [readAt, setReadAt] = useState("");
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const { setOutdated } = useContext(UserContext);
 	useEffect(() => {
 		if (editingVolume) {
@@ -120,8 +120,7 @@ const EditVolumeModal = () => {
 					import.meta.env.REACT_APP_HOST_ORIGIN
 				}/api/user/edit-owned-volumes`,
 			});
-			addMessage(response.data.msg);
-			setMessageType("Success");
+			addMessage(response.data.msg, "Success");
 			setOutdated(true);
 		} catch (err) {
 			const customErrorMessage =

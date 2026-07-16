@@ -24,7 +24,7 @@ export default function VolumeSubmissionPage() {
 	const { id } = useParams();
 	const { user } = useContext(UserContext);
 	const navigate = useNavigate();
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 
 	const [formData, setFormData] = useState(INITIAL_STATE);
 	const [loading, setLoading] = useState(true);
@@ -126,8 +126,7 @@ export default function VolumeSubmissionPage() {
 						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 					},
 			);
-			setMessageType("Success");
-			addMessage("Sugestão enviada para aprovação!");
+			addMessage("Sugestão enviada para aprovação!", "Success");
 			navigate(`/volume/${id}`);
 		} catch (error) {
 			addMessage("Erro ao enviar sugestão.");

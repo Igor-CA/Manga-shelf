@@ -14,7 +14,7 @@ export default function ReportProblem() {
 		wantAnswer: "",
 	});
 	const [loading, setLoading] = useState(false);
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
 		const finalValue = type === "checkbox" ? checked : value;
@@ -41,9 +41,7 @@ export default function ReportProblem() {
 				user: "",
 				wantAnswer: false,
 			});
-			const customErrorMessage = response.data.msg;
-			addMessage(customErrorMessage);
-			setMessageType("Success");
+			addMessage(response.data.msg, "Success");
 		} catch (error) {
 			const customErrorMessage =
 				error.response?.data?.msg || "Erro de conexão. Tente novamente.";

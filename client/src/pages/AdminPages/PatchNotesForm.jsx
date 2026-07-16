@@ -5,7 +5,7 @@ import { messageContext } from "../../contexts/messageStateProvider";
 
 export default function PatchNotesForm() {
 	const [notes, setNotes] = useState("");
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const handleNotesChange = (e) => {
 		const { value } = e.target;
 		setNotes(value);
@@ -28,8 +28,7 @@ export default function PatchNotesForm() {
 						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 					},
 			);
-			setMessageType("Success");
-			addMessage(response.data.msg);
+			addMessage(response.data.msg, "Success");
 			setNotes("");
 			window.scrollTo(0, 0);
 		} catch (error) {

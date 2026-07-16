@@ -13,7 +13,7 @@ import "./PostsSection.css";
 
 export default function PostsSection({ seriesId, volumeId, rating }) {
 	const { user } = useContext(UserContext);
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const { confirm } = usePrompt();
 	const [submitting, setSubmitting] = useState(false);
 
@@ -121,8 +121,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 						: p,
 				),
 			);
-			setMessageType("Success");
-			addMessage("Review publicada");
+			addMessage("Review publicada", "Success");
 			return true;
 		} catch (err) {
 			if (optimisticImage) URL.revokeObjectURL(optimisticImage);
@@ -178,8 +177,7 @@ export default function PostsSection({ seriesId, volumeId, rating }) {
 						: p,
 				),
 			);
-			setMessageType("Success");
-			addMessage("Comentário publicado");
+			addMessage("Comentário publicado", "Success");
 			return true;
 		} catch (err) {
 			if (optimisticImage) URL.revokeObjectURL(optimisticImage);

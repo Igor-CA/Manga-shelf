@@ -4,7 +4,7 @@ import { useContext, useState } from "react";
 import { FaRegCopy, FaCheck } from "react-icons/fa";
 import { messageContext } from "../../contexts/messageStateProvider";
 export default function DonatePage() {
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 
 	const PIX_KEY = import.meta.env.REACT_APP_PIX_KEY;
 
@@ -12,8 +12,7 @@ export default function DonatePage() {
 
 	const handleCopyPix = () => {
 		navigator.clipboard.writeText(PIX_KEY);
-		setMessageType("Success");
-		addMessage("Pix copiado com sucesso");
+		addMessage("Pix copiado com sucesso", "Success");
 	};
 	return (
 		<div className="page-content">

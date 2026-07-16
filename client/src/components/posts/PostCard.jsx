@@ -42,7 +42,7 @@ export default function PostCard({
 	showThreadLink = true,
 }) {
 	const { user } = useContext(UserContext);
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const navigate = useNavigate();
 	const cardRef = useRef(null);
 	const isHighlighted = !!highlightId && post._id === highlightId;
@@ -208,8 +208,7 @@ export default function PostCard({
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/post/${post._id}/report`,
 				data: { reason },
 			});
-			setMessageType("Success");
-			addMessage("Denúncia recebida");
+			addMessage("Denúncia recebida", "Success");
 		} catch (error) {
 			addMessage(error.response?.data?.msg || "Erro ao enviar denúncia");
 		} finally {

@@ -10,7 +10,7 @@ export const useSeriesLogic = (id) => {
 	const navigate = useNavigate();
 	const { user, setOutdated, isFetching } = useContext(UserContext);
 	const { confirm } = usePrompt();
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 
 	const [series, setSeries] = useState(null);
 	const [localVolumeState, setLocalVolumeState] = useState([]);
@@ -67,8 +67,7 @@ export const useSeriesLogic = (id) => {
 			});
 			setOutdated(true);
 			if (successMsg) {
-				setMessageType("Success");
-				addMessage(successMsg);
+				addMessage(successMsg, "Success");
 			}
 			return true;
 		} catch (err) {

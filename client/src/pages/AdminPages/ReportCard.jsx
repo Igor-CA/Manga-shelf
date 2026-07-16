@@ -10,7 +10,7 @@ const REASON_LABELS = {
 };
 
 export default function ReportCard({ report, onProcess }) {
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 
 	const handleAction = async (action) => {
 		try {
@@ -27,8 +27,7 @@ export default function ReportCard({ report, onProcess }) {
 					headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 				},
 			);
-			setMessageType("Success");
-			addMessage(response.data?.msg);
+			addMessage(response.data?.msg, "Success");
 			onProcess(report._id);
 		} catch (err) {
 			addMessage(`Erro ao processar: ${err?.response?.data?.msg}`);

@@ -8,7 +8,7 @@ import "./Authentication.css";
 export default function UserNameModal() {
 	const { setOutdated } = useContext(UserContext);
 	const [formData, setFormData] = useState();
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 	const [loading, setLoading] = useState(false);
 
 	const handleChange = (e) => {
@@ -29,8 +29,7 @@ export default function UserNameModal() {
 				},
 				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/set-username`,
 			});
-			addMessage("Seu nome de usuário foi atualizado com sucesso");
-			setMessageType("Success");
+			addMessage("Seu nome de usuário foi atualizado com sucesso", "Success");
 			setOutdated(true);
 			window.location.href = "/";
 			setLoading(false);

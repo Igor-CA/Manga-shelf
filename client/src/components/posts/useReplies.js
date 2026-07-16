@@ -9,7 +9,7 @@ export const REPLIES_PER_PAGE = 5;
 
 export default function useReplies(post, seriesId, volumeId, initialReplies = null) {
 	const { user } = useContext(UserContext);
-	const { addMessage, setMessageType } = useContext(messageContext);
+	const { addMessage } = useContext(messageContext);
 
 	const [replyCount, setReplyCount] = useState(post.replyCount || 0);
 	const [replies, setReplies] = useState(initialReplies);
@@ -115,8 +115,7 @@ export default function useReplies(post, seriesId, volumeId, initialReplies = nu
 						: r,
 				),
 			);
-			setMessageType("Success");
-			addMessage("Resposta publicada");
+			addMessage("Resposta publicada", "Success");
 			return true;
 		} catch (error) {
 			if (optimisticImage) URL.revokeObjectURL(optimisticImage);
