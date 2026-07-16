@@ -78,7 +78,7 @@ export const useSeriesLogic = (id) => {
 		}
 	};
 
-	const performVolumeUpdate = async (isAdding, idList) => {
+	const performVolumeUpdate = async (isAdding, idList, previous) => {
 		const endpoint = isAdding
 			? "/api/user/add-volume"
 			: "/api/user/remove-volume";
@@ -86,16 +86,18 @@ export const useSeriesLogic = (id) => {
 			(volume) => !volume.isVariant
 		).length;
 
-		await apiCall(endpoint, {
+		const ok = await apiCall(endpoint, {
 			idList,
 			amountVolumesFromSeries: volumesAmount,
 			seriesId: id,
 			seriesStatus: series.status,
 		});
+		if (!ok && previous) setLocalVolumeState(previous);
 	};
 
 	const handleVolumeChange = (e, volumeId) => {
 		const adding = e.target.checked;
+		const previous = localVolumeState;
 
 		setLocalVolumeState((prev) =>
 			prev.map((item) =>
@@ -107,7 +109,7 @@ export const useSeriesLogic = (id) => {
 			const index = localVolumeState.findIndex((v) => v.volumeId === volumeId);
 
 			if (localVolumeState[index].isVariant) {
-				performVolumeUpdate(true, [volumeId]);
+				performVolumeUpdate(true, [volumeId], previous);
 				return;
 			}
 			const listToAdd = localVolumeState
@@ -118,28 +120,30 @@ export const useSeriesLogic = (id) => {
 			if (listToAdd.length > 1) {
 				confirm(
 					"Deseja adicionar os volumes anteriores também?",
-					() => performVolumeUpdate(true, listToAdd),
-					() => performVolumeUpdate(true, [volumeId])
+					() => performVolumeUpdate(true, listToAdd, previous),
+					() => performVolumeUpdate(true, [volumeId], previous)
 				);
 			} else {
-				performVolumeUpdate(true, [volumeId]);
+				performVolumeUpdate(true, [volumeId], previous);
 			}
 		} else {
-			performVolumeUpdate(false, [volumeId]);
+			performVolumeUpdate(false, [volumeId], previous);
 		}
 	};
 	const performReadUpdate = async (isRead, idList) => {
+		const previous = localVolumeState;
 		setLocalVolumeState((prev) =>
 			prev.map((item) =>
 				idList.includes(item.volumeId) ? { ...item, isRead: isRead } : item
 			)
 		);
 
-		await apiCall(
+		const ok = await apiCall(
 			"/api/user/set-read-status",
 			{ idList, isRead },
 			isRead ? "Volume(s) marcados como lidos" : "Volume(s) marcados como não lidos"
 		);
+		if (!ok) setLocalVolumeState(previous);
 	};
 
 	const handleReadToggle = (volumeId) => {
