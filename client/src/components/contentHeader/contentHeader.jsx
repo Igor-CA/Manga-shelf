@@ -43,7 +43,7 @@ export default function ContentHeader({
 			<div className="header__bg-image-container">
 				<div
 					style={{
-						backgroundImage: `url('${backgroundImageUrl}')`,
+						backgroundImage: `url("${backgroundImageUrl}")`,
 					}}
 					className="header__bg-image"
 					role="img"
