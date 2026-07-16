@@ -22,7 +22,9 @@ function NavLink({ to, icon, label, notification = 0 }) {
 	return (
 		<Link
 			to={to}
-			className={`navbar__link ${notification && "navbar__link--active"}`}
+			className={`navbar__link ${
+				notification ? "navbar__link--active" : ""
+			}`}
 		>
 			<FontAwesomeIcon
 				icon={icon}
@@ -37,11 +39,11 @@ function NavLink({ to, icon, label, notification = 0 }) {
 			>
 				{label}{" "}
 				{notification > 0 && (
-					<div className="navbar__link__count__container">
+					<span className="navbar__link__count__container">
 						<span className="navbar__link__count">
 							{notification}
 						</span>
-					</div>
+					</span>
 				)}
 			</span>
 		</Link>
@@ -55,13 +57,9 @@ export default function NavBar() {
 		localStorage.theme ? localStorage.theme : "light"
 	);
 	useEffect(() => {
-		if (theme === "light") {
-			document.body.classList = "light";
-			localStorage.theme = "light";
-		} else {
-			document.body.classList = "dark";
-			localStorage.theme = "dark";
-		}
+		document.body.classList.toggle("dark", theme === "dark");
+		document.body.classList.toggle("light", theme === "light");
+		localStorage.theme = theme;
 	}, [theme]);
 
 	const toggleTheme = () => {
