@@ -66,7 +66,7 @@ router.post(
 	validateRequest,
 	authController.login,
 );
-router.get("/logout", requireAuth, authController.logout);
+router.post("/logout", requireAuth, authController.logout);
 router.get(
 	"/login/auth/google",
 	passport.authenticate("google", { scope: ["profile", "email"] }),

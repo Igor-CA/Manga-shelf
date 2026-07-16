@@ -8,7 +8,7 @@ export default function LogoutPage() {
 		const logout = async () => {
 			try {
 				await axios({
-					method: "GET",
+					method: "POST",
 					withCredentials: true,
 					headers: {
 						Authorization: import.meta.env.REACT_APP_API_KEY,
