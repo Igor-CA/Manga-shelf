@@ -31,22 +31,28 @@
 	background-color: var(--red);
 }
 
-.message_box {
-	font-weight: bold;
-	display: flex;
+.message_box__container {
 	position: fixed;
 	top: 20px;
 	left: 50%;
+	translate: -50%;
+	z-index: 999;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	align-items: center;
+}
+.message_box {
+	font-weight: bold;
+	display: flex;
 	line-height: 1.5em;
 	padding: 15px;
 	gap: 15px;
 	border-radius: 4px;
 	align-items: center;
-	translate: -50%;
 	width: 420px;
 	max-width: 80vw;
 	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-	z-index: 999;
 }
 .message_box--error {
 	color: #f56c6c;
@@ -67,7 +73,7 @@
 	margin: 0.5rem;
 }
 @media only screen and (min-width: 768px) {
-	.message_box {
+	.message_box__container {
 		top: 50px;
 	}
 }

@@ -9,7 +9,7 @@ import {
 import "./Prompts.css";
 
 export default function MessageComponent() {
-	const { message, type } = useContext(messageContext);
+	const { messages } = useContext(messageContext);
 
 	const getIcon = (type) => {
 		switch (type) {
@@ -35,20 +35,39 @@ export default function MessageComponent() {
 				return "message_box--error";
 		}
 	};
+
+	const groups = [];
+	messages.forEach((message) => {
+		const last = groups[groups.length - 1];
+		if (last && last.type === message.type) {
+			last.items.push(message);
+		} else {
+			groups.push({ type: message.type, items: [message] });
+		}
+	});
+
 	return (
 		<>
-			{message?.length > 0 && (
-				<div className={`message_box ${getClass(type)}`}>
-					<FontAwesomeIcon icon={getIcon(type)} size="lg" />
-					<div>
-						{message.map((erro, index) => {
-							return (
-								<p key={index} className="message_box__message">
-									{erro}
-								</p>
-							);
-						})}
-					</div>
+			{messages?.length > 0 && (
+				<div className="message_box__container">
+					{groups.map((group) => (
+						<div
+							key={group.items[0].id}
+							className={`message_box ${getClass(group.type)}`}
+						>
+							<FontAwesomeIcon icon={getIcon(group.type)} size="lg" />
+							<div>
+								{group.items.map((message) => (
+									<p
+										key={message.id}
+										className="message_box__message"
+									>
+										{message.text}
+									</p>
+								))}
+							</div>
+						</div>
+					))}
 				</div>
 			)}
 		</>

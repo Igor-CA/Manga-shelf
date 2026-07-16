@@ -1,39 +1,28 @@
-import { createContext, useState } from "react";
+import { createContext, useRef, useState } from "react";
 
 const messageContext = createContext();
 
 function MessageProvider({ children }) {
-	const [message, setMessage] = useState([]);
-	const [type, setType] = useState("Error");
+	const [messages, setMessages] = useState([]);
+	const idRef = useRef(0);
 
-	const addMessage = (newMessage) => {
-		setMessage((prevMessages) => [
-			...prevMessages,
-			...(Array.isArray(newMessage) ? newMessage : [newMessage]),
-		]);
+	const removeMessage = (id) =>
+		setMessages((prev) => prev.filter((m) => m.id !== id));
 
-		setTimeout(() => {
-			setMessage((prevMessages) =>
-				prevMessages.filter((message) =>
-					Array.isArray(newMessage)
-						? !newMessage.includes(message)
-						: message !== newMessage
-				)
-			);
-		}, 5000);
-	};
+	const addMessage = (newMessage, type = "Error") => {
+		const texts = Array.isArray(newMessage) ? newMessage : [newMessage];
+		const added = texts.map((text) => ({
+			id: ++idRef.current,
+			text,
+			type,
+		}));
 
-	const setMessageType = (newType) => {
-		setType(newType);
-		setTimeout(() => {
-			setType("Error");
-		}, 5000);
+		setMessages((prev) => [...prev, ...added]);
+		added.forEach((m) => setTimeout(() => removeMessage(m.id), 5000));
 	};
 
 	return (
-		<messageContext.Provider
-			value={{ message, addMessage, type, setMessageType }}
-		>
+		<messageContext.Provider value={{ messages, addMessage }}>
 			{children}
 		</messageContext.Provider>
 	);
