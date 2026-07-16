@@ -24,7 +24,7 @@ export default function UserStatsPage() {
 				const result = res.data;
 				setData(result);
 			} catch (error) {
-				const errorType = error.response.status;
+				const errorType = error.response?.status;
 				console.log(error);
 			}
 		};

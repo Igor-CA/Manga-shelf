@@ -240,7 +240,8 @@ function AccountSettings() {
 			setMessageType("Success");
 			setOutdated(true);
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
+			const customErrorMessage =
+				error.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};
@@ -516,7 +517,8 @@ function NotificationSettings() {
 			setMessageType("Success");
 			setOutdated(true);
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
+			const customErrorMessage =
+				error.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};

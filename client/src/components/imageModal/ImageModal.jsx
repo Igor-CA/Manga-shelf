@@ -41,7 +41,8 @@ export default function ImageModal({ closeModal, apiUrl, aspectRatio=1 }) {
 			setMessageType("Success");
 			window.location.href = `/user/${user.username}`;
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
+			const customErrorMessage =
+				error.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};

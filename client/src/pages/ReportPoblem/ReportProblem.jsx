@@ -45,7 +45,8 @@ export default function ReportProblem() {
 			addMessage(customErrorMessage);
 			setMessageType("Success");
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
+			const customErrorMessage =
+				error.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		} finally {
 			setLoading(false);

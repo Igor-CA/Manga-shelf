@@ -30,7 +30,8 @@ export default function ForgotPage() {
 			addMessage("Um link para mudar sua senha foi enviado ao seu email");
 			setMessageType("Success");
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
+			const customErrorMessage =
+				error.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}  finally{
 			setLoading(false);

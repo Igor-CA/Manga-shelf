@@ -28,7 +28,8 @@ export default function ResetPasswordPage() {
 			});
 			navigate("/login");
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
+			const customErrorMessage =
+				error.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};

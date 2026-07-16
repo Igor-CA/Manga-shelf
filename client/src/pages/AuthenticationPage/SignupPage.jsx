@@ -50,7 +50,8 @@ export default function SignupPage() {
 			});
 			navigate("/login");
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
+			const customErrorMessage =
+				error.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		} finally {
 			setLoading(false);

@@ -98,7 +98,8 @@ export function SeriesCard({
 			if (isAdding && inWishlist) {
 				setInWishlist(true);
 			}
-			const customErrorMessage = err.response.data.msg;
+			const customErrorMessage =
+				err.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};
@@ -138,7 +139,8 @@ export function SeriesCard({
 			if (isAdding && inUserList) {
 				setInUserList(true);
 			}
-			const customErrorMessage = err.response.data.msg;
+			const customErrorMessage =
+				err.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};
@@ -170,7 +172,8 @@ export function SeriesCard({
 			if (onStatusChange) onStatusChange(isAdding?1:-1);
 		} catch (err) {
 			setInUserList(!isAdding);
-			const customErrorMessage = err.response.data.msg;
+			const customErrorMessage =
+				err.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};
@@ -194,7 +197,8 @@ export function SeriesCard({
 			if (onStatusChange) onStatusChange();
 		} catch (err) {
 			setIsRead((prev) => !prev);
-			const customErrorMessage = err.response.data.msg;
+			const customErrorMessage =
+				err.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};

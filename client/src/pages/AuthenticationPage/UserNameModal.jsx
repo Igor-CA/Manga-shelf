@@ -35,7 +35,8 @@ export default function UserNameModal() {
 			window.location.href = "/";
 			setLoading(false);
 		} catch (error) {
-			const customErrorMessage = error.response.data.msg;
+			const customErrorMessage =
+				error.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 			setLoading(false);
 		}

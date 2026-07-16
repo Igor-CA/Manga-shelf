@@ -25,13 +25,13 @@ export default function MissingVolumesPage() {
 			const responseData = response.data;
 			return responseData;
 		} catch (error) {
-			const errorType = error.response.status;
+			const errorType = error.response?.status;
 			if (errorType === 400) {
 				navigate("/404");
 			}
 			console.error(
 				"Error fetching Missing volumes data:",
-				error.response.data.msg
+				error.response?.data?.msg
 			);
 		}
 	};

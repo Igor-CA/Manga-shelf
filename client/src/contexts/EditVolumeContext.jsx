@@ -124,7 +124,8 @@ const EditVolumeModal = () => {
 			setMessageType("Success");
 			setOutdated(true);
 		} catch (err) {
-			const customErrorMessage = err.response.data.msg;
+			const customErrorMessage =
+				err.response?.data?.msg || "Erro de conexão. Tente novamente.";
 			addMessage(customErrorMessage);
 		}
 	};

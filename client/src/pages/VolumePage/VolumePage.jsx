@@ -49,7 +49,7 @@ export default function VolumePage() {
 				const responseData = response.data;
 				setVolumeData(responseData);
 			} catch (error) {
-				const errorType = error.response.status;
+				const errorType = error.response?.status;
 				if (errorType === 400) {
 					navigate("/404");
 				}
