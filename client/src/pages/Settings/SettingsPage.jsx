@@ -463,11 +463,15 @@ function ProfileSettings() {
 			<div className="settings__picture-container settings__picture-container--banner">
 				<div
 					className="settings__picture settings__picture--banner"
-					style={{
-						backgroundImage: `url(${
-							import.meta.env.REACT_APP_HOST_ORIGIN
-						}/${user?.profileBannerUrl})`,
-					}}
+					style={
+						user?.profileBannerUrl
+							? {
+									backgroundImage: `url("${
+										import.meta.env.REACT_APP_HOST_ORIGIN
+									}${user.profileBannerUrl}")`,
+							  }
+							: undefined
+					}
 				></div>
 				<button
 					className="settings__change-picture-button"

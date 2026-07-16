@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState, useMemo } from "react";
+import { useContext, useEffect, useState, useMemo } from "react";
 import ImageModal from "../../components/imageModal/ImageModal";
 import ContentNavbar from "../../components/navbars/ContentNavbar";
 import axios from "axios";
@@ -11,7 +11,7 @@ export default function ProfileHeader({ user }) {
 
 	const [following, setFollowing] = useState(false);
 	const [banner, setBanner] = useState();
-	const avatarUrl = useRef("");
+	const [avatarUrl, setAvatarUrl] = useState("");
 
 	const [cropperAspectRatio, setCropperAspectRatio] = useState(1);
 	const [cropperApiRoute, setCropperApiRoute] = useState("");
@@ -47,13 +47,15 @@ export default function ProfileHeader({ user }) {
 					}/api/data/get-user-info/${user}`,
 				});
 
-				avatarUrl.current = res.data?.profileImageUrl
-					? `${import.meta.env.REACT_APP_HOST_ORIGIN}${
-							res.data.profileImageUrl
-					  }`
-					: `${
-							import.meta.env.REACT_APP_HOST_ORIGIN
-					  }/images/deffault-profile-picture.webp`;
+				setAvatarUrl(
+					res.data?.profileImageUrl
+						? `${import.meta.env.REACT_APP_HOST_ORIGIN}${
+								res.data.profileImageUrl
+						  }`
+						: `${
+								import.meta.env.REACT_APP_HOST_ORIGIN
+						  }/images/deffault-profile-picture.webp`,
+				);
 
 				setFollowing(res.data.following);
 				setBanner(res.data.profileBannerUrl);
@@ -115,9 +117,9 @@ export default function ProfileHeader({ user }) {
 				style={
 					banner
 						? {
-								backgroundImage: `url(${
+								backgroundImage: `url("${
 									import.meta.env.REACT_APP_HOST_ORIGIN
-								}/${banner})`,
+								}${banner}")`,
 						  }
 						: undefined
 				}
@@ -126,7 +128,7 @@ export default function ProfileHeader({ user }) {
 				<div className="container profile-header__info">
 					<div className="profile-header__picture-container">
 						<img
-							src={avatarUrl.current}
+							src={avatarUrl}
 							alt="user profile"
 							className={`profile-header__picture ${
 								!loaded && "profile-header__picture--loading"
