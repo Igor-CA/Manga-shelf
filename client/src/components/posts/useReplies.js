@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
@@ -21,6 +21,10 @@ export default function useReplies(post, seriesId, volumeId, initialReplies = nu
 
 	const [previewOverride, setPreviewOverride] = useState(null);
 	const previewPost = previewOverride ?? post.replyPreview;
+
+	useEffect(() => {
+		setPreviewOverride(null);
+	}, [post.replyPreview?._id]);
 
 	const { editPost: editReply, deletePost } = usePostMutations({
 		seriesId,
