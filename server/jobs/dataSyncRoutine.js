@@ -489,8 +489,8 @@ async function updateSeriesPopularity() {
 			},
 		}));
 
-		logger.info("Series popularity updated");
 		if (bulkOps.length > 0) await Series.bulkWrite(bulkOps);
+		logger.info("Series popularity updated");
 	} catch (error) {
 		logger.error("Error updating series popularity:", error);
 		throw error;
