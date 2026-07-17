@@ -81,15 +81,10 @@ export const useSeriesLogic = (id) => {
 		const endpoint = isAdding
 			? "/api/user/add-volume"
 			: "/api/user/remove-volume";
-		const volumesAmount = series.volumes.filter(
-			(volume) => !volume.isVariant
-		).length;
 
 		const ok = await apiCall(endpoint, {
 			idList,
-			amountVolumesFromSeries: volumesAmount,
 			seriesId: id,
-			seriesStatus: series.status,
 		});
 		if (!ok && previous) setLocalVolumeState(previous);
 	};

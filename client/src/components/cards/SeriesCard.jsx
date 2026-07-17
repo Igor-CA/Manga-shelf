@@ -32,8 +32,6 @@ export function SeriesCard({
 		volumeNumber,
 		isAdult,
 		status,
-		seriesSize,
-		seriesStatus,
 		seriesId,
 		ratingScore,
 		isDerived,
@@ -153,14 +151,11 @@ export function SeriesCard({
 				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-volume`
 				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-volume`;
 
-			const amountVolumesFromSeries = seriesSize;
 			await axios({
 				method: "POST",
 				data: {
 					idList: [id],
-					amountVolumesFromSeries,
 					seriesId: seriesId,
-					seriesStatus: seriesStatus,
 				},
 				withCredentials: true,
 				headers: {

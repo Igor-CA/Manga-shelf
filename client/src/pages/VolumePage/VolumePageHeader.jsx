@@ -30,15 +30,12 @@ export default function VolumeHeader({ volumeData, rating }) {
 			const url = isAdding
 				? `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/add-volume`
 				: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/remove-volume`;
-			const amountVolumesFromSeries = volumeData.serie.volumes.length;
 
 			await axios({
 				method: "POST",
 				data: {
 					idList: [id],
-					amountVolumesFromSeries,
 					seriesId: volumeData.serie.id,
-					seriesStatus: volumeData.serie.status,
 				},
 				headers: {
 					Authorization: import.meta.env.REACT_APP_API_KEY,
