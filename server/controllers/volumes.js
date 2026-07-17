@@ -71,7 +71,7 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 	if (!volumeId || !reason) {
 		return res
 			.status(400)
-			.json({ message: "Volume ID and Reason are required." });
+			.json({ msg: "ID do volume e motivo são obrigatórios." });
 	}
 
 	const session = await mongoose.startSession();
@@ -83,7 +83,7 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 			.session(session);
 		if (!volume) {
 			await session.abortTransaction();
-			return res.status(404).json({ message: "Volume not found." });
+			return res.status(404).json({ msg: "Volume não encontrado." });
 		}
 
 		const affectedUsers = await User.find({ "ownedVolumes.volume": volumeId })
@@ -163,14 +163,12 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 
 		return res.status(200).json({
 			success: true,
-			message: `Volume deleted. ${affectedUserIds.length} users were notified and updated.`,
+			msg: `Volume removido. ${affectedUserIds.length} usuários foram notificados e atualizados.`,
 		});
 	} catch (error) {
 		if (session.inTransaction()) await session.abortTransaction();
 		logger.error("Delete Volume Error:", error);
-		return res
-			.status(500)
-			.json({ message: "Internal Server Error", error: error.message });
+		return res.status(500).json({ msg: "Erro interno no servidor" });
 	} finally {
 		session.endSession();
 	}

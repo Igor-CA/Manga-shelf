@@ -483,7 +483,8 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 });
 exports.getUserInfo = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username;
-	if (!targetUser) return res.send({ msg: "Nenhum usuário informado" });
+	if (!targetUser)
+		return res.status(400).json({ msg: "Nenhum usuário informado" });
 
 	const user = await User.findOne(
 		{ username: targetUser },
@@ -768,7 +769,8 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 
 exports.getUserFilters = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username;
-	if (!targetUser) return res.send({ msg: "Nenhum usuário informado" });
+	if (!targetUser)
+		return res.status(400).json({ msg: "Nenhum usuário informado" });
 
 	const source = req.query.source || "userList";
 

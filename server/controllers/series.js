@@ -584,7 +584,7 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 	if (!seriesId || !reason) {
 		return res
 			.status(400)
-			.json({ message: "Series ID and Reason are required." });
+			.json({ msg: "ID da série e motivo são obrigatórios." });
 	}
 
 	const session = await mongoose.startSession();
@@ -594,7 +594,7 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 		const series = await Series.findById(seriesId).session(session);
 		if (!series) {
 			await session.abortTransaction();
-			return res.status(404).json({ message: "Series not found." });
+			return res.status(404).json({ msg: "Série não encontrada." });
 		}
 
 		const relatedVolumes = await Volume.find({ serie: seriesId })
@@ -692,14 +692,12 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 
 		return res.status(200).json({
 			success: true,
-			message: `Series "${series.title}" and ${relatedVolumeIds.length} volumes deleted. ${affectedUserIds.length} users notified.`,
+			msg: `Série "${series.title}" e ${relatedVolumeIds.length} volumes removidos. ${affectedUserIds.length} usuários notificados.`,
 		});
 	} catch (error) {
 		if (session.inTransaction()) await session.abortTransaction();
 		logger.error("Delete Series Error:", error);
-		return res
-			.status(500)
-			.json({ message: "Internal Server Error", error: error.message });
+		return res.status(500).json({ msg: "Erro interno no servidor" });
 	} finally {
 		session.endSession();
 	}

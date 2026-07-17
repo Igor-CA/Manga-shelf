@@ -145,13 +145,20 @@ app.use(function (req, res, next) {
 });
 // error handler
 app.use(function (err, req, res, next) {
-	// set locals, only providing error in development
+	const status = err.status || 500;
+	res.status(status);
+	logger.error(`Error in API call: ${err} URL: ${req.originalUrl}`);
+
+	if (req.path.startsWith("/api") || req.path.startsWith("/admin")) {
+		return res.json({
+			msg: status === 404 ? "Recurso não encontrado" : "Erro interno no servidor",
+		});
+	}
+
 	res.locals.message = err.message;
 	res.locals.error = req.app.get("env") === "development" ? err : {};
 	// render the error page
-	res.status(err.status || 500);
 	res.render("error");
-	logger.error(`Error in API call: ${err} URL: ${req.originalUrl}`);
 });
 
 module.exports = app;
