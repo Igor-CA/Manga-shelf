@@ -41,7 +41,7 @@ const newPasswordValidation = body("password")
 
 const resetTokenValidation = body("token")
 	.notEmpty()
-	.withMessage("Link invalido");
+	.withMessage("Link inválido");
 
 const resetUserIdValidation = body("userId")
 	.isMongoId()
