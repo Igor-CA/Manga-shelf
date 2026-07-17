@@ -178,11 +178,7 @@ async function resolveMentionRecipients({
 		Post.distinct("author", {
 			$or: [{ _id: topLevelParentId }, { parent: topLevelParentId }],
 		}),
-		User.find({
-			username: {
-				$in: usernames.map((name) => new RegExp(`^${name}$`, "i")),
-			},
-		}).select("_id"),
+		User.find({ username: { $in: usernames } }).select("_id"),
 	]);
 
 	const participantSet = new Set(participantIds.map((id) => id.toString()));
