@@ -382,7 +382,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 exports.toggleFollowUser = asyncHandler(async (req, res, next) => {
 	const userId = req.user._id;
 	const targetUserName = req.body.targetUser;
-	const follow = req.body.follow; // true to follow, false to unfollow
+	const follow = req.body.follow === true; // true to follow, false to unfollow
 
 	if (!targetUserName) {
 		return res.status(400).json({ msg: "Usuário não encontrado" });
