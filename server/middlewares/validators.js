@@ -186,6 +186,21 @@ const collectionVolumeValidation = [
 	body("idList.*").isMongoId().withMessage("ID de volume inválido"),
 ];
 
+const bodyIdValidation = [
+	body("id").isMongoId().withMessage("ID inválido"),
+];
+
+const readStatusValidation = [
+	body("idList")
+		.isArray({ min: 1, max: 500 })
+		.withMessage("Lista de volumes inválida"),
+	body("idList.*").isMongoId().withMessage("ID de volume inválido"),
+];
+
+const markNotificationSeenValidation = [
+	body("notification").isMongoId().withMessage("ID de notificação inválido"),
+];
+
 //Submissions
 const submissionTargetModelValidation = body("targetModel")
 	.trim()
@@ -421,6 +436,9 @@ const validateRequest = (req, res, next) => {
 module.exports = {
 	forgotPasswordValidation,
 	collectionVolumeValidation,
+	bodyIdValidation,
+	readStatusValidation,
+	markNotificationSeenValidation,
 	signupValidation,
 	loginValidation,
 	resetPasswordValidator,

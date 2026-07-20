@@ -49,6 +49,9 @@ const {
 	ratingValidation,
 	ratingDeleteValidation,
 	collectionVolumeValidation,
+	bodyIdValidation,
+	readStatusValidation,
+	markNotificationSeenValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -102,10 +105,18 @@ router.post(
 );
 
 //
-router.post("/add-series", requireAuth, userActionsController.addSeries);
+router.post(
+	"/add-series",
+	requireAuth,
+	bodyIdValidation,
+	validateRequest,
+	userActionsController.addSeries,
+);
 router.post(
 	"/add-to-wishlist",
 	requireAuth,
+	bodyIdValidation,
+	validateRequest,
 	userActionsController.addToWishlist,
 );
 router.post(
@@ -115,10 +126,18 @@ router.post(
 	validateRequest,
 	userActionsController.addVolume,
 );
-router.post("/remove-series", requireAuth, userActionsController.removeSeries);
+router.post(
+	"/remove-series",
+	requireAuth,
+	bodyIdValidation,
+	validateRequest,
+	userActionsController.removeSeries,
+);
 router.post(
 	"/remove-from-wishlist",
 	requireAuth,
+	bodyIdValidation,
+	validateRequest,
 	userActionsController.removeFromWishList,
 );
 router.post(
@@ -128,16 +147,32 @@ router.post(
 	validateRequest,
 	userActionsController.removeVolume,
 );
-router.post("/drop-series", requireAuth, userActionsController.dropSeries);
-router.post("/undrop-series", requireAuth, userActionsController.undropSeries);
+router.post(
+	"/drop-series",
+	requireAuth,
+	bodyIdValidation,
+	validateRequest,
+	userActionsController.dropSeries,
+);
+router.post(
+	"/undrop-series",
+	requireAuth,
+	bodyIdValidation,
+	validateRequest,
+	userActionsController.undropSeries,
+);
 router.post(
 	"/toggle-read",
 	requireAuth,
+	bodyIdValidation,
+	validateRequest,
 	userActionsController.toggleVolumeRead,
 );
 router.post(
 	"/set-read-status",
 	requireAuth,
+	readStatusValidation,
+	validateRequest,
 	userActionsController.setVolumesReadStatus,
 );
 router.put(
@@ -192,6 +227,8 @@ router.put(
 router.put(
 	"/mark-notification-seen",
 	requireAuth,
+	markNotificationSeenValidation,
+	validateRequest,
 	notificationsController.setNotificationAsSeen,
 );
 
