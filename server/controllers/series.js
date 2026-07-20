@@ -222,7 +222,8 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		sortStage["hasMyRating"] = -1;
 		sortStage["myRatingScore"] = -1;
 	} else if (!wantsMyRating) {
-		sortStage[sortOptions[ordering].attribute] = sortOptions[ordering].order;
+		const selectedOption = sortOptions[ordering] || sortOptions.popularity;
+		sortStage[selectedOption.attribute] = selectedOption.order;
 	}
 	sortStage["title"] = 1;
 	const isValidSearch = search && search.trim() !== "";
