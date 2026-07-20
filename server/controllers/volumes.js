@@ -87,7 +87,7 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 		}
 
 		const affectedUsers = await User.find({ "ownedVolumes.volume": volumeId })
-			.select("_id")
+			.select("_id settings")
 			.session(session);
 
 		await notificationsController.notifyDeletion(

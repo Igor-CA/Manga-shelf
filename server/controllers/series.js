@@ -610,7 +610,7 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 				{ "ownedVolumes.volume": { $in: relatedVolumeIds } },
 			],
 		})
-			.select("_id")
+			.select("_id settings")
 			.session(session);
 
 		await notificationsController.notifyDeletion(
