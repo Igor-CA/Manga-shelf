@@ -1,14 +1,18 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import SeriesCardList from "../../components/cards/SeriesCardList";
 import axios from "axios";
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import debaunce from "../../utils/debaunce";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import FilterControls from "../../components/FilterControls";
+import { UserContext } from "../../contexts/userProvider";
 
 export default function UserCollection() {
 	const { username } = useParams();
 	const navigate = useNavigate();
+	const { user: loggedUser } = useContext(UserContext);
+	const personalRatingLabel =
+		username === loggedUser?.username ? "Sua nota" : `Nota de ${username}`;
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
 	}/api/data/user/${username}/filters`;
@@ -81,6 +85,7 @@ export default function UserCollection() {
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
 				lists={{ genreList, publishersList }}
+				personalRatingLabel={personalRatingLabel}
 			>
 				<div className="filter__checkbox-container">
 					<label htmlFor="group" className="filter__label">

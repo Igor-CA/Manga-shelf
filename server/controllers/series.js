@@ -13,6 +13,70 @@ const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
 
 const ITEMS_PER_PAGE = 24;
+
+const buildSeriesMyRatingLookupStages = (ownerId, seriesIdExpr) => [
+	{
+		$lookup: {
+			from: "ratings",
+			let: { seriesId: seriesIdExpr },
+			pipeline: [
+				{
+					$match: {
+						$expr: {
+							$and: [
+								{ $eq: ["$user", ownerId] },
+								{ $eq: ["$series", "$$seriesId"] },
+							],
+						},
+					},
+				},
+				{
+					$group: {
+						_id: null,
+						manual: {
+							$max: {
+								$cond: [{ $eq: ["$volume", null] }, "$score", null],
+							},
+						},
+						volumeScores: {
+							$push: {
+								$cond: [{ $ne: ["$volume", null] }, "$score", "$$REMOVE"],
+							},
+						},
+					},
+				},
+				{
+					$project: {
+						_id: 0,
+						effectiveScore: {
+							$cond: [
+								{ $ne: ["$manual", null] },
+								"$manual",
+								{
+									$cond: [
+										{ $gt: [{ $size: "$volumeScores" }, 0] },
+										{ $avg: "$volumeScores" },
+										null,
+									],
+								},
+							],
+						},
+					},
+				},
+			],
+			as: "_myRatingLookup",
+		},
+	},
+	{
+		$addFields: {
+			myRatingScore: { $arrayElemAt: ["$_myRatingLookup.effectiveScore", 0] },
+			hasMyRating: {
+				$ne: [{ $arrayElemAt: ["$_myRatingLookup.effectiveScore", 0] }, null],
+			},
+		},
+	},
+];
+
 const addUserListData = (pipeline, user) => {
 	if (!user) {
 		pipeline.push({
@@ -146,10 +210,18 @@ exports.browse = asyncHandler(async (req, res, next) => {
 		dateJp: { attribute: "originalRun.dates.publishedAt", order: -1 },
 		dateBr: { attribute: "dates.publishedAt", order: -1 },
 		rating: { attribute: "ratingAverage", order: -1 },
+		myRating: { attribute: "myRatingScore", order: -1 },
 	};
 	const ordering = req.query.ordering || "popularity";
+	const wantsMyRating = ordering === "myRating";
+	const canMyRating = wantsMyRating && Boolean(req.user);
 	const sortStage = {};
-	sortStage[sortOptions[ordering].attribute] = sortOptions[ordering].order;
+	if (canMyRating) {
+		sortStage["hasMyRating"] = -1;
+		sortStage["myRatingScore"] = -1;
+	} else if (!wantsMyRating) {
+		sortStage[sortOptions[ordering].attribute] = sortOptions[ordering].order;
+	}
 	sortStage["title"] = 1;
 	const isValidSearch = search && search.trim() !== "";
 
@@ -228,6 +300,9 @@ exports.browse = asyncHandler(async (req, res, next) => {
 			},
 		},
 		{ $match: filter },
+		...(canMyRating
+			? buildSeriesMyRatingLookupStages(req.user._id, "$_id")
+			: []),
 		{ $sort: sortStage },
 	);
 
