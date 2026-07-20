@@ -22,6 +22,12 @@ export default function useReplies(post, seriesId, volumeId, initialReplies = nu
 	const [previewOverride, setPreviewOverride] = useState(null);
 	const previewPost = previewOverride ?? post.replyPreview;
 
+	const previewId = post.replyPreview?._id;
+	useEffect(() => {
+		setPreviewOverride(null);
+		setPreviewHidden(false);
+	}, [previewId]);
+
 	useEffect(() => {
 		setPreviewOverride(null);
 	}, [post.replyPreview?._id]);
