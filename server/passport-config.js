@@ -14,13 +14,19 @@ module.exports = function (passport) {
 			},
 			asyncHandler(async (accessToken, refreshToken, profile, done) => {
 				try {
-					const user = await User.findOne({
-						email: profile._json.email,
-					});
+					const email = profile._json.email;
+					const emailVerified =
+						profile._json.email_verified === true ||
+						profile._json.email_verified === "true";
+					if (!email || !emailVerified) {
+						return done(null, false);
+					}
+
+					const user = await User.findOne({ email });
 					if (!user) {
 						const newUser = new User({
 							TOSAcceptedAt: new Date(),
-							email: profile._json.email,
+							email,
 						});
 						await newUser.save();
 						return done(null, newUser);
