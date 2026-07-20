@@ -487,6 +487,15 @@ async function updateSeriesPopularity() {
 		}));
 
 		if (bulkOps.length > 0) await Series.bulkWrite(bulkOps);
+
+		await Series.updateMany(
+			{
+				_id: { $nin: popularityAggregation.map((p) => p._id) },
+				popularity: { $gt: 0 },
+			},
+			{ $set: { popularity: 0 } },
+		);
+
 		logger.info("Series popularity updated");
 	} catch (error) {
 		logger.error("Error updating series popularity:", error);
