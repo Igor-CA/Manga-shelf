@@ -4,6 +4,7 @@ const asyncHandler = require("express-async-handler");
 const { sendNewFollowerNotification } = require("../notifications");
 const Series = require("../../models/Series");
 const Volumes = require("../../models/volume");
+const logger = require("../../Utils/logger");
 
 exports.addSeries = asyncHandler(async (req, res, next) => {
 	const addedSeriesId = req.body.id;
