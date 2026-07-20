@@ -6,99 +6,89 @@ const Series = require("../../models/Series");
 const Volumes = require("../../models/volume");
 const logger = require("../../Utils/logger");
 
-exports.addSeries = asyncHandler(async (req, res, next) => {
-	const addedSeriesId = req.body.id;
-	if (!addedSeriesId)
-		return res.status(400).json({ msg: "Obra não informada" });
+exports.addSeries = asyncHandler(async (req, res) => {
+	const seriesId = req.body.id;
+	if (!seriesId) return res.status(400).json({ msg: "Obra não informada" });
 
-	const [user, series] = await Promise.all([
-		User.findById(req.user._id),
-		Series.findById(req.body.id),
-	]);
-	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	const series = await Series.findById(seriesId).select("_id");
 	if (!series) return res.status(400).json({ msg: "Obra não encontrada" });
 
-	const alreadyAdded = user.userList.some(
-		(entry) => entry.Series.toString() === req.body.id
+	const before = await User.findOneAndUpdate(
+		{ _id: req.user._id, "userList.Series": { $ne: series._id } },
+		{
+			$push: {
+				userList: {
+					Series: series._id,
+					completionPercentage: 0,
+					status: "Collecting",
+				},
+			},
+			$pull: { wishList: series._id },
+		},
+		{ new: false, projection: { wishList: 1 }, lean: true },
 	);
 
-	if (alreadyAdded) {
+	if (!before) {
 		return res.status(400).json({ msg: "Obra já está na lista" });
 	}
 
-	const addedSeries = {
-		Series: req.body.id,
-		completionPercentage: 0,
-		status: "Collecting",
-	};
-	const inWishList = user.wishList.some(
-		(entry) => entry.toString() === req.body.id
-	);
-	//If series in wishlist remove it
-	const newWishlist = user.wishList.filter((seriesId) => {
-		return seriesId.toString() !== req.body.id;
-	});
-	user.wishList = newWishlist;
-
-	user.userList.push(addedSeries);
-
-	await Promise.all([
-		Series.findByIdAndUpdate(req.body.id, {
-			$inc: { popularity: !inWishList },
-		}),
-		user.save(),
-	]);
+	const wasInWishlist = before.wishList?.some((id) => id.equals(series._id));
+	if (!wasInWishlist) {
+		await Series.updateOne({ _id: series._id }, { $inc: { popularity: 1 } });
+	}
 
 	return res.send({ msg: "Obra adicionada com sucesso" });
 });
 
-exports.addToWishlist = asyncHandler(async (req, res, next) => {
-	const addedSeriesId = req.body.id;
-	if (!addedSeriesId)
-		return res.status(400).json({ msg: "Obra não informada" });
+exports.addToWishlist = asyncHandler(async (req, res) => {
+	const seriesId = req.body.id;
+	if (!seriesId) return res.status(400).json({ msg: "Obra não informada" });
 
-	const [user, series] = await Promise.all([
-		User.findById(req.user._id),
-		Series.findById(req.body.id),
-	]);
-	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
+	const series = await Series.findById(seriesId).select("_id");
 	if (!series) return res.status(400).json({ msg: "Obra não encontrada" });
-	const alreadyAdded = user.wishList.some(
-		(entry) => entry.toString() === req.body.id
+
+	const before = await User.findOneAndUpdate(
+		{
+			_id: req.user._id,
+			wishList: { $ne: series._id },
+			userList: {
+				$not: {
+					$elemMatch: {
+						Series: series._id,
+						completionPercentage: { $gt: 0 },
+					},
+				},
+			},
+		},
+		{
+			$push: { wishList: series._id },
+			$pull: { userList: { Series: series._id } },
+		},
+		{ new: false, projection: { userList: 1 }, lean: true },
 	);
 
-	const inUserList = user.userList.some(
-		(entry) => entry.Series.toString() === req.body.id
-	);
+	if (!before) {
 
-	if (alreadyAdded) {
-		return res.status(400).json({ msg: "Obra já está na lista de desejos" });
-	}
-
-	if (inUserList) {
-		const series = user.userList.find(
-			(series) => series.Series._id.toString() === req.body.id
-		);
-		if (series.completionPercentage !== 0) {
-			return res.status(400).json({
-				msg: "Você já possui volumes dessa obra portanto ela não foi adicionada à lista de desejos",
-			});
-		} else {
-			const newSeriesList = user.userList.filter((seriesObject) => {
-				return seriesObject.Series.toString() !== req.body.id;
-			});
-			user.userList = newSeriesList;
+		const current = await User.findById(req.user._id)
+			.select("wishList")
+			.lean();
+		const inWishlist = current?.wishList?.some((id) => id.equals(series._id));
+		if (inWishlist) {
+			return res
+				.status(400)
+				.json({ msg: "Obra já está na lista de desejos" });
 		}
+		return res.status(400).json({
+			msg: "Você já possui volumes dessa obra portanto ela não foi adicionada à lista de desejos",
+		});
 	}
 
-	user.wishList.push(addedSeriesId);
-
-	await Promise.all([
-		Series.findByIdAndUpdate(req.body.id, {
-			$inc: { popularity: !inUserList },
-		}),
-		user.save(),
-	]);
+	const wasInUserList = before.userList?.some((item) =>
+		item.Series?.equals(series._id),
+	);
+	if (!wasInUserList) {
+		await Series.updateOne({ _id: series._id }, { $inc: { popularity: 1 } });
+	}
 
 	return res.send({ msg: "Obra adicionada com sucesso" });
 });
@@ -134,29 +124,26 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 
 	return res.send({ msg: "Obra removida com sucesso" });
 });
-exports.removeFromWishList = asyncHandler(async (req, res, next) => {
-	const removedSeriesId = req.body.id;
-	if (!removedSeriesId)
-		return res.status(400).json({ msg: "Obra não informada" });
+exports.removeFromWishList = asyncHandler(async (req, res) => {
+	const seriesId = req.body.id;
+	if (!seriesId) return res.status(400).json({ msg: "Obra não informada" });
 
-	const [user, series] = await Promise.all([
-		User.findById(req.user._id, { wishList: 1 }),
-		Series.findById(req.body.id),
-	]);
-	if (!user) return res.status(400).json({ msg: "Usuário não encontrado" });
-	if (!series) return res.status(400).json({ msg: "Obra não encontrada" });
+	const result = await User.updateOne(
+		{ _id: req.user._id, wishList: seriesId },
+		{ $pull: { wishList: seriesId } },
+	);
 
-	const newWishList = user.wishList.filter((seriesObject) => {
-		return seriesObject.toString() !== removedSeriesId;
-	});
-	user.wishList = newWishList;
-	await Promise.all([
-		Series.findOneAndUpdate(
-			{ _id: req.body.id, popularity: { $gt: 0 } },
-			{ $inc: { popularity: -1 } }
-		),
-		user.save(),
-	]);
+	if (result.modifiedCount === 0) {
+		return res
+			.status(400)
+			.json({ msg: "Obra não está na lista de desejos" });
+	}
+
+	await Series.updateOne(
+		{ _id: seriesId, popularity: { $gt: 0 } },
+		{ $inc: { popularity: -1 } },
+	);
+
 	return res.send({ msg: "Obra removida com sucesso" });
 });
 
