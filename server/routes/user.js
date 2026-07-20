@@ -291,9 +291,9 @@ router.get(
 router.get("/collection-photos/:id", collectionPhotosController.getPhoto);
 router.put(
 	"/collection-photos/:id",
+	requireAuth,
 	photoValidation,
 	validateRequest,
-	requireAuth,
 	collectionPhotosController.updatePhoto,
 );
 router.delete(
