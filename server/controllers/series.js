@@ -572,7 +572,7 @@ exports.getInfoFilters = asyncHandler(async (req, res, next) => {
 			genres: [],
 			publishers: [],
 			types: [],
-			countrys: [],
+			countries: [],
 			publishedYears: [],
 			originalPublishedYears: [],
 		},
