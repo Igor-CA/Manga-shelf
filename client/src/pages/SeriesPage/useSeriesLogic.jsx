@@ -16,6 +16,7 @@ export const useSeriesLogic = (id) => {
 	const [localVolumeState, setLocalVolumeState] = useState([]);
 
 	useEffect(() => {
+		let active = true;
 		setSeries(null);
 		const fetchSeriesData = async () => {
 			try {
@@ -26,13 +27,18 @@ export const useSeriesLogic = (id) => {
 						headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
 					}
 				);
+				if (!active) return;
 				setSeries(response.data);
 			} catch (error) {
+				if (!active) return;
 				if (error.response?.status === 400) navigate("/404");
 				console.error("Error fetching Series Data:", error);
 			}
 		};
 		fetchSeriesData();
+		return () => {
+			active = false;
+		};
 	}, [id]);
 
 	useEffect(() => {
