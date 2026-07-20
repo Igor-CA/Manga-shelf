@@ -5,10 +5,15 @@ import SeriesCardList from "../../components/cards/SeriesCardList";
 import FilterControls from "../../components/FilterControls";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { useCallback } from "react";
+import { useContext } from "react";
 import { useMemo } from "react";
+import { UserContext } from "../../contexts/userProvider";
 export default function ReadListPage() {
 	const { username } = useParams();
 	const navigate = useNavigate();
+	const { user: loggedUser } = useContext(UserContext);
+	const personalRatingLabel =
+		username === loggedUser?.username ? "Sua nota" : `Nota de ${username}`;
 
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
@@ -70,6 +75,7 @@ export default function ReadListPage() {
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
 				lists={{ genreList, publishersList }}
+				personalRatingLabel={personalRatingLabel}
 			></FilterControls>
 			<hr style={{ margin: "0px 10px" }} />
 			<h2 className="collection-lable">Não lidos</h2>

@@ -9,6 +9,101 @@ const logger = require("../../Utils/logger");
 const { escapeRegex } = require("../../Utils/escapeRegex");
 
 const ITEMS_PER_PAGE = 36;
+
+const buildSeriesMyRatingLookupStages = (ownerId, seriesIdExpr) => [
+	{
+		$lookup: {
+			from: "ratings",
+			let: { seriesId: seriesIdExpr },
+			pipeline: [
+				{
+					$match: {
+						$expr: {
+							$and: [
+								{ $eq: ["$user", ownerId] },
+								{ $eq: ["$series", "$$seriesId"] },
+							],
+						},
+					},
+				},
+				{
+					$group: {
+						_id: null,
+						manual: {
+							$max: {
+								$cond: [{ $eq: ["$volume", null] }, "$score", null],
+							},
+						},
+						volumeScores: {
+							$push: {
+								$cond: [{ $ne: ["$volume", null] }, "$score", "$$REMOVE"],
+							},
+						},
+					},
+				},
+				{
+					$project: {
+						_id: 0,
+						effectiveScore: {
+							$cond: [
+								{ $ne: ["$manual", null] },
+								"$manual",
+								{
+									$cond: [
+										{ $gt: [{ $size: "$volumeScores" }, 0] },
+										{ $avg: "$volumeScores" },
+										null,
+									],
+								},
+							],
+						},
+					},
+				},
+			],
+			as: "_myRatingLookup",
+		},
+	},
+	{
+		$addFields: {
+			myRatingScore: { $arrayElemAt: ["$_myRatingLookup.effectiveScore", 0] },
+			hasMyRating: {
+				$ne: [{ $arrayElemAt: ["$_myRatingLookup.effectiveScore", 0] }, null],
+			},
+		},
+	},
+];
+
+const buildVolumeMyRatingLookupStages = (ownerId, volumeIdExpr) => [
+	{
+		$lookup: {
+			from: "ratings",
+			let: { volumeId: volumeIdExpr },
+			pipeline: [
+				{
+					$match: {
+						$expr: {
+							$and: [
+								{ $eq: ["$user", ownerId] },
+								{ $eq: ["$volume", "$$volumeId"] },
+							],
+						},
+					},
+				},
+				{ $project: { _id: 0, score: 1 } },
+			],
+			as: "_myRatingLookup",
+		},
+	},
+	{
+		$addFields: {
+			myRatingScore: { $arrayElemAt: ["$_myRatingLookup.score", 0] },
+			hasMyRating: {
+				$ne: [{ $arrayElemAt: ["$_myRatingLookup.score", 0] }, null],
+			},
+		},
+	},
+];
+
 //Filters for building search pipeline
 
 const buildFilter = ({ publisher, genre, status, search }, field) => {
@@ -40,11 +135,15 @@ const buildSortStage = (ordering, field) => {
 		dateBr: { attribute: `${field}.dates.publishedAt`, order: -1 },
 		volumes: { attribute: "volumesLength", order: -1 },
 		rating: { attribute: `${field}.ratingAverage`, order: -1 },
+		myRating: { attribute: "myRatingScore", order: -1 },
 		timestamp: { attribute: "userList.timestamp", order: 1 },
 		status: { attribute: "userList.completionPercentage", order: 1 },
 	};
 
-	const selectedOption = sortOptions[ordering] || sortOptions.title;
+	if (ordering === "myRating") {
+		return { hasMyRating: -1, myRatingScore: -1, [`${field}.title`]: 1 };
+	}
+
 	const sortStage = {
 		[selectedOption.attribute]: selectedOption.order,
 		"userList.Series.title": 1,
@@ -64,9 +163,19 @@ const buildVolumeSortStage = (ordering) => {
 		dateBr: { attribute: `seriesInfo.dates.publishedAt`, order: -1 },
 		number: { attribute: "volumeInfo.number", order: 1 },
 		rating: { attribute: "volumeInfo.ratingAverage", order: -1 },
+		myRating: { attribute: "myRatingScore", order: -1 },
 		timestamp: { attribute: "ownedVolumes.acquiredAt", order: -1 },
 		status: { attribute: "ownedVolumes.isRead", order: 1 },
 	};
+
+	if (ordering === "myRating") {
+		return {
+			hasMyRating: -1,
+			myRatingScore: -1,
+			"seriesInfo.title": 1,
+			"volumeInfo.number": 1,
+		};
+	}
 
 	const selectedOption = sortOptions[ordering] || sortOptions.timestamp;
 
@@ -78,7 +187,13 @@ const buildVolumeSortStage = (ordering) => {
 
 	return sortStage;
 };
-const buildAggregationPipeline = (targetUser, filter, sortStage, skip) => {
+const buildAggregationPipeline = (
+	targetUser,
+	filter,
+	sortStage,
+	skip,
+	myRatingStages = [],
+) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
 		{
@@ -108,6 +223,7 @@ const buildAggregationPipeline = (targetUser, filter, sortStage, skip) => {
 			},
 		},
 		{ $match: filter },
+		...myRatingStages,
 		{ $sort: sortStage },
 		{
 			$project: {
@@ -130,6 +246,7 @@ const buildVolumeAggregationPipeline = (
 	filter,
 	sortStage,
 	skip,
+	myRatingStages = [],
 ) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
@@ -170,6 +287,8 @@ const buildVolumeAggregationPipeline = (
 
 		{ $match: filter },
 
+		...myRatingStages,
+
 		{ $sort: sortStage },
 
 		{
@@ -198,7 +317,13 @@ const buildVolumeAggregationPipeline = (
 	return pipeline;
 };
 
-const buildWishlistPipeline = (targetUser, filter, sortStage, skip) => {
+const buildWishlistPipeline = (
+	targetUser,
+	filter,
+	sortStage,
+	skip,
+	myRatingStages = [],
+) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
 		{ $unwind: "$wishList" },
@@ -218,6 +343,7 @@ const buildWishlistPipeline = (targetUser, filter, sortStage, skip) => {
 			},
 		},
 		{ $match: filter },
+		...myRatingStages,
 		{ $sort: sortStage },
 		{
 			$project: {
@@ -243,32 +369,35 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 	if (req.query.group) {
 		filter["userList.status"] = req.query.group;
 	}
-	const sortStage = buildSortStage(
-		req.query.ordering || "title",
-		"userList.Series",
-	);
+	const ordering = req.query.ordering || "title";
+	const sortStage = buildSortStage(ordering, "userList.Series");
+
+	const owner = await User.findOne({ username: targetUser }).select("_id");
+	const myRatingStages =
+		ordering === "myRating" && owner
+			? buildSeriesMyRatingLookupStages(owner._id, "$userList.Series._id")
+			: [];
+
 	const pipeline = buildAggregationPipeline(
 		targetUser,
 		filter,
 		sortStage,
 		skip,
+		myRatingStages,
 	);
 	const userCollection = await User.aggregate(pipeline);
 
 	const pageSeriesIds = userCollection.map((series) => series._id);
 	const ratingsBySeriesId = new Map();
-	if (pageSeriesIds.length) {
-		const owner = await User.findOne({ username: targetUser }).select("_id");
-		if (owner) {
-			const ratings = await Rating.find({
-				user: owner._id,
-				series: { $in: pageSeriesIds },
-			}).select("series volume score");
-			for (const rating of ratings) {
-				const key = rating.series.toString();
-				if (!ratingsBySeriesId.has(key)) ratingsBySeriesId.set(key, []);
-				ratingsBySeriesId.get(key).push(rating);
-			}
+	if (pageSeriesIds.length && owner) {
+		const ratings = await Rating.find({
+			user: owner._id,
+			series: { $in: pageSeriesIds },
+		}).select("series volume score");
+		for (const rating of ratings) {
+			const key = rating.series.toString();
+			if (!ratingsBySeriesId.has(key)) ratingsBySeriesId.set(key, []);
+			ratingsBySeriesId.get(key).push(rating);
 		}
 	}
 
@@ -319,11 +448,27 @@ exports.getUserWishlist = asyncHandler(async (req, res, next) => {
 	const page = parseInt(req.query.p) || 1;
 	const skip = ITEMS_PER_PAGE * (page - 1);
 	const filter = buildFilter(req.query, "wishListSeries");
-	const sortStage = buildSortStage(
-		req.query.ordering || "title",
-		"wishListSeries",
+	const ordering = req.query.ordering || "title";
+	const sortStage = buildSortStage(ordering, "wishListSeries");
+
+	let myRatingStages = [];
+	if (ordering === "myRating") {
+		const owner = await User.findOne({ username: targetUser }).select("_id");
+		if (owner) {
+			myRatingStages = buildSeriesMyRatingLookupStages(
+				owner._id,
+				"$wishListSeries._id",
+			);
+		}
+	}
+
+	const pipeline = buildWishlistPipeline(
+		targetUser,
+		filter,
+		sortStage,
+		skip,
+		myRatingStages,
 	);
-	const pipeline = buildWishlistPipeline(targetUser, filter, sortStage, skip);
 	const userCollection = await User.aggregate(pipeline);
 	const filteredList = userCollection.map((series) => {
 		let image = getSeriesCoverURL(series);
@@ -881,27 +1026,33 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 		const bool = req.query.group === "true" ? true : false;
 		filter["ownedVolumes.isRead"] = bool;
 	}
-	const sortStage = buildVolumeSortStage(req.query.ordering || "title");
+	const ordering = req.query.ordering || "title";
+	const sortStage = buildVolumeSortStage(ordering);
+
+	const owner = await User.findOne({ username: targetUser }).select("_id");
+	const myRatingStages =
+		ordering === "myRating" && owner
+			? buildVolumeMyRatingLookupStages(owner._id, "$volumeInfo._id")
+			: [];
+
 	const pipeline = buildVolumeAggregationPipeline(
 		targetUser,
 		filter,
 		sortStage,
 		skip,
+		myRatingStages,
 	);
 	const userCollection = await User.aggregate(pipeline);
 
 	const pageVolumeIds = userCollection.map((volume) => volume._id);
 	const scoreByVolumeId = new Map();
-	if (pageVolumeIds.length) {
-		const owner = await User.findOne({ username: targetUser }).select("_id");
-		if (owner) {
-			const ratings = await Rating.find({
-				user: owner._id,
-				volume: { $in: pageVolumeIds },
-			}).select("volume score");
-			for (const rating of ratings) {
-				scoreByVolumeId.set(rating.volume.toString(), rating.score);
-			}
+	if (pageVolumeIds.length && owner) {
+		const ratings = await Rating.find({
+			user: owner._id,
+			volume: { $in: pageVolumeIds },
+		}).select("volume score");
+		for (const rating of ratings) {
+			scoreByVolumeId.set(rating.volume.toString(), rating.score);
 		}
 	}
 

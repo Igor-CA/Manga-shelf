@@ -9,10 +9,14 @@ import { useContext } from "react";
 import { messageContext } from "../../contexts/messageStateProvider";
 import FilterControls from "../../components/FilterControls";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
+import { UserContext } from "../../contexts/userProvider";
 
 export default function WishlistPage() {
 	const { username } = useParams();
 	const navigate = useNavigate();
+	const { user: loggedUser } = useContext(UserContext);
+	const personalRatingLabel =
+		username === loggedUser?.username ? "Sua nota" : `Nota de ${username}`;
 
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
@@ -73,6 +77,7 @@ export default function WishlistPage() {
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
 				lists={{ genreList, publishersList }}
+				personalRatingLabel={personalRatingLabel}
 			/>{" "}
 			<SeriesCardList
 				skeletonsCount={36}

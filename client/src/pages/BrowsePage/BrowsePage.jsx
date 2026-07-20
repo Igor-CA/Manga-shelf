@@ -8,11 +8,14 @@ import SeriesCardList from "../../components/cards/SeriesCardList";
 import TogglePageButton from "../../components/customInputs/TogglePageButton";
 import { useContext } from "react";
 import { messageContext } from "../../contexts/messageStateProvider";
+import { UserContext } from "../../contexts/userProvider";
 import { useEffect } from "react";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import FilterControls from "../../components/FilterControls";
 
 export default function BrowsePage() {
+	const { user: loggedUser } = useContext(UserContext);
+	const personalRatingLabel = loggedUser ? "Sua nota" : null;
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
 	}/api/data/series/filters`;
@@ -83,6 +86,7 @@ export default function BrowsePage() {
 				values={{ searchBarValue, ...params }}
 				lists={{ genreList, publishersList, typesList, originalYearList, localYearList, countryList }}
 				secundaryFilters={true}
+				personalRatingLabel={personalRatingLabel}
 			/>
 			<SeriesCardList
 				skeletonsCount={12}

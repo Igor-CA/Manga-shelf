@@ -8,6 +8,7 @@ const FilterControls = ({
 	lists,
 	children,
 	secundaryFilters = false,
+	personalRatingLabel = null,
 }) => {
 	const [showFilters, setShowFilters] = useState(false);
 	const { searchBarValue } = values;
@@ -116,7 +117,10 @@ const FilterControls = ({
 							>
 								<option value={"title"}>Alfabética</option>
 								<option value={"popularity"}>Popularidade</option>
-								<option value={"rating"}>Nota</option>
+								<option value={"rating"}>Nota da comunidade</option>
+								{personalRatingLabel && (
+									<option value={"myRating"}>{personalRatingLabel}</option>
+								)}
 								<option value={"volumes"}>Tamanho</option>
 								<option value={"publisher"}>Editora</option>
 								<option value={"dateJp"}>Lançamentos Recentes (JP)</option>
