@@ -23,7 +23,9 @@ async function dispatchWeeklyVolumes() {
 			},
 		});
 
-	const volumePending = pendingStatuses.filter((s) => s.notification !== null);
+	const volumePending = pendingStatuses.filter(
+		(s) => s.notification && s.notification.associatedObject,
+	);
 
 	if (volumePending.length === 0) {
 		logger.info("No pending volume notifications found.");
