@@ -9,6 +9,7 @@ const {
 } = require("../controllers/user/userActionsController");
 const logger = require("../Utils/logger");
 const volume = require("../models/volume");
+const { escapeRegex } = require("../Utils/escapeRegex");
 
 const INTERNAL_RELATIONS = ["Outra Edição", "Mesmo Autor(a)"];
 const FRANCHISE_LINKS = [
@@ -44,10 +45,6 @@ function cleanAuthorName(name) {
 	if (!name) return "";
 	let cleaned = name.replace(/\s*\(.*?\)\s*/g, "");
 	return cleaned.trim();
-}
-
-function escapeRegex(text) {
-	return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
 async function resolveAuthorsAndFranchise(currentSeries) {

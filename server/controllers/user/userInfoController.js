@@ -6,6 +6,7 @@ const {
 	getSeriesCoverURL,
 } = require("../../Utils/getCoverFunctions");
 const logger = require("../../Utils/logger");
+const { escapeRegex } = require("../../Utils/escapeRegex");
 
 const ITEMS_PER_PAGE = 36;
 //Filters for building search pipeline
@@ -16,7 +17,7 @@ const buildFilter = ({ publisher, genre, status, search }, field) => {
 	if (publisher) filter[`${field}.publisher`] = publisher;
 	if (status) filter[`${field}.status`] = status;
 	if (search) {
-		const searchRegex = { $regex: search, $options: "i" };
+		const searchRegex = { $regex: escapeRegex(search), $options: "i" };
 		const titleField = `${field}.title`;
 		const synonymsField = `${field}.synonyms`;
 		const authorsField = `${field}.authors`;
@@ -746,7 +747,7 @@ exports.getSocials = asyncHandler(async (req, res, next) => {
 });
 
 exports.searchUser = asyncHandler(async (req, res, next) => {
-	const regex = new RegExp(req.query.q, "i");
+	const regex = new RegExp(escapeRegex(req.query.q), "i");
 	const page = parseInt(req.query.p) || 1;
 	const users_per_page = 12;
 	const skip = users_per_page * (page - 1);
