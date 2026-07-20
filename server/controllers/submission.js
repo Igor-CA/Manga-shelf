@@ -11,6 +11,34 @@ const path = require("path");
 const fs = require("fs");
 const sharp = require("sharp");
 
+const EDITABLE_SUBMISSION_FIELDS = {
+	Series: [
+		"title",
+		"synonyms",
+		"authors",
+		"summary",
+		"genres",
+		"publisher",
+		"demographic",
+		"type",
+		"status",
+		"dates",
+		"specs",
+		"originalRun",
+		"ageRating",
+	],
+	Volume: [
+		"number",
+		"ISBN",
+		"pagesNumber",
+		"date",
+		"summary",
+		"defaultPrice",
+		"freebies",
+		"chapters",
+	],
+};
+
 const processAndSaveEvidence = async (buffer, userId) => {
 	const folderPath = path.resolve("public/images/evidence");
 	const filename = `${userId}-${Date.now()}.webp`;
@@ -105,8 +133,10 @@ exports.approveSubmission = asyncHandler(async (req, res, next) => {
 	if (!targetDocument)
 		return res.status(404).json({ msg: "Obra alvo não encontrada." });
 
-	delete submission.payload._id;
-	delete submission.payload.__v;
+	const safePayload = _.pick(
+		submission.payload,
+		EDITABLE_SUBMISSION_FIELDS[submission.targetModel] || [],
+	);
 
 	const customizer = (objValue, srcValue) => {
 		if (_.isArray(srcValue)) {
@@ -114,7 +144,7 @@ exports.approveSubmission = asyncHandler(async (req, res, next) => {
 		}
 	};
 
-	_.mergeWith(targetDocument, submission.payload, customizer);
+	_.mergeWith(targetDocument, safePayload, customizer);
 
 	if (submission.targetModel === "Series") {
 		targetDocument.markModified("specs");
