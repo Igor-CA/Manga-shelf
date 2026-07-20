@@ -563,7 +563,7 @@ const sendEmailNotification = async (notification, targetUserId, dataList) => {
 					path: `${process.env.SITE_DOMAIN}/images/medium/${cover}`,
 					contentDisposition: "inline",
 					cid: `img${id + 1}.webp`,
-					contentType: "img/webp",
+					contentType: "image/webp",
 				};
 			});
 
