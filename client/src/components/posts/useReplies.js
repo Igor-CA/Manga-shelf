@@ -28,10 +28,6 @@ export default function useReplies(post, seriesId, volumeId, initialReplies = nu
 		setPreviewHidden(false);
 	}, [previewId]);
 
-	useEffect(() => {
-		setPreviewOverride(null);
-	}, [post.replyPreview?._id]);
-
 	const { editPost: editReply, deletePost } = usePostMutations({
 		seriesId,
 		volumeId,
