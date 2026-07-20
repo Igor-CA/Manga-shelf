@@ -425,7 +425,19 @@ exports.sendNewReplyNotification = async (reply, recipientId, topLevelParentId) 
 	}
 };
 
+let replyDigestRunning = false;
+
 exports.dispatchReplyDigests = async () => {
+	if (replyDigestRunning) return;
+	replyDigestRunning = true;
+	try {
+		await runReplyDigests();
+	} finally {
+		replyDigestRunning = false;
+	}
+};
+
+async function runReplyDigests() {
 	const pending = await PendingReplyDigest.find({
 		flushAfter: { $lte: new Date() },
 	});
@@ -476,7 +488,7 @@ exports.dispatchReplyDigests = async () => {
 			logger.error("Failed to dispatch reply digest:", err.message);
 		}
 	}
-};
+}
 
 exports.sendNewMentionNotification = async (
 	reply,
