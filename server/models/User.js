@@ -80,7 +80,7 @@ const UserSchema = new Schema({
 			date: { type: Date, default: Date.now },
 		},
 	],
-});
+}, { timestamps: true });
 UserSchema.index({ "ownedVolumes.volume": 1 });
 
 UserSchema.index(

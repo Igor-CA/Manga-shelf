@@ -8,6 +8,6 @@ const ReportSchema = new Schema({
 	details: { type: String, required: true },
 	user: {type: String},
 	wantAnswer: {type: Boolean, default: false}
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Report", ReportSchema);
