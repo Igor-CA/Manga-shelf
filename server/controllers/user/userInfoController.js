@@ -144,6 +144,8 @@ const buildSortStage = (ordering, field) => {
 		return { hasMyRating: -1, myRatingScore: -1, [`${field}.title`]: 1 };
 	}
 
+	const selectedOption = sortOptions[ordering] || sortOptions.timestamp;
+
 	const sortStage = {
 		[selectedOption.attribute]: selectedOption.order,
 		"userList.Series.title": 1,
