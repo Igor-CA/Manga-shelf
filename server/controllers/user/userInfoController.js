@@ -908,7 +908,7 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
 				followersCount: { $size: { $ifNull: ["$followers", []] } },
 			},
 		},
-		{ $sort: { followersCount: -1, username: 1 } },
+		{ $sort: { followersCount: -1, username: 1, _id: 1 } },
 		{ $skip: skip },
 		{ $limit: users_per_page },
 	]).collation({ locale: "en", strength: 2 });
