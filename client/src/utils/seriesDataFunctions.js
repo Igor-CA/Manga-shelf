@@ -1,5 +1,5 @@
 export const printArray = (list) => {
-	if (list.length === 0){
+	if (!Array.isArray(list) || list.length === 0){
 		return null
 	}
 	const listCount = list.length;

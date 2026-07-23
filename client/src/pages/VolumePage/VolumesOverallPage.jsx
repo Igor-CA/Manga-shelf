@@ -21,7 +21,7 @@ export default function VolumesOverallPage({ volume }) {
 		if (!volume) return [];
 
 		return [
-			{ label: "Autores", value: printArray(serie.authors) },
+			{ label: "Autores", value: printArray(serie?.authors) },
 			{ label: "Número de páginas", value: pagesNumber },
 			{ label: "Data de lançamento", value: formatDate(date) },
 			{ label: "Preço de capa", value: defaultPrice },

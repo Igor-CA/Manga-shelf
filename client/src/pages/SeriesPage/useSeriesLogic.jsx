@@ -49,7 +49,7 @@ export const useSeriesLogic = (id) => {
 
 	useEffect(() => {
 		if (series?.title) {
-			const newState = series.volumes.map((vol) => {
+			const newState = (series.volumes || []).map((vol) => {
 				const ownedInfo = getOwnedVolumeInfo(user, vol.volumeId);
 				return {
 					volumeId: vol.volumeId,
