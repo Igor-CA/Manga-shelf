@@ -27,19 +27,28 @@ export default function UserCardsList({
 	const hydratedPageRef = useRef(initial ? initial.page : null);
 	const lastProcessedKeyRef = useRef(cacheKey);
 
+	const loadingRef = useRef(false);
+	const requestedPageRef = useRef(initial ? initial.page : 0);
+	const generationRef = useRef(0);
+
 	const observer = useRef();
 	const lastUserElementRef = useCallback((node) => {
 		if (observer.current) observer.current.disconnect();
 		observer.current = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting) {
-				setPage((prevPage) => prevPage + 1);
-			}
+			if (!entries[0].isIntersecting) return;
+			if (loadingRef.current) return;
+			setPage((prevPage) =>
+				prevPage > requestedPageRef.current ? prevPage : prevPage + 1
+			);
 		});
 		if (node) observer.current.observe(node);
 	}, []);
 
 	const updatePage = async (targetPage, aditionalArguments) => {
-		if (!loading && !reachedEnd) {
+		if (!loadingRef.current && !reachedEnd) {
+			const generation = generationRef.current;
+			requestedPageRef.current = targetPage;
+			loadingRef.current = true;
 			setLoading(true);
 			try {
 				if (typeof fetchFunction !== "function") return;
@@ -47,6 +56,7 @@ export default function UserCardsList({
 					targetPage,
 					...aditionalArguments
 				);
+				if (generation !== generationRef.current) return;
 				if (resultList.length > 0) {
 					setUsersList((previousList) =>
 						targetPage === 1
@@ -67,7 +77,10 @@ export default function UserCardsList({
 			} catch (error) {
 				console.error("Error fetching user Data:", error);
 			} finally {
-				setLoading(false);
+				if (generation === generationRef.current) {
+					loadingRef.current = false;
+					setLoading(false);
+				}
 			}
 		}
 	};
@@ -80,6 +93,11 @@ export default function UserCardsList({
 		lastProcessedKeyRef.current = cacheKey;
 		cancelRestore();
 		hydratedPageRef.current = null;
+		
+		generationRef.current += 1;
+		loadingRef.current = false;
+		requestedPageRef.current = 0;
+
 		setPage(1);
 		setUsersList([]);
 		setReachedEnd(false);

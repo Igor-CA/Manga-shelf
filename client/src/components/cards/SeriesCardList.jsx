@@ -24,6 +24,10 @@ export default function SeriesCardList({
 	const observer = useRef();
 	const offsetRef = useRef(initial ? initial.offset : 0);
 
+	const loadingRef = useRef(false);
+	const requestedPageRef = useRef(initial ? initial.page : 0);
+	const generationRef = useRef(0);
+
 	// The page our state was seeded for, so the fetch effect below doesn't immediately
 	// re-fetch a page we already have. Compared by value (not consumed as a flag) so it stays
 	// correct across StrictMode's double-invoke.
@@ -34,15 +38,20 @@ export default function SeriesCardList({
 	const lastSeriesElementRef = useCallback((node) => {
 		if (observer.current) observer.current.disconnect();
 		observer.current = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting) {
-				setPage((prevPage) => prevPage + 1);
-			}
+			if (!entries[0].isIntersecting) return;
+			if (loadingRef.current) return;
+			setPage((prevPage) =>
+				prevPage > requestedPageRef.current ? prevPage : prevPage + 1,
+			);
 		});
 		if (node) observer.current.observe(node);
 	}, []);
 
 	const updatePage = async (targetPage, aditionalArguments) => {
-		if (!loading && !reachedEnd) {
+		if (!loadingRef.current && !reachedEnd) {
+			const generation = generationRef.current;
+			requestedPageRef.current = targetPage;
+			loadingRef.current = true;
 			setLoading(true);
 			try {
 				if (typeof fetchFunction !== "function") return;
@@ -54,6 +63,7 @@ export default function SeriesCardList({
 					modifiedArgs[0] = { ...modifiedArgs[0], offset: offsetRef.current };
 				}
 				const resultList = await fetchFunction(targetPage, ...modifiedArgs);
+				if (generation !== generationRef.current) return;
 				if (resultList.length > 0) {
 					setSeriesList((previousList) =>
 						targetPage === 1
@@ -74,7 +84,10 @@ export default function SeriesCardList({
 			} catch (error) {
 				console.error("Error fetching user Data:", error);
 			} finally {
-				setLoading(false);
+				if (generation === generationRef.current) {
+					loadingRef.current = false;
+					setLoading(false);
+				}
 			}
 		}
 	};
@@ -91,6 +104,11 @@ export default function SeriesCardList({
 		cancelRestore();
 		hydratedPageRef.current = null;
 		offsetRef.current = 0;
+
+		generationRef.current += 1;
+		loadingRef.current = false;
+		requestedPageRef.current = 0;
+
 		setPage(1);
 		setSeriesList([]);
 		setReachedEnd(false);
