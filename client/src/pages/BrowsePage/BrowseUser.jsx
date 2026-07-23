@@ -93,7 +93,7 @@ export default function BrowseUser() {
 				fetchFunction={fetchPage}
 				functionArguments={functionArguments}
 				errorComponent={ErrorComponent}
-				cacheKey={location.pathname + location.search}
+				cacheKey={`${location.pathname}?q=${query}`}
 			></UserCardsList>
 		</div>
 	);
