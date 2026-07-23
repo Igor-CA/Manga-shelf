@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 
-const isSelfRestoringPath = (pathname) =>
-	pathname === "/" || pathname.startsWith("/browse");
+const SELF_RESTORING_PATHS = ["/", "/browse", "/browse/user"];
+const isSelfRestoringPath = (pathname) => SELF_RESTORING_PATHS.includes(pathname);
 
 const ScrollToTop = () => {
 	const { pathname } = useLocation();

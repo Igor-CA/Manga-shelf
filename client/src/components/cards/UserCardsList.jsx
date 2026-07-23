@@ -2,18 +2,30 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import "./UserCard.css";
 import SkeletonUserCard from "./SkeletonUserCard";
 import UserCard from "./UserCard";
+import useListScrollRestoration from "../../utils/useListScrollRestoration";
 export default function UserCardsList({
 	skeletonsCount,
 	fetchFunction,
 	functionArguments,
 	errorComponent,
+	cacheKey,
 }) {
-	const [page, setPage] = useState(1);
+	// Restoration is opt-in: without a cacheKey this behaves exactly as it always has.
+	// Safe to use the cached (no-refetch) mode here because UserCard is a pure display card
+	// with no actions, so the viewer cannot make this listing stale.
+	const { initial, persist, cancelRestore } = useListScrollRestoration(cacheKey);
+
+	const [page, setPage] = useState(() => (initial ? initial.page : 1));
 	const [loading, setLoading] = useState(false);
-	const [reachedEnd, setReachedEnd] = useState(false);
-	const [usersList, setUsersList] = useState([]);
+	const [reachedEnd, setReachedEnd] = useState(() => (initial ? initial.reachedEnd : false));
+	const [usersList, setUsersList] = useState(() => (initial ? initial.items : []));
 	const [argsCopy, setArgsCopy] = useState(functionArguments || []);
 	const [showErrorComponent, setShowErrorComponent] = useState(false);
+
+	// The page our state was seeded for, so the fetch effect doesn't immediately re-fetch a
+	// page we already have. Compared by value, so it survives StrictMode's double-invoke.
+	const hydratedPageRef = useRef(initial ? initial.page : null);
+	const lastProcessedKeyRef = useRef(cacheKey);
 
 	const observer = useRef();
 	const lastUserElementRef = useCallback((node) => {
@@ -60,18 +72,29 @@ export default function UserCardsList({
 		}
 	};
 
+	// Reset on a filter/search change. The `cacheKey &&` matters: without a cacheKey both
+	// sides are undefined, the guard would always be true, and the reset would never run —
+	// silently breaking search, since argsCopy would never update.
 	useEffect(() => {
-		const resetPage = () => {
-			setPage(1);
-			setUsersList([]);
-			setReachedEnd(false);
-			setArgsCopy(functionArguments || []);
-		};
-		resetPage();
-	}, [functionArguments]);
+		if (cacheKey && lastProcessedKeyRef.current === cacheKey) return;
+		lastProcessedKeyRef.current = cacheKey;
+		cancelRestore();
+		hydratedPageRef.current = null;
+		setPage(1);
+		setUsersList([]);
+		setReachedEnd(false);
+		setArgsCopy(functionArguments || []);
+	}, [functionArguments, cacheKey, cancelRestore]);
+
 	useEffect(() => {
+		if (hydratedPageRef.current != null && page === hydratedPageRef.current) return;
 		updatePage(page, argsCopy);
 	}, [page, argsCopy]);
+
+	// Keep the stored snapshot current. Effect BODY, never a cleanup.
+	useEffect(() => {
+		persist({ items: usersList, page, reachedEnd });
+	}, [persist, usersList, page, reachedEnd]);
 
 	return (
 		<div className="users-container">

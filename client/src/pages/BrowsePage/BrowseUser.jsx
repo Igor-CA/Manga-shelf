@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import "./BrowsePage.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import debaunce from "../../utils/debaunce";
@@ -7,6 +7,7 @@ import UserCardsList from "../../components/cards/UserCardsList";
 import TogglePageButton from "../../components/customInputs/TogglePageButton";
 
 export default function BrowseUser() {
+	const location = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const initialSearch = searchParams.get("q") || "";
 
@@ -92,6 +93,7 @@ export default function BrowseUser() {
 				fetchFunction={fetchPage}
 				functionArguments={functionArguments}
 				errorComponent={ErrorComponent}
+				cacheKey={location.pathname + location.search}
 			></UserCardsList>
 		</div>
 	);
