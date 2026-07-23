@@ -3,7 +3,7 @@ import axios from "axios";
 import "./BrowsePage.css";
 import debaunce from "../../utils/debaunce";
 
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import SeriesCardList from "../../components/cards/SeriesCardList";
 import TogglePageButton from "../../components/customInputs/TogglePageButton";
 import { useContext } from "react";
@@ -16,6 +16,7 @@ import FilterControls from "../../components/FilterControls";
 export default function BrowsePage() {
 	const { user: loggedUser } = useContext(UserContext);
 	const personalRatingLabel = loggedUser ? "Sua nota" : null;
+	const location = useLocation();
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
 	}/api/data/series/filters`;
@@ -94,6 +95,7 @@ export default function BrowsePage() {
 				functionArguments={functionArguments}
 				errorComponent={ErrorComponent}
 				showActions={true}
+				cacheKey={location.pathname + location.search}
 			></SeriesCardList>
 		</div>
 	);
