@@ -22,6 +22,8 @@ const options = [
 	},
 ];
 
+const PAGE_SIZE = 10;
+
 const fetchNotifications = async (page, group) => {
 	try {
 		const response = await axios({
@@ -38,16 +40,15 @@ const fetchNotifications = async (page, group) => {
 				import.meta.env.REACT_APP_HOST_ORIGIN
 			}/api/data/user-notifications`,
 		});
-		const resultList = response.data;
-		return resultList;
+		return response.data;
 	} catch (error) {
 		console.error("Error fetching notifications:", error);
-		return [];
+		return null;
 	}
 };
 
 export default function NotificationsPage() {
-	const { user, isFetching } = useContext(UserContext);
+	const { user, isFetching, setOutdated } = useContext(UserContext);
 	const navigate = useNavigate();
 
 	const [sitePage, setSitePage] = useState(1);
@@ -58,13 +59,23 @@ export default function NotificationsPage() {
 	const [mediaNotifications, setMediaNotifications] = useState([]);
 	const [followersNotifications, setFollowersNotifications] = useState([]);
 
+	const [siteHasMore, setSiteHasMore] = useState(false);
+	const [mediaHasMore, setMediaHasMore] = useState(false);
+	const [followersHasMore, setFollowersHasMore] = useState(false);
+
+	const [allSeen, setAllSeen] = useState(false);
+
 	useEffect(() => {
 		const fetchFirstBatch = async () => {
 			const lists = await fetchNotifications();
+			if (!lists) return;
 
 			setSiteNotifications(lists.system || []);
 			setMediaNotifications(lists.media || []);
 			setFollowersNotifications(lists.social || []);
+			setSiteHasMore((lists.system || []).length === PAGE_SIZE);
+			setMediaHasMore((lists.media || []).length === PAGE_SIZE);
+			setFollowersHasMore((lists.social || []).length === PAGE_SIZE);
 			setSitePage(2);
 			setMediaPage(2);
 			setFollowersPage(2);
@@ -81,16 +92,37 @@ export default function NotificationsPage() {
 	const handleLoadMore = async (group) => {
 		if (group === "media") {
 			const list = await fetchNotifications(mediaPage, "media");
+			if (!list) return;
 			setMediaNotifications((prev) => [...prev, ...list]);
+			setMediaHasMore(list.length === PAGE_SIZE);
 			setMediaPage((prev) => prev + 1);
 		} else if (group === "social") {
 			const list = await fetchNotifications(followersPage, "social");
+			if (!list) return;
 			setFollowersNotifications((prev) => [...prev, ...list]);
+			setFollowersHasMore(list.length === PAGE_SIZE);
 			setFollowersPage((prev) => prev + 1);
 		} else if (group === "system") {
 			const list = await fetchNotifications(sitePage, "system");
+			if (!list) return;
 			setSiteNotifications((prev) => [...prev, ...list]);
+			setSiteHasMore(list.length === PAGE_SIZE);
 			setSitePage((prev) => prev + 1);
+		}
+	};
+
+	const handleMarkAllSeen = async () => {
+		setAllSeen(true);
+		try {
+			await axios({
+				method: "PUT",
+				withCredentials: true,
+				headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+				url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/mark-all-notifications-seen`,
+			});
+			setOutdated(true);
+		} catch (error) {
+			setAllSeen(false);
 		}
 	};
 
@@ -98,28 +130,43 @@ export default function NotificationsPage() {
 		<div className="container page-content notifications-page">
 			{user && (
 				<>
-					<SideNavbar title={"Notificações"} options={options} />
+					<SideNavbar title={"Notificações"} options={options}>
+						{user.notificationCount > 0 && (
+							<button
+								className="button"
+								onClick={handleMarkAllSeen}
+							>
+								Marcar todas como lidas
+							</button>
+						)}
+					</SideNavbar>
 					<div className="notifications-container">
 						{/* Group 1: Media (Series + Volumes) */}
 						<NotificationSection
 							id="media"
 							title={options[0].label}
 							list={mediaNotifications}
+							hasMore={mediaHasMore}
 							onLoadMore={() => handleLoadMore("media")}
+							allSeen={allSeen}
 						/>
 						{/* Group 2: Followers */}
 						<NotificationSection
 							id="social"
 							title={options[1].label}
 							list={followersNotifications}
+							hasMore={followersHasMore}
 							onLoadMore={() => handleLoadMore("social")}
+							allSeen={allSeen}
 						/>
 						{/* Group 3: Site Updates */}
 						<NotificationSection
 							id="system"
 							title={options[2].label}
 							list={siteNotifications}
+							hasMore={siteHasMore}
 							onLoadMore={() => handleLoadMore("system")}
+							allSeen={allSeen}
 						/>
 					</div>
 				</>
@@ -128,7 +175,7 @@ export default function NotificationsPage() {
 	);
 }
 
-const NotificationSection = ({ id, title, list, onLoadMore }) => (
+const NotificationSection = ({ id, title, list, hasMore, onLoadMore, allSeen }) => (
 	<div className="notifications-group">
 		<h2 className="notifications-group__title" id={id}>
 			{title}
@@ -138,20 +185,23 @@ const NotificationSection = ({ id, title, list, onLoadMore }) => (
 				<Notification
 					notification={notification}
 					key={notification._id || index}
+					allSeen={allSeen}
 				/>
 			))}
 		</ul>
 		{list.length === 0 ? (
 			<p className="notification-missing">Nenhuma notificação.</p>
 		) : (
-			<button className="button" onClick={onLoadMore}>
-				Mostrar mais
-			</button>
+			hasMore && (
+				<button className="button" onClick={onLoadMore}>
+					Mostrar mais
+				</button>
+			)
 		)}
 	</div>
 );
 
-function Notification({ notification }) {
+function Notification({ notification, allSeen }) {
 	const {
 		text,
 		imageUrl,
@@ -253,7 +303,9 @@ function Notification({ notification }) {
 					})}
 				</ul>
 			)}
-			{!seen && !seenState && <div className="notification-not-seen"></div>}
+			{!seen && !seenState && !allSeen && (
+				<div className="notification-not-seen"></div>
+			)}
 		</li>
 	);
 }

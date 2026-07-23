@@ -20,13 +20,21 @@ function othersPhrase(count) {
 }
 
 exports.setNotificationAsSeen = asyncHandler(async (req, res, next) => {
-	
+
 	const seenNotification = req.body.notification;
 	await User.findOneAndUpdate(
 		{ _id: req.user._id, "notifications._id": seenNotification },
 		{ $set: { "notifications.$.seen": true } },
 	);
 	res.send({ msg: "Notificação marcada como lida" });
+});
+
+exports.setAllNotificationsAsSeen = asyncHandler(async (req, res, next) => {
+	await User.updateOne(
+		{ _id: req.user._id },
+		{ $set: { "notifications.$[].seen": true } },
+	);
+	res.send({ msg: "Notificações marcadas como lidas" });
 });
 
 exports.getUserNotifications = asyncHandler(async (req, res, next) => {

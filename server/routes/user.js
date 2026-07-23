@@ -231,6 +231,11 @@ router.put(
 	validateRequest,
 	notificationsController.setNotificationAsSeen,
 );
+router.put(
+	"/mark-all-notifications-seen",
+	requireAuth,
+	notificationsController.setAllNotificationsAsSeen,
+);
 
 // Ratings
 router.post(

@@ -1,7 +1,7 @@
 import useActiveHeader from "../../utils/useActiveHeading";
 import "./NavBar.css";
 
-export default function SideNavbar({title, options}) {
+export default function SideNavbar({title, options, children}) {
 	const activeId = useActiveHeader();
 
 	const handleClick = (e, id) => {
@@ -46,6 +46,7 @@ export default function SideNavbar({title, options}) {
 					</ul>
 				</nav>
 			</section>
+			{children}
 		</aside>
 	);
 }

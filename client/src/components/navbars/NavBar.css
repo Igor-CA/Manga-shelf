@@ -67,12 +67,10 @@
 }
 
 .side-aside {
-	position: sticky;
 	top: 5rem;
 	display: grid;
 	align-self: start;
-	justify-self: end;
-	width: 15rem;
+	padding: 1.25rem 1.25rem 0 1.25rem;
 	flex: 0 0 15rem;
 }
 .side-navbar-container {
@@ -174,6 +172,13 @@
 	}
 	.navbar__link__count {
 		display: block;
+	}
+
+	.side-aside {
+		position: sticky;
+		padding: 0;
+		justify-self: end;
+		width: 15rem;
 	}
 
 	.side-navbar-container {
