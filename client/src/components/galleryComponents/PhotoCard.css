@@ -90,6 +90,7 @@
 
 .photo-card__content {
 	padding: 1rem;
+	color: var(--text);
 }
 
 .photo-card__description {
