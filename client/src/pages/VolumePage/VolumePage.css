@@ -1,6 +1,3 @@
-::-webkit-scrollbar {
-	display: none;
-}
 .volume {
 	position: relative;
 	background-color:  var(--background);

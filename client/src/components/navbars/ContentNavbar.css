@@ -1,7 +1,7 @@
 .content-navbar {
 	align-self: stretch;
 	background-color: var(--foreground);
-	overflow-x: scroll;
+	overflow-x: auto;
 }
 .content-navbar__list {
 	padding: 15px;
