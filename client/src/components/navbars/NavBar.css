@@ -73,6 +73,9 @@
 	padding: 1.25rem 1.25rem 0 1.25rem;
 	flex: 0 0 15rem;
 }
+.side-aside:not(:has(> :not(.side-navbar-container))) {
+	padding: 0;
+}
 .side-navbar-container {
 	display: none;
 	gap: 1rem;
