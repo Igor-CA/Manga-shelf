@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 export default function UserSubmissionsPage() {
 	const { username } = useParams();
@@ -98,34 +98,71 @@ function Submission({ submission }) {
 	}
 	return (
 		<li className="submission" onClick={() => markAsSeen(id)}>
-			<SubmissionImage
-				imageUrl={cover}
-				type={type}
-				objectType={targetModel}
-				associatedObject={targetId}
-			></SubmissionImage>
-			<div className="submission__content">
-				<div className="submission__content__inner">
-					<strong>
+			<div className="submission__header">
+				<SubmissionImage
+					imageUrl={cover}
+					type={type}
+					objectType={targetModel}
+					associatedObject={targetId}
+				></SubmissionImage>
+				<div className="submission__heading">
+					<strong className="submission__title">
 						{targetId.title || targetId.serie?.title}{" "}
 						{targetId.number ? `Volume ${targetId.number}` : ""}
 					</strong>
-					<div className={`submission__status ${statusStyle}`}>{status}</div>
-					{adminComment && (
-						<p>
-							<strong>Comentários do Mod:</strong> {adminComment}
-						</p>
-					)}
-				</div>
-				<div className="submission__date-container">
-					<time className="notification-date" dateTime={createdAt}>
-						{time}
-					</time>
+					<div className="submission__meta">
+						<span className={`submission__status ${statusStyle}`}>
+							{status}
+						</span>
+						<time className="submission__date" dateTime={createdAt}>
+							{time}
+						</time>
+					</div>
 				</div>
 			</div>
+			{adminComment && <ModComment text={adminComment} />}
 		</li>
 	);
 }
+function ModComment({ text }) {
+	const [expanded, setExpanded] = useState(false);
+	const [isOverflowing, setIsOverflowing] = useState(false);
+	const commentRef = useRef(null);
+
+	useLayoutEffect(() => {
+		const el = commentRef.current;
+		if (el) {
+			setIsOverflowing(el.scrollHeight > el.clientHeight);
+		}
+	}, [text]);
+
+	return (
+		<div className="submission__comment-wrapper">
+			<span className="submission__comment-label">Comentário do moderador</span>
+			<p
+				ref={commentRef}
+				className={`submission__comment${
+					expanded ? " submission__comment--expanded" : ""
+				}`}
+			>
+				{text}
+			</p>
+			{isOverflowing && (
+				<button
+					type="button"
+					className="submission__see-more"
+					onClick={(e) => {
+						e.stopPropagation();
+						setExpanded((prev) => !prev);
+					}}
+				>
+					{expanded ? "Ver menos" : "Ver mais"}
+				</button>
+			)}
+		</div>
+	);
+}
+
 const SubmissionImage = ({ imageUrl, objectType, associatedObject }) => {
 	const hostOrigin = import.meta.env.REACT_APP_HOST_ORIGIN;
 	const pictureSRC = `${hostOrigin}/images`;
