@@ -3,9 +3,12 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
 import PhotoCard from "../../components/galleryComponents/PhotoCard";
+import SkeletonPhotoCard from "../../components/galleryComponents/SkeletonPhotoCard";
 import PhotoLightbox from "../../components/galleryComponents/PhotoLightbox";
 import "./CollectionGallery.css";
 import PhotoUploadForm from "../../components/galleryComponents/PhotoUploadForm";
+
+const SKELETON_COUNT = 6;
 
 export default function CollectionGallery() {
 	const { username } = useParams();
@@ -84,7 +87,18 @@ export default function CollectionGallery() {
 	if (loading) {
 		return (
 			<div className="container">
-				<div className="loading-message">Carregando galeria...</div>
+				<div className="gallery-content">
+					<div className="gallery-date-group">
+						<div className="gallery-date-title--skeleton loader-animation"></div>
+						<div className="gallery-photos-grid">
+							{Array(SKELETON_COUNT)
+								.fill()
+								.map((_, id) => (
+									<SkeletonPhotoCard key={id} />
+								))}
+						</div>
+					</div>
+				</div>
 			</div>
 		);
 	}

@@ -1,15 +1,21 @@
 import axios from "axios";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import SkeletonSubmissionCard from "./SkeletonSubmissionCard";
+
+const SKELETON_COUNT = 6;
+
 export default function UserSubmissionsPage() {
 	const { username } = useParams();
 	const [submissions, setSubmissions] = useState();
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
 		fetchSubmissions();
-	}, []);
+	}, [username]);
 
 	const fetchSubmissions = async () => {
+		setLoading(true);
 		try {
 			const response = await axios.get(
 				`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/${username}/submission`,
@@ -21,12 +27,22 @@ export default function UserSubmissionsPage() {
 			setSubmissions(response.data);
 		} catch (error) {
 			console.error("Erro ao buscar submissões", error);
+		} finally {
+			setLoading(false);
 		}
 	};
 	return (
 		<div className="container">
 			<h2 className="submission-page__header">Suas submissões</h2>
-			{submissions && submissions.length > 0 ? (
+			{loading ? (
+				<ul className="submissions-container">
+					{Array(SKELETON_COUNT)
+						.fill()
+						.map((_, id) => (
+							<SkeletonSubmissionCard key={id} />
+						))}
+				</ul>
+			) : submissions && submissions.length > 0 ? (
 				<ul className="submissions-container">
 					{submissions.map((submission) => {
 						return (
@@ -49,7 +65,6 @@ export default function UserSubmissionsPage() {
 			)}
 		</div>
 	);
-	i;
 }
 
 function Submission({ submission }) {
@@ -97,7 +112,7 @@ function Submission({ submission }) {
 		statusStyle = "submission__status--pending";
 	}
 	return (
-		<li className="submission" onClick={() => markAsSeen(id)}>
+		<li className="submission">
 			<div className="submission__header">
 				<SubmissionImage
 					imageUrl={cover}
@@ -204,7 +219,7 @@ const SubmissionImage = ({ imageUrl, objectType, associatedObject }) => {
 								(max-width: 320px) 50vw`
 						: undefined
 				}
-				altalt={`submission picture`}
+				alt={`submission picture`}
 				className="submission-image"
 			/>
 		</Link>

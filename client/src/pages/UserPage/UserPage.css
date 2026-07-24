@@ -128,6 +128,14 @@
 	padding: 10px;
 	border-radius: 10px;
 }
+.stats-highlight--skeleton {
+	min-height: 4.5rem;
+	border-radius: 8px;
+}
+.chart-container__skeleton-box {
+	height: 340px;
+	border-radius: 8px;
+}
 .chart__title {
 	color: var(--accent);
 	font-weight: bold;
@@ -250,11 +258,24 @@
 	object-fit: cover;
 	object-position: center center;
 }
+.submission-image--skeleton {
+	aspect-ratio: 2/3;
+}
 .submission__heading {
 	display: flex;
 	flex-direction: column;
 	gap: 0.35rem;
 	min-width: 0;
+}
+.submission__title--skeleton {
+	width: 70%;
+	height: 1rem;
+	border-radius: 4px;
+}
+.submission__meta--skeleton {
+	width: 40%;
+	height: 0.85rem;
+	border-radius: 4px;
 }
 .submission__title {
 	color: var(--text);
