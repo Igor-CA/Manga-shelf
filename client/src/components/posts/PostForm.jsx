@@ -214,7 +214,7 @@ export default function PostForm({
 					<span>Imagem</span>
 					<input
 						type="file"
-						accept="image/jpeg,image/png,image/webp"
+						accept="image/jpeg,image/png,image/webp,image/gif"
 						onChange={handleImageChange}
 						className="post-form__image-input"
 					/>

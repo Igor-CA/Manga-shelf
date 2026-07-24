@@ -1,10 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
+const multer = require("multer");
 const upload = require("../middlewares/uploadMiddleware");
 
+const postImageUpload = multer({
+	storage: multer.memoryStorage(),
+	limits: { fileSize: 10 * 1024 * 1024 },
+	fileFilter: (req, file, cb) => {
+		const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+		if (allowedTypes.includes(file.mimetype)) {
+			cb(null, true);
+		} else {
+			cb(
+				new Error(
+					"Formato de arquivo inválido. Apenas JPG, PNG, WebP e GIF são permitidos.",
+				),
+				false,
+			);
+		}
+	},
+});
+
 const uploadImage = (req, res, next) => {
-	upload.single("image")(req, res, (err) => {
+	postImageUpload.single("image")(req, res, (err) => {
 		if (err) {
 			const msg =
 				err.code === "LIMIT_FILE_SIZE"

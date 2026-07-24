@@ -23,6 +23,35 @@ const {
 const POSTS_PER_PAGE = 20;
 const REPLIES_PER_PAGE = 5;
 
+const MAX_POST_IMAGE_FRAMES = 300;
+const MAX_POST_IMAGE_PIXELS = 100_000_000;
+
+class PostImageError extends Error {}
+
+async function processPostImage(buffer) {
+	let meta;
+	try {
+		meta = await sharp(buffer).metadata();
+	} catch (err) {
+		throw new PostImageError("Imagem inválida");
+	}
+
+	const frames = meta.pages || 1;
+	const pixels = meta.width * (meta.pageHeight || meta.height) * frames;
+	if (frames > MAX_POST_IMAGE_FRAMES || pixels > MAX_POST_IMAGE_PIXELS) {
+		throw new PostImageError("Imagem muito grande");
+	}
+
+	try {
+		return await sharp(buffer, { animated: true })
+			.rotate()
+			.webp({ quality: 80 })
+			.toBuffer();
+	} catch (err) {
+		throw new PostImageError("Imagem inválida");
+	}
+}
+
 
 const AUTHOR_PROJECTION = { username: 1, profileImageUrl: 1 };
 
@@ -235,12 +264,12 @@ exports.createPost = asyncHandler(async (req, res) => {
 	let processedImage = null;
 	if (req.file) {
 		try {
-			processedImage = await sharp(req.file.buffer)
-				.rotate()
-				.webp({ quality: 80 })
-				.toBuffer();
+			processedImage = await processPostImage(req.file.buffer);
 		} catch (err) {
-			return res.status(400).json({ msg: "Imagem inválida" });
+			if (err instanceof PostImageError) {
+				return res.status(400).json({ msg: err.message });
+			}
+			throw err;
 		}
 	}
 
@@ -380,12 +409,12 @@ exports.editPost = asyncHandler(async (req, res) => {
 	let processedImage = null;
 	if (req.file) {
 		try {
-			processedImage = await sharp(req.file.buffer)
-				.rotate()
-				.webp({ quality: 80 })
-				.toBuffer();
+			processedImage = await processPostImage(req.file.buffer);
 		} catch (err) {
-			return res.status(400).json({ msg: "Imagem inválida" });
+			if (err instanceof PostImageError) {
+				return res.status(400).json({ msg: err.message });
+			}
+			throw err;
 		}
 	}
 
