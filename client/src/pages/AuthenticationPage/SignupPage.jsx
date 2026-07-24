@@ -203,6 +203,10 @@ export default function SignupPage() {
 						Ao marcar esta aba você concorda com nossos{" "}
 						<Link to={"/tos"} className="autentication-form__link">
 							termos e condições
+						</Link>{" "}
+						e com nossa{" "}
+						<Link to={"/privacy"} className="autentication-form__link">
+							política de privacidade
 						</Link>
 					</label>
 					<button

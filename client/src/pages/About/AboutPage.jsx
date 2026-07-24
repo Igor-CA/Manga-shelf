@@ -29,10 +29,10 @@ export default function AboutPage() {
 						para muitas outras pessoas que compartilham dessa paixão.
 					</p>
 
-					<h2>Recursos Disponíveis na Versão Beta</h2>
+					<h2>Recursos Disponíveis</h2>
 					<p>
-						Embora ainda estejamos expandindo o Manga Shelf, a versão Beta já
-						conta com diversas funcionalidades:
+						O Manga Shelf continua crescendo, e hoje já conta com diversas
+						funcionalidades:
 					</p>
 					<ul>
 						<li>Criar uma conta pessoal</li>
@@ -48,6 +48,21 @@ export default function AboutPage() {
 							coleções
 						</li>
 						<li>
+							Avaliar obras e volumes com notas e escrever reviews para
+							compartilhar sua opinião
+						</li>
+						<li>
+							Comentar em obras e volumes, responder outros usuários, curtir e
+							mencionar pessoas nas conversas
+						</li>
+						<li>
+							Montar uma galeria com fotos da sua coleção física
+						</li>
+						<li>
+							Enviar correções e complementos para o catálogo (submissões), como
+							sinopses, autoria e outros dados
+						</li>
+						<li>
 							Consultar estatísticas sobre sua coleção, incluindo total de
 							volumes, distribuição por gênero, editora etc
 						</li>
@@ -59,8 +74,8 @@ export default function AboutPage() {
 						<li>Receber notificações sobre lançamentos de novos volumes</li>
 					</ul>
 					<p>
-						Estamos empolgados em disponibilizar essas funcionalidades para você
-						nesta fase inicial. Como é uma versão Beta, pode ser que você
+						Estamos empolgados em disponibilizar essas funcionalidades para você.
+						Como todo projeto em constante evolução, pode ser que você
 						encontre problemas ou erros pelo caminho. Caso isso aconteça,
 						pedimos que nos ajude, detalhando o problema na aba de{" "}
 						<Link to={"/feedback"}>feedback</Link>. Estaremos dedicados a
@@ -76,11 +91,12 @@ export default function AboutPage() {
 						próximas atualizações:
 					</p>
 					<ul>
-						<li>Perfis privados</li>
-						<li>Sistema de review de volumes e coleções</li>
 						<li>
-							Postagens: usuários poderão criar publicações e interagir entre si
+							Edições estrangeiras: cadastro das versões em outros idiomas (como
+							inglês e japonês) de uma obra, permitindo que os usuários adicionem
+							e completem essas edições com o tempo
 						</li>
+						<li>Perfis privados</li>
 						<li>
 							Alertas de preços: você será notificado quando um volume da sua
 							lista de faltantes atingir um desconto específico (ex: 30% de

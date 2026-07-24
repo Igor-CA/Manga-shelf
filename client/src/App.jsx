@@ -24,6 +24,7 @@ const DonatePage = lazy(() => import("./pages/Donate/DonatePage"));
 const AboutPage = lazy(() => import("./pages/About/AboutPage"));
 const NotFound = lazy(() => import("./pages/404Page/NotFound"));
 const ToSPage = lazy(() => import("./pages/Tos/ToSPage"));
+const PrivacyPage = lazy(() => import("./pages/Privacy/PrivacyPage"));
 const LogoutPage = lazy(() => import("./pages/AuthenticationPage/LogoutPage"));
 const UserNameModal = lazy(
 	() => import("./pages/AuthenticationPage/UserNameModal"),
@@ -73,6 +74,7 @@ function App() {
 						<Route path="/" element={<Home />}></Route>
 						<Route path="/signup" element={<SignupPage />}></Route>
 						<Route path="/tos" element={<ToSPage />}></Route>
+						<Route path="/privacy" element={<PrivacyPage />}></Route>
 						<Route path="/login" element={<LoginPage />}></Route>
 						<Route path="/logout" element={<LogoutPage />}></Route>
 						<Route path="/forgot" element={<ForgotPage />}></Route>
@@ -117,6 +119,8 @@ function App() {
 					)}
 					<Link to="/about">Sobre nós</Link>
 					<Link to="/donate">Apoie o projeto</Link>
+					<Link to="/tos">Termos de Serviço</Link>
+					<Link to="/privacy">Privacidade</Link>
 				</footer>
 				<MessageComponent></MessageComponent>
 			</BrowserRouter>

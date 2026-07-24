@@ -2,8 +2,10 @@ import {
 	faBook,
 	faChartLine,
 	faCheck,
+	faImages,
 	faList,
 	faMagnifyingGlass,
+	faStar,
 	faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,8 +24,8 @@ export default function Home() {
 					<h1>Bem vindo ao Manga Shelf!</h1>
 					<p className="home__main-description">
 						Chega de planilhas confusas e anotações perdidas! Organize sua
-						coleção de mangás de forma simples e eficiente com o Manga Shelf —
-						agora em versão beta.
+						coleção de mangás físicos de forma simples e eficiente com o Manga
+						Shelf.
 					</p>
 					<div className="home__features-container">
 						<div className="home__feature">
@@ -79,6 +81,18 @@ export default function Home() {
 						</div>
 						<div className="home__feature">
 							<div className="home__icon__container">
+								<FontAwesomeIcon className="home__icon" icon={faStar} />
+							</div>
+							<div>
+								<h2 className="feature__title">Avalie e comente:</h2>
+								<p className="feature__description">
+									Dê notas às suas obras e volumes, escreva reviews e troque
+									ideias com outros leitores nos comentários.
+								</p>
+							</div>
+						</div>
+						<div className="home__feature">
+							<div className="home__icon__container">
 								<FontAwesomeIcon
 									className="home__icon"
 									icon={faChartLine}
@@ -108,6 +122,18 @@ export default function Home() {
 									Siga outros usuários, acompanhe suas coleções e descubra o que
 									eles ainda não têm. Assim fica fácil escolher o presente
 									perfeito para aquele amigo fã de mangás!
+								</p>
+							</div>
+						</div>
+						<div className="home__feature">
+							<div className="home__icon__container">
+								<FontAwesomeIcon className="home__icon" icon={faImages} />
+							</div>
+							<div>
+								<h2 className="feature__title">Mostre sua coleção:</h2>
+								<p className="feature__description">
+									Monte uma galeria com fotos das suas estantes e compartilhe a
+									sua coleção física com outros colecionadores.
 								</p>
 							</div>
 						</div>
