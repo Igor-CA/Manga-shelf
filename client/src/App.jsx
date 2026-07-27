@@ -11,6 +11,7 @@ import NavBar from "./components/navbars/NavBar";
 import ScrollToTop from "./utils/ScrollToTop";
 import MessageComponent from "./contexts/MessageComponent";
 import RequireAuth from "./components/RequireAuth";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { consume } from "./utils/returnTo";
 import "./App.css";
 import AdultPageRedirect from "./pages/AdultPageRedirect/AdultPageRedirect";
@@ -91,73 +92,75 @@ function App() {
 				{user && user?.username === undefined && (
 					<UserNameModal>precisa setar nome</UserNameModal>
 				)}
-				<Suspense fallback={<LoadingPageComponent />}>
-					<Routes>
-						<Route path="/" element={<Home />}></Route>
-						<Route path="/signup" element={<SignupPage />}></Route>
-						<Route path="/tos" element={<ToSPage />}></Route>
-						<Route path="/privacy" element={<PrivacyPage />}></Route>
-						<Route path="/login" element={<LoginPage />}></Route>
-						<Route path="/logout" element={<LogoutPage />}></Route>
-						<Route path="/forgot" element={<ForgotPage />}></Route>
-						<Route
-							path="/reset/:userId/:token"
-							element={<ResetPasswordPage />}
-						></Route>
-						<Route path="/feedback" element={<ReportProblem />}></Route>
-						<Route path="/browse" element={<BrowsePage />}></Route>
-						<Route path="/browse/user" element={<BrowseUser />}></Route>
-						<Route path="/donate" element={<DonatePage />}></Route>
-						<Route path="/about" element={<AboutPage />}></Route>
-						<Route path="/series/:id/*" element={<SeriesPage />}></Route>
-						<Route path="/volume/:id/*" element={<VolumePage />}></Route>
-						<Route path="/user/:username/*" element={<UserPage />}></Route>
-						<Route
-							path="/settings"
-							element={
-								<RequireAuth>
-									<SettingsPage />
-								</RequireAuth>
-							}
-						></Route>
-						<Route
-							path="/notifications"
-							element={
-								<RequireAuth>
-									<NotificationsPage />
-								</RequireAuth>
-							}
-						></Route>
-						<Route path="/adult-block" element={<AdultPageRedirect />}></Route>
-						<Route
-							path="/submissions/series/:id"
-							element={
-								<RequireAuth>
-									<SeriesSubmissionPage />
-								</RequireAuth>
-							}
-						></Route>
-						<Route
-							path="/submissions/volume/:id"
-							element={
-								<RequireAuth>
-									<VolumeSubmissionPage />
-								</RequireAuth>
-							}
-						></Route>
-						<Route
-							path="/dashboard"
-							element={
-								<RequireAuth adminOnly>
-									<AdminDashboard />
-								</RequireAuth>
-							}
-						></Route>
-						<Route path="/post/:postId" element={<CommentThreadPage />}></Route>
+				<ErrorBoundary>
+					<Suspense fallback={<LoadingPageComponent />}>
+						<Routes>
+							<Route path="/" element={<Home />}></Route>
+							<Route path="/signup" element={<SignupPage />}></Route>
+							<Route path="/tos" element={<ToSPage />}></Route>
+							<Route path="/privacy" element={<PrivacyPage />}></Route>
+							<Route path="/login" element={<LoginPage />}></Route>
+							<Route path="/logout" element={<LogoutPage />}></Route>
+							<Route path="/forgot" element={<ForgotPage />}></Route>
+							<Route
+								path="/reset/:userId/:token"
+								element={<ResetPasswordPage />}
+							></Route>
+							<Route path="/feedback" element={<ReportProblem />}></Route>
+							<Route path="/browse" element={<BrowsePage />}></Route>
+							<Route path="/browse/user" element={<BrowseUser />}></Route>
+							<Route path="/donate" element={<DonatePage />}></Route>
+							<Route path="/about" element={<AboutPage />}></Route>
+							<Route path="/series/:id/*" element={<SeriesPage />}></Route>
+							<Route path="/volume/:id/*" element={<VolumePage />}></Route>
+							<Route path="/user/:username/*" element={<UserPage />}></Route>
+							<Route
+								path="/settings"
+								element={
+									<RequireAuth>
+										<SettingsPage />
+									</RequireAuth>
+								}
+							></Route>
+							<Route
+								path="/notifications"
+								element={
+									<RequireAuth>
+										<NotificationsPage />
+									</RequireAuth>
+								}
+							></Route>
+							<Route path="/adult-block" element={<AdultPageRedirect />}></Route>
+							<Route
+								path="/submissions/series/:id"
+								element={
+									<RequireAuth>
+										<SeriesSubmissionPage />
+									</RequireAuth>
+								}
+							></Route>
+							<Route
+								path="/submissions/volume/:id"
+								element={
+									<RequireAuth>
+										<VolumeSubmissionPage />
+									</RequireAuth>
+								}
+							></Route>
+							<Route
+								path="/dashboard"
+								element={
+									<RequireAuth adminOnly>
+										<AdminDashboard />
+									</RequireAuth>
+								}
+							></Route>
+							<Route path="/post/:postId" element={<CommentThreadPage />}></Route>
 
-						<Route path="*" element={<NotFound />}></Route>
-					</Routes>
-				</Suspense>
+							<Route path="*" element={<NotFound />}></Route>
+						</Routes>
+					</Suspense>
+				</ErrorBoundary>
 
 				<footer className="footer">
 					{user ? (
