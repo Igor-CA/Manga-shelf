@@ -1,9 +1,17 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import {
+	BrowserRouter,
+	Routes,
+	Route,
+	Link,
+	useNavigate,
+} from "react-router-dom";
 import { useContext, useEffect, lazy, Suspense } from "react";
 import { UserContext } from "./contexts/userProvider";
 import NavBar from "./components/navbars/NavBar";
 import ScrollToTop from "./utils/ScrollToTop";
 import MessageComponent from "./contexts/MessageComponent";
+import RequireAuth from "./components/RequireAuth";
+import { consume } from "./utils/returnTo";
 import "./App.css";
 import AdultPageRedirect from "./pages/AdultPageRedirect/AdultPageRedirect";
 
@@ -53,6 +61,19 @@ export const LoadingPageComponent = () => {
 	);
 };
 
+const AuthReturnConsumer = () => {
+	const { user } = useContext(UserContext);
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (!user) return;
+		const dest = consume();
+		if (dest) navigate(dest, { replace: true });
+	}, [user]);
+
+	return null;
+};
+
 function App() {
 	const { user } = useContext(UserContext);
 
@@ -66,6 +87,7 @@ function App() {
 			>
 				<NavBar></NavBar>
 				<ScrollToTop />
+				<AuthReturnConsumer />
 				{user && user?.username === undefined && (
 					<UserNameModal>precisa setar nome</UserNameModal>
 				)}
@@ -90,21 +112,47 @@ function App() {
 						<Route path="/series/:id/*" element={<SeriesPage />}></Route>
 						<Route path="/volume/:id/*" element={<VolumePage />}></Route>
 						<Route path="/user/:username/*" element={<UserPage />}></Route>
-						<Route path="/settings" element={<SettingsPage />}></Route>
+						<Route
+							path="/settings"
+							element={
+								<RequireAuth>
+									<SettingsPage />
+								</RequireAuth>
+							}
+						></Route>
 						<Route
 							path="/notifications"
-							element={<NotificationsPage />}
+							element={
+								<RequireAuth>
+									<NotificationsPage />
+								</RequireAuth>
+							}
 						></Route>
 						<Route path="/adult-block" element={<AdultPageRedirect />}></Route>
 						<Route
 							path="/submissions/series/:id"
-							element={<SeriesSubmissionPage />}
+							element={
+								<RequireAuth>
+									<SeriesSubmissionPage />
+								</RequireAuth>
+							}
 						></Route>
 						<Route
 							path="/submissions/volume/:id"
-							element={<VolumeSubmissionPage />}
+							element={
+								<RequireAuth>
+									<VolumeSubmissionPage />
+								</RequireAuth>
+							}
 						></Route>
-						<Route path="/dashboard" element={<AdminDashboard />}></Route>
+						<Route
+							path="/dashboard"
+							element={
+								<RequireAuth adminOnly>
+									<AdminDashboard />
+								</RequireAuth>
+							}
+						></Route>
 						<Route path="/post/:postId" element={<CommentThreadPage />}></Route>
 
 						<Route path="*" element={<NotFound />}></Route>

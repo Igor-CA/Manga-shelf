@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../contexts/userProvider";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import SideNavbar from "../../components/navbars/SideNavbar";
 import RichText from "../../components/RichText";
@@ -48,8 +48,7 @@ const fetchNotifications = async (page, group) => {
 };
 
 export default function NotificationsPage() {
-	const { user, isFetching, setOutdated } = useContext(UserContext);
-	const navigate = useNavigate();
+	const { user, setOutdated } = useContext(UserContext);
 
 	const [sitePage, setSitePage] = useState(1);
 	const [mediaPage, setMediaPage] = useState(1);
@@ -82,12 +81,6 @@ export default function NotificationsPage() {
 		};
 		fetchFirstBatch();
 	}, []);
-
-	useEffect(() => {
-		if (!isFetching && !user) {
-			navigate("/");
-		}
-	}, [isFetching, user, navigate]);
 
 	const handleLoadMore = async (group) => {
 		if (group === "media") {

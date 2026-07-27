@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import SideNavbar from "../../components/navbars/SideNavbar"; // Reusing your layout
 import "./AdminDashboard.css";
@@ -6,8 +6,6 @@ import "../Settings/Settings.css";
 import SubmissionCard from "./SubmissionCard";
 import ReportCard from "./ReportCard";
 import PatchNotesForm from "./PatchNotesForm";
-import { UserContext } from "../../contexts/userProvider";
-import { useNavigate } from "react-router-dom";
 
 const navbarOptions = [
 	{ label: "Submissões Pendentes", id: "pending" },
@@ -16,22 +14,15 @@ const navbarOptions = [
 ];
 
 export default function AdminDashboard() {
-	const navigate = useNavigate();
 	const [submissions, setSubmissions] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [reports, setReports] = useState([]);
 	const [reportsLoading, setReportsLoading] = useState(true);
-	const { user } = useContext(UserContext);
-
 
 	useEffect(() => {
-		if (!user || !user.isAdmin) {
-			navigate("/");
-			return
-		}
 		fetchSubmissions();
 		fetchReports();
-	}, [user, navigate]);
+	}, []);
 
 	const fetchSubmissions = async () => {
 		try {

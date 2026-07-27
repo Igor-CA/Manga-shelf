@@ -7,7 +7,6 @@ import { UserContext } from "../../contexts/userProvider";
 import axios from "axios";
 import { customWindowConfirm } from "../../utils/seriesDataFunctions";
 import PromptConfirm from "../../contexts/PromptConfirm";
-import { useNavigate } from "react-router-dom";
 import SideNavbar from "../../components/navbars/SideNavbar";
 import { messageContext } from "../../contexts/messageStateProvider";
 
@@ -26,14 +25,7 @@ const navbarOptions = [
 	},
 ];
 export default function SettingsPage() {
-	const { user, isFetching } = useContext(UserContext);
-	const navigate = useNavigate();
-
-	useEffect(() => {
-		if (!isFetching && !user) {
-			navigate("/login");
-		}
-	}, [isFetching, user, navigate]);
+	const { user } = useContext(UserContext);
 
 	return (
 		<div className="container page-content settings-page">
