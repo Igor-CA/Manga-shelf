@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, Tooltip, ResponsiveContainer, XAxis } from "recharts";
 const CustomTooltip = ({ active, payload, label, total }) => {
 	if (active && payload && payload.length) {
@@ -24,11 +25,25 @@ const CustomCursor = ({ x, y, width, height }) => {
 			height={height}
 			fill="#8881"
 			stroke="none"
+			pointerEvents="none"
 		/>
 	);
 };
 
-export default function BarChartComponent({ chartTitle, data, total }) {
+export default function BarChartComponent({
+	chartTitle,
+	data,
+	total,
+	filterParam,
+	basePath,
+}) {
+	const navigate = useNavigate();
+	const isClickable = Boolean(filterParam && basePath);
+	const goToFiltered = (entry) => {
+		const name = entry?.name;
+		if (!isClickable || !name) return;
+		navigate(`${basePath}?${new URLSearchParams({ [filterParam]: name })}`);
+	};
 	return (
 		<div className="chart-container chart-container--grow">
 			<div style={{ flexGrow: 1 }}>
@@ -42,6 +57,8 @@ export default function BarChartComponent({ chartTitle, data, total }) {
 									className="bar-chart__bar"
 									isAnimationActive={false}
 									radius={[5, 5, 0, 0]}
+									cursor={isClickable ? "pointer" : "default"}
+									onClick={goToFiltered}
 								></Bar>
 								<XAxis
 									dataKey="name"

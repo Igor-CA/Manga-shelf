@@ -33,6 +33,7 @@ export const useFilterHandler = (
 	const [genreList, setGenresList] = useState([]);
 	const [publishersList, setPublishersList] = useState([]);
 	const [typesList, setTypesList] = useState([]);
+	const [demographicsList, setDemographicsList] = useState([]);
 	const [originalYearList, setOriginalYearList] = useState([]);
 	const [localYearList, setLocalYearList] = useState([]);
 	const [countryList, setCountryList] = useState([]);
@@ -58,6 +59,7 @@ export const useFilterHandler = (
 				setGenresList(res.data.genres);
 				setPublishersList(res.data.publishers);
 				setTypesList(res.data.types);
+				setDemographicsList(res.data.demographics);
 				setOriginalYearList(res.data.originalPublishedYears);
 				setLocalYearList(res.data.publishedYears);
 				setCountryList(res.data.countries);
@@ -118,6 +120,7 @@ export const useFilterHandler = (
 		genreList,
 		publishersList,
 		typesList,
+		demographicsList,
 		localYearList,
 		countryList,
 		originalYearList,

@@ -21,6 +21,8 @@ export default function UserCollection() {
 		functionArguments,
 		genreList,
 		publishersList,
+		typesList,
+		demographicsList,
 		handleChange,
 		searchBarValue,
 	} = useFilterHandler(fetchFiltersUrl, true, {}, "title");
@@ -79,12 +81,14 @@ export default function UserCollection() {
 					"genre",
 					"publisher",
 					"status",
+					"demographic",
+					"type",
 					"ordering",
 					"ordering_percentage"
 				]}
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
-				lists={{ genreList, publishersList }}
+				lists={{ genreList, publishersList, typesList, demographicsList }}
 				personalRatingLabel={personalRatingLabel}
 			>
 				<div className="filter__checkbox-container">

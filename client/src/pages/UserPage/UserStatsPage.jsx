@@ -61,6 +61,8 @@ export default function UserStatsPage() {
 		);
 	}
 
+	const collectionPath = `/user/${username}`;
+
 	return (
 		<div className="container">
 			<div className="stats__container">
@@ -92,41 +94,57 @@ export default function UserStatsPage() {
 					chartTitle="Quantidade de coleções por gênero"
 					total={data.seriesCount}
 					data={data.genresBySeries}
+					filterParam="genre"
+					basePath={collectionPath}
 				></BarChartComponent>
 				<BarChartComponent
 					chartTitle="Quantidade de volumes por gênero"
 					total={data.volumesCount}
 					data={data.genresByVolume}
+					filterParam="genre"
+					basePath={collectionPath}
 				></BarChartComponent>
 				<PieChartComponent
 					chartTitle="Quantidade de coleções por editora"
 					total={data.seriesCount}
 					data={data.publisherBySeries}
+					filterParam="publisher"
+					basePath={collectionPath}
 				></PieChartComponent>
 				<PieChartComponent
 					chartTitle="Quantidade de volumes por editora"
 					total={data.volumesCount}
 					data={data.publisherByVolume}
+					filterParam="publisher"
+					basePath={collectionPath}
 				></PieChartComponent>
 				<PieChartComponent
 					chartTitle="Demografia das suas coleções"
 					total={data.seriesCount}
 					data={data.demographicsBySeries}
+					filterParam="demographic"
+					basePath={collectionPath}
 				></PieChartComponent>
 				<PieChartComponent
 					chartTitle="Demografia dos seus volumes"
 					total={data.volumesCount}
 					data={data.demographicsByVolume}
+					filterParam="demographic"
+					basePath={collectionPath}
 				></PieChartComponent>
 				<PieChartComponent
 					chartTitle="Tipo de publicação (por obra)"
 					total={data.seriesCount}
 					data={data.typeBySeries}
+					filterParam="type"
+					basePath={collectionPath}
 				></PieChartComponent>
 				<PieChartComponent
 					chartTitle="Tipo de publicação (por volume)"
 					total={data.volumesCount}
 					data={data.typeByVolume}
+					filterParam="type"
+					basePath={collectionPath}
 				></PieChartComponent>
 			</div>
 		</div>

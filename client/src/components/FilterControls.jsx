@@ -16,6 +16,7 @@ const FilterControls = ({
 		genreList,
 		publishersList,
 		typesList,
+		demographicsList,
 		countryList,
 		localYearList,
 		originalYearList,
@@ -101,6 +102,46 @@ const FilterControls = ({
 								<option value={"Em publicação"}>Em publicação no Brasil</option>
 								<option value={"Hiatus"}>Hiatus</option>
 								<option value={"Cancelado"}>Cancelado</option>
+							</select>
+						</label>
+					)}
+
+					{availableFilters.includes("demographic") && (
+						<label htmlFor="demographic" className="filter__label">
+							Demografia
+							<select
+								name="demographic"
+								id="demographic"
+								className="form__input filter__input"
+								onChange={handleChange}
+								value={values.demographic || ""}
+							>
+								<option value="">Selecionar</option>
+								{demographicsList?.map((demographic, id) => (
+									<option value={demographic} key={id}>
+										{demographic}
+									</option>
+								))}
+							</select>
+						</label>
+					)}
+
+					{availableFilters.includes("type") && (
+						<label htmlFor="type" className="filter__label">
+							Tipo
+							<select
+								name="type"
+								id="type"
+								className="form__input filter__input"
+								onChange={handleChange}
+								value={values.type || ""}
+							>
+								<option value="">Selecionar</option>
+								{typesList?.map((type, id) => (
+									<option value={type} key={id}>
+										{type}
+									</option>
+								))}
 							</select>
 						</label>
 					)}

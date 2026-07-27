@@ -106,11 +106,16 @@ const buildVolumeMyRatingLookupStages = (ownerId, volumeIdExpr) => [
 
 //Filters for building search pipeline
 
-const buildFilter = ({ publisher, genre, status, search }, field) => {
+const buildFilter = (
+	{ publisher, genre, status, search, demographic, type },
+	field
+) => {
 	const filter = {};
 	if (genre) filter[`${field}.genres`] = { $in: [genre] };
 	if (publisher) filter[`${field}.publisher`] = publisher;
 	if (status) filter[`${field}.status`] = status;
+	if (demographic) filter[`${field}.demographic`] = demographic;
+	if (type) filter[`${field}.type`] = type;
 	if (search) {
 		const searchRegex = { $regex: escapeRegex(search), $options: "i" };
 		const titleField = `${field}.title`;
@@ -969,6 +974,24 @@ exports.getUserFilters = asyncHandler(async (req, res, next) => {
 						},
 					},
 				],
+				types: [
+					{ $match: { "series.type": { $ne: null, $nin: [""] } } },
+					{
+						$group: {
+							_id: null,
+							types: { $addToSet: "$series.type" },
+						},
+					},
+				],
+				demographics: [
+					{ $match: { "series.demographic": { $ne: null, $nin: [""] } } },
+					{
+						$group: {
+							_id: null,
+							demographics: { $addToSet: "$series.demographic" },
+						},
+					},
+				],
 				publishers: [
 					{ $match: { "series.publisher": { $ne: null, $nin: [""] } } },
 					{
@@ -1006,11 +1029,37 @@ exports.getUserFilters = asyncHandler(async (req, res, next) => {
 						[],
 					],
 				},
+				types: {
+					$cond: [
+						{ $gt: [{ $size: "$types" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$types.types", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
+				demographics: {
+					$cond: [
+						{ $gt: [{ $size: "$demographics" }, 0] },
+						{
+							$sortArray: {
+								input: { $arrayElemAt: ["$demographics.demographics", 0] },
+								sortBy: 1,
+							},
+						},
+						[],
+					],
+				},
 			},
 		},
 	]);
 
-	return res.send(result[0] || { genres: [], publishers: [] });
+	return res.send(
+		result[0] || { genres: [], publishers: [], types: [], demographics: [] }
+	);
 });
 
 exports.getUserReadList = asyncHandler(async (req, res, next) => {
