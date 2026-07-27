@@ -88,7 +88,6 @@ export default function ContentHeader({
 						<ActionDropdown
 							mainAction={actions.mainAction}
 							options={actions.dropdownOptions}
-							isDisabled={actions.isDisabled}
 							sideSlot={ratingButton}
 						/>
 					</div>

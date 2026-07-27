@@ -109,7 +109,7 @@ export default function VolumeHeader({ volumeData, rating }) {
 			genres={volumeData?.serie?.genres}
 			isAdult={volumeData?.serie?.isAdult}
 			summary={volumeData?.summary}
-			actions={{ mainAction, dropdownOptions, isDisabled: !user }}
+			actions={{ mainAction, dropdownOptions }}
 			navLinks={navLinks}
 			ratingWidget={
 				volumeData?.serie?._id ? (

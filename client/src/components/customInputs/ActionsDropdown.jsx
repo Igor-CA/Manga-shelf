@@ -5,7 +5,6 @@ import "./actionsDropdown.css"
 export default function ActionDropdown({
 	mainAction,
 	options = [],
-	isDisabled = false,
 	sideSlot = null,
 }) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +31,7 @@ export default function ActionDropdown({
 					>
 						<strong
 							className="button-select__option"
-							onClick={() => !isDisabled && mainAction.onClick()}
+							onClick={() => mainAction.onClick()}
 						>
 							{mainAction.label}
 						</strong>
@@ -59,7 +58,6 @@ export default function ActionDropdown({
 							<input
 								type="checkbox"
 								className="checkmark invisible"
-								disabled={isDisabled}
 								checked={option.checked}
 								onChange={(e) => {
 									option.onChange(e.target.checked);
