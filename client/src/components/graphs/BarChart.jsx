@@ -39,8 +39,8 @@ export default function BarChartComponent({
 }) {
 	const navigate = useNavigate();
 	const isClickable = Boolean(filterParam && basePath);
-	const goToFiltered = (entry) => {
-		const name = entry?.name;
+	const goToFiltered = (chartState) => {
+		const name = chartState?.activeLabel;
 		if (!isClickable || !name) return;
 		navigate(`${basePath}?${new URLSearchParams({ [filterParam]: name })}`);
 	};
@@ -51,14 +51,16 @@ export default function BarChartComponent({
 				<div className="pie-chart_container">
 					{data.length > 0 ? (
 						<ResponsiveContainer width="100%" height="100%">
-							<BarChart data={data}>
+							<BarChart
+								data={data}
+								onClick={goToFiltered}
+								style={{ cursor: isClickable ? "pointer" : "default" }}
+							>
 								<Bar
 									dataKey="count"
 									className="bar-chart__bar"
 									isAnimationActive={false}
 									radius={[5, 5, 0, 0]}
-									cursor={isClickable ? "pointer" : "default"}
-									onClick={goToFiltered}
 								></Bar>
 								<XAxis
 									dataKey="name"
