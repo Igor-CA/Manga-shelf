@@ -1,6 +1,7 @@
 const { spawn } = require("child_process");
 const path = require("path");
 const logger = require("../Utils/logger");
+const { success } = require("./jobResult");
 
 const MONGO_URI = process.env.MONGODB_URI || "DBURL";
 const DB_NAME = process.env.MONGODB_NAME || "dev";
@@ -41,7 +42,7 @@ function backupDatabase() {
 				logger.info(
 					`Backup completed successfully. Path: ${backupPath}`
 				);
-				resolve();
+				resolve(success());
 			} else {
 				logger.error(`mongodump process exited with code ${code}`);
 				reject(new Error(`mongodump process exited with code ${code}`));

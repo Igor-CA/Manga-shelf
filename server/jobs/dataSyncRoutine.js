@@ -10,6 +10,7 @@ const {
 const logger = require("../Utils/logger");
 const volume = require("../models/volume");
 const { escapeRegex } = require("../Utils/escapeRegex");
+const { success } = require("./jobResult");
 
 const INTERNAL_RELATIONS = ["Outra Edição", "Mesmo Autor(a)"];
 const FRANCHISE_LINKS = [
@@ -129,6 +130,7 @@ async function syncAndRecalculateData() {
 	await recalculateUserListInfo();
 	await updateSeriesPopularity();
 	await recalculateRatings();
+	return success();
 }
 
 async function updateSeriesRelations() {

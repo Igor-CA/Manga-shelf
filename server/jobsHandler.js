@@ -9,6 +9,8 @@ const {
 const {
 	dispatchReplyDigests,
 } = require("./jobs/replyDigestDispatcher");
+const { runJob } = require("./jobs/jobRunner");
+const { runSupervisor } = require("./jobs/jobSupervisor");
 const APP_TIMEZONE = "America/Sao_Paulo";
 
 function startScheduledJobs() {
@@ -18,11 +20,12 @@ function startScheduledJobs() {
 		"0 5 * * *",
 		async () => {
 			logger.info("CRON: Triggering dayly database backup...");
-			try {
-				await backupDatabase();
-			} catch (error) {
-				logger.error("CRON: Database backup task failed.", error);
-			}
+			await runJob({
+				name: "backupDatabase",
+				fn: backupDatabase,
+				backoffMinutes: [60, 120],
+				leaseMinutes: 120,
+			});
 		},
 		{ timezone: APP_TIMEZONE },
 	);
@@ -31,11 +34,12 @@ function startScheduledJobs() {
 		"0 3 * * *",
 		async () => {
 			logger.info("CRON: Triggering daily data maintenance routine...");
-			try {
-				await syncAndRecalculateData();
-			} catch (error) {
-				logger.error("CRON: Data maintenance routine failed.", error);
-			}
+			await runJob({
+				name: "syncAndRecalculateData",
+				fn: syncAndRecalculateData,
+				backoffMinutes: [60, 120],
+				leaseMinutes: 180,
+			});
 		},
 		{ timezone: APP_TIMEZONE },
 	);
@@ -44,14 +48,12 @@ function startScheduledJobs() {
 		"0 9 * * 1",
 		async () => {
 			logger.info("CRON: Triggering Weekly Volumes notification routine...");
-			try {
-				await dispatchWeeklyVolumes();
-			} catch (error) {
-				logger.error(
-					"CRON: Weekly Volumes notification routine failed.",
-					error,
-				);
-			}
+			await runJob({
+				name: "weeklyVolumes",
+				fn: dispatchWeeklyVolumes,
+				backoffMinutes: [60, 120, 240],
+				leaseMinutes: 30,
+			});
 		},
 		{ timezone: APP_TIMEZONE },
 	);
@@ -60,11 +62,12 @@ function startScheduledJobs() {
 		"*/30 * * * *",
 		async () => {
 			logger.info("CRON: Triggering pending notifications dispatcher...");
-			try {
-				await dispatchPendingNotifications();
-			} catch (error) {
-				logger.error("CRON: pending notification routine failed.", error);
-			}
+			await runJob({
+				name: "pendingNotifications",
+				fn: dispatchPendingNotifications,
+				backoffMinutes: [15, 30],
+				leaseMinutes: 15,
+			});
 		},
 		{ timezone: APP_TIMEZONE },
 	);
@@ -73,14 +76,24 @@ function startScheduledJobs() {
 		"*/2 * * * *",
 		async () => {
 			logger.info("CRON: Triggering reply digest dispatcher...");
-			try {
-				await dispatchReplyDigests();
-			} catch (error) {
-				logger.error("CRON: reply digest dispatcher failed.", error);
-			}
+			await runJob({
+				name: "replyDigests",
+				fn: dispatchReplyDigests,
+				backoffMinutes: [5, 10],
+				leaseMinutes: 5,
+			});
 		},
 		{ timezone: APP_TIMEZONE },
 	);
+
+	cron.schedule(
+		"*/10 * * * *",
+		async () => {
+			await runSupervisor();
+		},
+		{ timezone: APP_TIMEZONE },
+	);
+
 	logger.info("All background jobs have been scheduled.");
 }
 

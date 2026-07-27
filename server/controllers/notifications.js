@@ -678,31 +678,93 @@ async function sendNotification(notification, targetUserId, dataList) {
 		notification.group,
 	);
 
-	if (allowEmail) {
-		if (notification.eventKey === "new_volume") {
-			await sendEmailNotification(notification, targetUserId, dataList);
-		} else {
-			await sendEmailNotification(notification, targetUserId);
-		}
-	}
+	const result = {
+		site: {
+			status: allowSite ? "pending" : "disabled",
+			deliveredNotificationIds: [],
+		},
+		email: { status: allowEmail ? "pending" : "disabled" },
+		error: null,
+	};
+
 	if (allowSite) {
-		if (
-			dataList &&
-			dataList.length > 0 &&
-			notification.eventKey === "new_volume"
-		) {
-			for (const item of dataList) {
-				await sendSiteNotification(
-					item.notificationId || notification._id,
-					targetUserId,
-				);
+		try {
+			if (
+				dataList &&
+				dataList.length > 0 &&
+				notification.eventKey === "new_volume"
+			) {
+				for (const item of dataList) {
+					const notificationId = item.notificationId || notification._id;
+					if (!item.siteAlreadySent) {
+						await sendSiteNotification(notificationId, targetUserId);
+					}
+					result.site.deliveredNotificationIds.push(notificationId);
+				}
+			} else {
+				await sendSiteNotification(notification._id, targetUserId);
+				result.site.deliveredNotificationIds.push(notification._id);
 			}
-		} else {
-			await sendSiteNotification(notification._id, targetUserId);
+			result.site.status = "sent";
+		} catch (err) {
+			logger.error("Failed to deliver site notification:", err.message);
+			result.site.status = "failed";
+			result.error = err;
 		}
 	}
 
-	return notification;
+	if (allowEmail) {
+		try {
+			if (notification.eventKey === "new_volume") {
+				await sendEmailNotification(notification, targetUserId, dataList);
+			} else {
+				await sendEmailNotification(notification, targetUserId);
+			}
+			result.email.status = "sent";
+		} catch (err) {
+			logger.error("Failed to deliver email notification:", err.message);
+			result.email.status = "failed";
+			if (!result.error) result.error = err;
+		}
+	}
+
+	return result;
+}
+
+async function markDeliveryStatus(statuses, result) {
+	const statusIds = statuses.map((s) => s._id);
+
+	if (result.site.status === "sent") {
+		const deliveredIds = result.site.deliveredNotificationIds.map((id) =>
+			id.toString(),
+		);
+		const matchedIds = statuses
+			.filter((s) => deliveredIds.includes(s.notification._id.toString()))
+			.map((s) => s._id);
+		if (matchedIds.length > 0) {
+			await UserNotificationStatus.updateMany(
+				{ _id: { $in: matchedIds }, siteStatus: "pending" },
+				{ $set: { siteStatus: "sent" } },
+			);
+		}
+	} else if (result.site.status === "disabled") {
+		await UserNotificationStatus.updateMany(
+			{ _id: { $in: statusIds }, siteStatus: "pending" },
+			{ $set: { siteStatus: "disabled" } },
+		);
+	}
+
+	if (result.email.status === "sent") {
+		await UserNotificationStatus.updateMany(
+			{ _id: { $in: statusIds }, emailStatus: "pending" },
+			{ $set: { emailStatus: "sent" } },
+		);
+	} else if (result.email.status === "disabled") {
+		await UserNotificationStatus.updateMany(
+			{ _id: { $in: statusIds }, emailStatus: "pending" },
+			{ $set: { emailStatus: "disabled" } },
+		);
+	}
 }
 
 exports.processPendingNotifications = async (
@@ -723,7 +785,7 @@ exports.processPendingNotifications = async (
 		.populate("user");
 
 	const validPending = pending.filter((s) => s.notification);
-	if (validPending.length === 0) return;
+	if (validPending.length === 0) return 0;
 
 	const userGroups = validPending.reduce((acc, status) => {
 		const userId = status.user._id.toString();
@@ -732,29 +794,43 @@ exports.processPendingNotifications = async (
 		return acc;
 	}, {});
 
+	let failedCount = 0;
+
 	for (const userId in userGroups) {
 		const statuses = userGroups[userId];
 		const user = statuses[0].user;
 
-		if (isBatch) {
-			const dataList = statuses.map((s) => s.notification.associatedObject);
-			await sendNotification(statuses[0].notification, user._id, dataList);
-		} else {
-			for (const status of statuses) {
-				await sendNotification(status.notification, user._id);
+		try {
+			if (isBatch) {
+				const dataList = statuses.map((s) => s.notification.associatedObject);
+				const result = await sendNotification(
+					statuses[0].notification,
+					user._id,
+					dataList,
+				);
+				await markDeliveryStatus(statuses, result);
+				if (result.site.status === "failed" || result.email.status === "failed") {
+					failedCount++;
+				}
+			} else {
+				for (const status of statuses) {
+					const result = await sendNotification(status.notification, user._id);
+					await markDeliveryStatus([status], result);
+					if (result.site.status === "failed" || result.email.status === "failed") {
+						failedCount++;
+					}
+				}
 			}
+		} catch (err) {
+			failedCount++;
+			logger.error(
+				`Pending notification dispatch failed for user ${user.username}:`,
+				err.message,
+			);
 		}
-
-		const statusIds = statuses.map((s) => s._id);
-		await UserNotificationStatus.updateMany(
-			{ _id: { $in: statusIds }, emailStatus: "pending" },
-			{ $set: { emailStatus: "sent" } },
-		);
-		await UserNotificationStatus.updateMany(
-			{ _id: { $in: statusIds }, siteStatus: "pending" },
-			{ $set: { siteStatus: "sent" } },
-		);
 	}
+
+	return failedCount;
 };
 
 exports.createDeletionNotification = async (
@@ -806,4 +882,5 @@ exports.notifyDeletion = async (session, users, itemData, type, reason) => {
 };
 exports.sendEmailNotification = sendEmailNotification;
 exports.sendSiteNotification = sendSiteNotification;
-exports.sendNotification = sendNotification
+exports.sendNotification = sendNotification;
+exports.markDeliveryStatus = markDeliveryStatus;
