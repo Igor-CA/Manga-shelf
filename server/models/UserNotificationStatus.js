@@ -26,6 +26,17 @@ const UserNotificationStatus = new Schema(
 UserNotificationStatus.index({ user: 1, siteStatus: 1 });
 UserNotificationStatus.index({ user: 1, emailStatus: 1 });
 
+UserNotificationStatus.index(
+	{ updatedAt: 1 },
+	{
+		expireAfterSeconds: 30 * 24 * 60 * 60,
+		partialFilterExpression: {
+			siteStatus: { $in: ["sent", "disabled"] },
+			emailStatus: { $in: ["sent", "disabled"] },
+		},
+	},
+);
+
 module.exports = mongoose.model(
 	"UserNotificationStatus",
 	UserNotificationStatus
