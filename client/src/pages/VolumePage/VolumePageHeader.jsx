@@ -8,6 +8,7 @@ import { messageContext } from "../../contexts/messageStateProvider";
 import ContentHeader from "../../components/contentHeader/contentHeader";
 import RatingWidget from "../../components/contentHeader/RatingWidget";
 import RateButton from "../../components/contentHeader/RateButton";
+import { useAuthGate } from "../../utils/useAuthGate";
 
 export default function VolumeHeader({ volumeData, rating }) {
 	const { id } = useParams();
@@ -15,6 +16,7 @@ export default function VolumeHeader({ volumeData, rating }) {
 	const { openEditModal } = useEditVolume();
 	const { addMessage } = useContext(messageContext);
 	const { user, setOutdated } = useContext(UserContext);
+	const ensureLogged = useAuthGate();
 
 	const checkOwnedVolume = () => {
 		return user?.ownedVolumes
@@ -65,15 +67,16 @@ export default function VolumeHeader({ volumeData, rating }) {
 		{
 			label: "Editar informações do seu volume",
 			checked: true,
-			onChange: () => {
-				const ownedVolumeData = getOwnedVolumeInfo(user, id);
-				if (ownedVolumeData) {
-					ownedVolumeData._id = id;
-					openEditModal(ownedVolumeData);
-				} else {
-					addMessage("Precisa adicionar esse volume primeiro");
-				}
-			},
+			onChange: () =>
+				ensureLogged("editar informações do seu volume", () => {
+					const ownedVolumeData = getOwnedVolumeInfo(user, id);
+					if (ownedVolumeData) {
+						ownedVolumeData._id = id;
+						openEditModal(ownedVolumeData);
+					} else {
+						addMessage("Precisa adicionar esse volume primeiro");
+					}
+				}),
 		},
 	];
 	const navLinks = useMemo(
@@ -86,7 +89,11 @@ export default function VolumeHeader({ volumeData, rating }) {
 	const mainAction = {
 		label: checkOwnedVolume() ? "Remover volume" : "Adicionar Volume",
 		isRed: user && checkOwnedVolume(),
-		onClick: handleChange,
+		onClick: () =>
+			ensureLogged(
+				checkOwnedVolume() ? "remover esse volume" : "adicionar esse volume",
+				handleChange,
+			),
 	};
 
 	return (

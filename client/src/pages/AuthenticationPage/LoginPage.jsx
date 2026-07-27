@@ -1,12 +1,12 @@
 import { useContext, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import "./Authentication.css";
 import { messageContext } from "../../contexts/messageStateProvider";
+import { consume } from "../../utils/returnTo";
 
 export default function LoginPage() {
-	const navigate = useNavigate();
 	const [formData, setFormData] = useState({ login: "", password: "" });
 	const { addMessage } = useContext(messageContext);
 	const [captchaVal, setCaptchaVal] = useState(null);
@@ -42,8 +42,7 @@ export default function LoginPage() {
 					import.meta.env.REACT_APP_HOST_ORIGIN
 				}/api/data/user/logged-user`,
 			});
-			navigate(`/user/${userFetch.data.username}`);
-			window.location.reload(true);
+			window.location.href = consume() || `/user/${userFetch.data.username}`;
 		} catch (error) {
 			const customErrorMessage =
 				error.response?.data?.msg || "Erro de conexão. Tente novamente.";

@@ -1,11 +1,12 @@
 import { useState, useContext, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import RichText from "../RichText";
 import PostReplies from "./PostReplies";
 import PostForm from "./PostForm";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
+import { useAuthGate } from "../../utils/useAuthGate";
 import "./PostCard.css";
 import {
 	FaTrash,
@@ -43,7 +44,7 @@ export default function PostCard({
 }) {
 	const { user } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
-	const navigate = useNavigate();
+	const ensureLogged = useAuthGate();
 	const cardRef = useRef(null);
 	const isHighlighted = !!highlightId && post._id === highlightId;
 
@@ -164,11 +165,14 @@ export default function PostCard({
 			: `${import.meta.env.REACT_APP_HOST_ORIGIN}${bustedImage}`
 		: null;
 
-	const handleLike = async () => {
-		if (!user) {
-			navigate("/login");
-			return;
-		}
+	const handleLike = () => {
+		ensureLogged(
+			likedByViewer ? "descurtir esse comentário" : "curtir esse comentário",
+			performLike,
+		);
+	};
+
+	const performLike = async () => {
 		if (liking) return;
 
 		const wasLiked = likedByViewer;

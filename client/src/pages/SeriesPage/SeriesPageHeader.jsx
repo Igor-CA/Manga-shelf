@@ -8,9 +8,11 @@ import {
 import ContentHeader from "../../components/contentHeader/contentHeader";
 import RatingWidget from "../../components/contentHeader/RatingWidget";
 import RateButton from "../../components/contentHeader/RateButton";
+import { useAuthGate } from "../../utils/useAuthGate";
 
 export default function SeriesPageHeader({ seriesInfo, actions, rating }) {
 	const { user } = useContext(UserContext);
+	const ensureLogged = useAuthGate();
 	const {
 		handleSelectAllVolumes,
 		toggleSeriesInList,
@@ -37,7 +39,13 @@ export default function SeriesPageHeader({ seriesInfo, actions, rating }) {
 	const mainAction = {
 		label: !isSeriesInUserList ? "Adicionar coleção" : "Remover coleção",
 		isRed: isSeriesInUserList,
-		onClick: () => toggleSeriesInList(!isSeriesInUserList),
+		onClick: () =>
+			ensureLogged(
+				isSeriesInUserList
+					? "remover essa obra da coleção"
+					: "adicionar essa obra à coleção",
+				() => toggleSeriesInList(!isSeriesInUserList),
+			),
 	};
 
 	const dropdownOptions = [
@@ -47,7 +55,11 @@ export default function SeriesPageHeader({ seriesInfo, actions, rating }) {
 					? "Remover todos os volumes"
 					: "Adicionar todos os volumes",
 			checked: user && getCompletionPercentage(user, id) === 1,
-			onChange: handleSelectAllVolumes,
+			onChange: (checked) =>
+				ensureLogged(
+					checked ? "adicionar todos os volumes" : "remover todos os volumes",
+					() => handleSelectAllVolumes(checked),
+				),
 		},
 		{
 			label:
@@ -55,7 +67,13 @@ export default function SeriesPageHeader({ seriesInfo, actions, rating }) {
 					? "Remover da lista de desejos"
 					: "Adicionar à lista de desejos",
 			checked: user && checkIfInWishlist(user, id),
-			onChange: toggleWishlist,
+			onChange: (checked) =>
+				ensureLogged(
+					checked
+						? "adicionar essa obra à lista de desejos"
+						: "remover essa obra da lista de desejos",
+					() => toggleWishlist(checked),
+				),
 		},
 		{
 			label:
@@ -63,7 +81,13 @@ export default function SeriesPageHeader({ seriesInfo, actions, rating }) {
 					? "Voltar a colecionar"
 					: "Abandonar (droppar) coleção",
 			checked: user && getSeriesStatus(user, id) === "Dropped",
-			onChange: toggleDrop,
+			onChange: (checked) =>
+				ensureLogged(
+					checked
+						? "abandonar essa coleção"
+						: "voltar a colecionar essa obra",
+					() => toggleDrop(checked),
+				),
 		},
 	];
 
@@ -89,7 +113,7 @@ export default function SeriesPageHeader({ seriesInfo, actions, rating }) {
 			genres={genres}
 			isAdult={isAdult}
 			summary={summary}
-			actions={{ mainAction, dropdownOptions, isDisabled: !user }}
+			actions={{ mainAction, dropdownOptions }}
 			navLinks={navLinks}
 			ratingWidget={
 				id ? (

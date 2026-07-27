@@ -1,5 +1,3 @@
-import { useContext } from "react";
-import { UserContext } from "../../contexts/userProvider";
 import VolumeItem from "./VolumeItem";
 
 export default function SeriesVolumesList({
@@ -9,7 +7,6 @@ export default function SeriesVolumesList({
 	handleReadToggle,
 	dense = true,
 }) {
-	const { user } = useContext(UserContext);
 	const normalVolumes = volumes.filter((volume) => !volume.isVariant);
 	const variants = volumes.filter((volume) => volume.isVariant);
 	return (
@@ -26,7 +23,6 @@ export default function SeriesVolumesList({
 							localVolumeState={localVolumesList}
 							handleChange={handleChange}
 							handleReadToggle={handleReadToggle}
-							user={user}
 						/>
 					</li>
 				))}
@@ -47,7 +43,6 @@ export default function SeriesVolumesList({
 									localVolumeState={localVolumesList}
 									handleChange={handleChange}
 									handleReadToggle={handleReadToggle}
-									user={user}
 								/>
 							</li>
 						))}

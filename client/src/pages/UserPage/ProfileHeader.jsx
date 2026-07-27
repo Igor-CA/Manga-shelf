@@ -1,17 +1,17 @@
 import { useContext, useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import ImageModal from "../../components/imageModal/ImageModal";
 import ContentNavbar from "../../components/navbars/ContentNavbar";
 import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
+import { useAuthGate } from "../../utils/useAuthGate";
 
 export default function ProfileHeader({ user }) {
 	const [loaded, setLoaded] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 	const { user: loggedUser } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
-	const navigate = useNavigate();
+	const ensureLogged = useAuthGate();
 
 	const [following, setFollowing] = useState(false);
 	const [banner, setBanner] = useState();
@@ -92,11 +92,11 @@ export default function ProfileHeader({ user }) {
 
 	const handleLoading = () => setLoaded(true);
 
-	const followUser = async () => {
-		if (!loggedUser) {
-			navigate("/login");
-			return;
-		}
+	const followUser = () => {
+		ensureLogged(following ? "deixar de seguir esse usuário" : "seguir esse usuário", performFollow);
+	};
+
+	const performFollow = async () => {
 		try {
 			await axios({
 				method: "PUT",

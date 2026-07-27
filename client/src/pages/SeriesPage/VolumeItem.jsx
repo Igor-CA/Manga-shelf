@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { Link } from "react-router-dom";
+import { useAuthGate } from "../../utils/useAuthGate";
 export default function VolumeItem({
 	volumeInfo,
 	localVolumeState,
 	handleChange,
 	handleReadToggle,
-	user,
 }) {
 	const [loaded, setLoaded] = useState(false);
+	const ensureLogged = useAuthGate();
 	const { volumeId, image, volumeNumber } = volumeInfo;
 
 	const myState = localVolumeState?.find((el) => el.volumeId === volumeId);
@@ -16,7 +17,11 @@ export default function VolumeItem({
 	const isRead = myState?.isRead ?? false;
 
 	const handleCheckboxChange = (e) => {
-		handleChange(e, volumeId);
+		const adding = e.target.checked;
+		ensureLogged(
+			adding ? "adicionar esse volume" : "remover esse volume",
+			() => handleChange(e, volumeId),
+		);
 	};
 	const handleLoading = () => {
 		setLoaded(true);
@@ -29,7 +34,6 @@ export default function VolumeItem({
 				name={`have-volume-check-mark-${volumeId}`}
 				id={`have-volume-check-mark-${volumeId}`}
 				className="volume-state-controller"
-				disabled={!user}
 				checked={ownsVolume}
 				onChange={handleCheckboxChange}
 			/>
