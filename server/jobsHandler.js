@@ -9,6 +9,7 @@ const {
 const {
 	dispatchReplyDigests,
 } = require("./jobs/replyDigestDispatcher");
+const { generateSitemapFile } = require("./jobs/sitemapRoutine");
 const { runJob } = require("./jobs/jobRunner");
 const { runSupervisor } = require("./jobs/jobSupervisor");
 const APP_TIMEZONE = "America/Sao_Paulo";
@@ -81,6 +82,20 @@ function startScheduledJobs() {
 				fn: dispatchReplyDigests,
 				backoffMinutes: [5, 10],
 				leaseMinutes: 5,
+			});
+		},
+		{ timezone: APP_TIMEZONE },
+	);
+
+	cron.schedule(
+		"0 4 * * 1",
+		async () => {
+			logger.info("CRON: Triggering weekly sitemap generation...");
+			await runJob({
+				name: "generateSitemap",
+				fn: generateSitemapFile,
+				backoffMinutes: [30, 60],
+				leaseMinutes: 15,
 			});
 		},
 		{ timezone: APP_TIMEZONE },
