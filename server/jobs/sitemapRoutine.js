@@ -6,9 +6,10 @@ const path = require("path");
 const Volume = require("../models/volume");
 const Series = require("../models/Series");
 const logger = require("../Utils/logger");
-const { success } = require("./jobResult");
+const { success, permanentFailure } = require("./jobResult");
 
 const SITEMAP_PATH = path.join(__dirname, "..", "public", "sitemap.xml");
+const siteDomain = () => (process.env.SITE_DOMAIN || "").replace(/\/+$/, "");
 
 function createUrlElement(url, changefreq, priority, lastmod) {
 	const lastmodTag = lastmod ? `<lastmod>${lastmod.toISOString()}</lastmod>` : "";
@@ -16,64 +17,65 @@ function createUrlElement(url, changefreq, priority, lastmod) {
 }
 
 function generateSitemap(series, volumes) {
+	const domain = siteDomain();
 	let sitemapXml =
 		'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
 	series.forEach((seriesDoc) => {
-		const seriesUrl = `https://mangashelf.com.br/series/${seriesDoc._id}`;
+		const seriesUrl = `${domain}/series/${seriesDoc._id}`;
 		sitemapXml +=
 			createUrlElement(seriesUrl, "weekly", "0.8", seriesDoc.updatedAt) + "\n";
 	});
 
 	volumes.forEach((volumeDoc) => {
-		const volumeUrl = `https://mangashelf.com.br/volume/${volumeDoc._id}`;
+		const volumeUrl = `${domain}/volume/${volumeDoc._id}`;
 		sitemapXml +=
 			createUrlElement(volumeUrl, "weekly", "0.6", volumeDoc.updatedAt) + "\n";
 	});
 
 	const staticPages = [
 		{
-			url: "https://mangashelf.com.br",
+			url: domain,
 			changefreq: "monthly",
 			priority: "1",
 		},
 		{
-			url: "https://mangashelf.com.br/login",
+			url: `${domain}/login`,
 			changefreq: "monthly",
 			priority: "0.5",
 		},
 		{
-			url: "https://mangashelf.com.br/signup",
+			url: `${domain}/signup`,
 			changefreq: "monthly",
 			priority: "0.5",
 		},
 		{
-			url: "https://mangashelf.com.br/tos",
+			url: `${domain}/tos`,
 			changefreq: "monthly",
 			priority: "0.5",
 		},
 		{
-			url: "https://mangashelf.com.br/privacy",
+			url: `${domain}/privacy`,
 			changefreq: "monthly",
 			priority: "0.5",
 		},
 		{
-			url: "https://mangashelf.com.br/browse",
+			url: `${domain}/browse`,
 			changefreq: "monthly",
 			priority: "1",
 		},
 		{
-			url: "https://mangashelf.com.br/feedback",
+			url: `${domain}/feedback`,
 			changefreq: "monthly",
 			priority: "0.5",
 		},
 		{
-			url: "https://mangashelf.com.br/about",
+			url: `${domain}/about`,
 			changefreq: "monthly",
 			priority: "0.8",
 		},
 		{
-			url: "https://mangashelf.com.br/donate",
+			url: `${domain}/donate`,
 			changefreq: "monthly",
 			priority: "0.8",
 		},
@@ -92,13 +94,18 @@ function generateSitemap(series, volumes) {
 async function generateSitemapFile() {
 	logger.info("Running sitemap generator...");
 
+	if (!siteDomain()) {
+		logger.error("SITE_DOMAIN is not set — skipping sitemap generation.");
+		return permanentFailure("SITE_DOMAIN is not set");
+	}
+
 	const series = await Series.find({ isAdult: false })
 		.select("_id updatedAt")
 		.sort({ title: 1 });
 	const seriesIds = series.map((seriesDoc) => seriesDoc._id);
-	const volumes = await Volume.find({ serie: { $in: seriesIds } }).select(
-		"_id updatedAt",
-	);
+	const volumes = await Volume.find({ serie: { $in: seriesIds } })
+		.select("_id updatedAt")
+		.sort({ serie: 1, number: 1 });
 
 	const sitemapXml = generateSitemap(series, volumes);
 
