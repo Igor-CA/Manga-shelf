@@ -3,7 +3,12 @@ import "./DonatePage.css";
 import { useContext, useState } from "react";
 import { FaRegCopy, FaCheck } from "react-icons/fa";
 import { messageContext } from "../../contexts/messageStateProvider";
+import usePageMeta from "../../utils/usePageMeta";
 export default function DonatePage() {
+	usePageMeta(
+		"Apoie o projeto",
+		"O MangaShelf é gratuito e mantido de forma independente. Saiba como apoiar o projeto e ajudar a manter o site no ar.",
+	);
 	const { addMessage } = useContext(messageContext);
 
 	const PIX_KEY = import.meta.env.REACT_APP_PIX_KEY;

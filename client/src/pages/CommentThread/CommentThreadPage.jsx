@@ -6,6 +6,7 @@ import { usePrompt } from "../../contexts/PromptContext";
 import PostCard from "../../components/posts/PostCard";
 import SkeletonPostCard from "../../components/posts/SkeletonPostCard";
 import usePostMutations from "../../components/posts/usePostMutations";
+import usePageMeta from "../../utils/usePageMeta";
 import "../../components/posts/PostsSection.css";
 import "./CommentThreadPage.css";
 
@@ -60,6 +61,15 @@ export default function CommentThreadPage() {
 			active = false;
 		};
 	}, [postId]);
+
+	const target = context
+		? `${context.seriesTitle}${context.volumeId ? ` - Volume ${context.volumeNumber}` : ""}`
+		: null;
+	usePageMeta(
+		target && `${topLevel?.isReview ? "Review" : "Comentário"} sobre ${target}`,
+		target &&
+			`Leia o que ${topLevel?.author?.username} escreveu sobre ${target} e participe da conversa no MangaShelf.`,
+	);
 
 	if (loading) {
 		return (

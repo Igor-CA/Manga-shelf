@@ -9,6 +9,7 @@ import { customWindowConfirm } from "../../utils/seriesDataFunctions";
 import PromptConfirm from "../../contexts/PromptConfirm";
 import SideNavbar from "../../components/navbars/SideNavbar";
 import { messageContext } from "../../contexts/messageStateProvider";
+import usePageMeta from "../../utils/usePageMeta";
 
 const navbarOptions = [
 	{
@@ -25,6 +26,7 @@ const navbarOptions = [
 	},
 ];
 export default function SettingsPage() {
+	usePageMeta("Configurações");
 	const { user } = useContext(UserContext);
 
 	return (

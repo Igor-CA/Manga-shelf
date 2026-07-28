@@ -7,6 +7,7 @@ import "../Settings/Settings.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { getChangedValues } from "../../utils/getChangedValues";
+import usePageMeta from "../../utils/usePageMeta";
 
 const navbarOptions = [
 	{ label: "Informações Gerais", id: "general" },
@@ -39,6 +40,7 @@ const INITIAL_STATE = {
 	},
 };
 export default function SeriesSubmissionPage() {
+	usePageMeta("Sugerir correção de obra");
 	const { id } = useParams();
 	const { user } = useContext(UserContext);
 	const navigate = useNavigate();

@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import "./PrivacyPage.css";
+import usePageMeta from "../../utils/usePageMeta";
 
 export default function PrivacyPage() {
+	usePageMeta(
+		"Política de Privacidade",
+		"Saiba quais dados o MangaShelf coleta, como eles são usados e armazenados, e quais são os seus direitos sobre essas informações.",
+	);
 	return (
 		<div className="page-content">
 			<div className="container">

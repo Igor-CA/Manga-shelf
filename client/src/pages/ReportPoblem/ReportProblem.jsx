@@ -4,7 +4,12 @@ import { messageContext } from "../../contexts/messageStateProvider";
 
 import "../AuthenticationPage/Authentication.css";
 import CustomCheckbox from "../../components/customInputs/CustomCheckbox";
+import usePageMeta from "../../utils/usePageMeta";
 export default function ReportProblem() {
+	usePageMeta(
+		"Feedback e sugestões",
+		"Encontrou um erro no catálogo ou tem uma sugestão para o MangaShelf? Envie seu feedback e nos ajude a melhorar o site.",
+	);
 	const [formData, setFormData] = useState({
 		type: "",
 		local: "",

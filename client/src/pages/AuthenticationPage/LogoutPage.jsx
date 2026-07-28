@@ -2,7 +2,9 @@ import axios from "axios";
 import { useContext, useEffect } from "react";
 import { UserContext } from "../../contexts/userProvider";
 import "../404Page/NotFound.css";
+import usePageMeta from "../../utils/usePageMeta";
 export default function LogoutPage() {
+	usePageMeta("Saindo da conta");
 	const { user, setOutdated } = useContext(UserContext);
 	useEffect(() => {
 		const logout = async () => {

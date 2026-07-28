@@ -9,6 +9,7 @@ import SeriesVolumesPage from "./SeriesVolumesPage";
 import SeriesRelatedPage from "./SeriesRelatedPage";
 import PostsSection from "../../components/posts/PostsSection";
 import { useRating } from "../../utils/useRating";
+import usePageMeta, { truncate } from "../../utils/usePageMeta";
 export default function SeriesPage() {
 	const { id } = useParams();
 
@@ -43,6 +44,14 @@ export default function SeriesPage() {
 						10,
 				) / 10
 			: null;
+
+	usePageMeta(
+		series?.title,
+		series
+			? truncate(series.summary?.[0]) ||
+					`Veja todos os volumes de ${series.title} publicados no Brasil, acompanhe o que você já tem e descubra o que falta para completar sua coleção.`
+			: null,
+	);
 
 	const rating = useRating({
 		seriesId: id,

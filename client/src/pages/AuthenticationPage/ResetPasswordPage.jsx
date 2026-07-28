@@ -4,7 +4,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { messageContext } from "../../contexts/messageStateProvider";
 
 import "./Authentication.css";
+import usePageMeta from "../../utils/usePageMeta";
 export default function ResetPasswordPage() {
+	usePageMeta("Redefinir senha");
 	const { userId, token } = useParams();
 	const [formData, setFormData] = useState({ email: "" });
 	const { addMessage } = useContext(messageContext);

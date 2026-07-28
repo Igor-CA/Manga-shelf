@@ -12,8 +12,17 @@ import { UserContext } from "../../contexts/userProvider";
 import { useEffect } from "react";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import FilterControls from "../../components/FilterControls";
+import usePageMeta from "../../utils/usePageMeta";
 
-export default function BrowsePage() {
+export default function BrowsePage({ embedded = false }) {
+	// Home embeds this page and owns the metadata there
+	usePageMeta(
+		embedded ? null : "Explorar mangás publicados no Brasil",
+		embedded
+			? null
+			: "Explore o catálogo de mangás publicados no Brasil: filtre por gênero, editora e status, descubra novas obras e acompanhe sua coleção no MangaShelf.",
+	);
+
 	const { user: loggedUser } = useContext(UserContext);
 	const personalRatingLabel = loggedUser ? "Sua nota" : null;
 	const location = useLocation();

@@ -5,8 +5,14 @@ import debaunce from "../../utils/debaunce";
 import axios from "axios";
 import UserCardsList from "../../components/cards/UserCardsList";
 import TogglePageButton from "../../components/customInputs/TogglePageButton";
+import usePageMeta from "../../utils/usePageMeta";
 
 export default function BrowseUser() {
+	usePageMeta(
+		"Encontrar colecionadores",
+		"Encontre outros colecionadores no MangaShelf, acompanhe as estantes deles e descubra quais volumes ainda faltam nas coleções.",
+	);
+
 	const location = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const initialSearch = searchParams.get("q") || "";

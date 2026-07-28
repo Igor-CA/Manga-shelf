@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import "./AdultPageRedirect.css";
+import usePageMeta from "../../utils/usePageMeta";
 export default function AdultPageRedirect() {
+	usePageMeta("Conteúdo +18");
 	return (
 		<div className="page-content">
 			<div className="container">

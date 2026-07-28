@@ -4,7 +4,9 @@ import { Link } from "react-router-dom";
 import { messageContext } from "../../contexts/messageStateProvider";
 
 import "./Authentication.css";
+import usePageMeta from "../../utils/usePageMeta";
 export default function ForgotPage() {
+	usePageMeta("Recuperar senha");
 	const [formData, setFormData] = useState({ email: "" });
 	const { addMessage } = useContext(messageContext);
 	const [loading, setLoading] = useState(false);

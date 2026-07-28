@@ -1,5 +1,10 @@
 import "./ToSPage.css"
+import usePageMeta from "../../utils/usePageMeta";
 export default function ToSPage() {
+	usePageMeta(
+		"Termos de Serviço",
+		"Termos e condições de uso do MangaShelf: regras de cadastro, conteúdo enviado pelos usuários e responsabilidades das partes.",
+	);
 	return (
 		<div className="page-content">
             <div className="container">

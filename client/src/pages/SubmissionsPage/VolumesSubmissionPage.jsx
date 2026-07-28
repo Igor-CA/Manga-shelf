@@ -6,6 +6,7 @@ import axios from "axios";
 import "../Settings/Settings.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { getChangedValues } from "../../utils/getChangedValues";
+import usePageMeta from "../../utils/usePageMeta";
 
 const navbarOptions = [{ label: "Informações Gerais", id: "general" }];
 
@@ -21,6 +22,7 @@ const INITIAL_STATE = {
 	chapters: "",
 };
 export default function VolumeSubmissionPage() {
+	usePageMeta("Sugerir correção de volume");
 	const { id } = useParams();
 	const { user } = useContext(UserContext);
 	const navigate = useNavigate();

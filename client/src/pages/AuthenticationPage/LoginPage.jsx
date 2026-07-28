@@ -5,8 +5,10 @@ import ReCAPTCHA from "react-google-recaptcha";
 import "./Authentication.css";
 import { messageContext } from "../../contexts/messageStateProvider";
 import { consume } from "../../utils/returnTo";
+import usePageMeta from "../../utils/usePageMeta";
 
 export default function LoginPage() {
+	usePageMeta("Entrar");
 	const [formData, setFormData] = useState({ login: "", password: "" });
 	const { addMessage } = useContext(messageContext);
 	const [captchaVal, setCaptchaVal] = useState(null);

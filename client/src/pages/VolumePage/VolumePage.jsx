@@ -9,11 +9,23 @@ import VolumesOverallPage from "./VolumesOverallPage";
 import VolumeHeader from "./VolumePageHeader";
 import PostsSection from "../../components/posts/PostsSection";
 import { useRating } from "../../utils/useRating";
+import usePageMeta, { truncate } from "../../utils/usePageMeta";
 export default function VolumePage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const [volumeData, setVolumeData] = useState();
 	const { user, isFetching } = useContext(UserContext);
+
+	const volumeTitle = volumeData
+		? `${volumeData.serie?.title} - Volume ${volumeData.number}`
+		: null;
+	usePageMeta(
+		volumeTitle,
+		volumeData
+			? truncate(volumeData.summary?.[0]) ||
+					`Detalhes do volume ${volumeData.number} de ${volumeData.serie?.title}: capa, sinopse, ISBN e data de lançamento no Brasil.`
+			: null,
+	);
 
 	const rating = useRating({
 		seriesId: volumeData?.serie?._id?.toString(),

@@ -2,6 +2,7 @@ import { Route, Routes, useParams } from "react-router-dom";
 import "./UserPage.css";
 import { lazy, Suspense } from "react";
 import { LoadingPageComponent } from "../../App";
+import usePageMeta from "../../utils/usePageMeta";
 
 const UserCollection = lazy(() => import("./UserCollection"));
 const ProfileHeader = lazy(() => import("./ProfileHeader"));
@@ -16,6 +17,11 @@ const UserCommentsPage = lazy(() => import("./UserCommentsPage"));
 
 export default function UserPage() {
 	const { username } = useParams();
+
+	usePageMeta(
+		`Coleção de ${username}`,
+		`Veja a estante de mangás de ${username} no MangaShelf: volumes que já possui, o que falta para completar as coleções e a lista de desejos.`,
+	);
 
 	return (
 		<>

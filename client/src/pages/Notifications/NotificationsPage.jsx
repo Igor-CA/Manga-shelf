@@ -6,6 +6,7 @@ import SideNavbar from "../../components/navbars/SideNavbar";
 import RichText from "../../components/RichText";
 import axios from "axios";
 import "./NotificationsPage.css";
+import usePageMeta from "../../utils/usePageMeta";
 
 const options = [
 	{
@@ -48,6 +49,7 @@ const fetchNotifications = async (page, group) => {
 };
 
 export default function NotificationsPage() {
+	usePageMeta("Notificações");
 	const { user, setOutdated } = useContext(UserContext);
 
 	const [sitePage, setSitePage] = useState(1);

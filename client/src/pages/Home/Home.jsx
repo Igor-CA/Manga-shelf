@@ -14,9 +14,11 @@ import "./Home.css";
 import BrowsePage from "../BrowsePage/BrowsePage";
 import { useContext } from "react";
 import { UserContext } from "../../contexts/userProvider";
+import usePageMeta from "../../utils/usePageMeta";
 
 export default function Home() {
 	const { user } = useContext(UserContext);
+	usePageMeta();
 	return (
 		<div className="page-content">
 			{!user && (
@@ -148,7 +150,7 @@ export default function Home() {
 					</div>
 				</div>
 			)}
-			<BrowsePage></BrowsePage>
+			<BrowsePage embedded></BrowsePage>
 		</div>
 	);
 }

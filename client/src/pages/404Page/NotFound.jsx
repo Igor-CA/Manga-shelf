@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import "./NotFound.css";
+import usePageMeta from "../../utils/usePageMeta";
 export default function NotFound() {
+	usePageMeta("Página não encontrada");
 	return (
 		<div className="page-content">
 			<div className="container">

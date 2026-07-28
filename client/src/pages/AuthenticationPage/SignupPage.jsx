@@ -3,8 +3,10 @@ import axios from "axios";
 import "./Authentication.css";
 import { Link, useNavigate } from "react-router-dom";
 import { messageContext } from "../../contexts/messageStateProvider";
+import usePageMeta from "../../utils/usePageMeta";
 
 export default function SignupPage() {
+	usePageMeta("Criar conta");
 	const navigate = useNavigate();
 	const { addMessage } = useContext(messageContext);
 	const [loading, setLoading] = useState(false);

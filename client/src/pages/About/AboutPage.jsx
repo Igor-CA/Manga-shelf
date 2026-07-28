@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
 import "./AboutPage.css";
+import usePageMeta from "../../utils/usePageMeta";
 export default function AboutPage() {
+	usePageMeta(
+		"Sobre nós",
+		"Conheça o MangaShelf: o projeto brasileiro que ajuda colecionadores a organizar suas estantes de mangás físicos e a descobrir os volumes que faltam.",
+	);
 	return (
 		<div className="page-content">
 			<div className="container">

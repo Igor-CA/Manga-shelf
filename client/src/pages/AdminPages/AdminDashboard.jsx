@@ -6,6 +6,7 @@ import "../Settings/Settings.css";
 import SubmissionCard from "./SubmissionCard";
 import ReportCard from "./ReportCard";
 import PatchNotesForm from "./PatchNotesForm";
+import usePageMeta from "../../utils/usePageMeta";
 
 const navbarOptions = [
 	{ label: "Submissões Pendentes", id: "pending" },
@@ -14,6 +15,7 @@ const navbarOptions = [
 ];
 
 export default function AdminDashboard() {
+	usePageMeta("Painel administrativo");
 	const [submissions, setSubmissions] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [reports, setReports] = useState([]);
