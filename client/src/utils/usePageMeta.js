@@ -12,7 +12,7 @@ export const truncate = (text, max = 155) => {
 	return `${clean.slice(0, max - 1).trimEnd()}…`;
 };
 
-export default function usePageMeta(title, description) {
+export default function usePageMeta(title, description, { noindex = false } = {}) {
 	useEffect(() => {
 		document.title = title ? `${title} | MangaShelf` : DEFAULT_TITLE;
 
@@ -20,5 +20,18 @@ export default function usePageMeta(title, description) {
 		if (descriptionTag) {
 			descriptionTag.setAttribute("content", description || DEFAULT_DESCRIPTION);
 		}
-	}, [title, description]);
+
+		let robotsTag = document.querySelector('meta[name="robots"]');
+		if (noindex) {
+			if (!robotsTag) {
+				robotsTag = document.createElement("meta");
+				robotsTag.setAttribute("name", "robots");
+				document.head.appendChild(robotsTag);
+			}
+			robotsTag.setAttribute("content", "noindex");
+		} else if (robotsTag) {
+			// Sem isso a tag sobrevive à próxima navegação e desindexa a página seguinte
+			robotsTag.remove();
+		}
+	}, [title, description, noindex]);
 }

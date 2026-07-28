@@ -18,6 +18,7 @@ const apiRouter = require("./routes/api");
 const userRouter = require("./routes/user");
 const logger = require("./Utils/logger");
 const startScheduledJobs = require("./jobsHandler");
+const mountSpaFallback = require("./middlewares/spaFallback");
 
 const app = express();
 
@@ -132,8 +133,9 @@ app.use("/admin", apiKeyAuth, checkAdmin, adminRouter);
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../client/dist")));
 
-	app.get("*", (req, res) =>
-		res.sendFile(path.resolve(__dirname, "../", "client", "dist", "index.html"))
+	mountSpaFallback(
+		app,
+		path.resolve(__dirname, "../", "client", "dist", "index.html")
 	);
 } else {
 	app.get("/", (req, res) => res.send("Please set to production"));
