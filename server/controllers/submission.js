@@ -191,6 +191,13 @@ exports.getPendingSubmissions = asyncHandler(async (req, res) => {
 			},
 		})
 		.sort({ createdAt: 1 });
+
+	submissions.sort(
+		(a, b) =>
+			a.createdAt - b.createdAt ||
+			(a.targetId?.number ?? 0) - (b.targetId?.number ?? 0),
+	);
+
 	res.json(submissions);
 });
 
@@ -216,6 +223,12 @@ exports.getUserSubmissions = asyncHandler(async (req, res) => {
 			},
 		})
 		.sort({ createdAt: -1 });
+
+	submissions.sort(
+		(a, b) =>
+			b.createdAt - a.createdAt ||
+			(a.targetId?.number ?? 0) - (b.targetId?.number ?? 0),
+	);
 
 	const imageSubmissions = submissions.map((submission) => {
 		let cover = submission?.targetId?.seriesCover || "";
