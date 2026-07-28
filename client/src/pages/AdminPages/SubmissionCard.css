@@ -7,6 +7,10 @@
 	gap: 1rem;
 }
 
+.submission-link {
+	text-decoration: underline;
+}
+
 .submission-image {
 	max-width: 250px;
 	border-radius: 0.5rem;

@@ -1,4 +1,5 @@
 import { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import "./SubmissionCard.css";
 import { getValueByPath } from "../../utils/seriesDataFunctions";
@@ -21,7 +22,7 @@ const flattenObject = (obj, prefix = "") => {
 };
 
 export default function SubmissionCard({ submission, onProcess }) {
-	const [comment, setComment] = useState("Muito obrigado!");
+	const [comment, setComment] = useState();
 	const { addMessage } = useContext(messageContext);
 
 	const changes = flattenObject(submission.payload);
@@ -63,9 +64,28 @@ export default function SubmissionCard({ submission, onProcess }) {
 	return (
 		<div className="submission-card">
 			<h3>
-				{submission.targetModel === "Volume"
-					? `Mudança no volume ${originalData.number} de ${originalData?.serie?.title}`
-					: `Mudança na Obra de ${originalData?.title}`}
+				{submission.targetModel === "Volume" ? (
+					<>
+						Mudança no{" "}
+						<Link to={`/volume/${originalData._id}`} className="submission-link">
+							volume {originalData.number}
+						</Link>{" "}
+						de{" "}
+						<Link
+							to={`/series/${originalData?.serie?._id}`}
+							className="submission-link"
+						>
+							{originalData?.serie?.title}
+						</Link>
+					</>
+				) : (
+					<>
+						Mudança na Obra de{" "}
+						<Link to={`/series/${originalData._id}`} className="submission-link">
+							{originalData?.title}
+						</Link>
+					</>
+				)}
 			</h3>
 			<span>
 				<strong>Usuário:</strong> {submission.user?.username || submission.user}
