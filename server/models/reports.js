@@ -7,6 +7,7 @@ const ReportSchema = new Schema({
 	page: { type: String, required: true },
 	details: { type: String, required: true },
 	user: {type: String},
+	userId: {type: Schema.Types.ObjectId, ref: "User", default: null},
 	wantAnswer: {type: Boolean, default: false}
 }, { timestamps: true });
 

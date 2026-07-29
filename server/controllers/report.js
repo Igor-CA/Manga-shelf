@@ -9,6 +9,7 @@ exports.createReport = asyncHandler(async (req, res, next) => {
 		page,
 		type,
 		user,
+		userId: req.user?._id ?? null,
 		wantAnswer: wantAnswer ? wantAnswer : false,
 	});
 	await newReport.save();
