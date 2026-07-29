@@ -82,7 +82,7 @@ export default function SignupPage() {
 			},
 			"confirm-password": {
 				valueMissing: "O campo de confirmar senha é obrigatório",
-				patternMismatch: "As senhas devem coincidir",
+				customError: "As senhas devem coincidir",
 			},
 			"tos-checkbox": {
 				valueMissing: "Concorde com nossos termos para criar uma conta",
@@ -94,11 +94,11 @@ export default function SignupPage() {
 			"patternMismatch",
 			"typeMismatch",
 			"valueMissing",
+			"customError",
 		];
 		const inputValidity = validationTypes.find((type) => input.validity[type]);
 
 		const customErrorMessage = validationMessages[inputName][inputValidity];
-
 		addMessage(customErrorMessage);
 	};
 
