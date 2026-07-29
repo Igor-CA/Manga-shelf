@@ -66,7 +66,7 @@ export default function BrowsePage({ embedded = false }) {
 	const ErrorComponent = () => {
 		return (
 			<p className="not-found-message">
-				Não encontramos nada para "{params["search-bar"]}" verifique se você
+				Não encontramos nada para "{params["search"]}" verifique se você
 				digitou corretamente. <br />
 				<br />
 				<strong>Importante</strong>: Algumas obras podem ser classificadas como
