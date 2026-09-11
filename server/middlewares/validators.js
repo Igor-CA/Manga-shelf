@@ -1,5 +1,23 @@
 const { validationResult } = require("express-validator");
 const { body } = require("express-validator");
+const Volume = require("../models/volume");
+const {
+	VOLUME_CONDITIONS,
+	maxAllowedPrice,
+} = require("../Utils/priceConstants");
+
+const formatBRL = (value) => `R$ ${value.toFixed(2).replace(".", ",")}`;
+
+const coverPriceLimit = async (volumeIds) => {
+	const volumes = await Volume.find({ _id: { $in: volumeIds } })
+		.select("defaultPrice")
+		.lean();
+	return volumes.reduce(
+		(limit, volume) =>
+			Math.max(limit, maxAllowedPrice(volume.defaultPrice)),
+		0,
+	);
+};
 
 // --- Validators ---
 const emailValidation = body("email")
@@ -110,6 +128,29 @@ const priceValidation = body("price")
 	.isFloat({ min: 0 })
 	.withMessage("O preço deve ser um valor numérico positivo.")
 	.toFloat();
+
+const priceBoundValidation = body("price")
+	.optional({ checkFalsy: true })
+	.custom(async (price, { req }) => {
+		const limit = await coverPriceLimit([req.body._id]);
+		if (parseFloat(price) > limit) {
+			throw new Error(
+				`O preço informado é alto demais para esse volume. O máximo aceito é ${formatBRL(limit)}.`,
+			);
+		}
+		return true;
+	});
+
+const conditionValidation = body("condition")
+	.optional({ nullable: true, checkFalsy: true })
+	.isIn(VOLUME_CONDITIONS)
+	.withMessage("A condição deve ser 'novo' ou 'usado'.");
+
+const storeValidation = body("store")
+	.optional({ nullable: true, checkFalsy: true })
+	.trim()
+	.isLength({ max: 100 })
+	.withMessage("O nome da loja deve ter no máximo 100 caracteres.");
 
 const amountValidation = body("amount")
 	.notEmpty()
@@ -360,6 +401,22 @@ const purchaseVolumeIdsItemsValidation = body("volumeIds.*")
 	.isMongoId()
 	.withMessage("ID de volume inválido.");
 
+const purchaseAmountBoundValidation = body("amount")
+	.optional({ checkFalsy: true })
+	.custom(async (amount, { req }) => {
+		const volumeIds = req.body.volumeIds;
+		if (!Array.isArray(volumeIds) || volumeIds.length === 0) return true;
+
+		const perVolume = parseFloat(amount) / volumeIds.length;
+		const limit = await coverPriceLimit(volumeIds);
+		if (perVolume > limit) {
+			throw new Error(
+				`O valor por volume ficaria alto demais. O máximo aceito é ${formatBRL(limit)} por volume.`,
+			);
+		}
+		return true;
+	});
+
 // --- Validations ---
 const forgotPasswordValidation = [emailValidation];
 const loginValidation = [loginInputValidation, passwordValidation];
@@ -419,6 +476,9 @@ const purchaseValidation = [
 	purchaseAmountValidation,
 	purchaseVolumeIdsValidation,
 	purchaseVolumeIdsItemsValidation,
+	purchaseAmountBoundValidation,
+	conditionValidation,
+	storeValidation,
 ];
 
 const editOwnedValidation = [
@@ -426,6 +486,9 @@ const editOwnedValidation = [
 	acquiredAtValidation,
 	readAtValidation,
 	priceValidation,
+	priceBoundValidation,
+	conditionValidation,
+	storeValidation,
 	amountValidation,
 	readCountValidation,
 	isReadValidation,
