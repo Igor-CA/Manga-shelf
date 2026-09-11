@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { VOLUME_CONDITIONS } = require("../Utils/priceConstants");
 const Schema = mongoose.Schema;
 
 const OwnedVolumeSchema = new Schema(
@@ -14,6 +15,9 @@ const OwnedVolumeSchema = new Schema(
 		readAt: { type: Date },
 		readCount: { type: Number },
 		purchasePrice: { type: Number },
+		condition: { type: String, enum: VOLUME_CONDITIONS, default: null },
+		store: { type: String, default: null },
+		lotSize: { type: Number, default: null },
 		notes: { type: String },
 	},
 	{ _id: false },

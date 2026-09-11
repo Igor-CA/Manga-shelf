@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { VOLUME_CONDITIONS } = require("../Utils/priceConstants");
 const Schema = mongoose.Schema;
 
 const PurchaseSchema = new Schema(
@@ -21,6 +22,15 @@ const PurchaseSchema = new Schema(
 		purchaseDate: {
 			type: Date,
 		},
+		condition: {
+			type: String,
+			enum: VOLUME_CONDITIONS,
+			default: null,
+		},
+		store: {
+			type: String,
+			default: null,
+		},
 		volumes: [
 			{
 				type: Schema.Types.ObjectId,
@@ -34,5 +44,6 @@ const PurchaseSchema = new Schema(
 PurchaseSchema.index({ user: 1, series: 1 });
 PurchaseSchema.index({ series: 1, createdAt: -1 });
 PurchaseSchema.index({ user: 1 });
+PurchaseSchema.index({ volumes: 1 });
 
 module.exports = mongoose.model("Purchase", PurchaseSchema);
