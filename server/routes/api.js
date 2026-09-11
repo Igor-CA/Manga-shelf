@@ -26,6 +26,10 @@ router.get("/browse", seriesController.browse);
 router.get("/series/filters", seriesController.getInfoFilters);
 router.get("/series/:id", seriesController.getSeriesDetails);
 router.get("/series/:id/purchases", purchasesController.getAllSeriesPurchases);
+router.get(
+	"/series/:id/price-stats",
+	purchasesController.getSeriesPriceStats,
+);
 
 //Comments api
 router.get("/posts", postController.getPosts);

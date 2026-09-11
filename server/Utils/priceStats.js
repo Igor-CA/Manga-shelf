@@ -1,43 +1,41 @@
 const mongoose = require("mongoose");
-const { MIN_PRICE_CONTRIBUTORS } = require("./priceConstants");
+const {
+	MIN_PRICE_CONTRIBUTORS,
+	VOLUME_CONDITIONS,
+} = require("./priceConstants");
 
-const median = (sortedPrices) => {
-	const middle = Math.floor(sortedPrices.length / 2);
+const PRICE_SEGMENTS = [...VOLUME_CONDITIONS, "geral"];
+
+const median = (values) => {
+	const sorted = [...values].sort((a, b) => a - b);
+	const middle = Math.floor(sorted.length / 2);
 	const value =
-		sortedPrices.length % 2 === 0
-			? (sortedPrices[middle - 1] + sortedPrices[middle]) / 2
-			: sortedPrices[middle];
+		sorted.length % 2 === 0
+			? (sorted[middle - 1] + sorted[middle]) / 2
+			: sorted[middle];
 	return Math.round(value * 100) / 100;
 };
 
 const emptySegment = () => ({ median: null, count: 0 });
 
-const emptyStats = () => ({
-	novo: emptySegment(),
-	usado: emptySegment(),
-	geral: emptySegment(),
-});
+const summarize = (values) =>
+	values.length > 0
+		? { median: median(values), count: values.length }
+		: emptySegment();
 
-// OwnedVolumeSchema is keyed on volume, so one user contributes at most one
-// price per volume and a row count is a contributor count.
-const buildStats = (rows) => {
-	const buckets = { novo: [], usado: [], geral: [] };
+const bySegment = (fn) =>
+	Object.fromEntries(PRICE_SEGMENTS.map((segment) => [segment, fn(segment)]));
 
-	for (const { price, condition } of rows) {
-		buckets.geral.push(price);
-		if (condition === "novo" || condition === "usado") {
-			buckets[condition].push(price);
-		}
-	}
+const emptyStats = () => bySegment(emptySegment);
 
-	const stats = emptyStats();
-	for (const [segment, prices] of Object.entries(buckets)) {
-		if (prices.length === 0) continue;
-		prices.sort((a, b) => a - b);
-		stats[segment] = { median: median(prices), count: prices.length };
-	}
-	return stats;
-};
+const buildStats = (rows) =>
+	bySegment((segment) =>
+		summarize(
+			rows
+				.filter((row) => segment === "geral" || row.condition === segment)
+				.map((row) => row.price),
+		),
+	);
 
 const contributingPricesPipeline = (volumeMatch) => [
 	{ $match: { "ownedVolumes.volume": volumeMatch } },
@@ -79,20 +77,17 @@ const recomputeVolumePriceStatsMany = async (volumeIds) => {
 	}
 };
 
-const suppressSparseStats = (stats) => {
-	const source = stats || emptyStats();
-	const result = emptyStats();
-
-	for (const segment of ["novo", "usado", "geral"]) {
-		const value = source[segment];
-		if (value && value.count >= MIN_PRICE_CONTRIBUTORS) {
-			result[segment] = { median: value.median, count: value.count };
-		}
-	}
-	return result;
-};
+const suppressSparseStats = (stats) =>
+	bySegment((segment) => {
+		const value = stats?.[segment];
+		return value?.count >= MIN_PRICE_CONTRIBUTORS
+			? { median: value.median, count: value.count }
+			: emptySegment();
+	});
 
 module.exports = {
+	bySegment,
+	summarize,
 	buildStats,
 	contributingPricesPipeline,
 	emptyStats,
