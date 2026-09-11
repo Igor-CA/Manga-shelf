@@ -307,7 +307,6 @@ const buildVolumeAggregationPipeline = (
 				isVariant: "$volumeInfo.isVariant",
 				variantNumber: "$volumeInfo.variantNumber",
 				isAdult: "$seriesInfo.isAdult",
-				acquiredAt: "$ownedVolumes.acquiredAt",
 				isRead: "$ownedVolumes.isRead",
 				readAt: "$ownedVolumes.readAt",
 				readCount: "$ownedVolumes.readCount",
@@ -315,6 +314,7 @@ const buildVolumeAggregationPipeline = (
 				seriesId: "$seriesInfo._id",
 				...(isOwner
 					? {
+							acquiredAt: "$ownedVolumes.acquiredAt",
 							purchasePrice: "$ownedVolumes.purchasePrice",
 							notes: "$ownedVolumes.notes",
 							store: "$ownedVolumes.store",
