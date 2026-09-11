@@ -4,12 +4,15 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import BarChartComponent from "../../components/graphs/BarChart";
 import SkeletonStatsPage from "./SkeletonStatsPage";
+import { formatCurrency } from "../../utils/formatters";
+import CustomCheckbox from "../../components/customInputs/CustomCheckbox";
 
 export default function UserStatsPage() {
 	const { username } = useParams();
 	const [data, setData] = useState();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [assumeCoverPrice, setAssumeCoverPrice] = useState(false);
 	useEffect(() => {
 		const queryStats = async () => {
 			setLoading(true);
@@ -37,9 +40,6 @@ export default function UserStatsPage() {
 		queryStats();
 	}, [username]);
 
-	const formatCurrency = (value) =>
-		value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
 	if (loading) {
 		return <SkeletonStatsPage />;
 	}
@@ -65,6 +65,10 @@ export default function UserStatsPage() {
 	}
 
 	const collectionPath = `/user/${username}`;
+	const isOwner = data.volumesWithPaidPrice !== undefined;
+	const displayedSpent = assumeCoverPrice
+		? data.totalSpent + data.coverValueOfVolumesWithoutPaidPrice
+		: data.totalSpent;
 
 	return (
 		<div className="container">
@@ -92,20 +96,58 @@ export default function UserStatsPage() {
 						</div>
 						<div className="stats-highlight__label">Volumes Faltantes</div>
 					</div>
-					{data.totalSpent > 0 && (
+					<div className="stats-highlight">
+						<div className="stats-highlight__value">
+							{formatCurrency(data.marketValue)}
+						</div>
+						<div className="stats-highlight__label">Valor de mercado</div>
+						<div className="stats-highlight__note">
+							{data.volumesWithCoverPrice} de {data.volumesCount} volumes
+							com preço de capa no catálogo
+						</div>
+					</div>
+					<div className="stats-highlight">
+						<div className="stats-highlight__value">
+							{formatCurrency(data.averageCoverPricePerVolume)}
+						</div>
+						<div className="stats-highlight__label">
+							Preço médio por volume (preço de capa) 
+						</div>
+						<div className="stats-highlight__note">
+							Média sobre os {data.volumesWithCoverPrice} volumes com preço de
+							capa no catalogo
+						</div>
+					</div>
+					{isOwner && (
 						<>
 							<div className="stats-highlight">
 								<div className="stats-highlight__value">
-									{formatCurrency(data.totalSpent)}
+									{formatCurrency(displayedSpent)}
 								</div>
 								<div className="stats-highlight__label">Total gasto</div>
+								<div className="stats-highlight__note">
+									{assumeCoverPrice
+										? `${data.volumesCount} de ${data.volumesCount} volumes, assumindo preço de capa nos não registrados`
+										: `${data.volumesWithPaidPrice} de ${data.volumesCount} volumes registrados`}
+								</div>
+								<div className="stats-highlight__toggle">
+									<CustomCheckbox
+										htmlId={"assume-cover-price"}
+										label={"Assumir preço de capa nos volumes sem preço"}
+										defaultValue={assumeCoverPrice}
+										handleChange={(e) => setAssumeCoverPrice(e.target.checked)}
+									></CustomCheckbox>
+								</div>
 							</div>
 							<div className="stats-highlight">
 								<div className="stats-highlight__value">
-									{formatCurrency(data.averagePricePerVolume)}
+									{formatCurrency(data.averagePaidPricePerVolume)}
 								</div>
 								<div className="stats-highlight__label">
-									Preço médio por volume
+									Preço médio pago por volume
+								</div>
+								<div className="stats-highlight__note">
+									Média sobre os {data.volumesWithPaidPrice} volumes registrados
 								</div>
 							</div>
 						</>
@@ -125,6 +167,16 @@ export default function UserStatsPage() {
 					filterParam="genre"
 					basePath={collectionPath}
 				></BarChartComponent>
+				{data.spendingBySeries?.length > 0 && (
+					<BarChartComponent
+						chartTitle="Gasto por obra (R$)"
+						total={data.totalSpent}
+						data={data.spendingBySeries}
+						categoryLabel="Obra"
+						valueLabel="Gasto"
+						formatValue={formatCurrency}
+					/>
+				)}
 				<PieChartComponent
 					chartTitle="Quantidade de coleções por editora"
 					total={data.seriesCount}
@@ -167,13 +219,6 @@ export default function UserStatsPage() {
 					filterParam="type"
 					basePath={collectionPath}
 				></PieChartComponent>
-				{data.spendingBySeries?.length > 0 && (
-					<BarChartComponent
-						chartTitle="Gasto por obra (R$)"
-						total={data.totalSpent}
-						data={data.spendingBySeries}
-					/>
-				)}
 			</div>
 		</div>
 	);

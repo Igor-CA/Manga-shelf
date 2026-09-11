@@ -254,6 +254,7 @@ const buildVolumeAggregationPipeline = (
 	sortStage,
 	skip,
 	myRatingStages = [],
+	isOwner = false,
 ) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
@@ -311,9 +312,15 @@ const buildVolumeAggregationPipeline = (
 				readAt: "$ownedVolumes.readAt",
 				readCount: "$ownedVolumes.readCount",
 				amount: "$ownedVolumes.amount",
-				purchasePrice: "$ownedVolumes.purchasePrice",
-				notes: "$ownedVolumes.notes",
 				seriesId: "$seriesInfo._id",
+				...(isOwner
+					? {
+							purchasePrice: "$ownedVolumes.purchasePrice",
+							notes: "$ownedVolumes.notes",
+							store: "$ownedVolumes.store",
+							condition: "$ownedVolumes.condition",
+						}
+					: {}),
 			},
 		},
 
@@ -656,6 +663,8 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 	if (!targetUser)
 		return res.status(400).send({ msg: "Usuário não encontrado" });
 
+	const isOwner = req.user?.username === targetUser;
+
 	const getVolumesStats = (groupField) => [
 		{ $match: { username: targetUser } },
 		{ $unwind: { path: "$ownedVolumes", preserveNullAndEmptyArrays: true } },
@@ -856,6 +865,61 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		{ $sort: { total: -1 } },
 	];
 
+	const marketValuePipeline = [
+		{ $match: { username: targetUser } },
+		{ $unwind: "$ownedVolumes" },
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "ownedVolumes.volume",
+				foreignField: "_id",
+				as: "volumeDetails",
+			},
+		},
+		{ $unwind: "$volumeDetails" },
+		{
+			$addFields: {
+				copies: { $ifNull: ["$ownedVolumes.amount", 1] },
+				coverPrice: {
+					$convert: {
+						input: {
+							$replaceAll: {
+								input: { $ifNull: ["$volumeDetails.defaultPrice", ""] },
+								find: ",",
+								replacement: ".",
+							},
+						},
+						to: "double",
+						onError: null,
+						onNull: null,
+					},
+				},
+			},
+		},
+		{
+			$group: {
+				_id: null,
+				marketValue: {
+					$sum: {
+						$multiply: [{ $ifNull: ["$coverPrice", 0] }, "$copies"],
+					},
+				},
+				volumesWithCoverPrice: {
+					$sum: { $cond: [{ $gt: ["$coverPrice", 0] }, "$copies", 0] },
+				},
+				coverValueOfVolumesWithoutPaidPrice: {
+					$sum: {
+						$cond: [
+							{ $gt: [{ $ifNull: ["$ownedVolumes.purchasePrice", 0] }, 0] },
+							0,
+							{ $multiply: [{ $ifNull: ["$coverPrice", 0] }, "$copies"] },
+						],
+					},
+				},
+			},
+		},
+	];
+
 	const [
 		genresByVolume,
 		genresBySeries,
@@ -868,6 +932,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		generalCounts,
 		missingCountResult,
 		spendingBySeries,
+		marketValueResult,
 	] = await Promise.all([
 		User.aggregate(getVolumesStats("genres")).exec(),
 		User.aggregate(getSeriesStats("genres")).exec(),
@@ -879,7 +944,8 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		User.aggregate(getSeriesStats("type")).exec(),
 		User.aggregate(generalCountsPipeline).exec(),
 		User.aggregate(missingCountPipeline).exec(),
-		User.aggregate(spendingPipeline).exec(),
+		isOwner ? User.aggregate(spendingPipeline).exec() : Promise.resolve([]),
+		User.aggregate(marketValuePipeline).exec(),
 	]);
 
 	const totalSpent = spendingBySeries.reduce((sum, s) => sum + s.total, 0);
@@ -902,16 +968,33 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		wishListSeriesCount: generalCounts[0]?.wishListSeriesCount || 0,
 		wishListVolumesCount: generalCounts[0]?.wishListVolumesCount || 0,
 		missingVolumesCount: missingCountResult[0]?.totalMissing || 0,
-		totalSpent: Math.round(totalSpent * 100) / 100,
-		averagePricePerVolume:
+		marketValue: Math.round((marketValueResult[0]?.marketValue || 0) * 100) / 100,
+		volumesWithCoverPrice:
+			marketValueResult[0]?.volumesWithCoverPrice || 0,
+		averageCoverPricePerVolume:
+			marketValueResult[0]?.volumesWithCoverPrice > 0
+				? Math.round(
+						(marketValueResult[0].marketValue /
+							marketValueResult[0].volumesWithCoverPrice) *
+							100,
+					) / 100
+				: 0,
+	};
+
+	if (isOwner) {
+		stats.totalSpent = Math.round(totalSpent * 100) / 100;
+		stats.averagePaidPricePerVolume =
 			totalTrackedVolumes > 0
 				? Math.round((totalSpent / totalTrackedVolumes) * 100) / 100
-				: 0,
-		spendingBySeries: spendingBySeries.map((s) => ({
+				: 0;
+		stats.volumesWithPaidPrice = totalTrackedVolumes;
+		stats.coverValueOfVolumesWithoutPaidPrice =
+			Math.round((marketValueResult[0]?.coverValueOfVolumesWithoutPaidPrice || 0) * 100) / 100;
+		stats.spendingBySeries = spendingBySeries.map((s) => ({
 			name: s.name,
 			count: Math.round(s.total * 100) / 100,
-		})),
-	};
+		}));
+	}
 
 	res.send(stats);
 });
@@ -1147,12 +1230,14 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 			? buildVolumeMyRatingLookupStages(owner._id, "$volumeInfo._id")
 			: [];
 
+	const isOwner = req.user?.username === targetUser;
 	const pipeline = buildVolumeAggregationPipeline(
 		targetUser,
 		filter,
 		sortStage,
 		skip,
 		myRatingStages,
+		isOwner,
 	);
 	const userCollection = await User.aggregate(pipeline);
 

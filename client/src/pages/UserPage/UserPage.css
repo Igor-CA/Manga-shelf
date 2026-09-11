@@ -116,10 +116,10 @@
 .stats-highlight__value {
 	color: var(--accent);
 	font-weight: bold;
-	font-size: 2rem;
+	font-size: 1.5rem;
 }
 .stats-highlight__label {
-	font-size: 1.2rem;
+	font-size: 1.25rem;
 	font-weight: bold;
 }
 .chart-container {
@@ -406,4 +406,16 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 	}
+}
+
+.stats-highlight__note {
+	font-size: 0.85rem;
+	color: var(--text);
+	opacity: 0.75;
+	margin-top: 4px;
+}
+.stats-highlight__toggle {
+	margin-top: 8px;
+	font-size: 0.85rem;
+	opacity: 0.75;
 }

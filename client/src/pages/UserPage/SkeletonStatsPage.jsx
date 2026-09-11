@@ -3,7 +3,7 @@ export default function SkeletonStatsPage() {
 		<div className="container">
 			<div className="stats__container">
 				<div className="stats-highlights">
-					{Array(4)
+					{Array(6)
 						.fill()
 						.map((_, id) => (
 							<div
