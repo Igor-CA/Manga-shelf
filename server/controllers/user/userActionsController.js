@@ -5,6 +5,7 @@ const { sendNewFollowerNotification } = require("../notifications");
 const Series = require("../../models/Series");
 const Volumes = require("../../models/volume");
 const logger = require("../../Utils/logger");
+const { recomputeVolumePriceStats } = require("../../Utils/priceStats");
 
 exports.addSeries = asyncHandler(async (req, res) => {
 	const seriesId = req.body.id;
@@ -68,15 +69,10 @@ exports.addToWishlist = asyncHandler(async (req, res) => {
 	);
 
 	if (!before) {
-
-		const current = await User.findById(req.user._id)
-			.select("wishList")
-			.lean();
+		const current = await User.findById(req.user._id).select("wishList").lean();
 		const inWishlist = current?.wishList?.some((id) => id.equals(series._id));
 		if (inWishlist) {
-			return res
-				.status(400)
-				.json({ msg: "Obra já está na lista de desejos" });
+			return res.status(400).json({ msg: "Obra já está na lista de desejos" });
 		}
 		return res.status(400).json({
 			msg: "Você já possui volumes dessa obra portanto ela não foi adicionada à lista de desejos",
@@ -108,7 +104,7 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 				userList: { Series: seriesId },
 				ownedVolumes: { volume: { $in: volumeIdsToDelete } },
 			},
-		}
+		},
 	);
 
 	if (userUpdate.matchedCount === 0)
@@ -119,7 +115,7 @@ exports.removeSeries = asyncHandler(async (req, res, next) => {
 
 	await Series.updateOne(
 		{ _id: seriesId, popularity: { $gt: 0 } },
-		{ $inc: { popularity: -1 } }
+		{ $inc: { popularity: -1 } },
 	);
 
 	return res.send({ msg: "Obra removida com sucesso" });
@@ -134,9 +130,7 @@ exports.removeFromWishList = asyncHandler(async (req, res) => {
 	);
 
 	if (result.modifiedCount === 0) {
-		return res
-			.status(400)
-			.json({ msg: "Obra não está na lista de desejos" });
+		return res.status(400).json({ msg: "Obra não está na lista de desejos" });
 	}
 
 	await Series.updateOne(
@@ -256,11 +250,11 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 							status: newStatus,
 						},
 					},
-				}
-			)
+				},
+			),
 		);
 		updates.push(
-			Series.findByIdAndUpdate(seriesId, { $inc: { popularity: 1 } })
+			Series.findByIdAndUpdate(seriesId, { $inc: { popularity: 1 } }),
 		);
 	} else {
 		updates.push(
@@ -271,8 +265,8 @@ exports.addVolume = asyncHandler(async (req, res, next) => {
 						"userList.$.completionPercentage": completionPercentage,
 						"userList.$.status": newStatus,
 					},
-				}
-			)
+				},
+			),
 		);
 	}
 
@@ -293,7 +287,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 			$pull: {
 				ownedVolumes: { volume: { $in: idList } },
 			},
-		}
+		},
 	);
 
 	const [series, totalStandardVolumes] = await Promise.all([
@@ -351,7 +345,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 
 		const newStatus = getNewUserSeriesStatus(
 			series.status,
-			completionPercentage
+			completionPercentage,
 		);
 
 		await User.updateOne(
@@ -361,7 +355,7 @@ exports.removeVolume = asyncHandler(async (req, res, next) => {
 					"userList.$.completionPercentage": completionPercentage,
 					"userList.$.status": newStatus,
 				},
-			}
+			},
 		);
 	}
 
@@ -405,7 +399,7 @@ exports.dropSeries = asyncHandler(async (req, res, next) => {
 	const { id: seriesId } = req.body;
 	const result = await User.updateOne(
 		{ _id: req.user._id, "userList.Series": seriesId },
-		{ $set: { "userList.$.status": "Dropped" } }
+		{ $set: { "userList.$.status": "Dropped" } },
 	);
 	if (result.matchedCount === 0) {
 		return res
@@ -419,7 +413,7 @@ exports.undropSeries = asyncHandler(async (req, res, next) => {
 	const { id: seriesId } = req.body;
 	const result = await User.updateOne(
 		{ _id: req.user._id, "userList.Series": seriesId },
-		{ $set: { "userList.$.status": "Collecting" } }
+		{ $set: { "userList.$.status": "Collecting" } },
 	);
 	if (result.matchedCount === 0) {
 		return res
@@ -430,31 +424,56 @@ exports.undropSeries = asyncHandler(async (req, res, next) => {
 });
 
 exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
-	const { acquiredAt, readAt, isRead, readCount, price, amount, notes, _id } =
-		req.body;
+	const {
+		acquiredAt,
+		readAt,
+		isRead,
+		readCount,
+		price,
+		amount,
+		notes,
+		condition,
+		store,
+		_id,
+	} = req.body;
+
+	const updates = {
+		"ownedVolumes.$.acquiredAt": acquiredAt,
+		"ownedVolumes.$.isRead": isRead,
+		"ownedVolumes.$.readCount": readCount,
+		"ownedVolumes.$.readAt": readAt,
+		"ownedVolumes.$.amount": amount,
+		"ownedVolumes.$.notes": notes,
+	};
+
+	// An untouched price field must not overwrite a recorded price with null.
+	if (price !== undefined) {
+		updates["ownedVolumes.$.purchasePrice"] = price;
+		updates["ownedVolumes.$.lotSize"] = null;
+	}
+	if (condition !== undefined) {
+		updates["ownedVolumes.$.condition"] = condition || null;
+	}
+	if (store !== undefined) {
+		updates["ownedVolumes.$.store"] = store || null;
+	}
 
 	const result = await User.updateOne(
 		{
 			_id: req.user._id,
 			"ownedVolumes.volume": _id,
 		},
-		{
-			$set: {
-				"ownedVolumes.$.acquiredAt": acquiredAt,
-				"ownedVolumes.$.isRead": isRead,
-				"ownedVolumes.$.readCount": readCount,
-				"ownedVolumes.$.readAt": readAt,
-				"ownedVolumes.$.purchasePrice": price,
-				"ownedVolumes.$.amount": amount,
-				"ownedVolumes.$.notes": notes,
-			},
-		}
+		{ $set: updates },
 	);
 
 	if (result.matchedCount === 0) {
 		return res
 			.status(404)
 			.json({ msg: "Volume não encontrado na sua coleção." });
+	}
+
+	if (price !== undefined || condition !== undefined) {
+		await recomputeVolumePriceStats(_id);
 	}
 
 	res.json({ msg: "Informações do volume atualizadas com sucesso." });
@@ -464,7 +483,7 @@ exports.toggleVolumeRead = asyncHandler(async (req, res, next) => {
 
 	const user = await User.findOne(
 		{ _id: req.user._id, "ownedVolumes.volume": id },
-		{ "ownedVolumes.$": 1 }
+		{ "ownedVolumes.$": 1 },
 	);
 
 	if (!user || !user.ownedVolumes || user.ownedVolumes.length === 0) {
@@ -494,7 +513,7 @@ exports.toggleVolumeRead = asyncHandler(async (req, res, next) => {
 				"ownedVolumes.$.readCount": newReadCount,
 				"ownedVolumes.$.readAt": newReadAt,
 			},
-		}
+		},
 	);
 
 	res.json({
@@ -516,14 +535,14 @@ exports.setVolumesReadStatus = asyncHandler(async (req, res, next) => {
 					"ownedVolumes.$[elem].readCount": 1,
 					"ownedVolumes.$[elem].readAt": new Date(),
 				},
-		  }
+			}
 		: {
 				$set: {
 					"ownedVolumes.$[elem].isRead": false,
 					"ownedVolumes.$[elem].readCount": 0,
 					"ownedVolumes.$[elem].readAt": null,
 				},
-		  };
+			};
 
 	const result = await User.updateOne({ _id: req.user._id }, updateData, {
 		arrayFilters: [{ "elem.volume": { $in: idList } }],
