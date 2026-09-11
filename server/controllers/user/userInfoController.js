@@ -880,20 +880,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		{
 			$addFields: {
 				copies: { $ifNull: ["$ownedVolumes.amount", 1] },
-				coverPrice: {
-					$convert: {
-						input: {
-							$replaceAll: {
-								input: { $ifNull: ["$volumeDetails.defaultPrice", ""] },
-								find: ",",
-								replacement: ".",
-							},
-						},
-						to: "double",
-						onError: null,
-						onNull: null,
-					},
-				},
+				coverPrice: "$volumeDetails.defaultPrice",
 			},
 		},
 		{

@@ -17,7 +17,7 @@ const INITIAL_STATE = {
 	pagesNumber: 0,
 	date: new Date(),
 	summary: [],
-	defaultPrice: "0",
+	defaultPrice: "",
 	freebies: [],
 	chapters: "",
 };
@@ -56,6 +56,8 @@ export default function VolumeSubmissionPage() {
 					summary: dbData.summary ? dbData.summary.join("\n") : "",
 					freebies: dbData.freebies ? dbData.freebies.join(", ") : "",
 					date: formatDateForInput(dbData.date),
+					defaultPrice:
+						dbData.defaultPrice != null ? String(dbData.defaultPrice) : "",
 				};
 				setFormData(processedData);
 				setInitialData(processedData);
@@ -277,7 +279,7 @@ function GeneralInfoSection({ data, onChange }) {
 				<input
 					type="number"
 					className="input"
-					value={parseFloat(data.defaultPrice || 0)}
+					value={data.defaultPrice}
 					step="0.01"
 					name="defaultPrice"
 					onChange={onChange}

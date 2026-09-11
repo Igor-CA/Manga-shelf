@@ -9,7 +9,7 @@ const VolumeSchema = new Schema(
 		pagesNumber: { type: Number },
 		date: { type: Date },
 		summary: [{ type: String }], //Separated by paragraphs
-		defaultPrice: { type: String },
+		defaultPrice: { type: Number },
 		freebies: [{ type: String }],
 		isVariant: { type: Boolean, default: false },
 		variantNumber: { type: Number, default: 1 },
