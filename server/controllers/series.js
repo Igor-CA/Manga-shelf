@@ -10,6 +10,7 @@ const User = require("../models/User");
 const Notification = require("../models/Notification");
 const Rating = require("../models/Rating");
 const Submission = require("../models/Submission");
+const Purchase = require("../models/Purchase");
 const { deletePostsForTarget, unlinkImages } = require("./post");
 const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
@@ -748,6 +749,7 @@ exports.deleteSeriesAndNotify = async (req, res) => {
 			session,
 		);
 		await Rating.deleteMany({ series: seriesId }).session(session);
+		await Purchase.deleteMany({ series: seriesId }).session(session);
 		await Submission.deleteMany({
 			$or: [
 				{ targetModel: "Series", targetId: seriesId },

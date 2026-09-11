@@ -174,6 +174,11 @@ exports.deleteVolumeAndNotify = async (req, res) => {
 			session,
 		);
 		await Rating.deleteMany({ volume: volumeId }).session(session);
+		await Purchase.updateMany(
+			{ volumes: volumeId },
+			{ $pull: { volumes: volumeId } },
+		).session(session);
+		await Purchase.deleteMany({ volumes: { $size: 0 } }).session(session);
 		await Submission.deleteMany({
 			targetModel: "Volume",
 			targetId: volumeId,
