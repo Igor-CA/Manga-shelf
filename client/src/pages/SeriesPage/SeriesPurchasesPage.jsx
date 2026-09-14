@@ -31,7 +31,7 @@ const volumeLabel = (vol) =>
 		: `Vol. ${vol.volumeNumber}`;
 
 export default function SeriesPurchasesPage({ series }) {
-	const { user } = useContext(UserContext);
+	const { user, setOutdated } = useContext(UserContext);
 	const { confirm } = usePrompt();
 	const [priceStats, setPriceStats] = useState(null);
 	const [communityPurchases, setCommunityPurchases] = useState([]);
@@ -140,7 +140,7 @@ export default function SeriesPurchasesPage({ series }) {
 	const handleFormDone = () => {
 		setShowForm(false);
 		setEditingPurchase(null);
-		fetchAll();
+		setOutdated(true);
 	};
 
 	const summary = priceStats?.summary;
