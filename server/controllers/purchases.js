@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose");
 const Purchase = require("../models/Purchase");
 const User = require("../models/User");
 const Volume = require("../models/volume");
@@ -74,6 +75,9 @@ exports.getSeriesPurchases = asyncHandler(async (req, res) => {
 
 // A purchase is a receipt, not a source of truth: it writes onto the owned
 // volumes it covers and nothing ever reads it back to compute a figure.
+// Dropped volume ids arrive as strings, and arrayFilters match on type.
+const toObjectIds = (ids) => ids.map((id) => new mongoose.Types.ObjectId(id));
+
 const applyPurchaseToVolumes = async (userId, purchase) => {
 	const volumeIds = purchase.volumes;
 	if (volumeIds.length === 0) return;
@@ -81,23 +85,20 @@ const applyPurchaseToVolumes = async (userId, purchase) => {
 	const pricePerVolume =
 		Math.round((purchase.amount / volumeIds.length) * 100) / 100;
 
-	await User.bulkWrite(
-		volumeIds.map((volumeId) => ({
-			updateOne: {
-				filter: { _id: userId, "ownedVolumes.volume": volumeId },
-				update: {
-					$set: {
-						"ownedVolumes.$.purchasePrice": pricePerVolume,
-						"ownedVolumes.$.lotSize": volumeIds.length,
-						"ownedVolumes.$.condition": purchase.condition ?? null,
-						"ownedVolumes.$.store": purchase.store ?? null,
-						...(purchase.purchaseDate
-							? { "ownedVolumes.$.acquiredAt": purchase.purchaseDate }
-							: {}),
-					},
-				},
+	await User.updateOne(
+		{ _id: userId },
+		{
+			$set: {
+				"ownedVolumes.$[covered].purchasePrice": pricePerVolume,
+				"ownedVolumes.$[covered].lotSize": volumeIds.length,
+				"ownedVolumes.$[covered].condition": purchase.condition ?? null,
+				"ownedVolumes.$[covered].store": purchase.store ?? null,
+				...(purchase.purchaseDate
+					? { "ownedVolumes.$[covered].acquiredAt": purchase.purchaseDate }
+					: {}),
 			},
-		})),
+		},
+		{ arrayFilters: [{ "covered.volume": { $in: toObjectIds(volumeIds) } }] },
 	);
 };
 
@@ -107,18 +108,15 @@ const applyPurchaseToVolumes = async (userId, purchase) => {
 const clearPurchaseFromVolumes = async (userId, volumeIds) => {
 	if (volumeIds.length === 0) return;
 
-	await User.bulkWrite(
-		volumeIds.map((volumeId) => ({
-			updateOne: {
-				filter: { _id: userId, "ownedVolumes.volume": volumeId },
-				update: {
-					$set: {
-						"ownedVolumes.$.purchasePrice": null,
-						"ownedVolumes.$.lotSize": null,
-					},
-				},
+	await User.updateOne(
+		{ _id: userId },
+		{
+			$set: {
+				"ownedVolumes.$[dropped].purchasePrice": null,
+				"ownedVolumes.$[dropped].lotSize": null,
 			},
-		})),
+		},
+		{ arrayFilters: [{ "dropped.volume": { $in: toObjectIds(volumeIds) } }] },
 	);
 };
 

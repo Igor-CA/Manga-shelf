@@ -37,45 +37,55 @@ const buildStats = (rows) =>
 		),
 	);
 
-const contributingPricesPipeline = (volumeMatch) => [
-	{ $match: { "ownedVolumes.volume": volumeMatch } },
+const contributingPricesPipeline = (volumeIds) => [
+	{ $match: { "ownedVolumes.volume": { $in: volumeIds } } },
 	{ $unwind: "$ownedVolumes" },
 	{
 		$match: {
-			"ownedVolumes.volume": volumeMatch,
+			"ownedVolumes.volume": { $in: volumeIds },
 			"ownedVolumes.purchasePrice": { $gt: 0 },
 		},
 	},
 	{
-		$project: {
-			_id: 0,
-			volume: "$ownedVolumes.volume",
-			price: "$ownedVolumes.purchasePrice",
-			condition: "$ownedVolumes.condition",
+		$group: {
+			_id: "$ownedVolumes.volume",
+			prices: {
+				$push: {
+					price: "$ownedVolumes.purchasePrice",
+					condition: "$ownedVolumes.condition",
+				},
+			},
 		},
 	},
 ];
 
-const recomputeVolumePriceStats = async (volumeId) => {
-	if (!volumeId) return;
+const recomputeVolumePriceStatsMany = async (volumeIds) => {
+	const ids = [...new Set((volumeIds || []).filter(Boolean).map(String))].map(
+		(id) => new mongoose.Types.ObjectId(id),
+	);
+	if (ids.length === 0) return;
 	const User = mongoose.model("User");
 	const Volume = mongoose.model("Volume");
 
-	const id = new mongoose.Types.ObjectId(volumeId);
-	const rows = await User.aggregate(contributingPricesPipeline(id));
+	const rows = await User.aggregate(contributingPricesPipeline(ids));
+	const pricesByVolume = new Map(rows.map((row) => [String(row._id), row.prices]));
 
-	await Volume.updateOne(
-		{ _id: id },
-		{ $set: { pricePaidStats: buildStats(rows) } },
+	await Volume.bulkWrite(
+		ids.map((id) => ({
+			updateOne: {
+				filter: { _id: id },
+				update: {
+					$set: {
+						pricePaidStats: buildStats(pricesByVolume.get(String(id)) || []),
+					},
+				},
+			},
+		})),
 	);
 };
 
-const recomputeVolumePriceStatsMany = async (volumeIds) => {
-	const unique = [...new Set((volumeIds || []).filter(Boolean).map(String))];
-	for (const volumeId of unique) {
-		await recomputeVolumePriceStats(volumeId);
-	}
-};
+const recomputeVolumePriceStats = (volumeId) =>
+	recomputeVolumePriceStatsMany([volumeId]);
 
 const suppressSparseStats = (stats) =>
 	bySegment((segment) => {
