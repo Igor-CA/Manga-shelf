@@ -1,11 +1,10 @@
-import { useContext, useMemo, useRef, useState } from "react";
-import { formatDate, printArray } from "../../utils/seriesDataFunctions";
+import { useMemo, useRef, useState } from "react";
+import { printArray } from "../../utils/seriesDataFunctions";
+import { formatCurrency, formatDate } from "../../utils/formatters";
 import { Link } from "react-router-dom";
 import { FaPencilAlt } from "react-icons/fa";
-import { UserContext } from "../../contexts/userProvider";
 
 export default function VolumesOverallPage({ volume }) {
-	const { user } = useContext(UserContext);
 	const {
 		serie,
 		pagesNumber,
@@ -16,18 +15,9 @@ export default function VolumesOverallPage({ volume }) {
 		chapters,
 		hasVariant,
 		summary,
-		avgPricePaid,
-		avgPriceCount,
 	} = volume;
 	const volumeSummarry = useRef(null);
 	const [showingMore, setShowingMore] = useState(false);
-	const ownedVol = user?.ownedVolumes?.find(
-		(ov) => (ov.volume?.toString?.() || ov.volume) === volume._id,
-	);
-	const purchasePrice = ownedVol?.purchasePrice;
-
-	const formatCurrency = (value) =>
-		value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 	const detailsSchema = useMemo(() => {
 		if (!volume) return [];
@@ -36,15 +26,9 @@ export default function VolumesOverallPage({ volume }) {
 			{ label: "Autores", value: printArray(serie?.authors) },
 			{ label: "Número de páginas", value: pagesNumber },
 			{ label: "Data de lançamento", value: formatDate(date) },
-			{ label: "Preço de capa", value: defaultPrice != null ? formatCurrency(defaultPrice) : null },
 			{
-				label: "Preço pago",
-				value: purchasePrice != null ? formatCurrency(purchasePrice) : null,
-			},
-			{
-				label: "Preço médio pago",
-				value: avgPricePaid != null ? formatCurrency(avgPricePaid) : null,
-				suffix: avgPriceCount > 0 ? ` (${avgPriceCount} compra${avgPriceCount > 1 ? "s" : ""})` : null,
+				label: "Preço de capa",
+				value: defaultPrice != null ? formatCurrency(defaultPrice) : null,
 			},
 			{ label: "ISBN", value: ISBN },
 			{ label: "Capítulos", value: chapters },
@@ -54,7 +38,7 @@ export default function VolumesOverallPage({ volume }) {
 				value: freebies?.length > 0 ? printArray(freebies) : null,
 			},
 		];
-	}, [volume, purchasePrice, avgPricePaid]);
+	}, [volume]);
 	return (
 		<div className="container">
 			<div className="content-overall__container">

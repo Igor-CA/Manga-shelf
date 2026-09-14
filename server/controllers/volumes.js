@@ -9,6 +9,7 @@ const Rating = require("../models/Rating");
 const Submission = require("../models/Submission");
 const { deletePostsForTarget, unlinkImages } = require("./post");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
+const { suppressSparseStats } = require("../Utils/priceStats");
 const asyncHandler = require("express-async-handler");
 const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
@@ -54,29 +55,6 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 		if (userRating) myVolumeScore = userRating.score;
 	}
 
-	// Calculate average price paid across all users
-	const volumeObjectId = new mongoose.Types.ObjectId(req.params.id);
-	const avgResult = await Purchase.aggregate([
-		{ $match: { volumes: volumeObjectId } },
-		{
-			$project: {
-				pricePerVolume: { $divide: ["$amount", { $size: "$volumes" }] },
-			},
-		},
-		{
-			$group: {
-				_id: null,
-				avgPrice: { $avg: "$pricePerVolume" },
-				count: { $sum: 1 },
-			},
-		},
-	]);
-
-	const avgPricePaid = avgResult.length > 0
-		? Math.round(avgResult[0].avgPrice * 100) / 100
-		: null;
-	const avgPriceCount = avgResult.length > 0 ? avgResult[0].count : 0;
-
 	res.send({
 		...desiredVolume._doc,
 		image: getVolumeCoverURL(
@@ -86,8 +64,7 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 			desiredVolume.variantNumber,
 		),
 		myVolumeScore,
-		avgPricePaid,
-		avgPriceCount,
+		pricePaidStats: suppressSparseStats(desiredVolume.pricePaidStats),
 	});
 });
 
