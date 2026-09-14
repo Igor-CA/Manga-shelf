@@ -4,6 +4,10 @@ import { UserContext } from "../../contexts/userProvider";
 import { usePrompt } from "../../contexts/PromptContext";
 import { FaTrash, FaPencilAlt } from "react-icons/fa";
 import { formatCurrency, formatDate } from "../../utils/formatters";
+import {
+	VOLUME_CONDITIONS,
+	CONDITION_LABELS,
+} from "../../utils/volumeConditions";
 import BarChartComponent from "../../components/graphs/BarChart";
 
 const API = import.meta.env.REACT_APP_HOST_ORIGIN;
@@ -11,7 +15,6 @@ const AUTH = import.meta.env.REACT_APP_API_KEY;
 
 const idOf = (value) => value?.toString?.() || value;
 
-const CONDITION_LABELS = { novo: "Novo", usado: "Usado" };
 
 const formatMonth = (month) => {
 	const [year, monthNumber] = month.split("-").map(Number);
@@ -564,8 +567,11 @@ function PurchaseFormInline({
 						onChange={(e) => setCondition(e.target.value)}
 						className="purchase-form__input"
 					>
-						<option value="usado">Usado</option>
-						<option value="novo">Novo</option>
+						{VOLUME_CONDITIONS.map(({ value, label }) => (
+							<option key={value} value={value}>
+								{label}
+							</option>
+						))}
 					</select>
 				</label>
 				<label className="purchase-form__field">

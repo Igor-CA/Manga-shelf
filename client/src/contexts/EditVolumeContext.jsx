@@ -4,6 +4,7 @@ import "./EditVolumeModal.css";
 import { messageContext } from "./messageStateProvider";
 import axios from "axios";
 import { UserContext } from "./userProvider";
+import { VOLUME_CONDITIONS } from "../utils/volumeConditions";
 
 const EditVolumeContext = createContext();
 
@@ -112,6 +113,20 @@ const EditVolumeModal = () => {
 			updates.price = nextPrice;
 		}
 
+		const nextCondition = rawUpdates.condition || null;
+		if (nextCondition === (editingVolume.condition ?? null)) {
+			delete updates.condition;
+		} else {
+			updates.condition = nextCondition;
+		}
+
+		const nextStore = rawUpdates.store?.trim() || null;
+		if (nextStore === (editingVolume.store ?? null)) {
+			delete updates.store;
+		} else {
+			updates.store = nextStore;
+		}
+
 		const finalPayload = {
 			_id: editingVolume._id,
 			...updates,
@@ -201,6 +216,35 @@ const EditVolumeModal = () => {
 								defaultValue={editingVolume.purchasePrice ?? ""}
 								className="form__input"
 								step="0.01"
+							/>
+						</label>
+					</div>
+
+					<div className="input-group">
+						<label className="input-container">
+							<span className="label-text">Condição</span>
+							<select
+								name="condition"
+								defaultValue={editingVolume.condition ?? ""}
+								className="form__input"
+							>
+								<option value="">Não informado</option>
+								{VOLUME_CONDITIONS.map(({ value, label }) => (
+									<option key={value} value={value}>
+										{label}
+									</option>
+								))}
+							</select>
+						</label>
+						<label className="input-container">
+							<span className="label-text">Onde comprou</span>
+							<input
+								type="text"
+								name="store"
+								maxLength={100}
+								defaultValue={editingVolume.store ?? ""}
+								placeholder="Shopee, sebo, outro colecionador..."
+								className="form__input"
 							/>
 						</label>
 					</div>
