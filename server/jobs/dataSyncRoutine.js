@@ -10,6 +10,7 @@ const {
 const logger = require("../Utils/logger");
 const volume = require("../models/volume");
 const { escapeRegex } = require("../Utils/escapeRegex");
+const { buildStats, emptyStats } = require("../Utils/priceStats");
 const { success } = require("./jobResult");
 
 const INTERNAL_RELATIONS = ["Outra Edição", "Mesmo Autor(a)"];
@@ -130,6 +131,7 @@ async function syncAndRecalculateData() {
 	await recalculateUserListInfo();
 	await updateSeriesPopularity();
 	await recalculateRatings();
+	await recalculatePrices();
 	return success();
 }
 
@@ -599,6 +601,51 @@ async function recalculateRatings() {
 	}
 }
 
+async function recalculatePrices() {
+	logger.info("Recalculating volume price aggregates...");
+
+	try {
+		const rows = await User.aggregate([
+			{ $unwind: "$ownedVolumes" },
+			{ $match: { "ownedVolumes.purchasePrice": { $gt: 0 } } },
+			{
+				$group: {
+					_id: "$ownedVolumes.volume",
+					prices: {
+						$push: {
+							price: "$ownedVolumes.purchasePrice",
+							condition: "$ownedVolumes.condition",
+						},
+					},
+				},
+			},
+		]);
+
+		const bulkOps = rows.map(({ _id, prices }) => ({
+			updateOne: {
+				filter: { _id },
+				update: { $set: { pricePaidStats: buildStats(prices) } },
+			},
+		}));
+		if (bulkOps.length > 0) await volume.bulkWrite(bulkOps);
+
+		await volume.updateMany(
+			{
+				_id: { $nin: rows.map((r) => r._id) },
+				"pricePaidStats.geral.count": { $gt: 0 },
+			},
+			{ $set: { pricePaidStats: emptyStats() } },
+		);
+
+		logger.info(
+			`Price recalculation complete. Volumes with recorded prices: ${rows.length}.`,
+		);
+	} catch (error) {
+		logger.error("Error recalculating prices:", error);
+		throw error;
+	}
+}
+
 async function updateSeriesMetadata() {
 	logger.info("Starting sanitization of Series dates and status...");
 
@@ -695,4 +742,4 @@ async function updateSeriesMetadata() {
 	}
 }
 
-module.exports = { syncAndRecalculateData };
+module.exports = { syncAndRecalculateData, recalculatePrices };
