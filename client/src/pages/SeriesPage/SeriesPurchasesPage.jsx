@@ -1,23 +1,37 @@
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { UserContext } from "../../contexts/userProvider";
+import { usePrompt } from "../../contexts/PromptContext";
 import { FaTrash, FaPencilAlt } from "react-icons/fa";
-import "../../components/PurchaseForm.css";
+import { formatCurrency, formatDate } from "../../utils/formatters";
+import BarChartComponent from "../../components/graphs/BarChart";
 
 const API = import.meta.env.REACT_APP_HOST_ORIGIN;
 const AUTH = import.meta.env.REACT_APP_API_KEY;
 
-const formatCurrency = (value) =>
-	value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const idOf = (value) => value?.toString?.() || value;
 
-const formatDate = (dateStr) => {
-	if (!dateStr) return null;
-	return new Date(dateStr).toLocaleDateString("pt-BR");
+const CONDITION_LABELS = { novo: "Novo", usado: "Usado" };
+
+const formatMonth = (month) => {
+	const [year, monthNumber] = month.split("-").map(Number);
+	return new Date(Date.UTC(year, monthNumber - 1)).toLocaleDateString("pt-BR", {
+		month: "long",
+		year: "numeric",
+		timeZone: "UTC",
+	});
 };
+
+const volumeLabel = (vol) =>
+	vol.isVariant
+		? `Vol. ${vol.volumeNumber} · variante ${vol.variantNumber || 1}`
+		: `Vol. ${vol.volumeNumber}`;
 
 export default function SeriesPurchasesPage({ series }) {
 	const { user } = useContext(UserContext);
-	const [allPurchases, setAllPurchases] = useState([]);
+	const { confirm } = usePrompt();
+	const [priceStats, setPriceStats] = useState(null);
+	const [communityPurchases, setCommunityPurchases] = useState([]);
 	const [myPurchases, setMyPurchases] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [showForm, setShowForm] = useState(false);
@@ -26,29 +40,44 @@ export default function SeriesPurchasesPage({ series }) {
 	const userOwnedVolumeIds =
 		user?.ownedVolumes
 			?.filter((ov) =>
-				series.volumes?.some(
-					(v) =>
-						(v.volumeId?.toString?.() || v.volumeId) ===
-						(ov.volume?.toString?.() || ov.volume),
-				),
+				series.volumes?.some((v) => idOf(v.volumeId) === idOf(ov.volume)),
 			)
-			.map((ov) => ov.volume?.toString?.() || ov.volume) || [];
+			.map((ov) => idOf(ov.volume)) || [];
 
 	const availableVolumes =
 		series.volumes?.filter((v) =>
-			userOwnedVolumeIds.includes(v.volumeId?.toString?.() || v.volumeId),
+			userOwnedVolumeIds.includes(idOf(v.volumeId)),
 		) || [];
 
-	const fetchAllPurchases = async () => {
+	const myPriceByVolumeId = new Map(
+		(user?.ownedVolumes || [])
+			.filter((ov) => ov.purchasePrice > 0)
+			.map((ov) => [idOf(ov.volume), ov.purchasePrice]),
+	);
+
+	const fetchPriceStats = async () => {
+		try {
+			const res = await axios({
+				method: "GET",
+				headers: { Authorization: AUTH },
+				url: `${API}/api/data/series/${series.id}/price-stats`,
+			});
+			setPriceStats(res.data);
+		} catch {
+			setPriceStats(null);
+		}
+	};
+
+	const fetchCommunityPurchases = async () => {
 		try {
 			const res = await axios({
 				method: "GET",
 				headers: { Authorization: AUTH },
 				url: `${API}/api/data/series/${series.id}/purchases`,
 			});
-			setAllPurchases(res.data);
+			setCommunityPurchases(res.data);
 		} catch {
-			setAllPurchases([]);
+			setCommunityPurchases([]);
 		}
 	};
 
@@ -69,7 +98,11 @@ export default function SeriesPurchasesPage({ series }) {
 
 	const fetchAll = async () => {
 		setLoading(true);
-		await Promise.all([fetchAllPurchases(), fetchMyPurchases()]);
+		await Promise.all([
+			fetchPriceStats(),
+			fetchCommunityPurchases(),
+			fetchMyPurchases(),
+		]);
 		setLoading(false);
 	};
 
@@ -78,17 +111,22 @@ export default function SeriesPurchasesPage({ series }) {
 	}, [user, series.id]);
 
 	const handleDelete = async (purchaseId) => {
-		try {
-			await axios({
-				method: "DELETE",
-				withCredentials: true,
-				headers: { Authorization: AUTH },
-				url: `${API}/api/user/purchases/${purchaseId}`,
-			});
-			fetchAll();
-		} catch (err) {
-			console.error(err);
-		}
+		confirm(
+			"Remover esta compra? Os preços já registrados nos volumes são mantidos, porque eles são o registro do que você pagou.",
+			async () => {
+				try {
+					await axios({
+						method: "DELETE",
+						withCredentials: true,
+						headers: { Authorization: AUTH },
+						url: `${API}/api/user/purchases/${purchaseId}`,
+					});
+					fetchAll();
+				} catch (err) {
+					console.error(err);
+				}
+			},
+		);
 	};
 
 	const handleEdit = (purchase) => {
@@ -102,41 +140,10 @@ export default function SeriesPurchasesPage({ series }) {
 		fetchAll();
 	};
 
-	// Stats from ALL purchases (community)
-	const totalPurchases = allPurchases.length;
-	const allVolumePrices = [];
-	for (const p of allPurchases) {
-		if (p.volumes.length === 0) continue;
-		const ppv = p.amount / p.volumes.length;
-		for (let i = 0; i < p.volumes.length; i++) {
-			allVolumePrices.push(ppv);
-		}
-	}
-	const communityAvg =
-		allVolumePrices.length > 0
-			? allVolumePrices.reduce((a, b) => a + b, 0) / allVolumePrices.length
-			: 0;
-
-	// Stats from MY purchases
-	const myTotalSpent = myPurchases.reduce((sum, p) => sum + p.amount, 0);
-	const myPurchasedVolumeIds = new Set(
-		myPurchases.flatMap((p) => p.volumes.map((v) => v.toString?.() || v)),
-	);
-	const myAvgPerVolume =
-		myPurchasedVolumeIds.size > 0
-			? myTotalSpent / myPurchasedVolumeIds.size
-			: 0;
-
-	// Build per-volume price map from my purchases
-	const volumePriceMap = {};
-	for (const purchase of myPurchases) {
-		if (purchase.volumes.length === 0) continue;
-		const ppv = purchase.amount / purchase.volumes.length;
-		for (const vid of purchase.volumes) {
-			const key = vid.toString?.() || vid;
-			volumePriceMap[key] = ppv;
-		}
-	}
+	const summary = priceStats?.summary;
+	const hasCommunityData =
+		summary &&
+		Object.values(summary).some((segment) => segment.median != null);
 
 	const pageWrapper = (children) => (
 		<div className="container">
@@ -152,101 +159,74 @@ export default function SeriesPurchasesPage({ series }) {
 
 	return pageWrapper(
 		<div className="purchases-page">
-			{/* Community stats */}
-			{totalPurchases > 0 && (
-				<div className="purchases-stats">
-					<div className="purchases-stats__item">
-						<span className="purchases-stats__value">
-							{formatCurrency(communityAvg)}
-						</span>
-						<span className="purchases-stats__label">
-							Preço médio por volume (comunidade)
-						</span>
-					</div>
-					<div className="purchases-stats__item">
-						<span className="purchases-stats__value">
-							{totalPurchases}
-						</span>
-						<span className="purchases-stats__label">
-							Compras registradas
-						</span>
-					</div>
-					{user && myPurchases.length > 0 && (
-						<>
-							<div className="purchases-stats__item">
-								<span className="purchases-stats__value">
-									{formatCurrency(myTotalSpent)}
-								</span>
-								<span className="purchases-stats__label">
-									Seu total gasto
-								</span>
-							</div>
-							<div className="purchases-stats__item">
-								<span className="purchases-stats__value">
-									{formatCurrency(myAvgPerVolume)}
-								</span>
-								<span className="purchases-stats__label">
-									Seu preço médio/vol
-								</span>
-							</div>
-						</>
-					)}
-				</div>
+			<div className="purchases-community">
+				<h3 className="purchases-section-title">Preços pagos pela comunidade</h3>
+				{loading ? (
+					<p className="purchases-page__empty">Carregando...</p>
+				) : hasCommunityData ? (
+					<>
+						<div className="purchases-stats">
+							<CommunityStat
+								label="Mediana por volume (usado)"
+								segment={summary.usado}
+							/>
+							<CommunityStat
+								label="Mediana por volume (novo)"
+								segment={summary.novo}
+							/>
+							<CommunityStat
+								label="Mediana por volume (geral)"
+								segment={summary.geral}
+							/>
+						</div>
+						<p className="purchases-community__note">
+							Medianas dos preços que outros leitores registraram. Só aparecem
+							em volumes com registros suficientes para não identificar
+							ninguém.
+						</p>
+					</>
+				) : (
+					<p className="purchases-page__empty">
+						Ainda não há registros suficientes desta obra para mostrar preços da
+						comunidade.
+					</p>
+				)}
+			</div>
+
+			{user && (
+				<VolumePriceChart
+					volumes={availableVolumes}
+					priceByVolumeId={myPriceByVolumeId}
+				/>
 			)}
 
-			{/* My volume prices grid */}
-			{user && Object.keys(volumePriceMap).length > 0 && (
-				<div className="purchases-volume-prices">
-					<h3 className="purchases-section-title">Seus preços por volume</h3>
-					<div className="purchases-volume-prices__grid">
-						{availableVolumes.map((vol) => {
-							const vid = vol.volumeId?.toString?.() || vol.volumeId;
-							const price = volumePriceMap[vid];
-							return (
-								<div
-									key={vid}
-									className={`purchases-volume-price-chip ${
-										price !== undefined
-											? "purchases-volume-price-chip--has-price"
-											: ""
-									}`}
-								>
-									<span className="purchases-volume-price-chip__number">
-										Vol. {vol.volumeNumber}
-									</span>
-									{price !== undefined && (
-										<span className="purchases-volume-price-chip__price">
-											{formatCurrency(price)}
-										</span>
-									)}
-								</div>
-							);
-						})}
-					</div>
-				</div>
-			)}
-
-			{/* My purchases with CRUD */}
 			{user && availableVolumes.length > 0 && (
 				<div className="purchases-list-section">
 					<div className="purchases-list-header">
-						<h3 className="purchases-section-title">Suas compras</h3>
-						<button
-							className="button"
-							onClick={() => {
-								setEditingPurchase(null);
-								setShowForm(!showForm);
-							}}
-						>
-							{showForm ? "Cancelar" : "Nova compra"}
-						</button>
+						{(myPurchases.length > 0 || showForm) && (
+							<h3 className="purchases-section-title">Suas compras</h3>
+						)}
+						{!showForm && (
+							<button
+								className="button"
+								onClick={() => {
+									setEditingPurchase(null);
+									setShowForm(true);
+								}}
+							>
+								Registrar compra
+							</button>
+						)}
 					</div>
 
 					{showForm && (
 						<PurchaseFormInline
+							key={editingPurchase?._id || "new"}
 							seriesId={series.id}
 							availableVolumes={availableVolumes}
 							editingPurchase={editingPurchase}
+							myPurchases={myPurchases}
+							confirm={confirm}
 							onDone={handleFormDone}
 							onCancel={() => {
 								setShowForm(false);
@@ -255,17 +235,14 @@ export default function SeriesPurchasesPage({ series }) {
 						/>
 					)}
 
-					{myPurchases.length === 0 && !showForm ? (
-						<p className="purchases-page__empty">
-							Você ainda não registrou nenhuma compra para esta obra.
-						</p>
-					) : (
+					{myPurchases.length > 0 && (
 						<div className="purchases-list">
 							{myPurchases.map((purchase) => (
 								<PurchaseCard
 									key={purchase._id}
 									purchase={purchase}
 									volumes={series.volumes}
+									myPriceByVolumeId={myPriceByVolumeId}
 									onEdit={() => handleEdit(purchase)}
 									onDelete={() => handleDelete(purchase._id)}
 								/>
@@ -275,20 +252,19 @@ export default function SeriesPurchasesPage({ series }) {
 				</div>
 			)}
 
-			{/* All community purchases (read-only) */}
 			<div className="purchases-list-section">
-				<h3 className="purchases-section-title">Todas as compras da comunidade</h3>
+				<h3 className="purchases-section-title">Compras da comunidade</h3>
 				{loading ? (
 					<p className="purchases-page__empty">Carregando...</p>
-				) : allPurchases.length === 0 ? (
+				) : communityPurchases.length === 0 ? (
 					<p className="purchases-page__empty">
 						Nenhuma compra registrada para esta obra.
 					</p>
 				) : (
 					<div className="purchases-list">
-						{allPurchases.map((purchase) => (
+						{communityPurchases.map((purchase, index) => (
 							<PurchaseCard
-								key={purchase._id}
+								key={index}
 								purchase={purchase}
 								volumes={series.volumes}
 								readOnly
@@ -301,13 +277,74 @@ export default function SeriesPurchasesPage({ series }) {
 	);
 }
 
-function PurchaseCard({ purchase, volumes, onEdit, onDelete, readOnly }) {
-	const volumeNames = purchase.volumes.map((vid) => {
-		const id = vid.toString?.() || vid;
-		const vol = volumes?.find(
-			(v) => (v.volumeId?.toString?.() || v.volumeId) === id,
-		);
-		return vol ? `Vol. ${vol.volumeNumber}` : id;
+function VolumePriceChart({ volumes, priceByVolumeId }) {
+	const data = volumes.map((vol) => ({
+		name: vol.isVariant
+			? `${vol.volumeNumber}v${vol.variantNumber || 1}`
+			: String(vol.volumeNumber),
+		label: volumeLabel(vol),
+		count: priceByVolumeId.get(idOf(vol.volumeId)) ?? null,
+	}));
+	const priced = data.filter((row) => row.count != null);
+	if (priced.length === 0) return null;
+
+	const average =
+		priced.reduce((sum, row) => sum + row.count, 0) / priced.length;
+
+	return (
+		<div className="purchases-volume-prices">
+			<h3 className="purchases-section-title">Seus preços por volume</h3>
+			<BarChartComponent
+				chartTitle={`${priced.length} de ${data.length} volumes com preço · média ${formatCurrency(average)}`}
+				data={data}
+				categoryLabel="Volume"
+				valueLabel="Preço"
+				formatValue={formatCurrency}
+				minSlotWidth={32}
+			/>
+			<details className="purchases-volume-prices__details">
+				<summary>Ver valores</summary>
+				<ul className="purchases-volume-prices__values">
+					{priced.map((row) => (
+						<li key={row.label} className="purchases-volume-prices__value">
+							<span>{row.label}</span>
+							<span>{formatCurrency(row.count)}</span>
+						</li>
+					))}
+				</ul>
+			</details>
+		</div>
+	);
+}
+
+function CommunityStat({ label, segment }) {
+	return (
+		<div className="purchases-stats__item">
+			<span className="purchases-stats__value">
+				{segment.median != null ? formatCurrency(segment.median) : "Sem dados"}
+			</span>
+			<span className="purchases-stats__label">{label}</span>
+			{segment.median != null && (
+				<span className="purchases-stats__note">
+					{segment.count} volume(s) com dados
+				</span>
+			)}
+		</div>
+	);
+}
+
+function PurchaseCard({
+	purchase,
+	volumes,
+	myPriceByVolumeId = new Map(),
+	onEdit,
+	onDelete,
+	readOnly,
+}) {
+	const coveredVolumes = purchase.volumes.map((vid) => {
+		const id = idOf(vid);
+		const vol = volumes?.find((v) => idOf(v.volumeId) === id);
+		return { id, label: vol ? volumeLabel(vol) : id };
 	});
 
 	const pricePerVol =
@@ -315,9 +352,19 @@ function PurchaseCard({ purchase, volumes, onEdit, onDelete, readOnly }) {
 			? purchase.amount / purchase.volumes.length
 			: 0;
 
-	const displayDate = purchase.purchaseDate
-		? formatDate(purchase.purchaseDate)
-		: formatDate(purchase.createdAt);
+	const currentSum = coveredVolumes.reduce(
+		(sum, v) => sum + (myPriceByVolumeId.get(v.id) || 0),
+		0,
+	);
+	const divergence = Math.round((currentSum - purchase.amount) * 100) / 100;
+
+	const displayDate = purchase.month
+		? formatMonth(purchase.month)
+		: formatDate(purchase.purchaseDate || purchase.createdAt);
+
+	const conditionAndStore = [CONDITION_LABELS[purchase.condition], purchase.store]
+		.filter(Boolean)
+		.join(" · ");
 
 	return (
 		<div className="purchase-card">
@@ -329,12 +376,24 @@ function PurchaseCard({ purchase, volumes, onEdit, onDelete, readOnly }) {
 					{purchase.volumes.length} volume(s) &middot;{" "}
 					{formatCurrency(pricePerVol)}/vol
 				</div>
-				<div className="purchase-card__volumes">{volumeNames.join(", ")}</div>
+				<div className="purchase-card__volumes">
+					{coveredVolumes.map((v) => v.label).join(", ")}
+				</div>
+				{conditionAndStore && (
+					<div className="purchase-card__volumes">{conditionAndStore}</div>
+				)}
+				{!readOnly && divergence !== 0 && (
+					<div className="purchase-card__divergence">
+						Seus volumes somam {formatCurrency(currentSum)} hoje,{" "}
+						{divergence > 0 ? "acima" : "abaixo"} do valor desta compra em{" "}
+						{formatCurrency(Math.abs(divergence))}.
+					</div>
+				)}
 				{displayDate && (
 					<div className="purchase-card__date">{displayDate}</div>
 				)}
 			</div>
-			{!readOnly && onEdit && onDelete && (
+			{!readOnly && (
 				<div className="purchase-card__actions">
 					<button
 						className="button button--secondary purchase-card__btn"
@@ -360,6 +419,8 @@ function PurchaseFormInline({
 	seriesId,
 	availableVolumes,
 	editingPurchase,
+	myPurchases,
+	confirm,
 	onDone,
 	onCancel,
 }) {
@@ -367,15 +428,17 @@ function PurchaseFormInline({
 		editingPurchase ? String(editingPurchase.amount) : "",
 	);
 	const [selectedVolumes, setSelectedVolumes] = useState(
-		editingPurchase
-			? editingPurchase.volumes.map((v) => v.toString?.() || v)
-			: [],
+		editingPurchase ? editingPurchase.volumes.map(idOf) : [],
 	);
 	const [purchaseDate, setPurchaseDate] = useState(
 		editingPurchase?.purchaseDate
 			? new Date(editingPurchase.purchaseDate).toISOString().split("T")[0]
 			: "",
 	);
+	const [condition, setCondition] = useState(
+		editingPurchase?.condition || "usado",
+	);
+	const [store, setStore] = useState(editingPurchase?.store || "");
 	const [error, setError] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 
@@ -391,9 +454,7 @@ function PurchaseFormInline({
 		if (selectedVolumes.length === availableVolumes.length) {
 			setSelectedVolumes([]);
 		} else {
-			setSelectedVolumes(
-				availableVolumes.map((v) => v.volumeId?.toString?.() || v.volumeId),
-			);
+			setSelectedVolumes(availableVolumes.map((v) => idOf(v.volumeId)));
 		}
 	};
 
@@ -401,6 +462,40 @@ function PurchaseFormInline({
 		selectedVolumes.length > 0 && parseFloat(amount) > 0
 			? parseFloat(amount) / selectedVolumes.length
 			: null;
+
+	const submit = async () => {
+		setSubmitting(true);
+		setError("");
+
+		try {
+			const data = {
+				seriesId,
+				amount: parseFloat(amount),
+				volumeIds: selectedVolumes,
+				condition,
+				store: store.trim(),
+			};
+			if (purchaseDate) data.purchaseDate = purchaseDate;
+
+			await axios({
+				method: editingPurchase ? "PUT" : "POST",
+				withCredentials: true,
+				headers: { Authorization: AUTH },
+				data,
+				url: editingPurchase
+					? `${API}/api/user/purchases/${editingPurchase._id}`
+					: `${API}/api/user/purchases`,
+			});
+			onDone();
+		} catch (err) {
+			const msg = err.response?.data?.msg;
+			setError(
+				Array.isArray(msg) ? msg.join(" ") : msg || "Erro ao salvar compra",
+			);
+		} finally {
+			setSubmitting(false);
+		}
+	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -413,71 +508,82 @@ function PurchaseFormInline({
 			return;
 		}
 
-		setSubmitting(true);
-		setError("");
+		const overlapping = availableVolumes.filter((vol) => {
+			const vid = idOf(vol.volumeId);
+			if (!selectedVolumes.includes(vid)) return false;
+			return myPurchases.some(
+				(p) =>
+					p._id !== editingPurchase?._id &&
+					p.volumes.map(idOf).includes(vid),
+			);
+		});
 
-		try {
-			const data = {
-				amount: parseFloat(amount),
-				volumeIds: selectedVolumes,
-			};
-			if (purchaseDate) data.purchaseDate = purchaseDate;
-
-			if (editingPurchase) {
-				await axios({
-					method: "PUT",
-					withCredentials: true,
-					headers: { Authorization: AUTH },
-					data,
-					url: `${API}/api/user/purchases/${editingPurchase._id}`,
-				});
-			} else {
-				await axios({
-					method: "POST",
-					withCredentials: true,
-					headers: { Authorization: AUTH },
-					data: { ...data, seriesId },
-					url: `${API}/api/user/purchases`,
-				});
-			}
-			onDone();
-		} catch (err) {
-			setError(err.response?.data?.msg || "Erro ao salvar compra");
-		} finally {
-			setSubmitting(false);
+		if (overlapping.length > 0) {
+			const names = overlapping.map(volumeLabel).join(", ");
+			confirm(
+				`${names} já faz parte de outra compra sua. Registrar esta compra vai sobrescrever o preço desse volume, e o valor por cópia da compra anterior será perdido. Continuar?`,
+				submit,
+			);
+			return;
 		}
+
+		submit();
 	};
 
 	return (
 		<form className="purchase-form" onSubmit={handleSubmit}>
-			<div className="purchase-form__field">
-				<label htmlFor="purchase-amount">Valor total pago (R$)</label>
-				<input
-					id="purchase-amount"
-					type="number"
-					step="0.01"
-					min="0"
-					value={amount}
-					onChange={(e) => setAmount(e.target.value)}
-					placeholder="0,00"
-					className="purchase-form__input"
-				/>
+			<div className="purchase-form__row">
+				<label className="purchase-form__field">
+					<span className="purchase-form__label">Valor total pago (R$)</span>
+					<input
+						type="number"
+						step="0.01"
+						min="0"
+						value={amount}
+						onChange={(e) => setAmount(e.target.value)}
+						placeholder="0,00"
+						className="purchase-form__input"
+					/>
+				</label>
+				<label className="purchase-form__field">
+					<span className="purchase-form__label">Data da compra (opcional)</span>
+					<input
+						type="date"
+						value={purchaseDate}
+						onChange={(e) => setPurchaseDate(e.target.value)}
+						className="purchase-form__input"
+					/>
+				</label>
 			</div>
 
-			<div className="purchase-form__field">
-				<label htmlFor="purchase-date">Data da compra (opcional)</label>
-				<input
-					id="purchase-date"
-					type="date"
-					value={purchaseDate}
-					onChange={(e) => setPurchaseDate(e.target.value)}
-					className="purchase-form__input"
-				/>
+			<div className="purchase-form__row">
+				<label className="purchase-form__field">
+					<span className="purchase-form__label">Condição</span>
+					<select
+						value={condition}
+						onChange={(e) => setCondition(e.target.value)}
+						className="purchase-form__input"
+					>
+						<option value="usado">Usado</option>
+						<option value="novo">Novo</option>
+					</select>
+				</label>
+				<label className="purchase-form__field">
+					<span className="purchase-form__label">Onde comprou (opcional)</span>
+					<input
+						type="text"
+						maxLength={100}
+						value={store}
+						onChange={(e) => setStore(e.target.value)}
+						placeholder="Shopee, sebo, outro colecionador..."
+						className="purchase-form__input"
+					/>
+				</label>
 			</div>
 
 			<div className="purchase-form__field">
 				<div className="purchase-form__volumes-header">
-					<label>Volumes comprados</label>
+					<span className="purchase-form__label">Volumes comprados</span>
 					<button
 						type="button"
 						className="purchase-form__select-all"
@@ -490,7 +596,7 @@ function PurchaseFormInline({
 				</div>
 				<div className="purchase-form__volumes-grid">
 					{availableVolumes.map((vol) => {
-						const vid = vol.volumeId?.toString?.() || vol.volumeId;
+						const vid = idOf(vol.volumeId);
 						return (
 							<label
 								key={vid}
@@ -498,6 +604,8 @@ function PurchaseFormInline({
 									selectedVolumes.includes(vid)
 										? "purchase-form__volume-chip--selected"
 										: ""
+								} ${
+									vol.isVariant ? "purchase-form__volume-chip--variant" : ""
 								}`}
 							>
 								<input
@@ -506,7 +614,7 @@ function PurchaseFormInline({
 									onChange={() => toggleVolume(vid)}
 									style={{ display: "none" }}
 								/>
-								Vol. {vol.volumeNumber}
+								{volumeLabel(vol)}
 							</label>
 						);
 					})}
@@ -514,28 +622,24 @@ function PurchaseFormInline({
 			</div>
 
 			{pricePerVolume && (
-				<div className="purchase-form__preview">
+				<p className="purchase-form__preview">
 					{formatCurrency(pricePerVolume)} por volume ({selectedVolumes.length}{" "}
 					volume(s))
-				</div>
+				</p>
 			)}
 
 			{error && <div className="purchase-form__error">{error}</div>}
 
 			<div className="purchase-form__actions">
+				<button type="button" className="button button--red" onClick={onCancel}>
+					Cancelar
+				</button>
 				<button type="submit" disabled={submitting} className="button">
 					{submitting
 						? "Salvando..."
 						: editingPurchase
 							? "Salvar alterações"
 							: "Registrar compra"}
-				</button>
-				<button
-					type="button"
-					className="button button--secondary"
-					onClick={onCancel}
-				>
-					Cancelar
 				</button>
 			</div>
 		</form>

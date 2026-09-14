@@ -458,6 +458,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		),
 		isAdult: desiredSeries.isAdult,
 		isVariant: volume.isVariant,
+		variantNumber: volume.variantNumber,
 	}));
 
 	const relatedInfoImages = desiredSeries.related.map((series) => {

@@ -318,6 +318,8 @@ router.post(
 router.put(
 	"/purchases/:id",
 	requireAuth,
+	purchaseValidation,
+	validateRequest,
 	purchasesController.updatePurchase,
 );
 router.delete(

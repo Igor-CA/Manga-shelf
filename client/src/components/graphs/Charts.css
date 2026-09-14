@@ -1,0 +1,62 @@
+.bar-chart__tooltip {
+	background-color: var(--foreground);
+	padding: 10px;
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	color: var(--text);
+}
+.bar-chart__x_axis {
+	fill: var(--text);
+	font-size: 0.9rem;
+	font-weight: bold;
+	width: 10px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.bar-chart__bar {
+	fill: var(--accent);
+}
+.chart-container {
+	background-color: var(--foreground);
+	box-shadow: 0px 5px 20px -5px rgb(0 0 0 / 0.3);
+	padding: 10px;
+	border-radius: 10px;
+}
+.chart__title {
+	color: var(--accent);
+	font-weight: bold;
+	text-align: center;
+	font-size: 1.2rem;
+}
+.pie-chart_container {
+	height: 300px;
+	max-height: 300px;
+	min-width: 200px;
+}
+.empty-graph-message-container {
+	display: flex;
+	color: var(--text);
+	height: 100%;
+	font-size: 1.25rem;
+	justify-content: center;
+	align-items: center;
+}
+.empty-graph-message {
+	text-align: center;
+}
+.bar-chart__scroll {
+	height: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+@media only screen and (min-width: 1024px) {
+	.chart-container {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 20px;
+		padding: 20px;
+	}
+}

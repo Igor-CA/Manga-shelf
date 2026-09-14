@@ -87,7 +87,7 @@
 }
 .volume-price-label {
 	font-size: 0.75rem;
-	color: var(--blue);
+	color: var(--accent);
 	text-align: center;
 	font-weight: 600;
 }
@@ -363,7 +363,7 @@
 .purchases-stats__value {
 	font-size: 1.25rem;
 	font-weight: bold;
-	color: var(--blue);
+	color: var(--accent);
 }
 
 .purchases-stats__label {
@@ -381,36 +381,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
-}
-
-.purchases-volume-prices__grid {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.35rem;
-}
-
-.purchases-volume-price-chip {
-	padding: 0.35rem 0.65rem;
-	border: 2px solid var(--secundary);
-	border-radius: 0.25rem;
-	color: var(--text);
-	font-size: 0.75rem;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.15rem;
-	opacity: 0.5;
-}
-
-.purchases-volume-price-chip--has-price {
-	opacity: 1;
-	border-color: var(--blue);
-}
-
-.purchases-volume-price-chip__price {
-	font-weight: 600;
-	color: var(--blue);
-	font-size: 0.7rem;
 }
 
 .purchases-list-section {
@@ -457,7 +427,7 @@
 
 .purchase-card__details {
 	font-size: 0.85rem;
-	color: var(--blue);
+	color: var(--accent);
 }
 
 .purchase-card__volumes {
@@ -491,5 +461,187 @@
 	gap: 0.5rem;
 }
 
+.purchases-community {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.purchases-community__note {
+	font-size: 0.75rem;
+	color: var(--text);
+	opacity: 0.7;
+}
+
+.purchases-stats__note {
+	font-size: 0.7rem;
+	color: var(--text);
+	opacity: 0.6;
+}
+
+.purchase-card__divergence {
+	font-size: 0.8rem;
+	color: var(--text);
+	opacity: 0.85;
+	margin-top: 0.25rem;
+}
+
 @media only screen and (min-width: 1024px) {
+}
+
+.purchase-form {
+	background-color: var(--foreground);
+	color: var(--text);
+	border-radius: 0.5rem;
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	box-shadow: var(--box-shadow);
+}
+
+.purchase-form__row {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.75rem;
+}
+
+.purchase-form__field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	min-width: 0;
+}
+
+.purchase-form__label {
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+.purchase-form__input {
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 2.5rem;
+	background-color: var(--background);
+	border: 1px solid var(--text);
+	border-radius: 0.25rem;
+	padding: 0.5rem 0.75rem;
+	color: var(--text);
+	font-family: inherit;
+	font-size: 0.9rem;
+}
+
+.purchase-form__input:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+
+.purchase-form__volumes-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.purchase-form__select-all {
+	background: none;
+	border: none;
+	padding: 0;
+	color: var(--accent);
+	cursor: pointer;
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+
+.purchase-form__volumes-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+}
+
+.purchase-form__volume-chip {
+	padding: 0.35rem 0.65rem;
+	border-radius: 0.25rem;
+	border: 1px solid var(--text);
+	background-color: var(--background);
+	color: var(--text);
+	font-size: 0.8rem;
+	font-weight: 600;
+	cursor: pointer;
+	user-select: none;
+}
+
+.purchase-form__volume-chip:hover {
+	color: var(--accent);
+}
+
+.purchase-form__volume-chip--selected,
+.purchase-form__volume-chip--selected:hover {
+	background-color: var(--primary);
+	color: white;
+	border: 1px solid var(--primary)
+}
+
+.purchase-form__volume-chip--variant {
+	font-style: italic;
+}
+
+.purchase-form__preview {
+	margin: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+.purchase-form__error {
+	color: var(--red);
+	font-size: 0.9rem;
+}
+
+.purchase-form__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+@media only screen and (min-width: 768px) {
+	.purchase-form__row {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.purchases-volume-prices__details summary {
+	cursor: pointer;
+	font-size: 0.8rem;
+	color: var(--text);
+	opacity: 0.75;
+}
+
+.purchases-volume-prices__values {
+	list-style: none;
+	margin: 0.5rem 0 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(2, max-content);
+	gap: 0.25rem 1.5rem;
+	font-size: 0.8rem;
+	color: var(--text);
+}
+
+.purchases-volume-prices__value {
+	display: grid;
+	grid-template-columns: minmax(4rem, max-content) max-content;
+	gap: 0.5rem;
+	font-variant-numeric: tabular-nums;
+}
+
+@media only screen and (min-width: 768px) {
+	.purchases-volume-prices__values {
+		grid-template-columns: repeat(3, max-content);
+		column-gap: 2.5rem;
+	}
+}
+
+@media only screen and (min-width: 1024px) {
+	.purchases-volume-prices__values {
+		grid-template-columns: repeat(4, max-content);
+	}
 }
