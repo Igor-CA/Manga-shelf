@@ -826,7 +826,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		{ $unwind: { path: "$ownedVolumes", preserveNullAndEmptyArrays: true } },
 		{
 			$match: {
-				"ownedVolumes.purchasePrice": { $exists: true, $gt: 0 },
+				"ownedVolumes.purchasePrice": { $gte: 0 },
 			},
 		},
 		{
@@ -897,7 +897,7 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 				coverValueOfVolumesWithoutPaidPrice: {
 					$sum: {
 						$cond: [
-							{ $gt: [{ $ifNull: ["$ownedVolumes.purchasePrice", 0] }, 0] },
+							{ $isNumber: "$ownedVolumes.purchasePrice" },
 							0,
 							{ $multiply: [{ $ifNull: ["$coverPrice", 0] }, "$copies"] },
 						],
@@ -977,7 +977,9 @@ exports.getUserStats = asyncHandler(async (req, res, next) => {
 		stats.volumesWithPaidPrice = totalTrackedVolumes;
 		stats.coverValueOfVolumesWithoutPaidPrice =
 			Math.round((marketValueResult[0]?.coverValueOfVolumesWithoutPaidPrice || 0) * 100) / 100;
-		stats.spendingBySeries = spendingBySeries.map((s) => ({
+		stats.spendingBySeries = spendingBySeries
+			.filter((s) => s.total > 0)
+			.map((s) => ({
 			name: s.name,
 			count: Math.round(s.total * 100) / 100,
 		}));

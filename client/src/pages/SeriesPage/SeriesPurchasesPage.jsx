@@ -51,7 +51,7 @@ export default function SeriesPurchasesPage({ series }) {
 
 	const myPriceByVolumeId = new Map(
 		(user?.ownedVolumes || [])
-			.filter((ov) => ov.purchasePrice > 0)
+			.filter((ov) => ov.purchasePrice != null)
 			.map((ov) => [idOf(ov.volume), ov.purchasePrice]),
 	);
 

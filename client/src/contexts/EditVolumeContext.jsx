@@ -92,10 +92,10 @@ const EditVolumeModal = () => {
 		const formData = new FormData(e.target);
 		const rawUpdates = Object.fromEntries(formData.entries());
 
-		const rawPrice = rawUpdates.price?.trim();
-		const parsedPrice = rawPrice
-			? parseFloat(rawPrice.replace(",", "."))
-			: null;
+		const rawPrice = rawUpdates.price?.trim() ?? "";
+		const nextPrice =
+			rawPrice === "" ? null : parseFloat(rawPrice.replace(",", "."));
+		const initialPrice = editingVolume.purchasePrice ?? null;
 
 		const updates = {
 			...rawUpdates,
@@ -106,10 +106,10 @@ const EditVolumeModal = () => {
 			amount: parseInt(rawUpdates.amount) || 1,
 		};
 
-		if (parsedPrice != null && !Number.isNaN(parsedPrice)) {
-			updates.price = parsedPrice;
-		} else {
+		if (Number.isNaN(nextPrice) || nextPrice === initialPrice) {
 			delete updates.price;
+		} else {
+			updates.price = nextPrice;
 		}
 
 		const finalPayload = {
@@ -198,12 +198,7 @@ const EditVolumeModal = () => {
 							<input
 								type="number"
 								name="price"
-								defaultValue={
-									editingVolume.purchasePrice != null &&
-									editingVolume.purchasePrice > 0
-										? editingVolume.purchasePrice
-										: ""
-								}
+								defaultValue={editingVolume.purchasePrice ?? ""}
 								className="form__input"
 								step="0.01"
 							/>
