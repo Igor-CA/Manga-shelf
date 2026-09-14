@@ -1,20 +1,27 @@
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, Tooltip, ResponsiveContainer, XAxis } from "recharts";
-const CustomTooltip = ({ active, payload, label, total }) => {
-	if (active && payload && payload.length) {
-		return (
-			<div className="bar-chart__tooltip">
-				<p>{`Gênero: ${label || "Não classificado"}`}</p>
-				<p>{`Quantidade: ${payload[0].value} `}</p>
-				<p>
-					{Math.round((payload[0].value / total) * 100)}% das suas obras tem
-					traços de {label || "generos não classificado"}
-				</p>
-			</div>
-		);
-	}
+const CustomTooltip = ({
+	active,
+	payload,
+	label,
+	total,
+	categoryLabel,
+	valueLabel,
+	formatValue,
+}) => {
+	if (!active || !payload?.length) return null;
 
-	return null;
+	const value = payload[0].value;
+	const name = label || "Não classificado";
+	const share = total > 0 ? Math.round((value / total) * 100) : 0;
+
+	return (
+		<div className="bar-chart__tooltip">
+			<p>{`${categoryLabel}: ${name}`}</p>
+			<p>{`${valueLabel}: ${formatValue(value)}`}</p>
+			<p>{`${share}% do total`}</p>
+		</div>
+	);
 };
 const CustomCursor = ({ x, y, width, height }) => {
 	return (
@@ -36,6 +43,9 @@ export default function BarChartComponent({
 	total,
 	filterParam,
 	basePath,
+	categoryLabel = "Gênero",
+	valueLabel = "Quantidade",
+	formatValue = (value) => value,
 }) {
 	const navigate = useNavigate();
 	const isClickable = Boolean(filterParam && basePath);
@@ -86,7 +96,14 @@ export default function BarChartComponent({
 								/>
 								<Tooltip
 									cursor={<CustomCursor />}
-									content={<CustomTooltip total={total} />}
+									content={
+										<CustomTooltip
+											total={total}
+											categoryLabel={categoryLabel}
+											valueLabel={valueLabel}
+											formatValue={formatValue}
+										/>
+									}
 								/>{" "}
 							</BarChart>
 						</ResponsiveContainer>
