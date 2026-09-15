@@ -10,7 +10,11 @@ const {
 const logger = require("../Utils/logger");
 const volume = require("../models/volume");
 const { escapeRegex } = require("../Utils/escapeRegex");
-const { buildStats, emptyStats } = require("../Utils/priceStats");
+const {
+	buildStats,
+	emptyStats,
+	contributingPricesPipeline,
+} = require("../Utils/priceStats");
 const { success } = require("./jobResult");
 
 const INTERNAL_RELATIONS = ["Outra Edição", "Mesmo Autor(a)"];
@@ -605,21 +609,7 @@ async function recalculatePrices() {
 	logger.info("Recalculating volume price aggregates...");
 
 	try {
-		const rows = await User.aggregate([
-			{ $unwind: "$ownedVolumes" },
-			{ $match: { "ownedVolumes.purchasePrice": { $gt: 0 } } },
-			{
-				$group: {
-					_id: "$ownedVolumes.volume",
-					prices: {
-						$push: {
-							price: "$ownedVolumes.purchasePrice",
-							condition: "$ownedVolumes.condition",
-						},
-					},
-				},
-			},
-		]);
+		const rows = await User.aggregate(contributingPricesPipeline());
 
 		const bulkOps = rows.map(({ _id, prices }) => ({
 			updateOne: {

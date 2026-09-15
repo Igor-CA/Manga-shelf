@@ -37,27 +37,27 @@ const buildStats = (rows) =>
 		),
 	);
 
-const contributingPricesPipeline = (volumeIds) => [
-	{ $match: { "ownedVolumes.volume": { $in: volumeIds } } },
-	{ $unwind: "$ownedVolumes" },
-	{
-		$match: {
-			"ownedVolumes.volume": { $in: volumeIds },
-			"ownedVolumes.purchasePrice": { $gt: 0 },
-		},
-	},
-	{
-		$group: {
-			_id: "$ownedVolumes.volume",
-			prices: {
-				$push: {
-					price: "$ownedVolumes.purchasePrice",
-					condition: "$ownedVolumes.condition",
+const contributingPricesPipeline = (volumeIds) => {
+	const onlyThese = volumeIds
+		? { "ownedVolumes.volume": { $in: volumeIds } }
+		: {};
+	return [
+		...(volumeIds ? [{ $match: onlyThese }] : []),
+		{ $unwind: "$ownedVolumes" },
+		{ $match: { ...onlyThese, "ownedVolumes.purchasePrice": { $gt: 0 } } },
+		{
+			$group: {
+				_id: "$ownedVolumes.volume",
+				prices: {
+					$push: {
+						price: "$ownedVolumes.purchasePrice",
+						condition: "$ownedVolumes.condition",
+					},
 				},
 			},
 		},
-	},
-];
+	];
+};
 
 const recomputeVolumePriceStatsMany = async (volumeIds) => {
 	const ids = [...new Set((volumeIds || []).filter(Boolean).map(String))].map(
