@@ -60,3 +60,22 @@
 		align-items: flex-end;
 	}
 }
+
+.edit-modal .input-container {
+	min-width: 0;
+}
+
+.edit-modal .form__input {
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 2.5rem;
+	font-family: inherit;
+}
+
+@media (min-width: 768px) {
+	.edit-modal .input-group {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		align-items: start;
+	}
+}
