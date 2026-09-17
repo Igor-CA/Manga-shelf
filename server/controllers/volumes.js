@@ -8,10 +8,12 @@ const UserNotificationStatus = require("../models/UserNotificationStatus");
 const Rating = require("../models/Rating");
 const Submission = require("../models/Submission");
 const { deletePostsForTarget, unlinkImages } = require("./post");
-const LinkProvider = require("../models/LinkProvider");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const { suppressSparseStats } = require("../Utils/priceStats");
-const { buildAmazonBuyUrl } = require("../Utils/linkProviders");
+const {
+	getDerivedProviders,
+	buildDerivedLinks,
+} = require("../Utils/linkProviders");
 const asyncHandler = require("express-async-handler");
 const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
@@ -57,21 +59,13 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 		if (userRating) myVolumeScore = userRating.score;
 	}
 
-	const amazon = serie?.isAdult
-		? null
-		: await LinkProvider.findOne({ key: "amazon" }).lean();
-	const buyUrl = buildAmazonBuyUrl(amazon, desiredVolume.ISBN);
-	const storeLinks = buyUrl
-		? [
-				{
-					provider: amazon.key,
-					name: amazon.name,
-					icon: amazon.icon,
-					brandColor: amazon.brandColor,
-					url: buyUrl,
-				},
-			]
-		: [];
+	const derivedProviders = await getDerivedProviders();
+	const storeLinks = buildDerivedLinks(
+		"Volume",
+		desiredVolume,
+		derivedProviders,
+		{ isAdult: serie?.isAdult },
+	).filter((link) => link.category === "store");
 
 	res.send({
 		...desiredVolume._doc,

@@ -11,8 +11,11 @@ const Notification = require("../models/Notification");
 const Rating = require("../models/Rating");
 const Submission = require("../models/Submission");
 const Purchase = require("../models/Purchase");
-const LinkProvider = require("../models/LinkProvider");
-const { buildAmazonBuyUrl, buildUrl } = require("../Utils/linkProviders");
+const {
+	getDerivedProviders,
+	buildDerivedLinks,
+	primaryStoreUrl,
+} = require("../Utils/linkProviders");
 const { deletePostsForTarget, unlinkImages } = require("./post");
 const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
@@ -450,9 +453,8 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	const desiredSeries = seriesResult[0];
 	desiredSeries.seriesCover = getSeriesCoverURL(desiredSeries);
 
-	const amazon = desiredSeries.isAdult
-		? null
-		: await LinkProvider.findOne({ key: "amazon" }).lean();
+	const { isAdult } = desiredSeries;
+	const derivedProviders = await getDerivedProviders();
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
@@ -465,7 +467,9 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		isAdult: desiredSeries.isAdult,
 		isVariant: volume.isVariant,
 		variantNumber: volume.variantNumber,
-		buyUrl: buildAmazonBuyUrl(amazon, volume.ISBN),
+		buyUrl: primaryStoreUrl(
+			buildDerivedLinks("Volume", volume, derivedProviders, { isAdult }),
+		),
 	}));
 
 	const relatedInfoImages = desiredSeries.related.map((series) => {
@@ -491,20 +495,12 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		}
 	}
 
-	const anilist = desiredSeries.anilistId
-		? await LinkProvider.findOne({ key: "anilist" }).lean()
-		: null;
-	const referenceLinks = anilist
-		? [
-				{
-					provider: anilist.key,
-					name: anilist.name,
-					icon: anilist.icon,
-					brandColor: anilist.brandColor,
-					url: buildUrl(anilist, desiredSeries.anilistId),
-				},
-			]
-		: [];
+	const referenceLinks = buildDerivedLinks(
+		"Series",
+		desiredSeries,
+		derivedProviders,
+		{ isAdult },
+	);
 
 	const {
 		_id: id,
