@@ -1,4 +1,5 @@
 import VolumeItem from "./VolumeItem";
+import AffiliateDisclosure from "../../components/links/AffiliateDisclosure";
 
 export default function SeriesVolumesList({
 	volumes = [],
@@ -9,8 +10,10 @@ export default function SeriesVolumesList({
 }) {
 	const normalVolumes = volumes.filter((volume) => !volume.isVariant);
 	const variants = volumes.filter((volume) => volume.isVariant);
+	const hasBuyableVolume = volumes.some((volume) => volume.buyUrl);
 	return (
 		<div>
+			{hasBuyableVolume && <AffiliateDisclosure />}
 			<ol
 				className={`collection-container ${
 					dense === true && "collection-container--denser"

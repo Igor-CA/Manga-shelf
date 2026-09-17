@@ -2,6 +2,7 @@ import { useState } from "react";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { Link } from "react-router-dom";
 import { useAuthGate } from "../../utils/useAuthGate";
+import BuyBadge from "../../components/links/BuyBadge";
 export default function VolumeItem({
 	volumeInfo,
 	localVolumeState,
@@ -10,7 +11,7 @@ export default function VolumeItem({
 }) {
 	const [loaded, setLoaded] = useState(false);
 	const ensureLogged = useAuthGate();
-	const { volumeId, image, volumeNumber } = volumeInfo;
+	const { volumeId, image, volumeNumber, buyUrl } = volumeInfo;
 
 	const myState = localVolumeState?.find((el) => el.volumeId === volumeId);
 	const ownsVolume = myState?.ownsVolume ?? false;
@@ -61,6 +62,7 @@ export default function VolumeItem({
 					onLoad={handleLoading}
 				/>
 			</Link>
+			<BuyBadge url={buyUrl} corner="top-right" />
 			<div className="series__volume__body">
 				<strong className="checkmark-label">Volume {volumeNumber}</strong>
 

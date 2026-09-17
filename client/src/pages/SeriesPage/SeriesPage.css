@@ -11,6 +11,7 @@
 }
 /* --- Volumes itemns list ---*/
 .series__volume-item {
+	position: relative;
 	background-color: var(--foreground);
 	border-radius: 0.25rem;
 	overflow: hidden;
