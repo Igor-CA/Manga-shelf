@@ -3,6 +3,8 @@ import { printArray } from "../../utils/seriesDataFunctions";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { Link } from "react-router-dom";
 import { FaPencilAlt } from "react-icons/fa";
+import ProviderChip from "../../components/links/ProviderChip";
+import AffiliateDisclosure from "../../components/links/AffiliateDisclosure";
 
 export default function VolumesOverallPage({ volume }) {
 	const {
@@ -15,6 +17,7 @@ export default function VolumesOverallPage({ volume }) {
 		chapters,
 		hasVariant,
 		summary,
+		storeLinks = [],
 	} = volume;
 	const volumeSummarry = useRef(null);
 	const [showingMore, setShowingMore] = useState(false);
@@ -87,6 +90,17 @@ export default function VolumesOverallPage({ volume }) {
 						<FaPencilAlt /> Editar informações
 					</Link>
 				</ul>
+				{storeLinks.length > 0 && (
+					<div className="overall-content__container">
+						<h2 className="collection-lable">Onde comprar</h2>
+						<AffiliateDisclosure />
+						<div className="provider-chips">
+							{storeLinks.map((link) => (
+								<ProviderChip key={link.provider} link={link} />
+							))}
+						</div>
+					</div>
+				)}
 			</div>
 		</div>
 	);
