@@ -11,6 +11,8 @@ const Notification = require("../models/Notification");
 const Rating = require("../models/Rating");
 const Submission = require("../models/Submission");
 const Purchase = require("../models/Purchase");
+const LinkProvider = require("../models/LinkProvider");
+const { buildAmazonBuyUrl } = require("../Utils/linkProviders");
 const { deletePostsForTarget, unlinkImages } = require("./post");
 const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
@@ -447,6 +449,10 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	}
 	const desiredSeries = seriesResult[0];
 	desiredSeries.seriesCover = getSeriesCoverURL(desiredSeries);
+
+	const amazon = desiredSeries.isAdult
+		? null
+		: await LinkProvider.findOne({ key: "amazon" }).lean();
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
@@ -459,6 +465,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		isAdult: desiredSeries.isAdult,
 		isVariant: volume.isVariant,
 		variantNumber: volume.variantNumber,
+		buyUrl: buildAmazonBuyUrl(amazon, volume.ISBN),
 	}));
 
 	const relatedInfoImages = desiredSeries.related.map((series) => {
