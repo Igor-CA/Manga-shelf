@@ -4,11 +4,13 @@ import SeriesVolumesList from "./SeriesVolumesList";
 import RelatedCard from "./RelatedCard";
 import { Link } from "react-router-dom";
 import { FaPencilAlt } from "react-icons/fa";
+import ProviderChip from "../../components/links/ProviderChip";
 
 export default function SeriesOverallPage({ series, volumesState, actions }) {
 	const [showingMore, setShowingMore] = useState(false);
 	const seriesSummarry = useRef(null);
-	const { related, summary, ratingAverage, ratingCount } = series;
+	const { related, summary, ratingAverage, ratingCount, referenceLinks } =
+		series;
 
 	const detailsSchema = useMemo(() => {
 		if (!series) return [];
@@ -43,10 +45,7 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 		return [
 			{
 				label: "Nota",
-				value:
-					ratingCount > 0
-						? `${ratingAverage.toFixed(1)} / 10`
-						: null,
+				value: ratingCount > 0 ? `${ratingAverage.toFixed(1)} / 10` : null,
 				suffix: ratingCount > 0 ? ` (${ratingCount} notas)` : null,
 			},
 			{ label: "Autores", value: printArray(authors) },
@@ -139,6 +138,16 @@ export default function SeriesOverallPage({ series, volumesState, actions }) {
 							</li>
 						);
 					})}
+					{referenceLinks?.length > 0 && (
+						<li>
+							<strong>Links: </strong>
+							<div className="provider-chips provider-chips--inline">
+								{referenceLinks.map((link) => (
+									<ProviderChip key={link.provider} link={link} />
+								))}
+							</div>
+						</li>
+					)}
 					<Link className="button" to={`/submissions/series/${series.id}`}>
 						<FaPencilAlt /> Editar informações
 					</Link>

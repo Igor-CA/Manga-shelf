@@ -12,7 +12,7 @@ const Rating = require("../models/Rating");
 const Submission = require("../models/Submission");
 const Purchase = require("../models/Purchase");
 const LinkProvider = require("../models/LinkProvider");
-const { buildAmazonBuyUrl } = require("../Utils/linkProviders");
+const { buildAmazonBuyUrl, buildUrl } = require("../Utils/linkProviders");
 const { deletePostsForTarget, unlinkImages } = require("./post");
 const logger = require("../Utils/logger");
 const notificationsController = require("../controllers/notifications");
@@ -491,6 +491,21 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		}
 	}
 
+	const anilist = desiredSeries.anilistId
+		? await LinkProvider.findOne({ key: "anilist" }).lean()
+		: null;
+	const referenceLinks = anilist
+		? [
+				{
+					provider: anilist.key,
+					name: anilist.name,
+					icon: anilist.icon,
+					brandColor: anilist.brandColor,
+					url: buildUrl(anilist, desiredSeries.anilistId),
+				},
+			]
+		: [];
+
 	const {
 		_id: id,
 		__v,
@@ -506,6 +521,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		...rest,
 		volumes: volumesWithImages,
 		related: relatedInfoImages,
+		referenceLinks,
 		mySeriesScore,
 		myVolumeScores,
 	};

@@ -4,6 +4,15 @@
 	gap: 0.5rem;
 	padding: 0 0.75rem;
 }
+/* Inside the details sidebar, which brings its own padding. */
+.provider-chips--inline {
+	padding: 0;
+	margin-top: 0.5rem;
+}
+.provider-chips--inline .provider-chip {
+	padding: 0.4rem 0.75rem;
+	font-size: 0.9rem;
+}
 .provider-chip {
 	display: inline-flex;
 	align-items: center;
