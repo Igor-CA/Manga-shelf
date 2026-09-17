@@ -1,3 +1,6 @@
+.series-card {
+	position: relative;
+}
 .series-card__title {
 	font-size: 0.8em;
 	color: var(--text);

@@ -1,10 +1,15 @@
 import axios from "axios";
+import { useContext } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
 import SeriesCardList from "../../components/cards/SeriesCardList";
+import AffiliateDisclosure from "../../components/links/AffiliateDisclosure";
+import { UserContext } from "../../contexts/userProvider";
 export default function MissingVolumesPage() {
 	const { username } = useParams();
 	const navigate = useNavigate();
+	const { user: loggedUser } = useContext(UserContext);
+	const isOwner = username === loggedUser?.username;
 
 	const fetchMissingVolumes = async (page, params) => {
 		try {
@@ -50,6 +55,7 @@ export default function MissingVolumesPage() {
 
 	return (
 		<div className="container">
+			{isOwner && <AffiliateDisclosure />}
 			<SeriesCardList
 				skeletonsCount={36}
 				fetchFunction={fetchMissingVolumes}

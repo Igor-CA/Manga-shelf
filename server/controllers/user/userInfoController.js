@@ -7,6 +7,11 @@ const {
 } = require("../../Utils/getCoverFunctions");
 const logger = require("../../Utils/logger");
 const { escapeRegex } = require("../../Utils/escapeRegex");
+const {
+	getDerivedProviders,
+	buildDerivedLinks,
+	primaryStoreUrl,
+} = require("../../Utils/linkProviders");
 
 const ITEMS_PER_PAGE = 36;
 
@@ -511,6 +516,8 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const calculatedSkip = ITEMS_PER_PAGE * (page - 1) - shiftOffset;
 	const skip = Math.max(0, calculatedSkip);
 
+	const isOwner = req.user?.username === targetUser;
+
 	const aggregationPipeline = [
 		{ $match: { username: targetUser } },
 
@@ -559,6 +566,7 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				"volumeDetails._id": 1,
 				"volumeDetails.number": 1,
 				"volumeDetails.isVariant": 1,
+				"volumeDetails.ISBN": 1,
 				"userList.status": 1,
 
 				isOwned: {
@@ -593,6 +601,7 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				isAdult: { $first: "$seriesDetails.isAdult" },
 				displayVolumeId: { $first: "$volumeDetails._id" },
 				displayVolumeNumber: { $first: "$volumeDetails.number" },
+				displayVolumeISBN: { $first: "$volumeDetails.ISBN" },
 				userStatus: { $first: "$userList.status" },
 			},
 		},
@@ -609,6 +618,7 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 				isAdult: 1,
 				volumeId: "$displayVolumeId",
 				volumeNumber: "$displayVolumeNumber",
+				isbn: "$displayVolumeISBN",
 				status: "$userStatus",
 			},
 		},
@@ -625,6 +635,8 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const missingVolumesList = await User.aggregate(aggregationPipeline)
 		.allowDiskUse(true)
 		.exec();
+	const derivedProviders = isOwner ? await getDerivedProviders() : [];
+
 	const listWithImages = missingVolumesList.map((volume) => {
 		const seriesObject = { title: volume.series };
 		let image = getVolumeCoverURL(seriesObject, volume.volumeNumber);
@@ -632,11 +644,17 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 		if (volume.isAdult && !req.user?.allowAdult) {
 			image = null;
 		}
-		const { series, volumeId, seriesStatus, ...rest } = volume;
+		const buyUrl = primaryStoreUrl(
+			buildDerivedLinks("Volume", { ISBN: volume.isbn }, derivedProviders, {
+				isAdult: volume.isAdult,
+			}),
+		);
+		const { series, volumeId, seriesStatus, isbn, ...rest } = volume;
 		return {
 			...rest,
 			title: volume.series,
 			image: image,
+			buyUrl,
 		};
 	});
 	res.send(listWithImages);

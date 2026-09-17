@@ -10,6 +10,7 @@ import { messageContext } from "../../contexts/messageStateProvider";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { useEditVolume } from "../../contexts/EditVolumeContext";
 import { getOwnedVolumeInfo } from "../../utils/seriesDataFunctions";
+import BuyBadge from "../links/BuyBadge";
 export function SeriesCard({
 	itemDetails,
 	itemType,
@@ -35,6 +36,7 @@ export function SeriesCard({
 		seriesId,
 		ratingScore,
 		isDerived,
+		buyUrl,
 	} = itemDetails;
 	const link = itemType === "Series" ? `/series/${_id}` : `/volume/${_id}`;
 	const imageText =
@@ -323,6 +325,7 @@ export function SeriesCard({
 					</div>
 				)}
 			</Link>
+			<BuyBadge url={buyUrl} corner="top-left" />
 			<p className="series-card__title">{imageText}</p>
 		</div>
 	);
