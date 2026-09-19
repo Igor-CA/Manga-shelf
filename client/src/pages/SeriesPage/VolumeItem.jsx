@@ -62,7 +62,12 @@ export default function VolumeItem({
 					onLoad={handleLoading}
 				/>
 			</Link>
-			<BuyBadge url={buyUrl} corner="top-right" />
+			<BuyBadge
+				url={buyUrl}
+				corner="top-right"
+				targetModel="Volume"
+				targetId={volumeId}
+			/>
 			<div className="series__volume__body">
 				<strong className="checkmark-label">Volume {volumeNumber}</strong>
 

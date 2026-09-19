@@ -96,7 +96,12 @@ export default function VolumesOverallPage({ volume }) {
 						<AffiliateDisclosure />
 						<div className="provider-chips">
 							{storeLinks.map((link) => (
-								<ProviderChip key={link.provider} link={link} />
+								<ProviderChip
+									key={link.provider}
+									link={link}
+									targetModel="Volume"
+									targetId={volume._id}
+								/>
 							))}
 						</div>
 					</div>

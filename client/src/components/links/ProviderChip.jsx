@@ -1,11 +1,18 @@
 import { SiAmazon, SiAnilist } from "react-icons/si";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import "./ProviderChip.css";
+import { recordLinkClick } from "./linkClicks";
 
 const ICONS = { amazon: SiAmazon, anilist: SiAnilist };
 
-export default function ProviderChip({ link }) {
+export default function ProviderChip({ link, targetModel, targetId }) {
 	const Icon = ICONS[link.icon];
+
+	const handleClick = () => {
+		if (link.category === "store" && targetModel && targetId) {
+			recordLinkClick({ provider: link.provider, targetModel, targetId });
+		}
+	};
 
 	return (
 		<a
@@ -14,6 +21,7 @@ export default function ProviderChip({ link }) {
 			rel="noopener noreferrer"
 			className="provider-chip"
 			style={{ "--provider-chip-color": link.brandColor }}
+			onClick={handleClick}
 		>
 			{Icon ? (
 				<Icon className="provider-chip__icon" aria-hidden="true" />

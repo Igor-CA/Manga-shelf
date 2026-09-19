@@ -42,6 +42,7 @@ const apiKeyAuth = (req, res, next) => {
 	const publicRoutes = [
 		"/login/auth/google",
 		"/auth/google/callback",
+		"/link-click",
 	];
 	if (publicRoutes.includes(req.path)) {
 		return next();

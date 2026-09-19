@@ -49,6 +49,7 @@ const postController = require("../controllers/post");
 const postReportController = require("../controllers/postReport");
 const ratingController = require("../controllers/rating");
 const purchasesController = require("../controllers/purchases");
+const linksController = require("../controllers/links");
 const { requireAuth } = require("../middlewares/authentications");
 const { createAuthLimiter } = require("../middlewares/rateLimiters");
 const {
@@ -124,6 +125,7 @@ router.post(
 	validateRequest,
 	reportController.createReport,
 );
+router.post("/link-click", linksController.recordClick);
 
 //
 router.post(

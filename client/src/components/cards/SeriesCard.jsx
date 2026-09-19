@@ -325,7 +325,12 @@ export function SeriesCard({
 					</div>
 				)}
 			</Link>
-			<BuyBadge url={buyUrl} corner="top-left" />
+			<BuyBadge
+				url={buyUrl}
+				corner="top-left"
+				targetModel={itemType === "Series" ? "Series" : "Volume"}
+				targetId={_id}
+			/>
 			<p className="series-card__title">{imageText}</p>
 		</div>
 	);
