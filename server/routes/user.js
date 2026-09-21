@@ -377,5 +377,11 @@ router.post(
 	submissionController.createSubmission,
 );
 
+router.post(
+	"/link-submission",
+	requireAuth,
+	submissionController.createLinkSubmission,
+);
+
 router.get("/:username/submission", submissionController.getUserSubmissions);
 module.exports = router;

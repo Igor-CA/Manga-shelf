@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
 const LinkProvider = require("../models/LinkProvider");
 const LinkClick = require("../models/LinkClick");
-const { matchProvider } = require("../Utils/linkProviders");
+const { matchProvider, parseUrl } = require("../Utils/linkProviders");
 
 exports.recordClick = asyncHandler(async (req, res) => {
 	const { provider, targetModel, targetId } = req.body || {};
@@ -129,3 +129,29 @@ exports.updateProvider = asyncHandler(async (req, res) => {
 	await provider.save();
 	res.json(provider);
 });
+
+exports.resolveProviderLink = (chosenProviderKey, url, activeProviders) => {
+	const chosenProvider = activeProviders.find(
+		(provider) => provider.key === chosenProviderKey,
+	);
+	if (!chosenProvider) return { error: "Site desconhecido ou inativo." };
+	if (!url) return { error: "Cole a URL do link." };
+
+	const match = parseUrl(url, activeProviders);
+	if (!match) {
+		return {
+			error: "Não reconhecemos essa URL como um link de nenhum site suportado.",
+		};
+	}
+
+	if (match.provider !== chosenProviderKey) {
+		const matchedProvider = activeProviders.find(
+			(provider) => provider.key === match.provider,
+		);
+		return {
+			error: `Essa URL parece ser do site ${matchedProvider?.name ?? match.provider}, não de ${chosenProvider.name}.`,
+		};
+	}
+
+	return { provider: chosenProvider.key, externalId: match.externalId };
+};

@@ -101,6 +101,14 @@ const matchProvider = (provider, url) => {
 	return url.match(regex)?.[1] || null;
 };
 
+const parseUrl = (url, providers) => {
+	for (const provider of providers) {
+		const externalId = matchProvider(provider, url);
+		if (externalId) return { provider: provider.key, externalId };
+	}
+	return null;
+};
+
 module.exports = {
 	buildUrl,
 	applyAffiliate,
@@ -109,4 +117,5 @@ module.exports = {
 	buildDerivedLinks,
 	primaryStoreUrl,
 	matchProvider,
+	parseUrl,
 };

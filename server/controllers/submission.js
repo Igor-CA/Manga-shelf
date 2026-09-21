@@ -2,10 +2,13 @@ const Submission = require("../models/Submission");
 const Series = require("../models/Series");
 const volume = require("../models/volume");
 const User = require("../models/User");
+const ExternalLink = require("../models/ExternalLink");
 const _ = require("lodash");
 const asyncHandler = require("express-async-handler");
 const logger = require("../Utils/logger");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
+const { getActiveProviders } = require("../Utils/linkProviders");
+const { resolveProviderLink } = require("./links");
 
 const path = require("path");
 const fs = require("fs");
@@ -107,6 +110,92 @@ exports.createSubmission = asyncHandler(async (req, res, next) => {
 	});
 });
 
+exports.createLinkSubmission = asyncHandler(async (req, res) => {
+	const { targetModel, targetId, notes, links } = req.body || {};
+	const userId = req.user._id;
+
+	if (!["Series", "Volume"].includes(targetModel)) {
+		return res.status(400).json({ msg: "Alvo inválido." });
+	}
+
+	const targetExists =
+		targetModel === "Series"
+			? await Series.exists({ _id: targetId })
+			: await volume.exists({ _id: targetId });
+
+	if (!targetExists) {
+		return res.status(404).json({
+			msg: "O recurso que você está tentando editar não foi encontrado.",
+		});
+	}
+
+	const addRows = Array.isArray(links?.add) ? links.add : [];
+	const removeRows = Array.isArray(links?.remove) ? links.remove : [];
+	if (!addRows.length && !removeRows.length) {
+		return res
+			.status(400)
+			.json({ msg: "Nenhum link foi adicionado ou removido." });
+	}
+
+	const activeProviders = await getActiveProviders();
+
+	const add = [];
+	for (const row of addRows) {
+		const resolved = resolveProviderLink(
+			row?.provider,
+			row?.url,
+			activeProviders,
+		);
+		if (resolved.error) return res.status(400).json({ msg: resolved.error });
+		add.push({ provider: resolved.provider, externalId: resolved.externalId });
+	}
+
+	const remove = [];
+	for (const row of removeRows) {
+		if (!row?.provider || typeof row.provider !== "string") {
+			return res.status(400).json({ msg: "Link a remover inválido." });
+		}
+		remove.push({ provider: row.provider });
+	}
+
+	const newSubmission = new Submission({
+		user: userId,
+		targetModel,
+		targetId,
+		payload: { links: { add, remove } },
+		notes: notes || "",
+		status: "Pendente",
+	});
+
+	await newSubmission.save();
+
+	return res.status(201).json({
+		msg: "Sugestão enviada com sucesso! Aguardando análise da moderação.",
+		submissionId: newSubmission._id,
+	});
+});
+
+const applyLinkSubmission = async (submission) => {
+	const { targetModel, targetId } = submission;
+	const { add = [], remove = [] } = submission.payload?.links || {};
+
+	for (const { provider, externalId } of add) {
+		await ExternalLink.findOneAndUpdate(
+			{ targetModel, targetId, provider },
+			{ $set: { externalId } },
+			{ upsert: true },
+		);
+	}
+
+	if (remove.length) {
+		await ExternalLink.deleteMany({
+			targetModel,
+			targetId,
+			provider: { $in: remove.map((row) => row.provider) },
+		});
+	}
+};
+
 exports.approveSubmission = asyncHandler(async (req, res, next) => {
 	const { id } = req.params;
 
@@ -133,25 +222,29 @@ exports.approveSubmission = asyncHandler(async (req, res, next) => {
 	if (!targetDocument)
 		return res.status(404).json({ msg: "Obra alvo não encontrada." });
 
-	const safePayload = _.pick(
-		submission.payload,
-		EDITABLE_SUBMISSION_FIELDS[submission.targetModel] || [],
-	);
+	if (submission.payload?.links) {
+		await applyLinkSubmission(submission);
+	} else {
+		const safePayload = _.pick(
+			submission.payload,
+			EDITABLE_SUBMISSION_FIELDS[submission.targetModel] || [],
+		);
 
-	const customizer = (objValue, srcValue) => {
-		if (_.isArray(srcValue)) {
-			return srcValue;
+		const customizer = (objValue, srcValue) => {
+			if (_.isArray(srcValue)) {
+				return srcValue;
+			}
+		};
+
+		_.mergeWith(targetDocument, safePayload, customizer);
+
+		if (submission.targetModel === "Series") {
+			targetDocument.markModified("specs");
+			targetDocument.markModified("dates");
+			targetDocument.markModified("originalRun");
 		}
-	};
-
-	_.mergeWith(targetDocument, safePayload, customizer);
-
-	if (submission.targetModel === "Series") {
-		targetDocument.markModified("specs");
-		targetDocument.markModified("dates");
-		targetDocument.markModified("originalRun");
+		await targetDocument.save();
 	}
-	await targetDocument.save();
 
 	submission.status = "Aprovado";
 	submission.adminComment = req.body.adminComment;
