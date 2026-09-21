@@ -11,7 +11,8 @@ const { deletePostsForTarget, unlinkImages } = require("./post");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
 const { suppressSparseStats } = require("../Utils/priceStats");
 const {
-	getDerivedProviders,
+	getActiveProviders,
+	getStoredLinks,
 	buildDerivedLinks,
 } = require("../Utils/linkProviders");
 const asyncHandler = require("express-async-handler");
@@ -59,11 +60,13 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 		if (userRating) myVolumeScore = userRating.score;
 	}
 
-	const derivedProviders = await getDerivedProviders();
+	const activeProviders = await getActiveProviders();
+	const storedLinks = await getStoredLinks("Volume", [desiredVolume._id]);
 	const storeLinks = buildDerivedLinks(
 		"Volume",
 		desiredVolume,
-		derivedProviders,
+		activeProviders,
+		storedLinks,
 		{ isAdult: serie?.isAdult },
 	).filter((link) => link.category === "store");
 

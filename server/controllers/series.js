@@ -12,7 +12,8 @@ const Rating = require("../models/Rating");
 const Submission = require("../models/Submission");
 const Purchase = require("../models/Purchase");
 const {
-	getDerivedProviders,
+	getActiveProviders,
+	getStoredLinks,
 	buildDerivedLinks,
 	primaryStoreUrl,
 } = require("../Utils/linkProviders");
@@ -454,7 +455,12 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	desiredSeries.seriesCover = getSeriesCoverURL(desiredSeries);
 
 	const { isAdult } = desiredSeries;
-	const derivedProviders = await getDerivedProviders();
+	const activeProviders = await getActiveProviders();
+	const volumeIds = desiredSeries.volumes.map((volume) => volume._id);
+	const [volumeStoredLinks, seriesStoredLinks] = await Promise.all([
+		getStoredLinks("Volume", volumeIds),
+		getStoredLinks("Series", [desiredSeries._id]),
+	]);
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
@@ -468,7 +474,13 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		isVariant: volume.isVariant,
 		variantNumber: volume.variantNumber,
 		buyUrl: primaryStoreUrl(
-			buildDerivedLinks("Volume", volume, derivedProviders, { isAdult }),
+			buildDerivedLinks(
+				"Volume",
+				volume,
+				activeProviders,
+				volumeStoredLinks,
+				{ isAdult },
+			),
 		),
 	}));
 
@@ -498,7 +510,8 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	const referenceLinks = buildDerivedLinks(
 		"Series",
 		desiredSeries,
-		derivedProviders,
+		activeProviders,
+		seriesStoredLinks,
 		{ isAdult },
 	);
 

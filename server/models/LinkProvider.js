@@ -18,6 +18,7 @@ const LinkProviderSchema = new Schema(
 		brandColor: { type: String, required: true },
 		urlTemplate: { type: String, required: true },
 		affiliateTemplate: { type: String, default: null },
+		active: { type: Boolean, default: true },
 	},
 	{ timestamps: true },
 );

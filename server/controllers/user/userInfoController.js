@@ -8,7 +8,8 @@ const {
 const logger = require("../../Utils/logger");
 const { escapeRegex } = require("../../Utils/escapeRegex");
 const {
-	getDerivedProviders,
+	getActiveProviders,
+	getStoredLinks,
 	buildDerivedLinks,
 	primaryStoreUrl,
 } = require("../../Utils/linkProviders");
@@ -635,7 +636,13 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const missingVolumesList = await User.aggregate(aggregationPipeline)
 		.allowDiskUse(true)
 		.exec();
-	const derivedProviders = isOwner ? await getDerivedProviders() : [];
+	const activeProviders = isOwner ? await getActiveProviders() : [];
+	const storedLinks = isOwner
+		? await getStoredLinks(
+				"Volume",
+				missingVolumesList.map((volume) => volume.volumeId),
+			)
+		: new Map();
 
 	const listWithImages = missingVolumesList.map((volume) => {
 		const seriesObject = { title: volume.series };
@@ -645,9 +652,13 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			image = null;
 		}
 		const buyUrl = primaryStoreUrl(
-			buildDerivedLinks("Volume", { ISBN: volume.isbn }, derivedProviders, {
-				isAdult: volume.isAdult,
-			}),
+			buildDerivedLinks(
+				"Volume",
+				{ _id: volume.volumeId, ISBN: volume.isbn },
+				activeProviders,
+				storedLinks,
+				{ isAdult: volume.isAdult },
+			),
 		);
 		const { series, volumeId, seriesStatus, isbn, ...rest } = volume;
 		return {

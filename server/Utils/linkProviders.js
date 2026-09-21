@@ -1,5 +1,6 @@
 const { isbn13ToIsbn10 } = require("./isbn");
 const LinkProvider = require("../models/LinkProvider");
+const ExternalLink = require("../models/ExternalLink");
 
 const buildUrl = (provider, externalId) =>
 	provider?.urlTemplate && externalId
@@ -20,18 +21,42 @@ const DERIVED_IDS = {
 	},
 };
 
-const derivedKeys = Object.values(DERIVED_IDS).flatMap(Object.keys);
+const getActiveProviders = () =>
+	LinkProvider.find({ active: { $ne: false } }).lean();
 
-const getDerivedProviders = () =>
-	LinkProvider.find({ key: { $in: derivedKeys } }).lean();
+const getStoredLinks = async (targetModel, targetIds) => {
+	const byTarget = new Map();
+	if (!targetIds.length) return byTarget;
 
-const buildDerivedLinks = (targetModel, doc, providers, { isAdult } = {}) => {
+	const links = await ExternalLink.find({
+		targetModel,
+		targetId: { $in: targetIds },
+	}).lean();
+
+	for (const link of links) {
+		const key = link.targetId.toString();
+		if (!byTarget.has(key)) byTarget.set(key, new Map());
+		byTarget.get(key).set(link.provider, link.externalId);
+	}
+	return byTarget;
+};
+
+const buildDerivedLinks = (
+	targetModel,
+	doc,
+	providers,
+	storedLinks = new Map(),
+	{ isAdult } = {},
+) => {
 	const builders = DERIVED_IDS[targetModel] || {};
+	const storedForDoc = doc ? storedLinks.get(String(doc._id)) : null;
 
 	return providers
 		.filter((provider) => !(isAdult && provider.category === "store"))
 		.map((provider) => {
-			const externalId = doc ? builders[provider.key]?.(doc) : null;
+			const externalId = doc
+				? (builders[provider.key]?.(doc) ?? storedForDoc?.get(provider.key))
+				: null;
 			if (!externalId) return null;
 
 			return {
@@ -43,7 +68,8 @@ const buildDerivedLinks = (targetModel, doc, providers, { isAdult } = {}) => {
 				url: applyAffiliate(provider, buildUrl(provider, externalId)),
 			};
 		})
-		.filter(Boolean);
+		.filter(Boolean)
+		.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
 };
 
 const primaryStoreUrl = (links) =>
@@ -52,7 +78,8 @@ const primaryStoreUrl = (links) =>
 module.exports = {
 	buildUrl,
 	applyAffiliate,
-	getDerivedProviders,
+	getActiveProviders,
+	getStoredLinks,
 	buildDerivedLinks,
 	primaryStoreUrl,
 };
