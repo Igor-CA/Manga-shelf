@@ -75,6 +75,32 @@ const buildDerivedLinks = (
 const primaryStoreUrl = (links) =>
 	links.find((link) => link.category === "store")?.url ?? null;
 
+const domainMatches = (domains, host) =>
+	(domains || []).some(
+		(domain) => host === domain || host.endsWith(`.${domain}`),
+	);
+
+const matchProvider = (provider, url) => {
+	let parsed;
+	try {
+		parsed = new URL(url);
+	} catch {
+		return null;
+	}
+
+	const host = parsed.hostname.replace(/^www\./i, "");
+	if (!domainMatches(provider.domains, host)) return null;
+
+	let regex;
+	try {
+		regex = new RegExp(provider.idPattern, "i");
+	} catch {
+		return null;
+	}
+
+	return url.match(regex)?.[1] || null;
+};
+
 module.exports = {
 	buildUrl,
 	applyAffiliate,
@@ -82,4 +108,5 @@ module.exports = {
 	getStoredLinks,
 	buildDerivedLinks,
 	primaryStoreUrl,
+	matchProvider,
 };

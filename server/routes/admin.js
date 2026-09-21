@@ -6,6 +6,7 @@ const volumesController = require("../controllers/volumes");
 const submissionController = require("../controllers/submission");
 const notificationController = require("../controllers/notifications");
 const postReportController = require("../controllers/postReport");
+const linksController = require("../controllers/links");
 
 router.post("/volume/delete", volumesController.deleteVolumeAndNotify);
 router.post("/series/delete", seriesController.deleteSeriesAndNotify);
@@ -16,5 +17,8 @@ router.post("/add-patch-note", notificationController.adminSendPatchNotes)
 router.get("/reports", postReportController.getPendingReports)
 router.post("/report/:id/delete-post", postReportController.deleteReportedPost)
 router.post("/report/:id/restore", postReportController.restoreReportedPost)
+router.get("/link-providers", linksController.listProviders)
+router.post("/link-providers", linksController.createProvider)
+router.put("/link-providers/:id", linksController.updateProvider)
 
 module.exports = router;
