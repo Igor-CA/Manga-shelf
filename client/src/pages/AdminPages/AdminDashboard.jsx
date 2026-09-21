@@ -6,11 +6,13 @@ import "../Settings/Settings.css";
 import SubmissionCard from "./SubmissionCard";
 import ReportCard from "./ReportCard";
 import PatchNotesForm from "./PatchNotesForm";
+import LinksPanel from "./LinksPanel";
 import usePageMeta from "../../utils/usePageMeta";
 
 const navbarOptions = [
 	{ label: "Submissões Pendentes", id: "pending" },
 	{ label: "Denúncias", id: "reports" },
+	{ label: "Provedores de link", id: "link-providers" },
 	{ label: "Enviar Patch notes", id: "patch-notes" },
 ];
 
@@ -120,6 +122,7 @@ export default function AdminDashboard() {
 						</div>
 					)}
 				</div>
+				<LinksPanel />
 				<PatchNotesForm></PatchNotesForm>
 			</div>
 		</div>
