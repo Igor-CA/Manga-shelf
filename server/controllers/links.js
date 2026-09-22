@@ -2,7 +2,20 @@ const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
 const LinkProvider = require("../models/LinkProvider");
 const LinkClick = require("../models/LinkClick");
-const { matchProvider, parseUrl } = require("../Utils/linkProviders");
+const {
+	getActiveProviders,
+	matchProvider,
+	parseUrl,
+} = require("../Utils/linkProviders");
+
+exports.listActiveProviders = asyncHandler(async (req, res) => {
+	const providers = await getActiveProviders();
+	res.json(
+		providers
+			.filter((provider) => provider.domains?.length && provider.idPattern)
+			.map(({ key, name, category }) => ({ key, name, category })),
+	);
+});
 
 exports.recordClick = asyncHandler(async (req, res) => {
 	const { provider, targetModel, targetId } = req.body || {};

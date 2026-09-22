@@ -29,7 +29,7 @@ const SubmissionSchema = new Schema(
 
 		notes: {
 			type: String,
-			required: true,
+			default: "",
 		},
 
 		status: {

@@ -3,11 +3,16 @@ const Series = require("../models/Series");
 const volume = require("../models/volume");
 const User = require("../models/User");
 const ExternalLink = require("../models/ExternalLink");
+const LinkProvider = require("../models/LinkProvider");
 const _ = require("lodash");
 const asyncHandler = require("express-async-handler");
 const logger = require("../Utils/logger");
 const { getVolumeCoverURL } = require("../Utils/getCoverFunctions");
-const { getActiveProviders } = require("../Utils/linkProviders");
+const {
+	getActiveProviders,
+	buildUrl,
+	applyAffiliate,
+} = require("../Utils/linkProviders");
 const { resolveProviderLink } = require("./links");
 
 const path = require("path");
@@ -272,6 +277,79 @@ exports.rejectSubmission = asyncHandler(async (req, res) => {
 	res.json({ msg: "Submissão rejeitada com sucesso!" });
 });
 
+const attachLinksPreview = async (submissions) => {
+	const linkSubmissions = submissions.filter((s) => s.payload?.links);
+	if (!linkSubmissions.length) return submissions;
+
+	const providersByKey = new Map(
+		(await LinkProvider.find().lean()).map((p) => [p.key, p]),
+	);
+
+	const targetIdOf = (submission) =>
+		submission.targetId?._id ?? submission.targetId;
+
+	const wanted = linkSubmissions.flatMap((submission) => {
+		const { add = [], remove = [] } = submission.payload.links;
+		return [...add, ...remove].map((row) => ({
+			targetModel: submission.targetModel,
+			targetId: targetIdOf(submission),
+			provider: row.provider,
+		}));
+	});
+
+	const currentIds = new Map();
+	if (wanted.length) {
+		const existing = await ExternalLink.find({ $or: wanted }).lean();
+		for (const link of existing) {
+			currentIds.set(
+				`${link.targetModel}:${link.targetId}:${link.provider}`,
+				link.externalId,
+			);
+		}
+	}
+
+	const urlFor = (providerDoc, externalId) =>
+		providerDoc && externalId
+			? applyAffiliate(providerDoc, buildUrl(providerDoc, externalId))
+			: null;
+
+	return submissions.map((submission) => {
+		if (!submission.payload?.links) return submission;
+
+		const { add = [], remove = [] } = submission.payload.links;
+		const currentFor = (provider) =>
+			currentIds.get(
+				`${submission.targetModel}:${targetIdOf(submission)}:${provider}`,
+			);
+
+		const linksPreview = [
+			...add.map((row) => {
+				const providerDoc = providersByKey.get(row.provider);
+				const current = currentFor(row.provider);
+				return {
+					action: current ? "update" : "add",
+					provider: row.provider,
+					name: providerDoc?.name || row.provider,
+					newUrl: urlFor(providerDoc, row.externalId),
+					oldUrl: urlFor(providerDoc, current),
+				};
+			}),
+			...remove.map((row) => {
+				const providerDoc = providersByKey.get(row.provider);
+				return {
+					action: "remove",
+					provider: row.provider,
+					name: providerDoc?.name || row.provider,
+					newUrl: null,
+					oldUrl: urlFor(providerDoc, currentFor(row.provider)),
+				};
+			}),
+		];
+
+		return { ...submission.toObject(), linksPreview };
+	});
+};
+
 exports.getPendingSubmissions = asyncHandler(async (req, res) => {
 	const submissions = await Submission.find({ status: "Pendente" })
 		.populate("user", "username email")
@@ -291,7 +369,7 @@ exports.getPendingSubmissions = asyncHandler(async (req, res) => {
 			(a.targetId?.number ?? 0) - (b.targetId?.number ?? 0),
 	);
 
-	res.json(submissions);
+	res.json(await attachLinksPreview(submissions));
 });
 
 exports.getUserSubmissions = asyncHandler(async (req, res) => {

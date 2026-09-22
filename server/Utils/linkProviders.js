@@ -54,9 +54,8 @@ const buildDerivedLinks = (
 	return providers
 		.filter((provider) => !(isAdult && provider.category === "store"))
 		.map((provider) => {
-			const externalId = doc
-				? (builders[provider.key]?.(doc) ?? storedForDoc?.get(provider.key))
-				: null;
+			const derivedId = doc ? builders[provider.key]?.(doc) : null;
+			const externalId = derivedId ?? storedForDoc?.get(provider.key);
 			if (!externalId) return null;
 
 			return {
@@ -65,6 +64,7 @@ const buildDerivedLinks = (
 				category: provider.category,
 				icon: provider.icon,
 				brandColor: provider.brandColor,
+				derived: !!derivedId,
 				url: applyAffiliate(provider, buildUrl(provider, externalId)),
 			};
 		})

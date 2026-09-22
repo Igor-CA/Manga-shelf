@@ -6,6 +6,7 @@ const volumesController = require("../controllers/volumes");
 const postController = require("../controllers/post");
 const purchasesController = require("../controllers/purchases");
 const Notifications = require("../controllers/notifications");
+const linksController = require("../controllers/links");
 const { requireAuth } = require("../middlewares/authentications");
 const { authController, userInfoController } = require("../controllers/user/index");
 
@@ -25,6 +26,7 @@ router.get("/get-user-socials/:type/:username", userInfoController.getSocials); 
 router.get("/browse", seriesController.browse);
 router.get("/series/filters", seriesController.getInfoFilters);
 router.get("/series/:id", seriesController.getSeriesDetails);
+router.get("/link-providers", linksController.listActiveProviders);
 router.get("/series/:id/purchases", purchasesController.getAllSeriesPurchases);
 router.get(
 	"/series/:id/price-stats",
