@@ -7,8 +7,12 @@ import "../Settings/Settings.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { getChangedValues } from "../../utils/getChangedValues";
 import usePageMeta from "../../utils/usePageMeta";
+import LinksSubmissionForm from "./LinksSubmissionForm";
 
-const navbarOptions = [{ label: "Informações Gerais", id: "general" }];
+const navbarOptions = [
+	{ label: "Informações Gerais", id: "general" },
+	{ label: "Links", id: "links" },
+];
 
 const INITIAL_STATE = {
 	serie: {},
@@ -153,20 +157,28 @@ export default function VolumeSubmissionPage() {
 		<div className="container page-content settings-page">
 			<SideNavbar title={"Editar obra"} options={navbarOptions} />
 			{!loading ? (
-				<form className="settings-container" onSubmit={handleSubmit}>
-					<SourceSection
-						notes={notes}
-						file={file}
-						onInvalid={handleInvalid}
-						onChange={handleNotesChange}
-						onFileChange={handleFileChange}
-					/>
-					<GeneralInfoSection data={formData} onChange={handleChange} />
+				<div className="settings-container">
+					<form onSubmit={handleSubmit}>
+						<SourceSection
+							notes={notes}
+							file={file}
+							onInvalid={handleInvalid}
+							onChange={handleNotesChange}
+							onFileChange={handleFileChange}
+						/>
+						<GeneralInfoSection data={formData} onChange={handleChange} />
 
-					<button className="button" type="submit">
-						Enviar Submissão
-					</button>
-				</form>
+						<button className="button" type="submit">
+							Enviar Submissão
+						</button>
+					</form>
+
+					<LinksSubmissionForm
+						targetModel="Volume"
+						targetId={id}
+						currentLinks={initialData?.storeLinks}
+					/>
+				</div>
 			) : (
 				<div className="settings-container">
 					<div

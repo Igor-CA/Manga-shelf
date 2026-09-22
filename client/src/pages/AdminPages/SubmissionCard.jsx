@@ -117,28 +117,70 @@ export default function SubmissionCard({ submission, onProcess }) {
 
 			<div className="table">
 				<h4>Alterações Propostas:</h4>
-				<table>
-					<thead>
-						<tr>
-							<th>Campo</th>
-							<th>Novo Valor</th>
-							<th>Valor Antigo</th>
-						</tr>
-					</thead>
-					<tbody>
-						{Object.entries(changes).map(([path, newValue]) => {
-							const oldValue = getValueByPath(originalData, path);
-
-							return (
-								<tr key={path}>
-									<td className="field-name">{path}</td>
-									<td className="field-new-value">{formatValue(newValue)}</td>
-									<td className="field-old-value">{formatValue(oldValue)}</td>
+				{submission.linksPreview ? (
+					<table>
+						<thead>
+							<tr>
+								<th>Site</th>
+								<th>Novo Valor</th>
+								<th>Valor Antigo</th>
+							</tr>
+						</thead>
+						<tbody>
+							{submission.linksPreview.map((link) => (
+								<tr key={`${link.action}-${link.provider}`}>
+									<td className="field-name">
+										{link.name}
+										{link.action === "add" && " (novo)"}
+										{link.action === "update" && " (correção)"}
+										{link.action === "remove" && " (remover)"}
+									</td>
+									<td className="field-new-value">
+										{link.newUrl ? (
+											<a href={link.newUrl} target="_blank" rel="noreferrer">
+												{link.newUrl}
+											</a>
+										) : (
+											<span className="empty-val">Empty</span>
+										)}
+									</td>
+									<td className="field-old-value">
+										{link.oldUrl ? (
+											<a href={link.oldUrl} target="_blank" rel="noreferrer">
+												{link.oldUrl}
+											</a>
+										) : (
+											<span className="empty-val">Empty</span>
+										)}
+									</td>
 								</tr>
-							);
-						})}
-					</tbody>
-				</table>
+							))}
+						</tbody>
+					</table>
+				) : (
+					<table>
+						<thead>
+							<tr>
+								<th>Campo</th>
+								<th>Novo Valor</th>
+								<th>Valor Antigo</th>
+							</tr>
+						</thead>
+						<tbody>
+							{Object.entries(changes).map(([path, newValue]) => {
+								const oldValue = getValueByPath(originalData, path);
+
+								return (
+									<tr key={path}>
+										<td className="field-name">{path}</td>
+										<td className="field-new-value">{formatValue(newValue)}</td>
+										<td className="field-old-value">{formatValue(oldValue)}</td>
+									</tr>
+								);
+							})}
+						</tbody>
+					</table>
+				)}
 			</div>
 
 			<label className="input_label">

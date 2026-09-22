@@ -8,11 +8,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { getChangedValues } from "../../utils/getChangedValues";
 import usePageMeta from "../../utils/usePageMeta";
+import LinksSubmissionForm from "./LinksSubmissionForm";
 
 const navbarOptions = [
 	{ label: "Informações Gerais", id: "general" },
 	{ label: "Especificações Físicas", id: "specs" },
 	{ label: "Publicação Original", id: "original-run" },
+	{ label: "Links", id: "links" },
 ];
 
 const INITIAL_STATE = {
@@ -208,40 +210,48 @@ export default function SeriesSubmissionPage() {
 		<div className="container page-content settings-page">
 			<SideNavbar title={"Editar obra"} options={navbarOptions} />
 			{!loading ? (
-				<form className="settings-container" onSubmit={handleSubmit}>
-					<SourceSection
-						notes={notes}
-						file={file}
-						onInvalid={handleInvalid}
-						onChange={handleNotesChange}
-						onFileChange={handleFileChange}
-					/>
-					<GeneralInfoSection
-						data={formData}
-						onChange={handleChange}
-						typesList={typesList}
-						publishersList={publishersList}
-					/>
+				<div className="settings-container">
+					<form onSubmit={handleSubmit}>
+						<SourceSection
+							notes={notes}
+							file={file}
+							onInvalid={handleInvalid}
+							onChange={handleNotesChange}
+							onFileChange={handleFileChange}
+						/>
+						<GeneralInfoSection
+							data={formData}
+							onChange={handleChange}
+							typesList={typesList}
+							publishersList={publishersList}
+						/>
 
-					<SpecsSection
-						data={formData.specs}
-						onNestedChange={(field, val) =>
-							handleNestedChange("specs", field, val)
-						}
-					/>
+						<SpecsSection
+							data={formData.specs}
+							onNestedChange={(field, val) =>
+								handleNestedChange("specs", field, val)
+							}
+						/>
 
-					<OriginalRunSection
-						data={formData.originalRun}
-						onNestedChange={(field, val) =>
-							handleNestedChange("originalRun", field, val)
-						}
-						countryList={countryList}
-					/>
+						<OriginalRunSection
+							data={formData.originalRun}
+							onNestedChange={(field, val) =>
+								handleNestedChange("originalRun", field, val)
+							}
+							countryList={countryList}
+						/>
 
-					<button className="button" type="submit">
-						Enviar Submissão
-					</button>
-				</form>
+						<button className="button" type="submit">
+							Enviar Submissão
+						</button>
+					</form>
+
+					<LinksSubmissionForm
+						targetModel="Series"
+						targetId={id}
+						currentLinks={initialData?.referenceLinks}
+					/>
+				</div>
 			) : (
 				<div className="settings-container">
 					<div
