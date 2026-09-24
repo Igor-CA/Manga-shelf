@@ -423,7 +423,8 @@ exports.undropSeries = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Status da série atualizado para 'Colecionando'" });
 });
 
-exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
+const buildOwnedVolumeSet = (fields) => {
+	const path = (name) => `ownedVolumes.$.${name}`;
 	const {
 		acquiredAt,
 		readAt,
@@ -434,29 +435,29 @@ exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
 		notes,
 		condition,
 		store,
-		_id,
-	} = req.body;
+	} = fields;
 
-	const updates = {
-		"ownedVolumes.$.acquiredAt": acquiredAt,
-		"ownedVolumes.$.isRead": isRead,
-		"ownedVolumes.$.readCount": readCount,
-		"ownedVolumes.$.readAt": readAt,
-		"ownedVolumes.$.amount": amount,
-		"ownedVolumes.$.notes": notes,
-	};
-
-	// An untouched price field must not overwrite a recorded price with null.
+	const set = {};
+	if (acquiredAt !== undefined) set[path("acquiredAt")] = acquiredAt;
+	if (isRead !== undefined) set[path("isRead")] = isRead;
+	if (readCount !== undefined) set[path("readCount")] = readCount;
+	if (readAt !== undefined) set[path("readAt")] = readAt;
+	if (amount !== undefined) set[path("amount")] = amount;
+	if (notes !== undefined) set[path("notes")] = notes;
 	if (price !== undefined) {
-		updates["ownedVolumes.$.purchasePrice"] = price;
-		updates["ownedVolumes.$.lotSize"] = null;
+		set[path("purchasePrice")] = price;
+		set[path("lotSize")] = null;
 	}
-	if (condition !== undefined) {
-		updates["ownedVolumes.$.condition"] = condition || null;
-	}
-	if (store !== undefined) {
-		updates["ownedVolumes.$.store"] = store || null;
-	}
+	if (condition !== undefined) set[path("condition")] = condition || null;
+	if (store !== undefined) set[path("store")] = store || null;
+
+	return set;
+};
+
+exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
+	const { _id, ...fields } = req.body;
+
+	const updates = buildOwnedVolumeSet(fields);
 
 	const result = await User.updateOne(
 		{
@@ -472,7 +473,7 @@ exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
 			.json({ msg: "Volume não encontrado na sua coleção." });
 	}
 
-	if (price !== undefined || condition !== undefined) {
+	if (fields.price !== undefined || fields.condition !== undefined) {
 		await recomputeVolumePriceStats(_id);
 	}
 

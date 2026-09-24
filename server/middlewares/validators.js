@@ -153,8 +153,7 @@ const storeValidation = body("store")
 	.withMessage("O nome da loja deve ter no máximo 100 caracteres.");
 
 const amountValidation = body("amount")
-	.notEmpty()
-	.withMessage("A quantidade é obrigatória.")
+	.optional({ checkFalsy: true })
 	.isInt({ min: 1 })
 	.withMessage("Você deve possuir pelo menos 1 cópia para editar esse volume.")
 	.toInt();
@@ -166,8 +165,7 @@ const readCountValidation = body("readCount")
 	.toInt();
 
 const isReadValidation = body("isRead")
-	.notEmpty()
-	.withMessage("O status de leitura é obrigatório.")
+	.optional()
 	.isBoolean()
 	.withMessage("O valor de 'Lido' deve ser verdadeiro ou falso.")
 	.toBoolean();
