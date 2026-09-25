@@ -12,7 +12,7 @@ import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { useCallback } from "react";
 import { useContext } from "react";
 import { useMemo } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UserContext } from "../../contexts/userProvider";
 import { toDateInputValue } from "../../utils/formatters";
 
@@ -106,6 +106,8 @@ export default function ReadListPage() {
 	const [tablePage, setTablePage] = useState(1);
 	const [tableRows, setTableRows] = useState([]);
 	const [tableTotal, setTableTotal] = useState(0);
+	const [tableLoading, setTableLoading] = useState(true);
+	const tableRequestRef = useRef(0);
 
 	useEffect(() => {
 		setTablePage(1);
@@ -113,6 +115,8 @@ export default function ReadListPage() {
 
 	const fetchTablePage = useCallback(
 		async (page) => {
+			const requestId = ++tableRequestRef.current;
+			setTableLoading(true);
 			try {
 				const response = await axios({
 					method: "GET",
@@ -125,14 +129,18 @@ export default function ReadListPage() {
 						import.meta.env.REACT_APP_HOST_ORIGIN
 					}/api/data/user/${username}/volumes/table`,
 				});
+				if (requestId !== tableRequestRef.current) return;
 				setTableRows((response.data.items || []).map(normalizeTableRow));
 				setTableTotal(response.data.total || 0);
 			} catch (error) {
+				if (requestId !== tableRequestRef.current) return;
 				if (error.response?.status === 400) navigate("/404");
 				console.error(
 					"Error fetching volumes table:",
 					error.response?.data?.msg
 				);
+			} finally {
+				if (requestId === tableRequestRef.current) setTableLoading(false);
 			}
 		},
 		[username, params, navigate]
@@ -165,13 +173,14 @@ export default function ReadListPage() {
 			</div>
 
 			{view === "table" ? (
-				tableRows.length === 0 ? (
+				tableRows.length === 0 && !tableLoading ? (
 					<EmptyListComponent />
 				) : (
 					<OwnedVolumesTable
 						rows={tableRows}
 						editable={isOwner}
 						showSeriesColumn
+						loading={tableLoading}
 						pagination={{
 							page: tablePage,
 							totalPages,

@@ -4,13 +4,17 @@ import TablePagination from "./TablePagination";
 import { ALL_COLUMNS, VISITOR_COLUMN_KEYS } from "./columns";
 import "./OwnedVolumesTable.css";
 
+const SKELETON_ROWS = 10;
+
 export default function OwnedVolumesTable({
 	rows,
 	editable,
 	showSeriesColumn = false,
+	loading = false,
 	pagination,
 }) {
 	const [headSize, setHeadSize] = useState(null);
+	const wrapRef = useRef(null);
 	const tableRef = useRef(null);
 	const stickyHeadRef = useRef(null);
 	const bodyScrollRef = useRef(null);
@@ -54,6 +58,22 @@ export default function OwnedVolumesTable({
 		</tr>
 	);
 
+	const renderSkeletonRows = () =>
+		Array.from({ length: rows.length || SKELETON_ROWS }, (_, rowIndex) => (
+			<tr key={rowIndex}>
+				{headerColumns.map((column) => (
+					<td
+						key={column.key}
+						className={`volumes-table__cell${
+							column.key === "volume" ? " volumes-table__cell--volume" : ""
+						}`}
+					>
+						<div className="volumes-table__skeleton" />
+					</td>
+				))}
+			</tr>
+		));
+
 	const leadScrollFrom = (fromHead) => () => {
 		headLeadsScrollRef.current = fromHead;
 	};
@@ -65,7 +85,7 @@ export default function OwnedVolumesTable({
 	};
 
 	return (
-		<div className="volumes-table__wrap">
+		<div className="volumes-table__wrap" ref={wrapRef}>
 			<div className="volumes-table__frame">
 				{headSize && (
 					<div className="volumes-table__sticky-head">
@@ -96,23 +116,37 @@ export default function OwnedVolumesTable({
 					onFocus={leadScrollFrom(false)}
 					onScroll={followScroll(stickyHeadRef, false)}
 				>
-					<table className="volumes-table" ref={tableRef}>
+					<table
+						className={`volumes-table${loading ? " volumes-table--loading" : ""}`}
+						ref={tableRef}
+						aria-busy={loading}
+					>
 						<thead>{renderHeaderRow()}</thead>
 						<tbody>
-							{rows.map((row) => (
-								<VolumeRow
-									key={row.volumeId}
-									row={row}
-									columns={columns}
-									showSeriesColumn={showSeriesColumn}
-								/>
-							))}
+							{loading && rows.length === 0
+								? renderSkeletonRows()
+								: rows.map((row) => (
+										<VolumeRow
+											key={row.volumeId}
+											row={row}
+											columns={columns}
+											showSeriesColumn={showSeriesColumn}
+										/>
+									))}
 						</tbody>
 					</table>
 				</div>
 			</div>
 
-			{pagination && <TablePagination {...pagination} />}
+			{pagination && (
+				<TablePagination
+					{...pagination}
+					onPageChange={(page) => {
+						pagination.onPageChange(page);
+						wrapRef.current.scrollIntoView({ block: "start" });
+					}}
+				/>
+			)}
 		</div>
 	);
 }

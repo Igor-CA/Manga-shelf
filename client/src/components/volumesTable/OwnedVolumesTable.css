@@ -3,6 +3,7 @@
 	flex-direction: column;
 	gap: 12px;
 	margin: 10px;
+	scroll-margin-top: 12px;
 }
 
 .volumes-table__sticky-head {
@@ -120,6 +121,70 @@
 	font-weight: bold;
 }
 
+.volumes-table__skeleton {
+	height: 14px;
+	min-width: 60px;
+}
+
+.volumes-table__cell--volume .volumes-table__skeleton {
+	height: 30px;
+	min-width: 96px;
+}
+
+.volumes-table--loading tbody {
+	pointer-events: none;
+}
+
+.volumes-table--loading tbody .volumes-table__cell {
+	color: transparent;
+}
+
+.volumes-table--loading tbody .volumes-table__cell--notes {
+	font-size: 0;
+}
+
+.volumes-table--loading tbody .volumes-table__cell > * {
+	visibility: hidden;
+	opacity: 0;
+}
+
+.volumes-table--loading tbody .volumes-table__cell:not(.volumes-table__cell--volume) {
+	position: relative;
+}
+
+.volumes-table--loading tbody .volumes-table__cell::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 10px;
+	right: 14px;
+	height: 14px;
+	transform: translateY(-50%);
+	border-radius: 4px;
+	background: linear-gradient(
+			90deg,
+			rgba(128, 128, 128, 0.28) 30%,
+			rgba(128, 128, 128, 0.12) 50%,
+			rgba(128, 128, 128, 0.28) 70%
+		)
+		0 0 / 300% 100%;
+	animation: volumes-table-shimmer 1.5s linear infinite;
+}
+
+.volumes-table--loading tbody .volumes-table__cell--volume::after {
+	height: 30px;
+}
+
+@keyframes volumes-table-shimmer {
+	from {
+		background-position: 100% 0;
+	}
+
+	to {
+		background-position: 0 0;
+	}
+}
+
 .table-pagination {
 	display: flex;
 	align-items: center;
@@ -192,6 +257,10 @@
 }
 
 @media only screen and (min-width: 1040px) {
+	.volumes-table__wrap {
+		scroll-margin-top: calc(4rem + 12px);
+	}
+
 	.volumes-table__sticky-head {
 		top: 4rem;
 	}
