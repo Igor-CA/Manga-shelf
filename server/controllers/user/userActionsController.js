@@ -1,11 +1,16 @@
 const User = require("../../models/User");
 const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose");
 
 const { sendNewFollowerNotification } = require("../notifications");
 const Series = require("../../models/Series");
 const Volumes = require("../../models/volume");
+const Rating = require("../../models/Rating");
 const logger = require("../../Utils/logger");
 const { recomputeVolumePriceStats } = require("../../Utils/priceStats");
+const { maxAllowedPrice } = require("../../Utils/priceConstants");
+
+const formatBRL = (value) => `R$ ${value.toFixed(2).replace(".", ",")}`;
 
 exports.addSeries = asyncHandler(async (req, res) => {
 	const seriesId = req.body.id;
@@ -423,8 +428,8 @@ exports.undropSeries = asyncHandler(async (req, res, next) => {
 	return res.send({ msg: "Status da série atualizado para 'Colecionando'" });
 });
 
-const buildOwnedVolumeSet = (fields) => {
-	const path = (name) => `ownedVolumes.$.${name}`;
+const buildOwnedVolumeSet = (fields, arrayFilterId = "$") => {
+	const path = (name) => `ownedVolumes.${arrayFilterId}.${name}`;
 	const {
 		acquiredAt,
 		readAt,
@@ -478,6 +483,107 @@ exports.editOwnedVolumes = asyncHandler(async (req, res, next) => {
 	}
 
 	res.json({ msg: "Informações do volume atualizadas com sucesso." });
+});
+
+const getBatchEditError = (edit, ownedVolumeIds, volumeById) => {
+	const volume = volumeById.get(edit.volume);
+	if (!ownedVolumeIds.has(edit.volume) || !volume) {
+		return {
+			volume: edit.volume,
+			msg: "Volume não encontrado na sua coleção.",
+		};
+	}
+
+	if (edit.price == null) return null;
+	const limit = maxAllowedPrice(volume.defaultPrice);
+	if (edit.price <= limit) return null;
+	return {
+		volume: edit.volume,
+		field: "price",
+		msg: `O preço informado é alto demais para esse volume. O máximo aceito é ${formatBRL(limit)}.`,
+	};
+};
+
+const buildBatchOwnedVolumesUpdate = (edits) => {
+	const set = {};
+	const arrayFilters = [];
+	edits.forEach(({ volume, rating, ...fields }, index) => {
+		const identifier = `v${index}`;
+		const volumeSet = buildOwnedVolumeSet(fields, `$[${identifier}]`);
+		if (Object.keys(volumeSet).length === 0) return;
+		Object.assign(set, volumeSet);
+		arrayFilters.push({ [`${identifier}.volume`]: volume });
+	});
+	return { set, arrayFilters };
+};
+
+const buildBatchRatingOps = (userId, edits, volumeById) =>
+	edits
+		.filter((edit) => edit.rating !== undefined)
+		.map(({ volume, rating }) => {
+			const filter = { user: userId, volume };
+			if (rating === null) return { deleteOne: { filter } };
+			return {
+				updateOne: {
+					filter,
+					update: {
+						$set: { score: rating, series: volumeById.get(volume).serie },
+					},
+					upsert: true,
+				},
+			};
+		});
+
+exports.batchEditOwnedVolumes = asyncHandler(async (req, res, next) => {
+	const { edits } = req.body;
+
+	const [user, volumes] = await Promise.all([
+		User.findById(req.user._id).select("ownedVolumes"),
+		Volumes.find({ _id: { $in: edits.map((edit) => edit.volume) } }).select(
+			"defaultPrice serie",
+		),
+	]);
+	const ownedVolumeIds = new Set(
+		user.ownedVolumes.map((owned) => owned.volume.toString()),
+	);
+	const volumeById = new Map(
+		volumes.map((volume) => [volume._id.toString(), volume]),
+	);
+
+	const errors = edits
+		.map((edit) => getBatchEditError(edit, ownedVolumeIds, volumeById))
+		.filter(Boolean);
+	if (errors.length > 0) {
+		return res.status(400).json({
+			msg: errors.map((error) => error.msg),
+			errors,
+		});
+	}
+
+	const { set, arrayFilters } = buildBatchOwnedVolumesUpdate(edits);
+	const ratingOps = buildBatchRatingOps(req.user._id, edits, volumeById);
+
+	const session = await mongoose.startSession();
+	session.startTransaction();
+	try {
+		if (arrayFilters.length > 0) {
+			await User.updateOne(
+				{ _id: req.user._id },
+				{ $set: set },
+				{ arrayFilters, session },
+			);
+		}
+		if (ratingOps.length > 0) {
+			await Rating.bulkWrite(ratingOps, { session });
+		}
+		await session.commitTransaction();
+		res.json({ msg: "Alterações salvas com sucesso." });
+	} catch (err) {
+		if (session.inTransaction()) await session.abortTransaction();
+		throw err;
+	} finally {
+		session.endSession();
+	}
 });
 exports.toggleVolumeRead = asyncHandler(async (req, res, next) => {
 	const { id } = req.body;

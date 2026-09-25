@@ -479,6 +479,90 @@ const purchaseValidation = [
 	storeValidation,
 ];
 
+// Batch owned-volume edits
+const batchEditsArrayValidation = body("edits")
+	.isArray({ min: 1, max: 500 })
+	.withMessage("A lista de alterações deve ter entre 1 e 500 volumes.");
+
+const batchEditsDistinctValidation = body("edits").custom((edits) => {
+	if (!Array.isArray(edits)) return true;
+	const ids = edits.map((edit) => edit?.volume).filter(Boolean);
+	if (new Set(ids).size !== ids.length) {
+		throw new Error(
+			"A lista de alterações não pode repetir o mesmo volume.",
+		);
+	}
+	return true;
+});
+
+const batchVolumeIdValidation = body("edits.*.volume")
+	.trim()
+	.notEmpty()
+	.withMessage("O ID do volume é obrigatório.")
+	.isMongoId()
+	.withMessage("ID de volume inválido.");
+
+const batchAcquiredAtValidation = body("edits.*.acquiredAt")
+	.optional({ checkFalsy: true, nullable: true })
+	.trim()
+	.isISO8601()
+	.withMessage("A data de aquisição deve ser uma data válida (YYYY-MM-DD).")
+	.toDate();
+
+const batchReadAtValidation = body("edits.*.readAt")
+	.optional({ checkFalsy: true, nullable: true })
+	.trim()
+	.isISO8601()
+	.withMessage("A data de leitura deve ser uma data válida (YYYY-MM-DD).")
+	.toDate();
+
+const batchPriceValidation = body("edits.*.price")
+	.optional({ checkFalsy: true })
+	.isFloat({ min: 0 })
+	.withMessage("O preço deve ser um valor numérico positivo.")
+	.toFloat();
+
+const batchConditionValidation = body("edits.*.condition")
+	.optional({ nullable: true, checkFalsy: true })
+	.isIn(VOLUME_CONDITIONS)
+	.withMessage("A condição deve ser 'novo' ou 'usado'.");
+
+const batchStoreValidation = body("edits.*.store")
+	.optional({ nullable: true, checkFalsy: true })
+	.trim()
+	.isLength({ max: 100 })
+	.withMessage("O nome da loja deve ter no máximo 100 caracteres.");
+
+const batchAmountValidation = body("edits.*.amount")
+	.optional({ checkFalsy: true })
+	.isInt({ min: 1 })
+	.withMessage("Você deve possuir pelo menos 1 cópia para editar esse volume.")
+	.toInt();
+
+const batchReadCountValidation = body("edits.*.readCount")
+	.optional({ checkFalsy: true })
+	.isInt({ min: 0 })
+	.withMessage("O número de vezes lido deve ser um inteiro positivo.")
+	.toInt();
+
+const batchIsReadValidation = body("edits.*.isRead")
+	.optional()
+	.isBoolean()
+	.withMessage("O valor de 'Lido' deve ser verdadeiro ou falso.")
+	.toBoolean();
+
+const batchNotesValidation = body("edits.*.notes")
+	.optional()
+	.trim()
+	.isLength({ max: 500 })
+	.withMessage("As anotações não podem exceder 500 caracteres.");
+
+const batchRatingValidation = body("edits.*.rating")
+	.optional({ nullable: true })
+	.isInt({ min: 1, max: 10 })
+	.withMessage("A nota deve ser entre 1 e 10.")
+	.toInt();
+
 const editOwnedValidation = [
 	volumeIdValidation,
 	acquiredAtValidation,
@@ -492,6 +576,22 @@ const editOwnedValidation = [
 	isReadValidation,
 	notesValidation,
 ];
+const batchEditValidation = [
+	batchEditsArrayValidation,
+	batchEditsDistinctValidation,
+	batchVolumeIdValidation,
+	batchAcquiredAtValidation,
+	batchReadAtValidation,
+	batchPriceValidation,
+	batchConditionValidation,
+	batchStoreValidation,
+	batchAmountValidation,
+	batchReadCountValidation,
+	batchIsReadValidation,
+	batchNotesValidation,
+	batchRatingValidation,
+];
+
 const photoValidation = [
 	photoDescriptionValidation,
 	photoDateValidation,
@@ -536,6 +636,7 @@ module.exports = {
 	changePasswordValidator,
 	reportsValidation,
 	editOwnedValidation,
+	batchEditValidation,
 	photoValidation,
 	submissionValidation,
 	postValidation,

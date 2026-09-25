@@ -63,6 +63,7 @@ const {
 	changeEmailValidator,
 	reportsValidation,
 	editOwnedValidation,
+	batchEditValidation,
 	photoValidation,
 	submissionValidation,
 	postValidation,
@@ -204,6 +205,13 @@ router.put(
 	editOwnedValidation,
 	validateRequest,
 	userActionsController.editOwnedVolumes,
+);
+router.patch(
+	"/owned-volumes/batch",
+	requireAuth,
+	batchEditValidation,
+	validateRequest,
+	userActionsController.batchEditOwnedVolumes,
 );
 router.put(
 	"/set-username",
