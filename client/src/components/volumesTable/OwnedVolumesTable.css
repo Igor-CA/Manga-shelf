@@ -5,6 +5,27 @@
 	margin: 10px;
 }
 
+.volumes-table__sticky-head {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	margin-top: -12px;
+	padding-top: 12px;
+	background-color: var(--background);
+}
+
+.volumes-table__sticky-head-scroll {
+	overflow-x: auto;
+	scrollbar-width: none;
+	border: 1px solid rgba(var(--gray), 1);
+	border-bottom: none;
+	border-radius: 8px 8px 0 0;
+}
+
+.volumes-table__sticky-head-scroll::-webkit-scrollbar {
+	display: none;
+}
+
 .volumes-table__scroll {
 	overflow-x: auto;
 	border: 1px solid rgba(var(--gray), 1);
@@ -36,7 +57,12 @@
 	width: 240px;
 }
 
+.volumes-table--sticky-head {
+	table-layout: fixed;
+}
+
 .volumes-table thead .volumes-table__cell {
+	box-sizing: border-box;
 	padding: 12px;
 	text-align: center;
 	font-weight: bold;
@@ -162,5 +188,11 @@
 @media only screen and (min-width: 1024px) {
 	.volumes-table__volume {
 		max-width: 180px;
+	}
+}
+
+@media only screen and (min-width: 1040px) {
+	.volumes-table__sticky-head {
+		top: 4rem;
 	}
 }
