@@ -261,6 +261,7 @@ const buildVolumeAggregationPipeline = (
 	skip,
 	myRatingStages = [],
 	isOwner = false,
+	{ pageSize = ITEMS_PER_PAGE, includeLotSize = false, withTotal = false } = {},
 ) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
@@ -325,14 +326,25 @@ const buildVolumeAggregationPipeline = (
 							notes: "$ownedVolumes.notes",
 							store: "$ownedVolumes.store",
 							condition: "$ownedVolumes.condition",
+							...(includeLotSize
+								? { lotSize: "$ownedVolumes.lotSize" }
+								: {}),
 						}
 					: {}),
 			},
 		},
-
-		{ $skip: skip },
-		{ $limit: ITEMS_PER_PAGE },
 	];
+
+	if (withTotal) {
+		pipeline.push({
+			$facet: {
+				items: [{ $skip: skip }, { $limit: pageSize }],
+				totalCount: [{ $count: "count" }],
+			},
+		});
+	} else {
+		pipeline.push({ $skip: skip }, { $limit: pageSize });
+	}
 
 	return pipeline;
 };
@@ -1224,6 +1236,19 @@ exports.getUserFilters = asyncHandler(async (req, res, next) => {
 	);
 });
 
+const getVolumeScores = async (ownerId, volumes) => {
+	const scoreByVolumeId = new Map();
+	if (volumes.length === 0) return scoreByVolumeId;
+	const ratings = await Rating.find({
+		user: ownerId,
+		volume: { $in: volumes.map((volume) => volume._id) },
+	}).select("volume score");
+	for (const rating of ratings) {
+		scoreByVolumeId.set(rating.volume.toString(), rating.score);
+	}
+	return scoreByVolumeId;
+};
+
 exports.getUserReadList = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username?.trim();
 	if (!targetUser)
@@ -1259,17 +1284,9 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 	);
 	const userCollection = await User.aggregate(pipeline);
 
-	const pageVolumeIds = userCollection.map((volume) => volume._id);
-	const scoreByVolumeId = new Map();
-	if (pageVolumeIds.length && owner) {
-		const ratings = await Rating.find({
-			user: owner._id,
-			volume: { $in: pageVolumeIds },
-		}).select("volume score");
-		for (const rating of ratings) {
-			scoreByVolumeId.set(rating.volume.toString(), rating.score);
-		}
-	}
+	const scoreByVolumeId = owner
+		? await getVolumeScores(owner._id, userCollection)
+		: new Map();
 
 	const filteredList = userCollection.map((volume) => {
 		const seriesObject = {
@@ -1296,4 +1313,50 @@ exports.getUserReadList = asyncHandler(async (req, res, next) => {
 		};
 	});
 	res.send(filteredList);
+});
+
+const TABLE_ITEMS_PER_PAGE = 50;
+
+exports.getUserVolumesTable = asyncHandler(async (req, res, next) => {
+	const targetUser = req.params.username?.trim();
+	if (!targetUser)
+		return res.status(400).send({ msg: "Usuário não encontrado" });
+
+	const owner = await User.findOne({ username: targetUser }).select("_id");
+	if (!owner) return res.status(400).send({ msg: "Usuário não encontrado" });
+
+	const page = parseInt(req.query.p) || 1;
+	const skip = Math.max(0, TABLE_ITEMS_PER_PAGE * (page - 1));
+	const filter = buildFilter(req.query, "seriesInfo");
+
+	const ordering = req.query.ordering || "title";
+	const sortStage = buildVolumeSortStage(ordering);
+
+	const myRatingStages =
+		ordering === "myRating"
+			? buildVolumeMyRatingLookupStages(owner._id, "$volumeInfo._id")
+			: [];
+
+	const isOwner = req.user?.username === targetUser;
+	const pipeline = buildVolumeAggregationPipeline(
+		targetUser,
+		filter,
+		sortStage,
+		skip,
+		myRatingStages,
+		isOwner,
+		{ pageSize: TABLE_ITEMS_PER_PAGE, includeLotSize: true, withTotal: true },
+	);
+	const [{ items, totalCount }] = await User.aggregate(pipeline);
+	const scoreByVolumeId = await getVolumeScores(owner._id, items);
+
+	res.send({
+		items: items.map((volume) => ({
+			...volume,
+			ratingScore: scoreByVolumeId.get(volume._id.toString()) ?? null,
+		})),
+		total: totalCount[0]?.count || 0,
+		page,
+		pageSize: TABLE_ITEMS_PER_PAGE,
+	});
 });
