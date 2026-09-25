@@ -3,17 +3,57 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
 import SeriesCardList from "../../components/cards/SeriesCardList";
 import FilterControls from "../../components/FilterControls";
+import ViewToggle, {
+	readStoredView,
+	writeStoredView,
+} from "../../components/ViewToggle";
+import OwnedVolumesTable from "../../components/volumesTable/OwnedVolumesTable";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { useCallback } from "react";
 import { useContext } from "react";
 import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { UserContext } from "../../contexts/userProvider";
+import { toDateInputValue } from "../../utils/formatters";
+
+const TABLE_VIEW_KEY = "view:readList";
+const TABLE_PAGE_SIZE = 50;
+
+const normalizeTableRow = (row) => ({
+	volumeId: row._id,
+	seriesId: row.seriesId,
+	seriesTitle: row.title,
+	volumeNumber: row.volumeNumber,
+	isVariant: row.isVariant,
+	variantNumber: row.variantNumber,
+	owned: true,
+	isRead: row.isRead,
+	readAt: toDateInputValue(row.readAt),
+	readCount: row.readCount,
+	rating: row.ratingScore,
+	price: row.purchasePrice ?? null,
+	condition: row.condition ?? null,
+	store: row.store ?? null,
+	acquiredAt: toDateInputValue(row.acquiredAt),
+	amount: row.amount,
+	notes: row.notes ?? null,
+	lotSize: row.lotSize ?? null,
+});
+
 export default function ReadListPage() {
 	const { username } = useParams();
 	const navigate = useNavigate();
 	const { user: loggedUser } = useContext(UserContext);
+	const isOwner = username === loggedUser?.username;
 	const personalRatingLabel =
 		username === loggedUser?.username ? "Sua nota" : `Nota de ${username}`;
+
+	const [view, setView] = useState(() => readStoredView(TABLE_VIEW_KEY));
+
+	const handleViewChange = (nextView) => {
+		setView(nextView);
+		writeStoredView(TABLE_VIEW_KEY, nextView);
+	};
 
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
@@ -62,6 +102,49 @@ export default function ReadListPage() {
 
 	const unreadArgs = useMemo(() => [{ ...params, group: false }], [params]);
     const readArgs = useMemo(() => [{ ...params, group: true }], [params]);
+
+	const [tablePage, setTablePage] = useState(1);
+	const [tableRows, setTableRows] = useState([]);
+	const [tableTotal, setTableTotal] = useState(0);
+
+	useEffect(() => {
+		setTablePage(1);
+	}, [params]);
+
+	const fetchTablePage = useCallback(
+		async (page) => {
+			try {
+				const response = await axios({
+					method: "GET",
+					withCredentials: true,
+					headers: {
+						Authorization: import.meta.env.REACT_APP_API_KEY,
+					},
+					params: { p: page, ...params },
+					url: `${
+						import.meta.env.REACT_APP_HOST_ORIGIN
+					}/api/data/user/${username}/volumes/table`,
+				});
+				setTableRows((response.data.items || []).map(normalizeTableRow));
+				setTableTotal(response.data.total || 0);
+			} catch (error) {
+				if (error.response?.status === 400) navigate("/404");
+				console.error(
+					"Error fetching volumes table:",
+					error.response?.data?.msg
+				);
+			}
+		},
+		[username, params, navigate]
+	);
+
+	useEffect(() => {
+		if (view !== "table") return;
+		fetchTablePage(tablePage);
+	}, [view, tablePage, fetchTablePage]);
+
+	const totalPages = Math.max(1, Math.ceil(tableTotal / TABLE_PAGE_SIZE));
+
 	return (
 		<div className="container">
 			<FilterControls
@@ -77,27 +160,50 @@ export default function ReadListPage() {
 				lists={{ genreList, publishersList }}
 				personalRatingLabel={personalRatingLabel}
 			></FilterControls>
-			<hr style={{ margin: "0px 10px" }} />
-			<h2 className="collection-lable">Não lidos</h2>
-			<SeriesCardList
-				skeletonsCount={36}
-				fetchFunction={fetchVolumes}
-				itemType="Volumes-Read"
-				errorComponent={EmptyListComponent}
-				showActions={true}
-				functionArguments={unreadArgs}
-			></SeriesCardList>
+			<div className="view-toggle-bar">
+				<ViewToggle view={view} onChange={handleViewChange} />
+			</div>
 
-			<hr style={{ margin: "0px 10px" }} />
-			<h2 className="collection-lable">Lidos</h2>
-			<SeriesCardList
-				skeletonsCount={36}
-				fetchFunction={fetchVolumes}
-				itemType="Volumes-Read"
-				errorComponent={EmptyListComponent}
-				showActions={true}
-				functionArguments={readArgs}
-			></SeriesCardList>
+			{view === "table" ? (
+				tableRows.length === 0 ? (
+					<EmptyListComponent />
+				) : (
+					<OwnedVolumesTable
+						rows={tableRows}
+						editable={isOwner}
+						showSeriesColumn
+						pagination={{
+							page: tablePage,
+							totalPages,
+							onPageChange: setTablePage,
+						}}
+					/>
+				)
+			) : (
+				<>
+					<hr style={{ margin: "0px 10px" }} />
+					<h2 className="collection-lable">Não lidos</h2>
+					<SeriesCardList
+						skeletonsCount={36}
+						fetchFunction={fetchVolumes}
+						itemType="Volumes-Read"
+						errorComponent={EmptyListComponent}
+						showActions={true}
+						functionArguments={unreadArgs}
+					></SeriesCardList>
+
+					<hr style={{ margin: "0px 10px" }} />
+					<h2 className="collection-lable">Lidos</h2>
+					<SeriesCardList
+						skeletonsCount={36}
+						fetchFunction={fetchVolumes}
+						itemType="Volumes-Read"
+						errorComponent={EmptyListComponent}
+						showActions={true}
+						functionArguments={readArgs}
+					></SeriesCardList>
+				</>
+			)}
 		</div>
 	);
 }
