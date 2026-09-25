@@ -5,6 +5,7 @@ import { messageContext } from "./messageStateProvider";
 import axios from "axios";
 import { UserContext } from "./userProvider";
 import { VOLUME_CONDITIONS } from "../utils/volumeConditions";
+import { applyReadStateChange } from "../utils/readStateRules";
 
 const EditVolumeContext = createContext();
 
@@ -53,41 +54,19 @@ const EditVolumeModal = () => {
 	}, [editingVolume]);
 	if (!editingVolume) return <dialog ref={dialogRef} />;
 
-	const handleIsReadChange = (e) => {
-		const checked = e.target.checked;
-		setIsRead(checked);
-
-		if (checked) {
-			if (readCount === 0) setReadCount(1);
-			if (!readAt) setReadAt(new Date().toISOString().split("T")[0]);
-		} else {
-			setReadCount(0);
-			setReadAt("");
-		}
+	const applyChange = (field, value) => {
+		const next = applyReadStateChange({ isRead, readCount, readAt }, field, value);
+		setIsRead(next.isRead);
+		setReadCount(next.readCount);
+		setReadAt(next.readAt || "");
 	};
 
-	const handleReadCountChange = (e) => {
-		const val = parseInt(e.target.value) || 0;
-		setReadCount(val);
+	const handleIsReadChange = (e) => applyChange("isRead", e.target.checked);
 
-		if (val > 0) {
-			setIsRead(true);
-			if (!readAt) setReadAt(new Date().toISOString().split("T")[0]);
-		} else {
-			setIsRead(false);
-			setReadAt("");
-		}
-	};
+	const handleReadCountChange = (e) =>
+		applyChange("readCount", parseInt(e.target.value) || 0);
 
-	const handleReadAtChange = (e) => {
-		const val = e.target.value;
-		setReadAt(val);
-
-		if (val) {
-			setIsRead(true);
-			if (readCount === 0) setReadCount(1);
-		}
-	};
+	const handleReadAtChange = (e) => applyChange("readAt", e.target.value);
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		const formData = new FormData(e.target);
