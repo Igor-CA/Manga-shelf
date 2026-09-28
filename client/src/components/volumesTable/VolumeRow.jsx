@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ReadOnlyCell } from "./TableCells";
+import { EditableCell, ReadOnlyCell } from "./TableCells";
 
 function VolumeLabel({ row, showSeriesColumn }) {
 	const variantSuffix = row.isVariant
@@ -19,9 +19,15 @@ function VolumeLabel({ row, showSeriesColumn }) {
 	);
 }
 
-export default function VolumeRow({ row, columns, showSeriesColumn }) {
+export default function VolumeRow({
+	row,
+	columns,
+	editable,
+	showSeriesColumn,
+	onFieldChange,
+}) {
 	return (
-		<tr>
+		<tr className={row.pendingFields?.size ? "volumes-table__row--dirty" : undefined}>
 			<td className="volumes-table__cell volumes-table__cell--volume">
 				<div className="volumes-table__volume">
 					<VolumeLabel row={row} showSeriesColumn={showSeriesColumn} />
@@ -34,7 +40,17 @@ export default function VolumeRow({ row, columns, showSeriesColumn }) {
 						column.type === "notes" ? " volumes-table__cell--notes" : ""
 					}`}
 				>
-					<ReadOnlyCell column={column} row={row} />
+					{editable ? (
+						<EditableCell
+							column={column}
+							row={row}
+							onChange={(value) => onFieldChange(row, column.key, value)}
+							pending={row.pendingFields?.has(column.key)}
+							error={row.fieldErrors?.[column.key]}
+						/>
+					) : (
+						<ReadOnlyCell column={column} row={row} />
+					)}
 				</td>
 			))}
 		</tr>

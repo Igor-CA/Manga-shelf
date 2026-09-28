@@ -8,6 +8,7 @@ import ViewToggle, {
 	writeStoredView,
 } from "../../components/ViewToggle";
 import OwnedVolumesTable from "../../components/volumesTable/OwnedVolumesTable";
+import { useOwnedVolumeEdits } from "../../utils/useOwnedVolumeEdits";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { useCallback } from "react";
 import { useContext } from "react";
@@ -49,6 +50,7 @@ export default function ReadListPage() {
 		username === loggedUser?.username ? "Sua nota" : `Nota de ${username}`;
 
 	const [view, setView] = useState(() => readStoredView(TABLE_VIEW_KEY));
+	const edits = useOwnedVolumeEdits();
 
 	const handleViewChange = (nextView) => {
 		setView(nextView);
@@ -180,12 +182,14 @@ export default function ReadListPage() {
 						rows={tableRows}
 						editable={isOwner}
 						showSeriesColumn
+						edits={edits}
 						loading={tableLoading}
 						pagination={{
 							page: tablePage,
 							totalPages,
 							onPageChange: setTablePage,
 						}}
+						onSaved={() => fetchTablePage(tablePage)}
 					/>
 				)
 			) : (

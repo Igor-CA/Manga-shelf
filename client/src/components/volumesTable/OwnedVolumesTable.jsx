@@ -10,8 +10,10 @@ export default function OwnedVolumesTable({
 	rows,
 	editable,
 	showSeriesColumn = false,
+	edits,
 	loading = false,
 	pagination,
+	onSaved,
 }) {
 	const [headSize, setHeadSize] = useState(null);
 	const wrapRef = useRef(null);
@@ -41,6 +43,12 @@ export default function OwnedVolumesTable({
 		cells.forEach((cell) => observer.observe(cell));
 		return () => observer.disconnect();
 	}, [columns.length]);
+
+	useLayoutEffect(() => {
+		if (stickyHeadRef.current && bodyScrollRef.current) {
+			stickyHeadRef.current.scrollLeft = bodyScrollRef.current.scrollLeft;
+		}
+	}, [headSize]);
 
 	const renderHeaderRow = (widths) => (
 		<tr>
@@ -73,6 +81,30 @@ export default function OwnedVolumesTable({
 				))}
 			</tr>
 		));
+
+	const handleTableKeyDown = (e) => {
+		if (e.key !== "Enter") return;
+		const target = e.target;
+		if (target.tagName === "TEXTAREA") return;
+		const col = target.dataset?.col;
+		if (!col) return;
+		e.preventDefault();
+		target.blur();
+		requestAnimationFrame(() => {
+			const inputs = Array.from(
+				tableRef.current?.querySelectorAll(`[data-col="${col}"]`) || [],
+			);
+			inputs[inputs.indexOf(target) + 1]?.focus();
+		});
+	};
+
+	const outsideCount = editable
+		? edits.countOutside(rows.map((row) => row.volumeId))
+		: 0;
+
+	const handleSave = async () => {
+		if (await edits.save()) onSaved?.();
+	};
 
 	const leadScrollFrom = (fromHead) => () => {
 		headLeadsScrollRef.current = fromHead;
@@ -120,6 +152,7 @@ export default function OwnedVolumesTable({
 						className={`volumes-table${loading ? " volumes-table--loading" : ""}`}
 						ref={tableRef}
 						aria-busy={loading}
+						onKeyDown={handleTableKeyDown}
 					>
 						<thead>{renderHeaderRow()}</thead>
 						<tbody>
@@ -128,9 +161,11 @@ export default function OwnedVolumesTable({
 								: rows.map((row) => (
 										<VolumeRow
 											key={row.volumeId}
-											row={row}
+											row={editable ? edits.getRowView(row) : row}
 											columns={columns}
+											editable={editable}
 											showSeriesColumn={showSeriesColumn}
+											onFieldChange={edits.setField}
 										/>
 									))}
 						</tbody>
@@ -146,6 +181,38 @@ export default function OwnedVolumesTable({
 						wrapRef.current.scrollIntoView({ block: "start" });
 					}}
 				/>
+			)}
+
+			{editable && edits.count > 0 && (
+				<div className="volumes-table__pending-bar">
+					<div className="volumes-table__pending-info">
+						<span className="volumes-table__pending-count">
+							{edits.count} alteraç{edits.count === 1 ? "ão" : "ões"}
+						</span>
+						{outsideCount > 0 && (
+							<span className="volumes-table__pending-outside">
+								{outsideCount} fora desta página
+							</span>
+						)}
+					</div>
+					<div className="volumes-table__pending-actions">
+						<button
+							type="button"
+							className="button button--red"
+							onClick={edits.discardAll}
+						>
+							Descartar tudo
+						</button>
+						<button
+							type="button"
+							className="button"
+							onClick={handleSave}
+							disabled={edits.saving}
+						>
+							{edits.saving ? "Salvando..." : `Salvar (${edits.count})`}
+						</button>
+					</div>
+				</div>
 			)}
 		</div>
 	);

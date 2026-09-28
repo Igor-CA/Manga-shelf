@@ -43,7 +43,7 @@
 }
 
 .volumes-table__cell {
-	padding: 8px 12px;
+	padding: 8px 6px;
 	text-align: center;
 	white-space: nowrap;
 }
@@ -56,6 +56,7 @@
 
 .volumes-table__cell--notes {
 	width: 240px;
+	min-width: 180px;
 }
 
 .volumes-table--sticky-head {
@@ -64,8 +65,9 @@
 
 .volumes-table thead .volumes-table__cell {
 	box-sizing: border-box;
-	padding: 12px;
+	padding: 10px 6px;
 	text-align: center;
+	white-space: normal;
 	font-weight: bold;
 	color: white;
 	background-color: var(--primary);
@@ -73,6 +75,10 @@
 
 .volumes-table tbody tr:nth-child(even) {
 	background-color: rgba(128, 128, 128, 0.1);
+}
+
+.volumes-table tbody tr.volumes-table__row--dirty {
+	background-color: rgba(61, 180, 242, 0.14);
 }
 
 .volumes-table tbody .volumes-table__cell--volume {
@@ -86,6 +92,13 @@
 	background-image: linear-gradient(
 		rgba(128, 128, 128, 0.1),
 		rgba(128, 128, 128, 0.1)
+	);
+}
+
+.volumes-table tbody tr.volumes-table__row--dirty .volumes-table__cell--volume {
+	background-image: linear-gradient(
+		rgba(61, 180, 242, 0.14),
+		rgba(61, 180, 242, 0.14)
 	);
 }
 
@@ -119,6 +132,124 @@
 
 .volumes-table__volume-label {
 	font-weight: bold;
+}
+
+.volumes-table__field {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	position: relative;
+}
+
+.volumes-table__cell--notes .volumes-table__field {
+	justify-content: flex-start;
+}
+
+.volumes-table__field .checkbox-wrapper {
+	margin-right: 0;
+}
+
+.volumes-table__field--pending::before {
+	content: "";
+	position: absolute;
+	left: -8px;
+	top: 2px;
+	bottom: 2px;
+	width: 3px;
+	border-radius: 2px;
+	background-color: var(--accent);
+}
+
+.volumes-table__field--error .volumes-table__input {
+	border-color: var(--red);
+}
+
+.volumes-table__cell-error {
+	color: var(--red);
+	font-size: 0.7rem;
+	white-space: normal;
+}
+
+.volumes-table__input {
+	background: none;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	color: var(--text);
+	padding: 5px 6px;
+	font-size: 0.85rem;
+	width: 100%;
+	min-width: 96px;
+	font-family: inherit;
+	text-align: center;
+}
+
+.dark .volumes-table__input {
+	color-scheme: dark;
+}
+
+.volumes-table__input::-webkit-calendar-picker-indicator {
+	cursor: pointer;
+}
+
+.light .volumes-table__input::-webkit-calendar-picker-indicator {
+	filter: brightness(0.35);
+}
+
+.volumes-table__input--narrow {
+	min-width: 52px;
+	width: 52px;
+}
+
+.volumes-table__input::placeholder {
+	color: var(--text);
+	opacity: 0.55;
+}
+
+.volumes-table__input:hover,
+.volumes-table__input:focus {
+	border-color: var(--accent);
+	outline: none;
+}
+
+.volumes-table__input:focus {
+	background-color: var(--background);
+}
+
+.volumes-table__lot-marker {
+	font-size: 0.65rem;
+	font-weight: bold;
+	background-color: var(--primary);
+	color: white;
+	border-radius: 4px;
+	padding: 2px 6px;
+	white-space: nowrap;
+}
+
+.volumes-table__notes-preview {
+	background: none;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	color: var(--text);
+	padding: 5px 6px;
+	width: 100%;
+	text-align: left;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 0.85rem;
+}
+
+.volumes-table__notes-preview:hover {
+	border-color: var(--accent);
+}
+
+.volumes-table__placeholder {
+	opacity: 0.55;
+}
+
+.volumes-table__notes-textarea {
+	text-align: left;
+	resize: vertical;
 }
 
 .volumes-table__skeleton {
@@ -183,6 +314,48 @@
 	to {
 		background-position: 0 0;
 	}
+}
+
+.volumes-table__pending-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px 24px;
+	padding: 12px 16px;
+	background-color: var(--foreground);
+	border: 1px solid rgba(var(--gray), 1);
+	border-radius: 8px;
+	position: sticky;
+	bottom: 0;
+	z-index: 4;
+}
+
+.volumes-table__pending-info {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 16px;
+}
+
+.volumes-table__pending-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.volumes-table__pending-actions .button {
+	padding: 10px 18px;
+}
+
+.volumes-table__pending-count {
+	color: var(--accent);
+	font-weight: bold;
+	font-size: 0.95rem;
+}
+
+.volumes-table__pending-outside {
+	font-size: 0.85rem;
+	opacity: 0.8;
 }
 
 .table-pagination {
