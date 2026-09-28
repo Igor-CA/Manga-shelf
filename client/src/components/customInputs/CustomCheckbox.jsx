@@ -1,5 +1,12 @@
 import "./CustomImputs.css"
-export default function CustomCheckbox({ htmlId, label, defaultValue = true, handleChange }) {
+export default function CustomCheckbox({
+	htmlId,
+	label,
+	defaultValue = true,
+	checked,
+	handleChange,
+	ariaLabel,
+}) {
 	return (
 		<label htmlFor={htmlId} className="custom-checkbox">
 			<input
@@ -7,8 +14,11 @@ export default function CustomCheckbox({ htmlId, label, defaultValue = true, han
 				name={htmlId}
 				id={htmlId}
 				className="input--checkbox"
-				defaultChecked={defaultValue}
+				{...(checked === undefined
+					? { defaultChecked: defaultValue }
+					: { checked })}
 				onChange={handleChange}
+				aria-label={ariaLabel}
 			/>
 			<div className="checkbox-wrapper">
 				<div className="checkbox-bg"></div>

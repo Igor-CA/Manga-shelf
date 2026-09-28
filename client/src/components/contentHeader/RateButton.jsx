@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { FaRegStar, FaStar } from "react-icons/fa";
 import { UserContext } from "../../contexts/userProvider";
 
-const SCORE_LABELS = {
+export const SCORE_LABELS = {
 	10: "Obra-prima",
 	9: "Excelente",
 	8: "Muito bom",
