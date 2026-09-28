@@ -12,3 +12,7 @@ export const ALL_COLUMNS = [
 ];
 
 export const VISITOR_COLUMN_KEYS = ["isRead", "readAt", "readCount", "rating"];
+
+export const COLUMN_BY_KEY = Object.fromEntries(
+	ALL_COLUMNS.map((column) => [column.key, column]),
+);

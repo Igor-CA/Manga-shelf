@@ -1,0 +1,84 @@
+.changes-review-modal {
+	padding: 1rem;
+	border-radius: 0.25rem;
+	border: none;
+	margin: auto;
+	outline: none;
+	background-color: var(--background);
+	color: var(--text);
+}
+
+.changes-review-modal::backdrop {
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.changes-review-modal__content {
+	width: 28rem;
+	max-width: 100%;
+	position: relative;
+}
+
+.changes-review-modal__close {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	background: none;
+	font-size: 1.5rem;
+	line-height: 1;
+	color: var(--text);
+	cursor: pointer;
+}
+
+.changes-review-modal__empty {
+	opacity: 0.7;
+}
+
+.changes-review-modal__list {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.changes-review-modal__item-title {
+	font-weight: bold;
+	margin-bottom: 0.25rem;
+}
+
+.changes-review-modal__fields {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.changes-review-modal__field {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.85rem;
+}
+
+.changes-review-modal__field-label {
+	opacity: 0.7;
+	min-width: 90px;
+}
+
+.changes-review-modal__field-error {
+	color: var(--red);
+	font-size: 0.75rem;
+	width: 100%;
+}
+
+.changes-review-modal__revert {
+	border: none;
+	background: none;
+	color: var(--accent);
+	text-decoration: underline;
+	cursor: pointer;
+	padding: 0;
+	font-size: 0.8rem;
+	margin-left: auto;
+}

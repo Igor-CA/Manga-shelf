@@ -204,9 +204,12 @@ const READ_ONLY_FORMATTERS = {
 	condition: (value) => CONDITION_LABELS[value],
 };
 
-export function ReadOnlyCell({ column, row }) {
-	const value = row[column.key];
+export function formatCellValue(column, value) {
 	const format = READ_ONLY_FORMATTERS[column.type];
 	const text = format ? format(value) : value;
 	return text === null || text === undefined || text === "" ? "-" : text;
+}
+
+export function ReadOnlyCell({ column, row }) {
+	return formatCellValue(column, row[column.key]);
 }
