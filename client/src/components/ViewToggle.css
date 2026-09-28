@@ -4,6 +4,15 @@
 	margin: 16px 10px;
 }
 
+.view-toggle-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding-right: 10px;
+	margin-bottom: 8px;
+}
+
 .view-toggle {
 	display: flex;
 	gap: 4px;

@@ -11,6 +11,7 @@ export default function OwnedVolumesTable({
 	rows,
 	editable,
 	showSeriesColumn = false,
+	onToggleOwnership,
 	edits,
 	loading = false,
 	pagination,
@@ -175,6 +176,7 @@ export default function OwnedVolumesTable({
 											columns={columns}
 											editable={editable}
 											showSeriesColumn={showSeriesColumn}
+											onToggleOwnership={onToggleOwnership}
 											onFieldChange={edits.setField}
 											onFillDown={(sourceRow, field) =>
 												edits.fillDown(sourceRow, field, rowViews)

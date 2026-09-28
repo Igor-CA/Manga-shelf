@@ -239,6 +239,14 @@ export function useOwnedVolumeEdits() {
 		setPending(next);
 	}, []);
 
+	const discardRow = useCallback((volumeId) => {
+		if (!pendingRef.current.has(volumeId)) return;
+		const next = new Map(pendingRef.current);
+		next.delete(volumeId);
+		pendingRef.current = next;
+		setPending(next);
+	}, []);
+
 	const fillDown = useCallback(
 		(sourceRow, field, rowViews) => {
 			const value = sourceRow[field];
@@ -338,6 +346,7 @@ export function useOwnedVolumeEdits() {
 		getPendingList,
 		setField,
 		revert,
+		discardRow,
 		fillDown,
 		discardAll,
 		save,

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { EditableCell, ReadOnlyCell } from "./TableCells";
+import CustomCheckbox from "../customInputs/CustomCheckbox";
 
 function VolumeLabel({ row, showSeriesColumn }) {
 	const variantSuffix = row.isVariant
@@ -26,11 +27,28 @@ export default function VolumeRow({
 	showSeriesColumn,
 	onFieldChange,
 	onFillDown,
+	onToggleOwnership,
 }) {
+	const rowClassName = row.owned
+		? row.pendingFields?.size
+			? "volumes-table__row--dirty"
+			: undefined
+		: "volumes-table__row--unowned";
+
 	return (
-		<tr className={row.pendingFields?.size ? "volumes-table__row--dirty" : undefined}>
+		<tr className={rowClassName}>
 			<td className="volumes-table__cell volumes-table__cell--volume">
 				<div className="volumes-table__volume">
+					{onToggleOwnership && (
+						<CustomCheckbox
+							htmlId={`owned-${row.volumeId}`}
+							checked={row.owned}
+							handleChange={(e) => onToggleOwnership(row, e.target.checked)}
+							ariaLabel={
+								row.owned ? "Remover volume da coleção" : "Adicionar volume à coleção"
+							}
+						/>
+					)}
 					<VolumeLabel row={row} showSeriesColumn={showSeriesColumn} />
 				</div>
 			</td>
@@ -41,7 +59,7 @@ export default function VolumeRow({
 						column.type === "notes" ? " volumes-table__cell--notes" : ""
 					}`}
 				>
-					{editable ? (
+					{editable && row.owned ? (
 						<EditableCell
 							column={column}
 							row={row}

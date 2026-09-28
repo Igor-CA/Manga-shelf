@@ -81,6 +81,10 @@
 	background-color: rgba(61, 180, 242, 0.14);
 }
 
+.volumes-table tbody tr.volumes-table__row--unowned {
+	opacity: 0.55;
+}
+
 .volumes-table tbody .volumes-table__cell--volume {
 	position: sticky;
 	left: 0;
@@ -109,8 +113,15 @@
 }
 
 .volumes-table__volume {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	min-width: 96px;
 	max-width: 140px;
+}
+
+.volumes-table__volume .checkbox-wrapper {
+	margin-right: 0;
 }
 
 .volumes-table__volume-link {
