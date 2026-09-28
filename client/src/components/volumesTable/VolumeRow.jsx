@@ -59,7 +59,9 @@ export default function VolumeRow({
 						column.type === "notes" ? " volumes-table__cell--notes" : ""
 					}`}
 				>
-					{editable && row.owned ? (
+					{!editable ? (
+						<ReadOnlyCell column={column} row={row} />
+					) : row.owned ? (
 						<EditableCell
 							column={column}
 							row={row}
@@ -68,9 +70,7 @@ export default function VolumeRow({
 							pending={row.pendingFields?.has(column.key)}
 							error={row.fieldErrors?.[column.key]}
 						/>
-					) : (
-						<ReadOnlyCell column={column} row={row} />
-					)}
+					) : null}
 				</td>
 			))}
 		</tr>
