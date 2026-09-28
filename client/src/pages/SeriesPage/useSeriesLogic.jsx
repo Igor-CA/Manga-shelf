@@ -92,11 +92,18 @@ export const useSeriesLogic = (id) => {
 			? "/api/user/add-volume"
 			: "/api/user/remove-volume";
 
+		const rollback = previous ?? localVolumeState;
+		setLocalVolumeState((prev) =>
+			prev.map((item) =>
+				idList.includes(item.volumeId) ? { ...item, ownsVolume: isAdding } : item
+			)
+		);
+
 		const ok = await apiCall(endpoint, {
 			idList,
 			seriesId: id,
 		});
-		if (!ok && previous) setLocalVolumeState(previous);
+		if (!ok) setLocalVolumeState(rollback);
 	};
 
 	const handleVolumeChange = (e, volumeId) => {
