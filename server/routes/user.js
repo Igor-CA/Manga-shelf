@@ -39,6 +39,7 @@ const {
 	authController,
 	profileController,
 	userActionsController,
+	exportController,
 } = require("../controllers/user/index");
 
 const reportController = require("../controllers/report");
@@ -75,6 +76,7 @@ const {
 	readStatusValidation,
 	markNotificationSeenValidation,
 	purchaseValidation,
+	exportFormatValidation,
 } = require("../middlewares/validators");
 
 //Authentication related functions
@@ -266,6 +268,14 @@ router.put(
 	"/mark-all-notifications-seen",
 	requireAuth,
 	notificationsController.setAllNotificationsAsSeen,
+);
+
+router.get(
+	"/export",
+	requireAuth,
+	exportFormatValidation,
+	validateRequest,
+	exportController.exportCollection,
 );
 
 // Ratings

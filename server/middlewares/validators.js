@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const { body } = require("express-validator");
+const { body, query } = require("express-validator");
 const Volume = require("../models/volume");
 const {
 	VOLUME_CONDITIONS,
@@ -227,6 +227,12 @@ const collectionVolumeValidation = [
 
 const bodyIdValidation = [
 	body("id").isMongoId().withMessage("ID inválido"),
+];
+
+const exportFormatValidation = [
+	query("format")
+		.isIn(["csv"])
+		.withMessage("Formato de exportação inválido"),
 ];
 
 const readStatusValidation = [
@@ -626,6 +632,7 @@ module.exports = {
 	forgotPasswordValidation,
 	collectionVolumeValidation,
 	bodyIdValidation,
+	exportFormatValidation,
 	readStatusValidation,
 	markNotificationSeenValidation,
 	signupValidation,
