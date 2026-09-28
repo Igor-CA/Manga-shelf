@@ -30,7 +30,7 @@ const normalizeTableRow = (row) => ({
 	owned: true,
 	isRead: row.isRead,
 	readAt: toDateInputValue(row.readAt),
-	readCount: row.readCount,
+	readCount: row.readCount ?? 0,
 	rating: row.ratingScore,
 	price: row.purchasePrice ?? null,
 	condition: row.condition ?? null,
