@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
 import SeriesCardList from "../../components/cards/SeriesCardList";
 import FilterControls from "../../components/FilterControls";
@@ -52,10 +52,11 @@ export default function ReadListPage() {
 	const [view, setView] = useState(() => readStoredView(TABLE_VIEW_KEY));
 	const edits = useOwnedVolumeEdits();
 
-	const handleViewChange = (nextView) => {
-		setView(nextView);
-		writeStoredView(TABLE_VIEW_KEY, nextView);
-	};
+	const handleViewChange = (nextView) =>
+		edits.guard(() => {
+			setView(nextView);
+			writeStoredView(TABLE_VIEW_KEY, nextView);
+		});
 
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
@@ -105,15 +106,20 @@ export default function ReadListPage() {
 	const unreadArgs = useMemo(() => [{ ...params, group: false }], [params]);
     const readArgs = useMemo(() => [{ ...params, group: true }], [params]);
 
-	const [tablePage, setTablePage] = useState(1);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const tablePage = Math.max(1, parseInt(searchParams.get("p")) || 1);
+	const setTablePage = (page) =>
+		setSearchParams((current) => {
+			const next = new URLSearchParams(current);
+			if (page === 1) next.delete("p");
+			else next.set("p", page);
+			return next;
+		});
+
 	const [tableRows, setTableRows] = useState([]);
 	const [tableTotal, setTableTotal] = useState(0);
 	const [tableLoading, setTableLoading] = useState(true);
 	const tableRequestRef = useRef(0);
-
-	useEffect(() => {
-		setTablePage(1);
-	}, [params]);
 
 	const fetchTablePage = useCallback(
 		async (page) => {

@@ -18,7 +18,7 @@ export const useFilterHandler = (
 		if (!useURLParams) return {};
 		const params = {};
 		for (const [key, value] of searchParams.entries()) {
-			params[key] = value;
+			if (key !== "p") params[key] = value;
 		}
 		return params;
 	};

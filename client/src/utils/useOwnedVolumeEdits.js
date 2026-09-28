@@ -1,4 +1,5 @@
-import { useCallback, useContext, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { UserContext } from "../contexts/userProvider";
 import { messageContext } from "../contexts/messageStateProvider";
@@ -11,12 +12,18 @@ const MAX_BATCH_EDITS = 500;
 const READ_STATE_FIELDS = ["isRead", "readCount", "readAt"];
 const EMPTY_SET = new Set();
 
+const unsavedChangesMessage = (count) =>
+	`Você tem ${count} alteraç${count === 1 ? "ão" : "ões"} não salva${
+		count === 1 ? "" : "s"
+	}. Deseja sair mesmo assim?`;
+
 const isEmpty = (value) => value === null || value === undefined || value === "";
 
 export function useOwnedVolumeEdits() {
 	const { user, setOutdated } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
 	const { confirm } = usePrompt();
+	const navigate = useNavigate();
 
 	const [pending, setPending] = useState(() => new Map());
 	const [errors, setErrors] = useState(() => new Map());
@@ -282,6 +289,48 @@ export function useOwnedVolumeEdits() {
 		[pending, errors],
 	);
 
+	const guard = useCallback(
+		(action) => {
+			if (pendingRef.current.size === 0) return action();
+			confirm(unsavedChangesMessage(pendingRef.current.size), () => {
+				discardAll();
+				action();
+			});
+		},
+		[confirm, discardAll],
+	);
+
+	useEffect(() => {
+		if (pending.size === 0) return undefined;
+
+		const handleBeforeUnload = (e) => {
+			e.preventDefault();
+			e.returnValue = "";
+		};
+
+		const handleLinkClick = (e) => {
+			if (e.defaultPrevented || e.button !== 0) return;
+			if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			const anchor = e.target.closest?.("a[href]");
+			if (!anchor || anchor.target) return;
+
+			const url = new URL(anchor.href, window.location.href);
+			if (url.origin !== window.location.origin) return;
+			if (url.pathname + url.search === window.location.pathname + window.location.search)
+				return;
+
+			e.preventDefault();
+			guard(() => navigate(url.pathname + url.search + url.hash));
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		document.addEventListener("click", handleLinkClick, true);
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+			document.removeEventListener("click", handleLinkClick, true);
+		};
+	}, [pending.size, guard, navigate]);
+
 	return {
 		count: pending.size,
 		saving,
@@ -293,5 +342,6 @@ export function useOwnedVolumeEdits() {
 		discardAll,
 		save,
 		countOutside,
+		guard,
 	};
 }
