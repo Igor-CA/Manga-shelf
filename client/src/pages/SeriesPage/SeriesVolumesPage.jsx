@@ -42,8 +42,12 @@ export default function SeriesVolumesPage({ series, volumesState, actions }) {
 				owned,
 			]),
 		);
+		const ownsById = new Map(
+			volumesState.map((volume) => [volume.volumeId, volume.ownsVolume]),
+		);
 		return (series.volumes || []).map((volume) => {
-			const owned = ownedById.get(volume.volumeId);
+			const ownsVolume = ownsById.get(volume.volumeId) ?? false;
+			const owned = ownsVolume ? ownedById.get(volume.volumeId) : null;
 			return {
 				volumeId: volume.volumeId,
 				seriesId: series.id,
@@ -51,7 +55,7 @@ export default function SeriesVolumesPage({ series, volumesState, actions }) {
 				volumeNumber: volume.volumeNumber,
 				isVariant: volume.isVariant,
 				variantNumber: volume.variantNumber,
-				owned: !!owned,
+				owned: ownsVolume,
 				isRead: owned?.isRead || false,
 				readAt: toDateInputValue(owned?.readAt),
 				readCount: owned?.readCount ?? 0,
@@ -65,7 +69,7 @@ export default function SeriesVolumesPage({ series, volumesState, actions }) {
 				lotSize: owned?.lotSize ?? null,
 			};
 		});
-	}, [series, user]);
+	}, [series, user, volumesState]);
 
 	const handleToggleOwnership = (row, checked) => {
 		const toggle = () => handleVolumeChange({ target: { checked } }, row.volumeId);
