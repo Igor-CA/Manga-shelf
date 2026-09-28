@@ -1,8 +1,11 @@
-import { useCallback, useContext, useRef, useState } from "react";
+import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { UserContext } from "../contexts/userProvider";
 import { messageContext } from "../contexts/messageStateProvider";
+import { usePrompt } from "../contexts/PromptContext";
 import { applyReadStateChange } from "./readStateRules";
+import { toDateInputValue } from "./formatters";
+import { findPreviousUnread, PREVIOUS_UNREAD_PROMPT } from "./previousUnreadVolumes";
 
 const MAX_BATCH_EDITS = 500;
 const READ_STATE_FIELDS = ["isRead", "readCount", "readAt"];
@@ -11,13 +14,30 @@ const EMPTY_SET = new Set();
 const isEmpty = (value) => value === null || value === undefined || value === "";
 
 export function useOwnedVolumeEdits() {
-	const { setOutdated } = useContext(UserContext);
+	const { user, setOutdated } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
+	const { confirm } = usePrompt();
 
 	const [pending, setPending] = useState(() => new Map());
 	const [errors, setErrors] = useState(() => new Map());
 	const [saving, setSaving] = useState(false);
 	const pendingRef = useRef(pending);
+	const seriesVolumesRef = useRef(new Map());
+
+	const savedReadState = useMemo(
+		() =>
+			new Map(
+				(user?.ownedVolumes || []).map((owned) => [
+					String(owned.volume?._id ?? owned.volume),
+					{
+						isRead: owned.isRead || false,
+						readCount: owned.readCount ?? 0,
+						readAt: toDateInputValue(owned.readAt),
+					},
+				]),
+			),
+		[user],
+	);
 
 	const applyFieldChange = useCallback(
 		(row, field, value) => {
@@ -79,6 +99,76 @@ export function useOwnedVolumeEdits() {
 			setPending(next);
 		},
 		[addMessage],
+	);
+
+	const getSeriesVolumes = useCallback(async (seriesId) => {
+		if (!seriesVolumesRef.current.has(seriesId)) {
+			const response = await axios.get(
+				`${import.meta.env.REACT_APP_HOST_ORIGIN}/api/data/series/${seriesId}`,
+				{
+					withCredentials: true,
+					headers: { Authorization: import.meta.env.REACT_APP_API_KEY },
+				},
+			);
+			seriesVolumesRef.current.set(seriesId, response.data.volumes);
+		}
+		return seriesVolumesRef.current.get(seriesId);
+	}, []);
+
+	const markRead = useCallback(
+		async (row) => {
+			const markRow = () => applyFieldChange(row, "isRead", true);
+
+			let seriesVolumes = [];
+			try {
+				seriesVolumes = await getSeriesVolumes(row.seriesId);
+			} catch (err) {
+				console.error("Error fetching series volumes:", err);
+			}
+
+			const volumeStates = seriesVolumes.map((volume) => {
+				const saved = savedReadState.get(volume.volumeId);
+				const pendingIsRead = pendingRef.current.get(volume.volumeId)?.fields.isRead;
+				return {
+					...volume,
+					ownsVolume: !!saved,
+					isRead: pendingIsRead ?? saved?.isRead ?? false,
+				};
+			});
+			const previousUnread = findPreviousUnread(volumeStates, row.volumeId);
+			if (previousUnread.length === 0) return markRow();
+
+			confirm(
+				PREVIOUS_UNREAD_PROMPT,
+				() => {
+					previousUnread.forEach((volume) =>
+						applyFieldChange(
+							{
+								volumeId: volume.volumeId,
+								seriesId: row.seriesId,
+								seriesTitle: row.seriesTitle,
+								volumeNumber: volume.volumeNumber,
+								isVariant: false,
+								...savedReadState.get(volume.volumeId),
+							},
+							"isRead",
+							true,
+						),
+					);
+					markRow();
+				},
+				markRow,
+			);
+		},
+		[applyFieldChange, confirm, getSeriesVolumes, savedReadState],
+	);
+
+	const setField = useCallback(
+		(row, field, value) => {
+			if (field === "isRead" && value === true) markRead(row);
+			else applyFieldChange(row, field, value);
+		},
+		[applyFieldChange, markRead],
 	);
 
 	const discardAll = useCallback(() => {
@@ -197,7 +287,7 @@ export function useOwnedVolumeEdits() {
 		saving,
 		getRowView,
 		getPendingList,
-		setField: applyFieldChange,
+		setField,
 		revert,
 		fillDown,
 		discardAll,

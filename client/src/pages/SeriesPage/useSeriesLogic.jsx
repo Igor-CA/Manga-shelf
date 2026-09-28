@@ -5,6 +5,10 @@ import { UserContext } from "../../contexts/userProvider";
 import { messageContext } from "../../contexts/messageStateProvider";
 import { getOwnedVolumeInfo } from "../../utils/seriesDataFunctions";
 import { usePrompt } from "../../contexts/PromptContext";
+import {
+	findPreviousUnread,
+	PREVIOUS_UNREAD_PROMPT,
+} from "../../utils/previousUnreadVolumes";
 
 export const useSeriesLogic = (id) => {
 	const navigate = useNavigate();
@@ -150,32 +154,24 @@ export const useSeriesLogic = (id) => {
 		const volumeState = localVolumeState.find((v) => v.volumeId === volumeId);
 		if (!volumeState) return;
 
-		const newStatus = !volumeState.isRead;
-
-		if (newStatus === true) {
-			const index = localVolumeState.findIndex((v) => v.volumeId === volumeId);
-
-			const listToRead = localVolumeState
-				.slice(0, index + 1)
-				.filter((v) => v.ownsVolume && !v.isRead && !v.isVariant)
-				.map((v) => v.volumeId);
-
-			if (!listToRead.includes(volumeId) && volumeState.ownsVolume) {
-				listToRead.push(volumeId);
-			}
-
-			if (listToRead.length > 1) {
-				confirm(
-					"Deseja marcar os volumes anteriores como lidos também?",
-					() => performReadUpdate(true, listToRead),
-					() => performReadUpdate(true, [volumeId])
-				);
-			} else {
-				performReadUpdate(true, [volumeId]);
-			}
-		} else {
+		if (volumeState.isRead) {
 			performReadUpdate(false, [volumeId]);
+			return;
 		}
+
+		const previousUnread = findPreviousUnread(localVolumeState, volumeId).map(
+			(v) => v.volumeId
+		);
+		if (previousUnread.length === 0) {
+			performReadUpdate(true, [volumeId]);
+			return;
+		}
+
+		confirm(
+			PREVIOUS_UNREAD_PROMPT,
+			() => performReadUpdate(true, [...previousUnread, volumeId]),
+			() => performReadUpdate(true, [volumeId])
+		);
 	};
 
 	const handleSelectAllVolumes = (adding) => {
