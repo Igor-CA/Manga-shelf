@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import VolumeRow from "./VolumeRow";
 import TablePagination from "./TablePagination";
+import ChangesReviewModal from "./ChangesReviewModal";
 import { ALL_COLUMNS, VISITOR_COLUMN_KEYS } from "./columns";
 import "./OwnedVolumesTable.css";
 
@@ -16,6 +17,7 @@ export default function OwnedVolumesTable({
 	onSaved,
 }) {
 	const [headSize, setHeadSize] = useState(null);
+	const [reviewOpen, setReviewOpen] = useState(false);
 	const wrapRef = useRef(null);
 	const tableRef = useRef(null);
 	const stickyHeadRef = useRef(null);
@@ -103,7 +105,14 @@ export default function OwnedVolumesTable({
 		: 0;
 
 	const handleSave = async () => {
-		if (await edits.save()) onSaved?.();
+		if (!(await edits.save())) return;
+		setReviewOpen(false);
+		onSaved?.();
+	};
+
+	const handleDiscardAll = () => {
+		edits.discardAll();
+		setReviewOpen(false);
 	};
 
 	const leadScrollFrom = (fromHead) => () => {
@@ -186,20 +195,28 @@ export default function OwnedVolumesTable({
 			{editable && edits.count > 0 && (
 				<div className="volumes-table__pending-bar">
 					<div className="volumes-table__pending-info">
-						<span className="volumes-table__pending-count">
+						<button
+							type="button"
+							className="volumes-table__pending-count"
+							onClick={() => setReviewOpen(true)}
+						>
 							{edits.count} alteraç{edits.count === 1 ? "ão" : "ões"}
-						</span>
+						</button>
 						{outsideCount > 0 && (
-							<span className="volumes-table__pending-outside">
+							<button
+								type="button"
+								className="volumes-table__pending-outside"
+								onClick={() => setReviewOpen(true)}
+							>
 								{outsideCount} fora desta página
-							</span>
+							</button>
 						)}
 					</div>
 					<div className="volumes-table__pending-actions">
 						<button
 							type="button"
 							className="button button--red"
-							onClick={edits.discardAll}
+							onClick={handleDiscardAll}
 						>
 							Descartar tudo
 						</button>
@@ -213,6 +230,18 @@ export default function OwnedVolumesTable({
 						</button>
 					</div>
 				</div>
+			)}
+
+			{editable && (
+				<ChangesReviewModal
+					open={reviewOpen}
+					onClose={() => setReviewOpen(false)}
+					pendingList={edits.getPendingList()}
+					onRevert={edits.revert}
+					onDiscardAll={handleDiscardAll}
+					onSave={handleSave}
+					saving={edits.saving}
+				/>
 			)}
 		</div>
 	);

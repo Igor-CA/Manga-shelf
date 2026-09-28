@@ -347,6 +347,14 @@
 	padding: 10px 18px;
 }
 
+.volumes-table__pending-count,
+.volumes-table__pending-outside {
+	border: none;
+	background: none;
+	padding: 0;
+	cursor: pointer;
+}
+
 .volumes-table__pending-count {
 	color: var(--accent);
 	font-weight: bold;
@@ -354,8 +362,9 @@
 }
 
 .volumes-table__pending-outside {
+	color: var(--text);
+	text-decoration: underline;
 	font-size: 0.85rem;
-	opacity: 0.8;
 }
 
 .table-pagination {

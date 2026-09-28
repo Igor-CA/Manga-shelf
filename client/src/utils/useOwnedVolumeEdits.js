@@ -126,6 +126,22 @@ export function useOwnedVolumeEdits() {
 		}
 	}, [pending, addMessage, setOutdated]);
 
+	const revert = useCallback((volumeId, field) => {
+		const entry = pendingRef.current.get(volumeId);
+		if (!entry) return;
+
+		const fields = { ...entry.fields };
+		const base = { ...entry.base };
+		delete fields[field];
+		delete base[field];
+
+		const next = new Map(pendingRef.current);
+		if (Object.keys(fields).length === 0) next.delete(volumeId);
+		else next.set(volumeId, { ...entry, fields, base });
+		pendingRef.current = next;
+		setPending(next);
+	}, []);
+
 	const countOutside = useCallback(
 		(visibleIds) => {
 			const visible = new Set(visibleIds);
@@ -152,11 +168,23 @@ export function useOwnedVolumeEdits() {
 		[pending, errors],
 	);
 
+	const getPendingList = useCallback(
+		() =>
+			Array.from(pending.entries()).map(([volumeId, entry]) => ({
+				volumeId,
+				...entry,
+				fieldErrors: errors.get(volumeId) || null,
+			})),
+		[pending, errors],
+	);
+
 	return {
 		count: pending.size,
 		saving,
 		getRowView,
+		getPendingList,
 		setField: applyFieldChange,
+		revert,
 		discardAll,
 		save,
 		countOutside,
