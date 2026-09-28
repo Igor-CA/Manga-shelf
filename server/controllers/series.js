@@ -441,7 +441,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 				localField: "volumes",
 				foreignField: "_id",
 				as: "volumes",
-				pipeline: [{ $sort: { number: 1 } }],
+				pipeline: [{ $sort: { number: 1, isVariant: 1, variantNumber: 1 } }],
 			},
 		},
 	];
