@@ -5,7 +5,7 @@ import { SCORE_LABELS } from "../contentHeader/RateButton";
 import CustomCheckbox from "../customInputs/CustomCheckbox";
 
 const toText = (value) => value ?? "";
-const toPriceText = (value) => (value != null ? String(value).replace(".", ",") : "");
+const toPriceText = (value) => (value != null ? value.toFixed(2).replace(".", ",") : "");
 const trimmedOrNull = (text) => text.trim() || null;
 const toIntOrNull = (text) => (text === "" ? null : parseInt(text, 10));
 
