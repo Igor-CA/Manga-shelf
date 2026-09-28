@@ -25,6 +25,7 @@ export default function VolumeRow({
 	editable,
 	showSeriesColumn,
 	onFieldChange,
+	onFillDown,
 }) {
 	return (
 		<tr className={row.pendingFields?.size ? "volumes-table__row--dirty" : undefined}>
@@ -45,6 +46,7 @@ export default function VolumeRow({
 							column={column}
 							row={row}
 							onChange={(value) => onFieldChange(row, column.key, value)}
+							onFillDown={() => onFillDown(row, column.key)}
 							pending={row.pendingFields?.has(column.key)}
 							error={row.fieldErrors?.[column.key]}
 						/>

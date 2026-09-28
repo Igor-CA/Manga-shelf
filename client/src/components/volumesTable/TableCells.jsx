@@ -183,15 +183,29 @@ const EDITABLE_CELLS = {
 	notes: NotesCell,
 };
 
-export function EditableCell({ column, row, onChange, pending, error }) {
+export function EditableCell({ column, row, onChange, onFillDown, pending, error }) {
 	const Cell = EDITABLE_CELLS[column.type];
+	const fillable = column.type !== "checkbox";
 	return (
 		<div
 			className={`volumes-table__field${
-				pending ? " volumes-table__field--pending" : ""
-			}${error ? " volumes-table__field--error" : ""}`}
+				fillable ? " volumes-table__field--fillable" : ""
+			}${pending ? " volumes-table__field--pending" : ""}${
+				error ? " volumes-table__field--error" : ""
+			}`}
 		>
 			<Cell column={column} row={row} value={row[column.key]} onChange={onChange} />
+			{fillable && (
+				<button
+					type="button"
+					className="volumes-table__fill-down"
+					title="Preencher para baixo"
+					onClick={onFillDown}
+					tabIndex={-1}
+				>
+					↓
+				</button>
+			)}
 			{error && <span className="volumes-table__cell-error">{error}</span>}
 		</div>
 	);

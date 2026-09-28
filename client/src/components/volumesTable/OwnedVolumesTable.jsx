@@ -28,6 +28,7 @@ export default function OwnedVolumesTable({
 		? ALL_COLUMNS
 		: ALL_COLUMNS.filter((column) => VISITOR_COLUMN_KEYS.includes(column.key));
 	const headerColumns = [{ key: "volume", label: "Volume" }, ...columns];
+	const rowViews = editable ? rows.map(edits.getRowView) : rows;
 
 	useLayoutEffect(() => {
 		const table = tableRef.current;
@@ -167,14 +168,17 @@ export default function OwnedVolumesTable({
 						<tbody>
 							{loading && rows.length === 0
 								? renderSkeletonRows()
-								: rows.map((row) => (
+								: rowViews.map((row) => (
 										<VolumeRow
 											key={row.volumeId}
-											row={editable ? edits.getRowView(row) : row}
+											row={row}
 											columns={columns}
 											editable={editable}
 											showSeriesColumn={showSeriesColumn}
 											onFieldChange={edits.setField}
+											onFillDown={(sourceRow, field) =>
+												edits.fillDown(sourceRow, field, rowViews)
+											}
 										/>
 									))}
 						</tbody>

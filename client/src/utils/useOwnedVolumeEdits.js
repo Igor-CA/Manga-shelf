@@ -142,6 +142,20 @@ export function useOwnedVolumeEdits() {
 		setPending(next);
 	}, []);
 
+	const fillDown = useCallback(
+		(sourceRow, field, rowViews) => {
+			const value = sourceRow[field];
+			const start = rowViews.findIndex((row) => row.volumeId === sourceRow.volumeId);
+			if (isEmpty(value) || start === -1) return;
+
+			for (const row of rowViews.slice(start + 1)) {
+				if (row.seriesId !== sourceRow.seriesId) break;
+				if (row.owned && isEmpty(row[field])) applyFieldChange(row, field, value);
+			}
+		},
+		[applyFieldChange],
+	);
+
 	const countOutside = useCallback(
 		(visibleIds) => {
 			const visible = new Set(visibleIds);
@@ -185,6 +199,7 @@ export function useOwnedVolumeEdits() {
 		getPendingList,
 		setField: applyFieldChange,
 		revert,
+		fillDown,
 		discardAll,
 		save,
 		countOutside,

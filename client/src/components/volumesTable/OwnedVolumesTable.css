@@ -150,15 +150,13 @@
 	margin-right: 0;
 }
 
-.volumes-table__field--pending::before {
-	content: "";
-	position: absolute;
-	left: -8px;
-	top: 2px;
-	bottom: 2px;
-	width: 3px;
-	border-radius: 2px;
-	background-color: var(--accent);
+.volumes-table__field--fillable {
+	padding-right: 16px;
+}
+
+.volumes-table__field--pending .volumes-table__input,
+.volumes-table__field--pending .volumes-table__notes-preview {
+	border-color: var(--accent);
 }
 
 .volumes-table__field--error .volumes-table__input {
@@ -214,6 +212,33 @@
 
 .volumes-table__input:focus {
 	background-color: var(--background);
+}
+
+.volumes-table__fill-down {
+	position: absolute;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 14px;
+	border: none;
+	background: none;
+	color: var(--text);
+	opacity: 0;
+	cursor: pointer;
+	padding: 0;
+	font-size: 0.85rem;
+	transition: opacity 0.15s ease;
+}
+
+.volumes-table__field:hover .volumes-table__fill-down,
+.volumes-table__field:focus-within .volumes-table__fill-down {
+	opacity: 0.8;
+}
+
+.volumes-table__fill-down:hover,
+.volumes-table__fill-down:focus-visible {
+	opacity: 1;
+	color: var(--accent);
 }
 
 .volumes-table__lot-marker {
