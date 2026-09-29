@@ -159,7 +159,7 @@ const buildSortStage = (ordering, field) => {
 
 	const sortStage = {
 		[selectedOption.attribute]: selectedOption.order,
-		"userList.Series.title": 1,
+		[`${field}.title`]: 1,
 	};
 	return sortStage;
 };
@@ -476,6 +476,7 @@ const buildWishlistPipeline = (
 ) => {
 	const pipeline = [
 		{ $match: { username: targetUser } },
+		{ $project: { wishList: 1 } },
 		{ $unwind: "$wishList" },
 
 		{
