@@ -62,8 +62,15 @@ export default function ReadListPage() {
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
 	}/api/data/user/${username}/filters`;
-	const { params, genreList, publishersList, handleChange, searchBarValue } =
-		useFilterHandler(fetchFiltersUrl, true, {}, "title");
+	const {
+		params,
+		genreList,
+		publishersList,
+		typesList,
+		demographicsList,
+		handleChange,
+		searchBarValue,
+	} = useFilterHandler(fetchFiltersUrl, true, {}, "title");
 	const fetchVolumes = useCallback(
 		async (page, params) => {
 			try {
@@ -176,11 +183,13 @@ export default function ReadListPage() {
 					"genre",
 					"publisher",
 					"status",
+					"demographic",
+					"type",
 					"ordering",
 				]}
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
-				lists={{ genreList, publishersList }}
+				lists={{ genreList, publishersList, typesList, demographicsList }}
 				personalRatingLabel={personalRatingLabel}
 			></FilterControls>
 			<div className="view-toggle-bar">

@@ -26,6 +26,8 @@ export default function WishlistPage() {
 		functionArguments,
 		genreList,
 		publishersList,
+		typesList,
+		demographicsList,
 		handleChange,
 		searchBarValue,
 	} = useFilterHandler(fetchFiltersUrl, true, { source: "wishList" }, "title");
@@ -73,10 +75,18 @@ export default function WishlistPage() {
 	return (
 		<div className="container">
 			<FilterControls
-				availableFilters={["search", "genre", "publisher", "status", "ordering"]}
+				availableFilters={[
+					"search",
+					"genre",
+					"publisher",
+					"status",
+					"demographic",
+					"type",
+					"ordering",
+				]}
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
-				lists={{ genreList, publishersList }}
+				lists={{ genreList, publishersList, typesList, demographicsList }}
 				personalRatingLabel={personalRatingLabel}
 			/>{" "}
 			<SeriesCardList
