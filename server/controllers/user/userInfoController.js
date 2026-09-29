@@ -179,6 +179,7 @@ const buildVolumeSortStage = (ordering) => {
 		myRating: { attribute: "myRatingScore", order: -1 },
 		timestamp: { attribute: "ownedVolumes.acquiredAt", order: -1 },
 		status: { attribute: "ownedVolumes.isRead", order: 1 },
+		volumes: { attribute: "volumesLength", order: -1 },
 	};
 
 	if (ordering === "myRating") {
@@ -299,6 +300,8 @@ const buildVolumeAggregationPipeline = (
 			},
 		},
 		{ $unwind: "$seriesInfo" },
+
+		{ $addFields: { volumesLength: { $size: "$seriesInfo.volumes" } } },
 
 		{ $match: filter },
 
