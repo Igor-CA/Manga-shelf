@@ -282,15 +282,6 @@ exports.browse = asyncHandler(async (req, res, next) => {
 	addUserListData(pipeline, req.user);
 	pipeline.push(
 		{
-			$lookup: {
-				from: "volumes",
-				localField: "volumes",
-				foreignField: "_id",
-				as: "volume",
-			},
-		},
-
-		{
 			$addFields: {
 				firstVolume: { $arrayElemAt: ["$volumes", 0] },
 				volumesLength: { $size: "$volumes" },
