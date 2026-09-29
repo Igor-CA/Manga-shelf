@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose");
 const { ZipArchive } = require("archiver");
+const ExcelJS = require("exceljs");
 
 const User = require("../../models/User");
 const Volume = require("../../models/volume");
@@ -220,6 +221,74 @@ const streamCsvZip = (res, volumesCsv, seriesCsv) =>
 		archive.finalize();
 	});
 
+const XLSX_NUM_FORMATS = {
+	integer: "0",
+	decimal: "0.00",
+	percent: "0%",
+	date: "dd/mm/yyyy",
+};
+
+const toXlsxCellValue = (column, value) => {
+	if (value === null || value === undefined) {
+		return column.type === "boolean" ? BOOLEAN_WORDS[Boolean(value)] : null;
+	}
+	switch (column.type) {
+		case "date":
+			return new Date(value);
+		case "integer":
+		case "decimal":
+		case "percent":
+			return Number(value);
+		case "boolean":
+			return BOOLEAN_WORDS[Boolean(value)];
+		case "enum":
+			return column.values[value] ?? String(value);
+		default:
+			return String(value);
+	}
+};
+
+const addExportWorksheet = (workbook, name, columns, rows) => {
+	const sheet = workbook.addWorksheet(name, {
+		views: [{ state: "frozen", ySplit: 1 }],
+	});
+	sheet.columns = columns.map((column) => ({
+		header: column.header,
+		key: column.key,
+		width: 18,
+		style: XLSX_NUM_FORMATS[column.type]
+			? { numFmt: XLSX_NUM_FORMATS[column.type] }
+			: undefined,
+	}));
+	const headerRow = sheet.getRow(1);
+	headerRow.font = { bold: true };
+	headerRow.commit();
+
+	for (const row of rows) {
+		const values = {};
+		for (const column of columns) {
+			values[column.key] = toXlsxCellValue(column, row[column.key]);
+		}
+		sheet.addRow(values).commit();
+	}
+	sheet.commit();
+};
+
+const streamXlsx = async (res, volumeRows, seriesRows) => {
+	const workbook = new ExcelJS.stream.xlsx.WorkbookWriter({
+		stream: res,
+		useStyles: true,
+	});
+	try {
+		addExportWorksheet(workbook, "Volumes", VOLUME_COLUMNS, volumeRows);
+		addExportWorksheet(workbook, "Obras", SERIES_COLUMNS, seriesRows);
+		await workbook.commit();
+	} catch (err) {
+		logger.error(`Erro ao gerar exportação em Excel: ${err}`);
+		if (!res.destroyed) res.destroy(err);
+	}
+};
+
 const filenameDate = () =>
 	new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(
 		new Date(),
@@ -232,14 +301,26 @@ exports.exportCollection = asyncHandler(async (req, res) => {
 	res.set({
 		"Access-Control-Expose-Headers": "Content-Disposition",
 		"Cache-Control": "no-store",
-		"Content-Type": "application/zip",
-		"Content-Disposition": `attachment; filename="${filename}.zip"`,
 	});
-	await streamCsvZip(
-		res,
-		toCsv(VOLUME_COLUMNS, volumeRows),
-		toCsv(SERIES_COLUMNS, seriesRows),
-	);
+
+	if (req.query.format === "csv") {
+		res.set({
+			"Content-Type": "application/zip",
+			"Content-Disposition": `attachment; filename="${filename}.zip"`,
+		});
+		await streamCsvZip(
+			res,
+			toCsv(VOLUME_COLUMNS, volumeRows),
+			toCsv(SERIES_COLUMNS, seriesRows),
+		);
+	} else {
+		res.set({
+			"Content-Type":
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			"Content-Disposition": `attachment; filename="${filename}.xlsx"`,
+		});
+		await streamXlsx(res, volumeRows, seriesRows);
+	}
 });
 
 exports.buildExportRows = buildExportRows;

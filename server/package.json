@@ -18,6 +18,7 @@
     "debug": "~2.6.9",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "express-async-handler": "^1.2.0",
     "express-rate-limit": "^8.5.2",

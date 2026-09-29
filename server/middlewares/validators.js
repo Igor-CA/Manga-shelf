@@ -231,7 +231,7 @@ const bodyIdValidation = [
 
 const exportFormatValidation = [
 	query("format")
-		.isIn(["csv"])
+		.isIn(["csv", "xlsx"])
 		.withMessage("Formato de exportação inválido"),
 ];
 
