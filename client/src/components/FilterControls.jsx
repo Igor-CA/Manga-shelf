@@ -169,6 +169,19 @@ const FilterControls = ({
 								{availableFilters.includes("ordering_percentage") && (
 									<option value={"status"}>Porcentagem de conclusão</option>
 								)}
+								{availableFilters.includes("ordering_missing") && (
+									<>
+										<option value={"nearCompletion"}>
+											Mais perto de completar
+										</option>
+										<option value={"volumeDateNew"}>
+											Lançamento do volume (recentes)
+										</option>
+										<option value={"volumeDateOld"}>
+											Lançamento do volume (antigos)
+										</option>
+									</>
+								)}
 							</select>
 						</label>
 					)}

@@ -12,6 +12,8 @@ export default function MissingVolumesPage() {
 	const navigate = useNavigate();
 	const { user: loggedUser } = useContext(UserContext);
 	const isOwner = username === loggedUser?.username;
+	const personalRatingLabel =
+		username === loggedUser?.username ? "Sua nota" : `Nota de ${username}`;
 
 	const fetchFiltersUrl = `${
 		import.meta.env.REACT_APP_HOST_ORIGIN
@@ -80,10 +82,13 @@ export default function MissingVolumesPage() {
 					"status",
 					"demographic",
 					"type",
+					"ordering",
+					"ordering_missing",
 				]}
 				handleChange={handleChange}
 				values={{ searchBarValue, ...params }}
 				lists={{ genreList, publishersList, typesList, demographicsList }}
+				personalRatingLabel={personalRatingLabel}
 			/>
 			<SeriesCardList
 				skeletonsCount={36}

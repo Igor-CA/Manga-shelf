@@ -524,7 +524,7 @@ exports.getUserWishlist = asyncHandler(async (req, res, next) => {
 
 const buildMissingStages = (
 	targetUser,
-	{ seriesMatch = {} } = {},
+	{ seriesMatch = {}, seriesSortStages = [] } = {},
 ) => [
 	{ $match: { username: targetUser } },
 
@@ -554,6 +554,22 @@ const buildMissingStages = (
 	},
 	{ $unwind: "$seriesDetails" },
 	...(Object.keys(seriesMatch).length ? [{ $match: seriesMatch }] : []),
+	...seriesSortStages,
+
+	{
+		$addFields: {
+			sortKeys: {
+				popularity: "$seriesDetails.popularity",
+				ratingAverage: "$seriesDetails.ratingAverage",
+				publisher: "$seriesDetails.publisher",
+				dateJp: "$seriesDetails.originalRun.dates.publishedAt",
+				dateBr: "$seriesDetails.dates.publishedAt",
+				completion: "$userList.completionPercentage",
+				hasMyRating: { $ifNull: ["$hasMyRating", false] },
+				myRatingScore: "$myRatingScore",
+			},
+		},
+	},
 
 	{
 		$lookup: {
@@ -576,7 +592,9 @@ const buildMissingStages = (
 			"volumeDetails.number": 1,
 			"volumeDetails.isVariant": 1,
 			"volumeDetails.ISBN": 1,
+			"volumeDetails.date": 1,
 			"userList.status": 1,
+			sortKeys: 1,
 
 			isOwned: {
 				$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumeIds", []] }],
@@ -611,12 +629,69 @@ const buildMissingStages = (
 			displayVolumeId: { $first: "$volumeDetails._id" },
 			displayVolumeNumber: { $first: "$volumeDetails.number" },
 			displayVolumeISBN: { $first: "$volumeDetails.ISBN" },
+			displayVolumeDate: { $first: "$volumeDetails.date" },
 			userStatus: { $first: "$userList.status" },
+			sortKeys: { $first: "$sortKeys" },
 		},
 	},
 
 	{ $match: { hasOwnedVariant: false } },
 ];
+
+const buildMissingSortStage = (ordering) => {
+	const baseTiebreak = { series: 1, seriesId: 1, displayVolumeNumber: 1 };
+
+	if (ordering === "myRating") {
+		return [
+			{
+				$sort: {
+					"sortKeys.hasMyRating": -1,
+					"sortKeys.myRatingScore": -1,
+					...baseTiebreak,
+				},
+			},
+		];
+	}
+
+	if (ordering === "nearCompletion") {
+		return [{ $sort: { "sortKeys.completion": -1, ...baseTiebreak } }];
+	}
+
+	if (ordering === "volumeDateNew" || ordering === "volumeDateOld") {
+		const dateOrder = ordering === "volumeDateNew" ? -1 : 1;
+		return [
+			{ $addFields: { hasVolumeDate: { $ne: ["$displayVolumeDate", null] } } },
+			{
+				$sort: {
+					hasVolumeDate: -1,
+					displayVolumeDate: dateOrder,
+					...baseTiebreak,
+				},
+			},
+		];
+	}
+
+	const sortOptions = {
+		title: { attribute: "series", order: 1 },
+		popularity: { attribute: "sortKeys.popularity", order: -1 },
+		publisher: { attribute: "sortKeys.publisher", order: 1 },
+		dateJp: { attribute: "sortKeys.dateJp", order: -1 },
+		dateBr: { attribute: "sortKeys.dateBr", order: -1 },
+		volumes: { attribute: "seriesSize", order: -1 },
+		rating: { attribute: "sortKeys.ratingAverage", order: -1 },
+	};
+
+	const selectedOption = sortOptions[ordering] || sortOptions.title;
+
+	return [
+		{
+			$sort: {
+				[selectedOption.attribute]: selectedOption.order,
+				...baseTiebreak,
+			},
+		},
+	];
+};
 
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username?.trim();
@@ -631,8 +706,22 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const isOwner = req.user?.username === targetUser;
 
 	const seriesMatch = buildFilter(req.query, "seriesDetails");
+	const ordering = req.query.ordering || "title";
+
+	let seriesSortStages = [];
+	if (ordering === "myRating") {
+		const owner = await User.findOne({ username: targetUser }).select("_id");
+		if (owner) {
+			seriesSortStages = buildSeriesMyRatingLookupStages(
+				owner._id,
+				"$seriesDetails._id",
+			);
+		}
+	}
+
 	const aggregationPipeline = [
-		...buildMissingStages(targetUser, { seriesMatch }),
+		...buildMissingStages(targetUser, { seriesMatch, seriesSortStages }),
+		...buildMissingSortStage(ordering),
 
 		{
 			$project: {
@@ -649,12 +738,6 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 			},
 		},
 
-		{
-			$sort: {
-				series: 1,
-				volumeNumber: 1,
-			},
-		},
 		{ $skip: skip },
 		{ $limit: ITEMS_PER_PAGE },
 	];
