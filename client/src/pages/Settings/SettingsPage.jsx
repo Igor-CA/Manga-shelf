@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "../AuthenticationPage/Authentication.css";
 import "./Settings.css";
 import CustomCheckbox from "../../components/customInputs/CustomCheckbox";
@@ -33,6 +34,12 @@ const navbarOptions = [
 export default function SettingsPage() {
 	usePageMeta("Configurações");
 	const { user } = useContext(UserContext);
+	const { hash } = useLocation();
+
+	useEffect(() => {
+		if (!user || !hash) return;
+		document.querySelector(hash)?.scrollIntoView();
+	}, [user, hash]);
 
 	return (
 		<div className="container page-content settings-page">
