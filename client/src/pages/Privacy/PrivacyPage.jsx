@@ -13,7 +13,7 @@ export default function PrivacyPage() {
 				<section className="privacy">
 					<h1>Política de Privacidade</h1>
 					<p className="privacy__updated">
-						Última atualização: 24 de julho de 2026
+						Última atualização: 29 de setembro de 2026
 					</p>
 					<p>
 						Esta Política de Privacidade explica como o Manga Shelf coleta,
@@ -31,16 +31,17 @@ export default function PrivacyPage() {
 						Esta política se aplica ao site Manga Shelf e aos serviços oferecidos
 						por ele. Ela não se aplica a sites, serviços ou aplicativos de
 						terceiros que possam estar acessíveis por meio de links no nosso site
-						(como páginas de editoras, redes sociais, Anilist, PayPal, entre
-						outros). Cada um desses serviços possui a sua própria política de
+						(como páginas de editoras, lojas como a Amazon, redes sociais,
+						Anilist, PayPal, entre outros). Cada um desses serviços possui a sua própria política de
 						privacidade, pela qual não somos responsáveis, e recomendamos que
 						você a consulte.
 					</p>
 
 					<h2>2. Quem é o responsável pelos seus dados</h2>
 					<p>
-						O Manga Shelf é um projeto independente, mantido sem fins lucrativos
-						durante o tempo livre de seu criador. Para os fins da LGPD, o
+						O Manga Shelf é um projeto independente, mantido durante o tempo livre
+						de seu criador, com os custos cobertos por doações e links de
+						afiliado. Para os fins da LGPD, o
 						responsável pelo tratamento dos dados (controlador) pode ser
 						contatado pelo email{" "}
 						<a href={"mailto:mymangashelfs@gmail.com"}>
@@ -67,13 +68,14 @@ export default function PrivacyPage() {
 						<li>
 							<strong>Dados da sua coleção:</strong> as obras e volumes que você
 							adiciona à sua prateleira e lista de desejos, o estado de leitura,
-							anotações pessoais, preços de compra, datas de aquisição e demais
-							informações que você registra.
+							anotações pessoais, preço pago, condição (novo ou usado), loja, datas
+							de aquisição, as compras que você registra (valor, data, loja,
+							condição e volumes cobertos) e demais informações que você registra.
 						</li>
 						<li>
 							<strong>Conteúdo publicado por você:</strong> avaliações (notas),
 							reviews, comentários, respostas, fotos da sua coleção, submissões de
-							correção ao catálogo e denúncias que você envia.
+							correção e de links ao catálogo e denúncias que você envia.
 						</li>
 						<li>
 							<strong>Imagens:</strong> foto de perfil, banner, fotos da coleção,
@@ -97,6 +99,11 @@ export default function PrivacyPage() {
 							de navegador e registros de acesso (logs). Esses dados são
 							utilizados para manter a segurança e a estabilidade do serviço,
 							diagnosticar erros e prevenir abusos, spam e fraudes.
+						</li>
+						<li>
+							<strong>Cliques em links de compra:</strong> contamos quantas vezes
+							cada link de loja é clicado, de forma agregada, sem registrar quem
+							clicou.
 						</li>
 					</ul>
 					<h3>3.3. Dados recebidos de terceiros</h3>
@@ -146,6 +153,10 @@ export default function PrivacyPage() {
 							faltantes e obras relacionadas;
 						</li>
 						<li>
+							Gerar estatísticas comunitárias de preços pagos, sem identificar
+							quem as forneceu (veja a seção 6);
+						</li>
+						<li>
 							Permitir a interação entre usuários, como seguir perfis, comentar,
 							avaliar e publicar reviews;
 						</li>
@@ -173,19 +184,36 @@ export default function PrivacyPage() {
 					<p>
 						<strong>
 							Não vendemos os seus dados pessoais nem os utilizamos para
-							publicidade de terceiros.
+							publicidade de terceiros. Os links de afiliado não envolvem o envio
+							dos seus dados pessoais às lojas.
 						</strong>
 					</p>
 
 					<h2>6. Conteúdo público</h2>
 					<p>
 						Parte das informações que você registra é <strong>pública</strong> por
-						natureza dentro do site. Seu nome de usuário, sua coleção, suas
-						avaliações, reviews, comentários e fotos de coleção marcadas como
+						natureza dentro do site. Seu nome de usuário, sua coleção (obras,
+						volumes, estado de leitura, datas de leitura e quantas vezes leu),
+						suas avaliações, reviews, comentários e fotos de coleção marcadas como
 						visíveis podem ser vistos por outros usuários e por visitantes não
 						cadastrados. Seu endereço de email, sua senha e suas configurações
 						pessoais nunca são exibidos publicamente. Tenha atenção ao publicar
 						informações que não deseja tornar públicas.
+					</p>
+					<p>
+						Os dados de compra de cada volume (preço pago, loja, condição e data
+						de aquisição) e as suas anotações pessoais são visíveis apenas para
+						você.
+					</p>
+					<p>
+						As compras e os preços que você registra também são usados, sem
+						identificação, em informações comunitárias da obra: a mediana do preço
+						pago por volume, exibida apenas quando pelo menos três pessoas
+						contribuíram, e a lista de compras da obra, que mostra o valor, os
+						volumes, a condição, a loja e apenas o mês e o ano da compra, sem o
+						seu nome de usuário nem a data exata. Como essa lista inclui a loja, o
+						mês e os volumes, é possível que alguém que conheça os seus hábitos de
+						compra reconheça uma compra sua.
 					</p>
 
 					<h2>7. Cookies e tecnologias semelhantes</h2>
@@ -199,6 +227,16 @@ export default function PrivacyPage() {
 						Google. Você pode gerenciar ou bloquear cookies nas configurações do
 						seu navegador, mas isso pode impedir o funcionamento do login e de
 						outras funcionalidades.
+					</p>
+					<p>
+						Algumas páginas exibem links para lojas, como a Amazon, e alguns deles
+						são links de afiliado: como participantes do Programa de Associados da
+						Amazon, somos remunerados pelas compras qualificadas feitas por esses
+						links, sem custo adicional para você. Ao clicar em um deles, você
+						passa a navegar no site da loja, e terceiros, incluindo a Amazon,
+						podem colocar e ler cookies no seu navegador (por exemplo, para
+						identificar que a visita veio do Manga Shelf), conforme as suas
+						próprias políticas. Não enviamos os seus dados pessoais às lojas.
 					</p>
 
 					<h2>8. Compartilhamento e divulgação</h2>
@@ -281,13 +319,18 @@ export default function PrivacyPage() {
 							Obter informações sobre com quem os seus dados são compartilhados;
 						</li>
 						<li>
-							Revogar o consentimento, quando o tratamento se basear nele.
+							Revogar o consentimento, quando o tratamento se basear nele;
 						</li>
+						<li>Solicitar a portabilidade dos seus dados.</li>
 					</ul>
 					<p>
 						Grande parte desses dados pode ser gerenciada diretamente nas
-						configurações da sua conta. Para exercer qualquer um desses direitos
-						ou tirar dúvidas, entre em contato pelo email{" "}
+						configurações da sua conta. Você pode exportar a sua coleção
+						(volumes e obras) a qualquer momento em{" "}
+						<Link to={"/settings#data"}>Configurações → Seus dados</Link>. Esse
+						arquivo cobre apenas a sua coleção; para os demais dados, ou para
+						exercer qualquer um dos outros direitos acima, entre em contato pelo
+						email{" "}
 						<a href={"mailto:mymangashelfs@gmail.com"}>
 							mymangashelfs@gmail.com
 						</a>
