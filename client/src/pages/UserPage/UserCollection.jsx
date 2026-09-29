@@ -6,6 +6,7 @@ import debaunce from "../../utils/debaunce";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import FilterControls from "../../components/FilterControls";
 import { UserContext } from "../../contexts/userProvider";
+import { hasActiveFilters } from "../../utils/hasActiveFilters";
 
 export default function UserCollection() {
 	const { username } = useParams();
@@ -60,11 +61,20 @@ export default function UserCollection() {
 		}
 	};
 
+	const filtersActive = hasActiveFilters(params, searchBarValue);
+
 	const EmptyListComponent = () => {
+		if (filtersActive) {
+			return (
+				<p className="not-found-message">
+					Nenhuma obra corresponde aos filtros selecionados.
+				</p>
+			);
+		}
 		return (
 			<p className="not-found-message">
-				Esta conta não possuí nenhuma coleção registrada ou com esses filtros.
-				Caso essa seja sua conta tente{" "}
+				Esta conta não possuí nenhuma coleção registrada. Caso essa seja sua
+				conta tente{" "}
 				<Link to={"/browse"}>
 					<strong>
 						adicionar suas coleções buscando em nossa página de busca

@@ -10,6 +10,7 @@ import { messageContext } from "../../contexts/messageStateProvider";
 import FilterControls from "../../components/FilterControls";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { UserContext } from "../../contexts/userProvider";
+import { hasActiveFilters } from "../../utils/hasActiveFilters";
 
 export default function WishlistPage() {
 	const { username } = useParams();
@@ -64,7 +65,16 @@ export default function WishlistPage() {
 		}
 	};
 
+	const filtersActive = hasActiveFilters(params, searchBarValue);
+
 	const EmptyListComponent = () => {
+		if (filtersActive) {
+			return (
+				<p className="not-found-message">
+					Nenhuma obra corresponde aos filtros selecionados.
+				</p>
+			);
+		}
 		return (
 			<p className="not-found-message">
 				Esta conta não possuí nada na lista de desejos.

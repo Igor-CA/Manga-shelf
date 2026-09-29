@@ -6,6 +6,7 @@ import SeriesCardList from "../../components/cards/SeriesCardList";
 import AffiliateDisclosure from "../../components/links/AffiliateDisclosure";
 import FilterControls from "../../components/FilterControls";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
+import { hasActiveFilters } from "../../utils/hasActiveFilters";
 import { UserContext } from "../../contexts/userProvider";
 export default function MissingVolumesPage() {
 	const { username } = useParams();
@@ -59,7 +60,16 @@ export default function MissingVolumesPage() {
 		}
 	};
 
+	const filtersActive = hasActiveFilters(params, searchBarValue);
+
 	const EmptyListComponent = () => {
+		if (filtersActive) {
+			return (
+				<p className="not-found-message">
+					Nenhum volume corresponde aos filtros selecionados.
+				</p>
+			);
+		}
 		return (
 			<p className="not-found-message">
 				Esta conta não possuí nenhum volume faltando. Talvez seja a hora de

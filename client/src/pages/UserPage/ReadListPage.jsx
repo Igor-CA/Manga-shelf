@@ -11,6 +11,7 @@ import OwnedVolumesTable from "../../components/volumesTable/OwnedVolumesTable";
 import ExportCollectionControl from "../../components/ExportCollectionControl";
 import { useOwnedVolumeEdits } from "../../utils/useOwnedVolumeEdits";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
+import { hasActiveFilters } from "../../utils/hasActiveFilters";
 import { useCallback } from "react";
 import { useContext } from "react";
 import { useMemo } from "react";
@@ -99,23 +100,26 @@ export default function ReadListPage() {
 		},
 		[username, navigate]
 	); // Dependencies: recreate only if these change
+	const filtersActive = hasActiveFilters(params, searchBarValue);
+
 	const EmptyListComponent = () => {
+		if (filtersActive) {
+			return (
+				<p className="not-found-message">
+					Nenhum volume corresponde aos filtros selecionados.
+				</p>
+			);
+		}
 		return (
 			<p className="not-found-message">
-				Esta conta não possuí nenhum volume com os filtros aplicados. Talvez
-				seja a hora de começar uma nova coleção?
+				Esta conta não possuí nenhum volume. Talvez seja a hora de começar uma
+				nova coleção?
 				<Link to={"/browse"}>
 					<strong>Busque novos títulos na nossa página de pesquisa</strong>
 				</Link>{" "}
 			</p>
 		);
 	};
-
-	const hasActiveFilters =
-		Boolean(searchBarValue) ||
-		Object.entries(params).some(
-			([key, value]) => key !== "ordering" && key !== "p" && value,
-		);
 
 	const unreadArgs = useMemo(() => [{ ...params, group: false }], [params]);
     const readArgs = useMemo(() => [{ ...params, group: true }], [params]);
@@ -193,7 +197,7 @@ export default function ReadListPage() {
 				personalRatingLabel={personalRatingLabel}
 			></FilterControls>
 			<div className="view-toggle-bar">
-				{view === "table" && isOwner && !hasActiveFilters && (
+				{view === "table" && isOwner && !filtersActive && (
 					<ExportCollectionControl />
 				)}
 				<ViewToggle view={view} onChange={handleViewChange} />
