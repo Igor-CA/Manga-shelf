@@ -8,6 +8,7 @@ import ViewToggle, {
 	writeStoredView,
 } from "../../components/ViewToggle";
 import OwnedVolumesTable from "../../components/volumesTable/OwnedVolumesTable";
+import ExportCollectionControl from "../../components/ExportCollectionControl";
 import { useOwnedVolumeEdits } from "../../utils/useOwnedVolumeEdits";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { useCallback } from "react";
@@ -103,6 +104,12 @@ export default function ReadListPage() {
 		);
 	};
 
+	const hasActiveFilters =
+		Boolean(searchBarValue) ||
+		Object.entries(params).some(
+			([key, value]) => key !== "ordering" && key !== "p" && value,
+		);
+
 	const unreadArgs = useMemo(() => [{ ...params, group: false }], [params]);
     const readArgs = useMemo(() => [{ ...params, group: true }], [params]);
 
@@ -177,6 +184,9 @@ export default function ReadListPage() {
 				personalRatingLabel={personalRatingLabel}
 			></FilterControls>
 			<div className="view-toggle-bar">
+				{view === "table" && isOwner && !hasActiveFilters && (
+					<ExportCollectionControl />
+				)}
 				<ViewToggle view={view} onChange={handleViewChange} />
 			</div>
 
