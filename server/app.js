@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const compression = require("compression");
 
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -93,6 +94,7 @@ app.use(
 		crossOriginResourcePolicy: { policy: "cross-origin" },
 	})
 );
+app.use(compression());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -128,6 +130,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 require("./passport-config")(passport);
 
+for (const size of ["small", "medium", "large", "extralarge"]) {
+	app.use(
+		`/images/${size}`,
+		express.static(path.resolve(__dirname, "public", "images", size), {
+			maxAge: "7d",
+		})
+	);
+}
 app.use(express.static(path.resolve(__dirname, "public")));
 
 app.use("/api/user", apiKeyAuth, userRouter);
@@ -135,6 +145,13 @@ app.use("/api/data", apiKeyAuth, apiRouter);
 app.use("/admin", apiKeyAuth, checkAdmin, adminRouter);
 
 if (process.env.NODE_ENV === "production") {
+	app.use(
+		"/assets",
+		express.static(path.join(__dirname, "../client/dist/assets"), {
+			maxAge: "1y",
+			immutable: true,
+		})
+	);
 	app.use(express.static(path.join(__dirname, "../client/dist")));
 
 	mountSpaFallback(
