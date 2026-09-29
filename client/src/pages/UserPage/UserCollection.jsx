@@ -1,12 +1,25 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import SeriesCardList from "../../components/cards/SeriesCardList";
 import axios from "axios";
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext } from "react";
 import debaunce from "../../utils/debaunce";
 import { useFilterHandler } from "../../utils/useFiltersHandler";
 import FilterControls from "../../components/FilterControls";
 import { UserContext } from "../../contexts/userProvider";
 import { hasActiveFilters } from "../../utils/hasActiveFilters";
+import { readStorage, writeStorage } from "../../utils/storage";
+
+const COLLECTION_VIEW_KEY = "view:collection";
+const COLLECTION_GROUP_KEY = "groupBy:collection";
+
+const readStoredCollectionParams = () => {
+	const stored = {};
+	const view = readStorage(COLLECTION_VIEW_KEY);
+	if (view) stored.view = view;
+	const groupBy = readStorage(COLLECTION_GROUP_KEY);
+	if (groupBy) stored.groupBy = groupBy;
+	return stored;
+};
 
 export default function UserCollection() {
 	const { username } = useParams();
@@ -26,8 +39,15 @@ export default function UserCollection() {
 		demographicsList,
 		handleChange,
 		searchBarValue,
-	} = useFilterHandler(fetchFiltersUrl, true, {}, "title");
-	const [groupVal, setGroupVal] = useState(false);
+	} = useFilterHandler(
+		fetchFiltersUrl,
+		true,
+		{},
+		"title",
+		readStoredCollectionParams()
+	);
+	const isGrouped = params.groupBy === "status";
+	const isVolumeView = params.view === "volumes";
 	const statuses = ["Collecting", "Up to date", "Finished", "Dropped"];
 	const statusesLables = [
 		"Incompleto",
@@ -35,6 +55,17 @@ export default function UserCollection() {
 		"Concluído",
 		"Abandonado",
 	];
+
+	const handleGroupChange = (e) => {
+		writeStorage(COLLECTION_GROUP_KEY, e.target.checked ? "status" : "");
+		handleChange(e);
+	};
+
+	const handleViewChange = (e) => {
+		writeStorage(COLLECTION_VIEW_KEY, e.target.checked ? "volumes" : "");
+		handleChange(e);
+	};
+
 	const querryUserList = async (page, params) => {
 		try {
 			const res = await axios({
@@ -67,7 +98,9 @@ export default function UserCollection() {
 		if (filtersActive) {
 			return (
 				<p className="not-found-message">
-					Nenhuma obra corresponde aos filtros selecionados.
+					{isVolumeView
+						? "Nenhum volume corresponde aos filtros selecionados."
+						: "Nenhuma obra corresponde aos filtros selecionados."}
 				</p>
 			);
 		}
@@ -101,21 +134,45 @@ export default function UserCollection() {
 				lists={{ genreList, publishersList, typesList, demographicsList }}
 				personalRatingLabel={personalRatingLabel}
 			>
-				<div className="filter__checkbox-container">
-					<label htmlFor="group" className="filter__label">
-						Agrupar por status da coleção
-						<input
-							type="checkbox"
-							name="group"
-							id="group"
-							className="filter__checkbox"
-							onChange={(e) => setGroupVal(e.target.checked)}
-							checked={groupVal}
-						/>
-					</label>
+				<div className="filter__label">
+					Exibição
+					<div className="form__input filter__input filter__options">
+						<label
+							htmlFor="groupBy"
+							className="filter__option"
+							title="Agrupar por status da coleção"
+						>
+							Por status
+							<input
+								type="checkbox"
+								name="groupBy"
+								id="groupBy"
+								value="status"
+								className="filter__checkbox"
+								onChange={handleGroupChange}
+								checked={isGrouped}
+							/>
+						</label>
+						<label
+							htmlFor="view"
+							className="filter__option"
+							title="Exibir por volume"
+						>
+							Por volume
+							<input
+								type="checkbox"
+								name="view"
+								id="view"
+								value="volumes"
+								className="filter__checkbox"
+								onChange={handleViewChange}
+								checked={isVolumeView}
+							/>
+						</label>
+					</div>
 				</div>
 			</FilterControls>
-			{groupVal ? (
+			{isGrouped ? (
 				statuses.map((status, i) => {
 					return (
 						<div>
@@ -126,6 +183,7 @@ export default function UserCollection() {
 								fetchFunction={querryUserList}
 								errorComponent={EmptyListComponent}
 								functionArguments={[{ ...params, group: status }]}
+								itemType={isVolumeView ? "Volumes" : "Series"}
 							></SeriesCardList>
 						</div>
 					);
@@ -136,6 +194,7 @@ export default function UserCollection() {
 					fetchFunction={querryUserList}
 					errorComponent={EmptyListComponent}
 					functionArguments={functionArguments}
+					itemType={isVolumeView ? "Volumes" : "Series"}
 				></SeriesCardList>
 			)}
 		</div>

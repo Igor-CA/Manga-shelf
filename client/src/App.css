@@ -317,6 +317,22 @@ body {
 .filter__checkbox-container--left {
 	align-self: flex-start;
 }
+.filter__options {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	font-size: 0.8333rem;
+	white-space: nowrap;
+	cursor: default;
+}
+.filter__option {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+}
+.filter__option .filter__checkbox {
+	margin-left: 0.5rem;
+}
 .filter__checkbox-container .filter__label {
 	font-size: 0.75rem;
 	display: inline;

@@ -1,21 +1,11 @@
 import { BsGridFill, BsTable } from "react-icons/bs";
 import "./ViewToggle.css";
+import { readStorage, writeStorage } from "../utils/storage";
 
-const readStoredView = (storageKey) => {
-	try {
-		return localStorage.getItem(storageKey) === "table" ? "table" : "cards";
-	} catch {
-		return "cards";
-	}
-};
+const readStoredView = (storageKey) =>
+	readStorage(storageKey) === "table" ? "table" : "cards";
 
-const writeStoredView = (storageKey, view) => {
-	try {
-		localStorage.setItem(storageKey, view);
-	} catch {
-		return;
-	}
-};
+const writeStoredView = writeStorage;
 
 export { readStoredView, writeStoredView };
 

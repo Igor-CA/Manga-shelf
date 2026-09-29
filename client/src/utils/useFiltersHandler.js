@@ -9,7 +9,8 @@ export const useFilterHandler = (
 	fetchFiltersUrl,
 	useURLParams = false,
 	extraFetchParams = {},
-	defaultOrdering = "popularity"
+	defaultOrdering = "popularity",
+	initialParams = {}
 ) => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { addMessage } = useContext(messageContext);
@@ -27,6 +28,7 @@ export const useFilterHandler = (
 		const paramsFromUrl = getInitialParams();
 		return {
 			ordering: defaultOrdering,
+			...initialParams,
 			...paramsFromUrl,
 		};
 	});

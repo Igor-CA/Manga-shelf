@@ -255,6 +255,121 @@ const buildAggregationPipeline = (
 	return pipeline;
 };
 
+const buildCollectionVolumeAggregationPipeline = (
+	targetUser,
+	filter,
+	sortStage,
+	skip,
+	myRatingStages = [],
+) => {
+	const pipeline = [
+		{ $match: { username: targetUser } },
+		{
+			$project: {
+				userList: {
+					$filter: {
+						input: "$userList",
+						as: "item",
+						cond: { $ne: ["$$item.Series", null] },
+					},
+				},
+				ownedIds: {
+					$map: {
+						input: {
+							$filter: {
+								input: "$ownedVolumes",
+								as: "item",
+								cond: { $ne: ["$$item.volume", null] },
+							},
+						},
+						as: "item",
+						in: "$$item.volume",
+					},
+				},
+			},
+		},
+		{ $unwind: "$userList" },
+		{
+			$lookup: {
+				from: "series",
+				localField: "userList.Series",
+				foreignField: "_id",
+				as: "userList.Series",
+			},
+		},
+		{ $unwind: "$userList.Series" },
+		{
+			$addFields: {
+				volumesLength: { $size: "$userList.Series.volumes" },
+			},
+		},
+		{ $match: filter },
+		...myRatingStages,
+		{
+			$addFields: {
+				ownedInSeries: {
+					$setIntersection: ["$userList.Series.volumes", "$ownedIds"],
+				},
+			},
+		},
+		{ $unwind: "$ownedInSeries" },
+		{
+			$lookup: {
+				from: "volumes",
+				localField: "ownedInSeries",
+				foreignField: "_id",
+				as: "ownedVolume",
+			},
+		},
+		{ $unwind: "$ownedVolume" },
+		{
+			$project: {
+				"userList.Series._id": 1,
+				"userList.Series.title": 1,
+				"userList.Series.isAdult": 1,
+				"userList.Series.popularity": 1,
+				"userList.Series.publisher": 1,
+				"userList.Series.originalRun.dates.publishedAt": 1,
+				"userList.Series.dates.publishedAt": 1,
+				"userList.Series.ratingAverage": 1,
+				"userList.completionPercentage": 1,
+				"userList.timestamp": 1,
+				volumesLength: 1,
+				hasMyRating: 1,
+				myRatingScore: 1,
+				"ownedVolume._id": 1,
+				"ownedVolume.number": 1,
+				"ownedVolume.isVariant": 1,
+				"ownedVolume.variantNumber": 1,
+			},
+		},
+		{
+			$sort: {
+				...sortStage,
+				"userList.Series._id": 1,
+				"ownedVolume.number": 1,
+				"ownedVolume.isVariant": 1,
+				"ownedVolume.variantNumber": 1,
+			},
+		},
+		{
+			$project: {
+				_id: "$ownedVolume._id",
+				title: "$userList.Series.title",
+				volumeNumber: "$ownedVolume.number",
+				isVariant: "$ownedVolume.isVariant",
+				variantNumber: "$ownedVolume.variantNumber",
+				isAdult: "$userList.Series.isAdult",
+				seriesId: "$userList.Series._id",
+			},
+		},
+		{ $skip: skip },
+		{ $limit: ITEMS_PER_PAGE },
+	];
+
+	return pipeline;
+};
+
 const buildVolumeAggregationPipeline = (
 	targetUser,
 	filter,
@@ -412,6 +527,46 @@ exports.getUserCollection = asyncHandler(async (req, res, next) => {
 		ordering === "myRating" && owner
 			? buildSeriesMyRatingLookupStages(owner._id, "$userList.Series._id")
 			: [];
+
+	if (req.query.view === "volumes") {
+		const volumePipeline = buildCollectionVolumeAggregationPipeline(
+			targetUser,
+			filter,
+			sortStage,
+			skip,
+			myRatingStages,
+		);
+		const ownedVolumes = await User.aggregate(volumePipeline);
+
+		const scoreByVolumeId = owner
+			? await getVolumeScores(owner._id, ownedVolumes)
+			: new Map();
+
+		const filteredVolumes = ownedVolumes.map((volume) => {
+			const seriesObject = { title: volume.title };
+			let image = getVolumeCoverURL(
+				seriesObject,
+				volume.volumeNumber,
+				volume.isVariant,
+				volume.variantNumber,
+			);
+			if (volume.isAdult && !req.user?.allowAdult) {
+				image = null;
+			}
+
+			const score = scoreByVolumeId.get(volume._id.toString());
+			const ratingScore = score != null ? Math.round(score) : null;
+
+			return {
+				...volume,
+				image: image,
+				ratingScore,
+				isDerived: false,
+			};
+		});
+
+		return res.send(filteredVolumes);
+	}
 
 	const pipeline = buildAggregationPipeline(
 		targetUser,
