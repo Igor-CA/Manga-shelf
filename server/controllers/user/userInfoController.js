@@ -522,6 +522,102 @@ exports.getUserWishlist = asyncHandler(async (req, res, next) => {
 	res.send(filteredList);
 });
 
+const buildMissingStages = (
+	targetUser,
+	{ seriesMatch = {} } = {},
+) => [
+	{ $match: { username: targetUser } },
+
+	{
+		$addFields: {
+			ownedVolumeIds: {
+				$map: {
+					input: { $ifNull: ["$ownedVolumes", []] },
+					as: "ov",
+					in: "$$ov.volume",
+				},
+			},
+		},
+	},
+	{ $project: { ownedVolumes: 0 } },
+
+	{ $unwind: "$userList" },
+	{ $match: { "userList.status": { $ne: "Dropped" } } },
+
+	{
+		$lookup: {
+			from: "series",
+			localField: "userList.Series",
+			foreignField: "_id",
+			as: "seriesDetails",
+		},
+	},
+	{ $unwind: "$seriesDetails" },
+	...(Object.keys(seriesMatch).length ? [{ $match: seriesMatch }] : []),
+
+	{
+		$lookup: {
+			from: "volumes",
+			localField: "seriesDetails.volumes",
+			foreignField: "_id",
+			as: "volumeDetails",
+		},
+	},
+	{ $unwind: "$volumeDetails" },
+
+	{
+		$project: {
+			"seriesDetails.title": 1,
+			"seriesDetails._id": 1,
+			"seriesDetails.volumes": 1,
+			"seriesDetails.status": 1,
+			"seriesDetails.isAdult": 1,
+			"volumeDetails._id": 1,
+			"volumeDetails.number": 1,
+			"volumeDetails.isVariant": 1,
+			"volumeDetails.ISBN": 1,
+			"userList.status": 1,
+
+			isOwned: {
+				$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumeIds", []] }],
+			},
+			variantSort: {
+				$cond: [{ $ifNull: ["$volumeDetails.isVariant", false] }, 1, 0],
+			},
+		},
+	},
+
+	{
+		$sort: {
+			"seriesDetails.title": 1,
+			"volumeDetails.number": 1,
+			variantSort: 1,
+		},
+	},
+
+	{
+		$group: {
+			_id: {
+				seriesId: "$seriesDetails._id",
+				volNumber: "$volumeDetails.number",
+			},
+			hasOwnedVariant: { $max: "$isOwned" },
+
+			series: { $first: "$seriesDetails.title" },
+			seriesId: { $first: "$seriesDetails._id" },
+			seriesSize: { $first: { $size: "$seriesDetails.volumes" } },
+			seriesStatus: { $first: "$seriesDetails.status" },
+			isAdult: { $first: "$seriesDetails.isAdult" },
+			displayVolumeId: { $first: "$volumeDetails._id" },
+			displayVolumeNumber: { $first: "$volumeDetails.number" },
+			displayVolumeISBN: { $first: "$volumeDetails.ISBN" },
+			userStatus: { $first: "$userList.status" },
+		},
+	},
+
+	{ $match: { hasOwnedVariant: false } },
+];
+
 exports.getMissingPage = asyncHandler(async (req, res, next) => {
 	const targetUser = req.params.username?.trim();
 	if (!targetUser)
@@ -534,95 +630,9 @@ exports.getMissingPage = asyncHandler(async (req, res, next) => {
 
 	const isOwner = req.user?.username === targetUser;
 
+	const seriesMatch = buildFilter(req.query, "seriesDetails");
 	const aggregationPipeline = [
-		{ $match: { username: targetUser } },
-
-		{
-			$addFields: {
-				ownedVolumeIds: {
-					$map: {
-						input: { $ifNull: ["$ownedVolumes", []] },
-						as: "ov",
-						in: "$$ov.volume",
-					},
-				},
-			},
-		},
-		{ $project: { ownedVolumes: 0 } },
-
-		{ $unwind: "$userList" },
-		{ $match: { "userList.status": { $ne: "Dropped" } } },
-
-		{
-			$lookup: {
-				from: "series",
-				localField: "userList.Series",
-				foreignField: "_id",
-				as: "seriesDetails",
-			},
-		},
-		{ $unwind: "$seriesDetails" },
-		{
-			$lookup: {
-				from: "volumes",
-				localField: "seriesDetails.volumes",
-				foreignField: "_id",
-				as: "volumeDetails",
-			},
-		},
-		{ $unwind: "$volumeDetails" },
-
-		{
-			$project: {
-				"seriesDetails.title": 1,
-				"seriesDetails._id": 1,
-				"seriesDetails.volumes": 1,
-				"seriesDetails.status": 1,
-				"seriesDetails.isAdult": 1,
-				"volumeDetails._id": 1,
-				"volumeDetails.number": 1,
-				"volumeDetails.isVariant": 1,
-				"volumeDetails.ISBN": 1,
-				"userList.status": 1,
-
-				isOwned: {
-					$in: ["$volumeDetails._id", { $ifNull: ["$ownedVolumeIds", []] }],
-				},
-				variantSort: {
-					$cond: [{ $ifNull: ["$volumeDetails.isVariant", false] }, 1, 0],
-				},
-			},
-		},
-
-		{
-			$sort: {
-				"seriesDetails.title": 1,
-				"volumeDetails.number": 1,
-				variantSort: 1,
-			},
-		},
-
-		{
-			$group: {
-				_id: {
-					seriesId: "$seriesDetails._id",
-					volNumber: "$volumeDetails.number",
-				},
-				hasOwnedVariant: { $max: "$isOwned" },
-
-				series: { $first: "$seriesDetails.title" },
-				seriesId: { $first: "$seriesDetails._id" },
-				seriesSize: { $first: { $size: "$seriesDetails.volumes" } },
-				seriesStatus: { $first: "$seriesDetails.status" },
-				isAdult: { $first: "$seriesDetails.isAdult" },
-				displayVolumeId: { $first: "$volumeDetails._id" },
-				displayVolumeNumber: { $first: "$volumeDetails.number" },
-				displayVolumeISBN: { $first: "$volumeDetails.ISBN" },
-				userStatus: { $first: "$userList.status" },
-			},
-		},
-
-		{ $match: { hasOwnedVariant: false } },
+		...buildMissingStages(targetUser, { seriesMatch }),
 
 		{
 			$project: {
@@ -1104,32 +1114,45 @@ exports.getUserFilters = asyncHandler(async (req, res, next) => {
 
 	const source = req.query.source || "userList";
 
-	let seriesSourceProjection;
-	if (source === "userList") {
-		seriesSourceProjection = {
-			allSeries: {
-				$map: { input: "$userList", as: "item", in: "$$item.Series" },
-			},
-		};
-	} else if (source === "wishList") {
-		seriesSourceProjection = {
-			allSeries: "$wishList",
-		};
+	let headStages;
+	if (source === "missing") {
+		headStages = [
+			...buildMissingStages(targetUser),
+			{ $group: { _id: "$seriesId" } },
+			{ $project: { _id: 0, allSeries: "$_id" } },
+		];
 	} else {
-		seriesSourceProjection = {
-			allSeries: {
-				$concatArrays: [
-					{ $map: { input: "$userList", as: "item", in: "$$item.Series" } },
-					"$wishList",
-				],
-			},
-		};
+		let seriesSourceProjection;
+		if (source === "userList") {
+			seriesSourceProjection = {
+				allSeries: {
+					$map: { input: "$userList", as: "item", in: "$$item.Series" },
+				},
+			};
+		} else if (source === "wishList") {
+			seriesSourceProjection = {
+				allSeries: "$wishList",
+			};
+		} else {
+			seriesSourceProjection = {
+				allSeries: {
+					$concatArrays: [
+						{ $map: { input: "$userList", as: "item", in: "$$item.Series" } },
+						"$wishList",
+					],
+				},
+			};
+		}
+
+		headStages = [
+			{ $match: { username: targetUser } },
+			{ $project: seriesSourceProjection },
+			{ $unwind: "$allSeries" },
+		];
 	}
 
 	const result = await User.aggregate([
-		{ $match: { username: targetUser } },
-		{ $project: seriesSourceProjection },
-		{ $unwind: "$allSeries" },
+		...headStages,
 		{
 			$lookup: {
 				from: "series",

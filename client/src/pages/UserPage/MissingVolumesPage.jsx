@@ -4,6 +4,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import "../SeriesPage/SeriesPage.css";
 import SeriesCardList from "../../components/cards/SeriesCardList";
 import AffiliateDisclosure from "../../components/links/AffiliateDisclosure";
+import FilterControls from "../../components/FilterControls";
+import { useFilterHandler } from "../../utils/useFiltersHandler";
 import { UserContext } from "../../contexts/userProvider";
 export default function MissingVolumesPage() {
 	const { username } = useParams();
@@ -11,7 +13,21 @@ export default function MissingVolumesPage() {
 	const { user: loggedUser } = useContext(UserContext);
 	const isOwner = username === loggedUser?.username;
 
-	const fetchMissingVolumes = async (page, params) => {
+	const fetchFiltersUrl = `${
+		import.meta.env.REACT_APP_HOST_ORIGIN
+	}/api/data/user/${username}/filters`;
+	const {
+		params,
+		functionArguments,
+		genreList,
+		publishersList,
+		typesList,
+		demographicsList,
+		handleChange,
+		searchBarValue,
+	} = useFilterHandler(fetchFiltersUrl, true, { source: "missing" }, "title");
+
+	const fetchMissingVolumes = async (page) => {
 		try {
 			const response = await axios({
 				method: "GET",
@@ -21,7 +37,7 @@ export default function MissingVolumesPage() {
 				},
 				params: {
 					p: page,
-					...params
+					...params,
 				},
 				url: `${
 					import.meta.env.REACT_APP_HOST_ORIGIN
@@ -56,11 +72,25 @@ export default function MissingVolumesPage() {
 	return (
 		<div className="container">
 			{isOwner && <AffiliateDisclosure />}
+			<FilterControls
+				availableFilters={[
+					"search",
+					"genre",
+					"publisher",
+					"status",
+					"demographic",
+					"type",
+				]}
+				handleChange={handleChange}
+				values={{ searchBarValue, ...params }}
+				lists={{ genreList, publishersList, typesList, demographicsList }}
+			/>
 			<SeriesCardList
 				skeletonsCount={36}
 				fetchFunction={fetchMissingVolumes}
 				itemType="Volumes"
 				errorComponent={EmptyListComponent}
+				functionArguments={functionArguments}
 				showActions={true}
 			></SeriesCardList>
 		</div>
