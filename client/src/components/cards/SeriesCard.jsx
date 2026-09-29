@@ -16,6 +16,7 @@ export function SeriesCard({
 	itemType,
 	showActions = false,
 	onStatusChange,
+	eager = false,
 }) {
 	const [loaded, setLoaded] = useState(false);
 	const [inUserList, setInUserList] = useState(itemDetails.inUserList);
@@ -240,7 +241,7 @@ export function SeriesCard({
 							(min-width: 768px) 20vw, 
 							(min-width: 360px) and (max-width: 768px) 35vw, 
 							(max-width: 320px) 50vw"
-						loading="lazy"
+						loading={eager ? "eager" : "lazy"}
 						alt={`cover of ${title}`}
 						className={`series-card__img ${
 							!loaded ? "series-card__img--loading" : ""

@@ -148,6 +148,7 @@ export default function SeriesCardList({
 								itemType={itemType || "Series"}
 								showActions={showActions}
 								onStatusChange={handleStatusChange}
+								eager={index < 6}
 							></SeriesCard>
 						</div>
 					);

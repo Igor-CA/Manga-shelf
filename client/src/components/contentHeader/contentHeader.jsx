@@ -74,7 +74,7 @@ export default function ContentHeader({
 									}/images/extralarge/${imageFilename} 1000w,`
 								}
 								sizes=" (min-width: 768px) 360px, (max-width: 768px) 100vw,"
-								loading="lazy"
+								fetchpriority="high"
 								alt={`cover ${title}`}
 								className={`header__cover-image ${
 									!loaded ? "header__cover-image--loading" : ""
