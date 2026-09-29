@@ -10,6 +10,7 @@ import PromptConfirm from "../../contexts/PromptConfirm";
 import SideNavbar from "../../components/navbars/SideNavbar";
 import { messageContext } from "../../contexts/messageStateProvider";
 import usePageMeta from "../../utils/usePageMeta";
+import ExportCollectionControl from "../../components/ExportCollectionControl";
 
 const navbarOptions = [
 	{
@@ -23,6 +24,10 @@ const navbarOptions = [
 	{
 		label: "Notificações",
 		id: "notification",
+	},
+	{
+		label: "Seus dados",
+		id: "data",
 	},
 ];
 export default function SettingsPage() {
@@ -41,6 +46,7 @@ export default function SettingsPage() {
 						<AccountSettings />
 						<ProfileSettings />
 						<NotificationSettings />
+						<DataSettings />
 					</div>
 				</>
 			)}
@@ -379,6 +385,25 @@ function AccountSettings() {
 					handleChange={handleAdultContent}
 				></CustomCheckbox>
 			)}
+		</div>
+	);
+}
+
+function DataSettings() {
+	return (
+		<div className="settings-group">
+			<h2 className="settings-group__title" id="data">
+				Seus dados
+			</h2>
+			<p className="settings-data__text">
+				Baixe uma cópia da sua coleção. O arquivo inclui:
+			</p>
+			<ul className="settings-data__list">
+				<li>Os volumes que você possui, com preços, condições, datas e notas</li>
+				<li>As obras da sua coleção e da sua lista de desejos</li>
+			</ul>
+			<p className="settings-data__note">Disponível em CSV ou Excel.</p>
+			<ExportCollectionControl />
 		</div>
 	);
 }

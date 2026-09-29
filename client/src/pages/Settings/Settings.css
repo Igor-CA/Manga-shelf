@@ -60,6 +60,20 @@
 	font-size: 1.5em;
 	color: var(--text);
 }
+.settings-data__text {
+	margin: 0.75rem 0 0.5rem;
+	line-height: 1.5;
+}
+.settings-data__list {
+	margin: 0 0 1rem;
+	padding-left: 1.25rem;
+	line-height: 1.6;
+}
+.settings-data__note {
+	margin: 0 0 1.25rem;
+	font-size: 0.875rem;
+	opacity: 0.75;
+}
 .input_label,
 .settings-group .custom-checkbox {
 	font-weight: bold;

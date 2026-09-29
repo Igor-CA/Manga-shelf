@@ -1,0 +1,77 @@
+.export-collection {
+	position: relative;
+	padding: 0.5rem;
+}
+
+.export-collection__text {
+	margin: 0 0 1.25rem;
+	line-height: 1.5;
+	opacity: 0.8;
+}
+
+.export-collection__options {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.export-collection__option {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+	padding: 1rem;
+	border: 1px solid rgba(var(--gray));
+	border-radius: 0.25rem;
+	background-color: var(--foreground);
+	color: var(--text);
+	text-align: left;
+	font-family: inherit;
+	cursor: pointer;
+	transition: border-color 150ms;
+}
+
+.export-collection__option:hover:not(:disabled),
+.export-collection__option:focus-visible {
+	border-color: var(--accent);
+	outline: none;
+}
+
+.export-collection__option:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.export-collection__icon {
+	flex-shrink: 0;
+	font-size: 2rem;
+	color: var(--accent);
+}
+
+.export-collection__option-text {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.export-collection__label {
+	font-size: 1rem;
+	font-weight: bold;
+}
+
+.export-collection__hint {
+	font-size: 0.8rem;
+	opacity: 0.75;
+}
+
+.export-collection__close {
+	position: absolute;
+	top: 0.25rem;
+	right: 0.25rem;
+	border: none;
+	background: none;
+	font-size: 1.5rem;
+	line-height: 1;
+	color: var(--text);
+	cursor: pointer;
+}
