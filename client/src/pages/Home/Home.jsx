@@ -17,11 +17,11 @@ import { UserContext } from "../../contexts/userProvider";
 import usePageMeta from "../../utils/usePageMeta";
 
 export default function Home() {
-	const { user } = useContext(UserContext);
+	const { user, isFetching } = useContext(UserContext);
 	usePageMeta();
 	return (
 		<div className="page-content">
-			{!user && (
+			{!isFetching && !user && (
 				<div className="home">
 					<h1>Bem vindo ao Manga Shelf!</h1>
 					<p className="home__main-description">

@@ -51,7 +51,7 @@ function NavLink({ to, icon, label, notification = 0 }) {
 }
 
 export default function NavBar() {
-	const { user } = useContext(UserContext);
+	const { displayUser: user } = useContext(UserContext);
 	const [menuVisibility, setMenuVisibility] = useState(false);
 	const [theme, setTheme] = useState(
 		localStorage.theme ? localStorage.theme : "light"

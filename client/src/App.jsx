@@ -76,7 +76,7 @@ const AuthReturnConsumer = () => {
 };
 
 function App() {
-	const { user } = useContext(UserContext);
+	const { user, displayUser } = useContext(UserContext);
 
 	return (
 		<div className="App">
@@ -163,7 +163,7 @@ function App() {
 				</ErrorBoundary>
 
 				<footer className="footer">
-					{user ? (
+					{displayUser ? (
 						<Link to="/logout">Sair</Link>
 					) : (
 						<Link to="/login">Logar</Link>

@@ -10,8 +10,10 @@ const RedirectShell = ({ to }) => (
 );
 
 export default function RequireAuth({ children, adminOnly = false }) {
-	const { user } = useContext(UserContext);
+	const { user, isFetching } = useContext(UserContext);
 	const location = useLocation();
+
+	if (isFetching) return null;
 
 	if (!user) {
 		stash(`${location.pathname}${location.search}`);

@@ -46,7 +46,7 @@ const normalizeTableRow = (row) => ({
 export default function ReadListPage() {
 	const { username } = useParams();
 	const navigate = useNavigate();
-	const { user: loggedUser } = useContext(UserContext);
+	const { displayUser: loggedUser } = useContext(UserContext);
 	const isOwner = username === loggedUser?.username;
 	const personalRatingLabel =
 		username === loggedUser?.username ? "Sua nota" : `Nota de ${username}`;

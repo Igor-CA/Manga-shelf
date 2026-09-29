@@ -9,7 +9,7 @@ import { useAuthGate } from "../../utils/useAuthGate";
 export default function ProfileHeader({ user }) {
 	const [loaded, setLoaded] = useState(false);
 	const [showModal, setShowModal] = useState(false);
-	const { user: loggedUser } = useContext(UserContext);
+	const { displayUser: loggedUser } = useContext(UserContext);
 	const { addMessage } = useContext(messageContext);
 	const ensureLogged = useAuthGate();
 
