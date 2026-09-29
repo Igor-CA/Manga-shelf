@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useContext, useEffect } from "react";
-import { UserContext } from "../../contexts/userProvider";
+import { UserContext, clearSessionHint } from "../../contexts/userProvider";
 import "../404Page/NotFound.css";
 import usePageMeta from "../../utils/usePageMeta";
 export default function LogoutPage() {
@@ -17,6 +17,7 @@ export default function LogoutPage() {
 					},
 					url: `${import.meta.env.REACT_APP_HOST_ORIGIN}/api/user/logout`,
 				});
+				clearSessionHint();
 				setOutdated(true);
 				window.location.href = "/";
 			} catch (error) {

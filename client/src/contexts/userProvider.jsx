@@ -5,6 +5,8 @@ import { readStorage, writeStorage } from "../utils/storage";
 const UserContext = createContext(null);
 const SESSION_HINT_KEY = "session-hint";
 
+const clearSessionHint = () => writeStorage(SESSION_HINT_KEY, "");
+
 const readSessionHint = () => {
   try {
     return JSON.parse(readStorage(SESSION_HINT_KEY)) || null;
@@ -75,4 +77,4 @@ function UserProvider({ children }) {
   );
 }
 
-export { UserContext, UserProvider };
+export { UserContext, UserProvider, clearSessionHint };
