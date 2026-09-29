@@ -1291,24 +1291,33 @@ exports.getSocials = asyncHandler(async (req, res, next) => {
 
 	const users = await User.aggregate([
 		{ $match: { username } },
+		{ $project: { [type]: 1 } },
 		{ $unwind: `$${type}` },
 		{
 			$lookup: {
 				from: "users",
 				localField: type,
 				foreignField: "_id",
+				pipeline: [
+					{
+						$project: {
+							username: 1,
+							profileImageUrl: 1,
+							profileBannerUrl: 1,
+							followersCount: { $size: { $ifNull: ["$followers", []] } },
+						},
+					},
+				],
 				as: `${type}Details`,
 			},
 		},
 		{ $unwind: `$${type}Details` },
 		{
-			$addFields: {
-				followersCount: {
-					$size: { $ifNull: [`$${type}Details.followers`, []] },
-				},
+			$sort: {
+				[`${type}Details.followersCount`]: -1,
+				[`${type}Details.username`]: 1,
 			},
 		},
-		{ $sort: { followersCount: -1, username: 1 } },
 		{
 			$project: {
 				_id: `$${type}Details._id`,
