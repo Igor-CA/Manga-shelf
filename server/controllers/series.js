@@ -437,7 +437,17 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		},
 	];
 	addUserListData(pipeline, req.user);
-	const seriesResult = await Series.aggregate(pipeline).exec();
+	const [seriesResult, activeProviders, seriesStoredLinks, userRatings] =
+		await Promise.all([
+			Series.aggregate(pipeline).exec(),
+			getActiveProviders(),
+			getStoredLinks("Series", [seriesId]),
+			req.user
+				? Rating.find({ user: req.user._id, series: seriesId })
+						.select("volume score")
+						.lean()
+				: [],
+		]);
 	if (seriesResult.length === 0) {
 		res.status(400).json({ msg: "Series not found" });
 		return;
@@ -446,12 +456,8 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 	desiredSeries.seriesCover = getSeriesCoverURL(desiredSeries);
 
 	const { isAdult } = desiredSeries;
-	const activeProviders = await getActiveProviders();
 	const volumeIds = desiredSeries.volumes.map((volume) => volume._id);
-	const [volumeStoredLinks, seriesStoredLinks] = await Promise.all([
-		getStoredLinks("Volume", volumeIds),
-		getStoredLinks("Series", [desiredSeries._id]),
-	]);
+	const volumeStoredLinks = await getStoredLinks("Volume", volumeIds);
 	const volumesWithImages = desiredSeries.volumes.map((volume) => ({
 		volumeId: volume._id,
 		volumeNumber: volume.number,
@@ -484,17 +490,11 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 
 	let mySeriesScore = null;
 	let myVolumeScores = {};
-	if (req.user) {
-		const userRatings = await Rating.find({
-			user: req.user._id,
-			series: seriesId,
-		}).select("volume score").lean();
-		for (const r of userRatings) {
-			if (r.volume === null || r.volume == null) {
-				mySeriesScore = r.score;
-			} else {
-				myVolumeScores[r.volume.toString()] = r.score;
-			}
+	for (const r of userRatings) {
+		if (r.volume === null || r.volume == null) {
+			mySeriesScore = r.score;
+		} else {
+			myVolumeScores[r.volume.toString()] = r.score;
 		}
 	}
 

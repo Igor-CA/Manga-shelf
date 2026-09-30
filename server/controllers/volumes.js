@@ -39,9 +39,20 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 		return;
 	}
 
-	const desiredVolume = await Volume.findById(req.params.id)
-		.populate("serie", "title volumes isAdult authors status genres")
-		.exec();
+	const volumeId = new mongoose.Types.ObjectId(req.params.id);
+	const [desiredVolume, userRating, activeProviders, storedLinks] =
+		await Promise.all([
+			Volume.findById(volumeId)
+				.populate("serie", "title volumes isAdult authors status genres")
+				.exec(),
+			req.user
+				? Rating.findOne({ user: req.user._id, volume: volumeId })
+						.select("score")
+						.lean()
+				: null,
+			getActiveProviders(),
+			getStoredLinks("Volume", [volumeId]),
+		]);
 
 	if (!desiredVolume) {
 		res.status(400).json({ msg: "volume not found" });
@@ -50,18 +61,8 @@ exports.getVolumeDetails = asyncHandler(async (req, res, next) => {
 
 	const { serie, number } = desiredVolume;
 	const variant = desiredVolume.isVariant || false;
+	const myVolumeScore = userRating ? userRating.score : null;
 
-	let myVolumeScore = null;
-	if (req.user) {
-		const userRating = await Rating.findOne({
-			user: req.user._id,
-			volume: desiredVolume._id,
-		}).select("score").lean();
-		if (userRating) myVolumeScore = userRating.score;
-	}
-
-	const activeProviders = await getActiveProviders();
-	const storedLinks = await getStoredLinks("Volume", [desiredVolume._id]);
 	const storeLinks = buildDerivedLinks(
 		"Volume",
 		desiredVolume,
