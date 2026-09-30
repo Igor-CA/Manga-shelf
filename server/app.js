@@ -111,6 +111,15 @@ app.use(
 	})
 );
 
+app.get("/health", async (req, res) => {
+	try {
+		await mongoose.connection.db.command({ ping: 1 }, { timeoutMS: 3000 });
+		res.json({ database: "up" });
+	} catch (err) {
+		res.status(503).json({ database: "down" });
+	}
+});
+
 for (const size of ["small", "medium", "large", "extralarge"]) {
 	app.use(
 		`/images/${size}`,
