@@ -1,3 +1,156 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="robots" content="noindex" />
+	<title><%= status === 404 ? "Página não encontrada" : "Algo deu errado" %> | MangaShelf</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			font-family: Arial, Helvetica, sans-serif;
+			box-sizing: border-box;
+		}
+		:root {
+			--text: #3d4e66;
+			--background: #edf1f5;
+			--foreground: #fafafa;
+			--gray: 221, 230, 238;
+			--red: #ec294b;
+			--primary: #1e3a8a;
+			--accent: #3db4f2;
+		}
+		.dark {
+			--text: #cbd5e1;
+			--background: #151d32;
+			--foreground: #1e293b;
+			--gray: 30, 42, 56;
+		}
+		body {
+			background-color: var(--background);
+		}
+		a {
+			text-decoration: none;
+			color: currentColor;
+		}
+		.container {
+			margin: auto;
+			max-width: 1520px;
+		}
+		.page-content {
+			min-height: 100vh;
+			position: relative;
+		}
+		.not-found {
+			margin: auto;
+			margin-bottom: 2em;
+			margin-top: 2em;
+			border-radius: 10px;
+			position: relative;
+			font-size: 1em;
+			padding: 70px 2em;
+			color: var(--text);
+			background-color: var(--foreground);
+			text-align: justify;
+			box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.282);
+			max-width: 90vw;
+		}
+		.not-found h1 {
+			margin-bottom: 2rem;
+			text-align: center;
+			font-size: 2rem;
+		}
+		.not-found p {
+			margin-top: 1rem;
+			line-height: 1.5rem;
+		}
+		.not-found--link {
+			color: var(--accent);
+		}
+		.call-to-action-container {
+			display: flex;
+			position: absolute;
+			gap: 20px;
+			bottom: 0;
+			left: 50%;
+			translate: -50% 50%;
+		}
+		.call-to-action {
+			padding: 10px;
+			background-color: var(--primary);
+			color: white;
+			font-weight: bold;
+			border-radius: 3rem;
+		}
+		.error-page__reload {
+			border: none;
+			font-family: inherit;
+			font-size: 1rem;
+			cursor: pointer;
+		}
+		.error-page__details {
+			margin-top: 1rem;
+			padding: 1rem;
+			border-radius: 5px;
+			background-color: rgba(var(--gray), 1);
+			color: var(--red);
+			font-family: monospace;
+			font-size: 0.9rem;
+			white-space: pre-wrap;
+			overflow-wrap: anywhere;
+		}
+		@media only screen and (min-width: 1024px) {
+			.page-content {
+				padding-top: 4rem;
+			}
+			.container {
+				padding-left: 100px;
+				padding-right: 100px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<script>
+		try {
+			const theme =
+				localStorage.getItem("theme") ||
+				(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+			document.body.classList.add(theme);
+		} catch (e) {}
+	</script>
+	<main class="page-content">
+		<div class="container">
+			<div class="not-found">
+				<% if (status === 404) { %>
+					<h1>404</h1>
+					<p>Parece que você tentou acessar uma página não existente</p>
+					<p>Verifique o endereço do link e tente novamente</p>
+				<% } else { %>
+					<h1>Ops!</h1>
+					<p>Parece que algo deu errado ao carregar essa página</p>
+					<p>Tente recarregar a página para ver se o problema se resolve</p>
+				<% } %>
+				<p>
+					Caso o erro persista nos mande detalhes na área de
+					<a href="/feedback" class="not-found--link">feedback</a>
+					e tentaremos resolver o quanto antes
+				</p>
+				<% if (error) { %>
+					<pre class="error-page__details"><%= error.message %></pre>
+				<% } %>
+				<div class="call-to-action-container">
+					<% if (status === 404) { %>
+						<a href="/" class="call-to-action">Volte para a pagina principal</a>
+					<% } else { %>
+						<button type="button" class="call-to-action error-page__reload" onclick="window.location.reload()">
+							Recarregar a página
+						</button>
+					<% } %>
+				</div>
+			</div>
+		</div>
+	</main>
+</body>
+</html>
