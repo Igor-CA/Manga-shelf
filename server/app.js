@@ -104,6 +104,35 @@ app.use(
 		credentials: true,
 	})
 );
+
+for (const size of ["small", "medium", "large", "extralarge"]) {
+	app.use(
+		`/images/${size}`,
+		express.static(path.resolve(__dirname, "public", "images", size), {
+			maxAge: "7d",
+		})
+	);
+}
+app.use(express.static(path.resolve(__dirname, "public")));
+
+if (process.env.NODE_ENV === "production") {
+	app.use(
+		"/assets",
+		express.static(path.join(__dirname, "../client/dist/assets"), {
+			maxAge: "1y",
+			immutable: true,
+		})
+	);
+	app.use(express.static(path.join(__dirname, "../client/dist")));
+
+	mountSpaFallback(
+		app,
+		path.resolve(__dirname, "../", "client", "dist", "index.html")
+	);
+} else {
+	app.get("/", (req, res) => res.send("Please set to production"));
+}
+
 app.use(
 	session({
 		secret: process.env.SECRET_KEY,
@@ -130,37 +159,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 require("./passport-config")(passport);
 
-for (const size of ["small", "medium", "large", "extralarge"]) {
-	app.use(
-		`/images/${size}`,
-		express.static(path.resolve(__dirname, "public", "images", size), {
-			maxAge: "7d",
-		})
-	);
-}
-app.use(express.static(path.resolve(__dirname, "public")));
-
 app.use("/api/user", apiKeyAuth, userRouter);
 app.use("/api/data", apiKeyAuth, apiRouter);
 app.use("/admin", apiKeyAuth, checkAdmin, adminRouter);
-
-if (process.env.NODE_ENV === "production") {
-	app.use(
-		"/assets",
-		express.static(path.join(__dirname, "../client/dist/assets"), {
-			maxAge: "1y",
-			immutable: true,
-		})
-	);
-	app.use(express.static(path.join(__dirname, "../client/dist")));
-
-	mountSpaFallback(
-		app,
-		path.resolve(__dirname, "../", "client", "dist", "index.html")
-	);
-} else {
-	app.get("/", (req, res) => res.send("Please set to production"));
-}
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -178,8 +179,8 @@ app.use(function (err, req, res, next) {
 		});
 	}
 
-	res.locals.message = err.message;
-	res.locals.error = req.app.get("env") === "development" ? err : {};
+	res.locals.status = status;
+	res.locals.error = req.app.get("env") === "development" ? err : null;
 	// render the error page
 	res.render("error");
 });
