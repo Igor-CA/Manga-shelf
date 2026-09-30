@@ -80,7 +80,13 @@ mongoose
 	.then(() => {
 		logger.info("mongoose is conncected");
 	})
-	.catch((err) => logger.error(err));
+	.catch((err) => {
+		logger.error("Initial MongoDB connection failed, exiting:", {
+			message: err.message,
+			stack: err.stack,
+		});
+		process.exit(1);
+	});
 
 startScheduledJobs();
 
@@ -139,7 +145,9 @@ app.use(
 		resave: false,
 		saveUninitialized: false,
 		store: MongoStore.create({
-			mongoUrl: mongoDB,
+			clientPromise: mongoose.connection
+				.asPromise()
+				.then((connection) => connection.getClient()),
 			collection: "sessions",
 			ttl: 15 * 24 * 60 * 60,
 			autoRemove: "native",
