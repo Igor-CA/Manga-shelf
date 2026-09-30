@@ -26,10 +26,10 @@ export default function DonatePage() {
 					<h1>Apoie o Projeto</h1>
 					<h2>Por que você deveria apoiar?</h2>
 					<p>
-						O MangaShelf é um site totalmente gratuito, sem anúncios ou fontes
-						de renda. Se você gosta do site e deseja mantê-lo vivo, pode apoiar
-						com uma doação de qualquer quantia. Seu apoio será usado para manter
-						o site no ar e cobrir os custos de desenvolvimento.
+						O MangaShelf é um site totalmente gratuito e sem anúncios. Se você
+						gosta do site e deseja mantê-lo vivo, pode apoiar com uma doação de
+						qualquer quantia. Seu apoio será usado para manter o site no ar e
+						cobrir os custos de desenvolvimento.
 					</p>
 					<p>
 						Este projeto é independente e desenvolvido durante meu tempo livre.
@@ -39,6 +39,14 @@ export default function DonatePage() {
 						funcionalidades.
 					</p>
 					<h2>Outras Formas de Apoiar</h2>
+					<p>
+						Uma forma de apoiar sem gastar nada a mais é comprar seus mangás
+						pelos links de compra do site: o botão "Comprar" nos volumes e o
+						bloco "Onde comprar" na página de cada volume. Como participantes do
+						Programa de Associados da Amazon, recebemos uma comissão pelas
+						compras feitas pelos links da Amazon, e você paga o mesmo preço de
+						sempre.
+					</p>
 					<p>
 						Se não puder apoiar financeiramente, você pode ajudar divulgando
 						nosso site para amigos e conhecidos. Sua divulgação já é de grande
@@ -50,8 +58,8 @@ export default function DonatePage() {
 						<Link to="/feedback">feedback</Link> você pode não apenas relatar
 						problemas ou erros encontrados (bugs, dados incorretos em algum
 						volume/coleção, etc.), mas também sugerir mudanças ou ideias (por
-						exemplo, estatísticas sobre sua coleção, separação da coleção por
-						status, melhorias no design, etc.). Embora não possamos garantir que
+						exemplo, novas estatísticas, novos filtros, melhorias no design,
+						etc.). Embora não possamos garantir que
 						implementaremos todas as ideias, faremos o possível para corrigir
 						problemas e incorporar novas ideias ao longo do tempo.
 					</p>
@@ -59,8 +67,8 @@ export default function DonatePage() {
 						Por fim, você pode nos ajudar enviando submissões para corrigir ou
 						adicionar dados. Nosso objetivo é ter o banco de dados mais completo
 						do Brasil. Viu um volume sem sinopse? Adicione a sinopse baseada no
-						mangá que você tem em mãos. Encontrou uma obra com autor errado?
-						Envie a correção. Isso faz com que as informações expostas no site
+						mangá que você tem em mãos. Encontrou uma obra com autor errado ou
+						um link de compra quebrado? Envie a correção. Isso faz com que as informações expostas no site
 						fiquem mais completas para toda a comunidade.
 					</p>
 					<h3>Benefícios de Sugerir Mudanças e Ideias:</h3>

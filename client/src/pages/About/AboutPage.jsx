@@ -47,10 +47,25 @@ export default function AboutPage() {
 							Marcar quais volumes já foram lidos e adicionar anotações pessoais
 							para cada volume
 						</li>
+						<li>
+							Registrar suas compras e quanto pagou em cada volume, incluindo a
+							condição (novo ou usado) e a loja
+						</li>
+						<li>
+							Editar vários volumes de uma vez pela visualização em tabela
+						</li>
+						<li>
+							Ver sua estante por obra ou por volume, separada por status
+						</li>
 						<li>Adicionar obras à uma lista de desejos</li>
 						<li>
 							Identificar quais volumes ainda faltam para completar suas
-							coleções
+							coleções, com filtros e ordenações como "mais perto de completar"
+							e lançamentos mais recentes
+						</li>
+						<li>Encontrar onde comprar cada volume</li>
+						<li>
+							Consultar os preços pagos pela comunidade em cada obra
 						</li>
 						<li>
 							Avaliar obras e volumes com notas e escrever reviews para
@@ -65,11 +80,16 @@ export default function AboutPage() {
 						</li>
 						<li>
 							Enviar correções e complementos para o catálogo (submissões), como
-							sinopses, autoria e outros dados
+							sinopses, autoria, links e outros dados
 						</li>
 						<li>
 							Consultar estatísticas sobre sua coleção, incluindo total de
-							volumes, distribuição por gênero, editora etc
+							volumes, quanto você gastou, valor de mercado, distribuição por
+							gênero, editora etc
+						</li>
+						<li>
+							Exportar sua coleção para uma planilha (CSV ou Excel) e manter um
+							backup dos seus dados
 						</li>
 						<li>
 							Explorar diferentes obras e visualizar detalhes como editora,
@@ -100,6 +120,10 @@ export default function AboutPage() {
 							Edições estrangeiras: cadastro das versões em outros idiomas (como
 							inglês e japonês) de uma obra, permitindo que os usuários adicionem
 							e completem essas edições com o tempo
+						</li>
+						<li>
+							Importar coleção: enviar de volta a planilha exportada para
+							restaurar um backup da sua coleção
 						</li>
 						<li>Perfis privados</li>
 						<li>
