@@ -510,6 +510,7 @@ exports.getSeriesDetails = asyncHandler(async (req, res, next) => {
 		_id: id,
 		__v,
 		anilistId,
+		malId,
 		shouldBeUpdated,
 		synonyms,
 		updatedAt,

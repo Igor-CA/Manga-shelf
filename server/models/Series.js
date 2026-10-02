@@ -64,6 +64,7 @@ const SeriesSchema = new Schema(
 		isAdult: { type: Boolean, default: false },
 		ageRating: { type: String },
 		anilistId: { type: Number },
+		malId: { type: Number },
 		popularity: { type: Number, default: 0 },
 		ratingAverage: { type: Number, default: 0 },
 		ratingCount: { type: Number, default: 0 },

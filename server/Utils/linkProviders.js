@@ -15,6 +15,7 @@ const applyAffiliate = (provider, url) =>
 const DERIVED_IDS = {
 	Series: {
 		anilist: (series) => series.anilistId,
+		myanimelist: (series) => series.malId,
 	},
 	Volume: {
 		amazon: (volume) => isbn13ToIsbn10(volume.ISBN),
