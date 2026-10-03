@@ -1,9 +1,9 @@
-import { SiAmazon, SiAnilist, SiMyanimelist } from "react-icons/si";
-import { FaExternalLinkAlt } from "react-icons/fa";
+import { SiAnilist, SiMyanimelist } from "react-icons/si";
+import { FaAmazon, FaExternalLinkAlt } from "react-icons/fa";
 import "./ProviderChip.css";
 import { recordLinkClick } from "./linkClicks";
 
-const ICONS = { amazon: SiAmazon, anilist: SiAnilist, myanimelist: SiMyanimelist };
+const ICONS = { amazon: FaAmazon, anilist: SiAnilist, myanimelist: SiMyanimelist };
 
 export default function ProviderChip({ link, targetModel, targetId }) {
 	const Icon = ICONS[link.icon];
