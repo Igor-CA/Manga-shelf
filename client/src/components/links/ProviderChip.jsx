@@ -18,7 +18,7 @@ export default function ProviderChip({ link, targetModel, targetId }) {
 		<a
 			href={link.url}
 			target="_blank"
-			rel="noopener noreferrer"
+			rel={link.category === "store" ? "sponsored noopener" : "noopener"}
 			className="provider-chip"
 			style={{ "--provider-chip-color": link.brandColor }}
 			onClick={handleClick}

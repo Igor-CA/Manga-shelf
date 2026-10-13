@@ -21,7 +21,7 @@ export default function BuyBadge({
 		<a
 			href={url}
 			target="_blank"
-			rel="noopener noreferrer"
+			rel="sponsored noopener"
 			title="Comprar na Amazon"
 			className={`buy-badge buy-badge--${corner}`}
 			onClick={handleClick}
